@@ -10,6 +10,20 @@ _Last updated: 2026-09-02 (session 1 — cloud sandbox without package-registry 
 * Everything below marked **written / unverified** was authored carefully but has **not** been compiled or tested. The first task of the next session (with a *Trusted* or *Full* network environment) is section 3 below.
 * Locally available for verification in that sandbox: Node 22, pnpm 10, TypeScript 5 (global), PostgreSQL 16 (without PostGIS), Redis.
 
+## 0.1 Product requirements captured from the owner (session 1)
+
+* Full specification: `docs/MASTER_DEVELOPMENT_PROMPT_TAMAM.pdf` (93 pages, 210 sections) — **read it completely before writing code**; it is the minimum bar, not a suggestion.
+* Visual identity must closely resemble the Turkish **Getir** app: primary purple `#5D3EBC`, accent yellow `#FFD300`, light grey canvas, white rounded cards (12–16 px), purple app bar, yellow primary CTA with dark-purple text, bottom navigation, dark-mode support. Tokens already encoded in `packages/ui-tokens/tokens.json`.
+* **Promotional banners inside the apps**, admin-managed with high production quality: hero carousel on the customer home, inline banners between sections, category-top banners, checkout/tracking promos, partner-home banners; targeting (zones, language, platform, new customers, job counts, service interest, % rollout), scheduling, frequency caps, deep-link/URL/promo/category actions, impression + click + conversion analytics. Schema (`campaigns`, `banners`, `banner_events`, `banner_daily_stats`), DTOs and zod schemas already exist.
+* Launch region: **Palestine**, currency **ILS** (multi-currency supported: ILS/USD/JOD), Arabic-first (RTL) with English; seed zones Ramallah, Nablus, Hebron; timezone Asia/Jerusalem.
+* No prototypes, no mock APIs, no TODO/FIXME, no hard-coded prices/permissions — production-ready only (spec §0, §200).
+
+## 0.2 Resume prompt for the next session
+
+Paste this as the first message of the new Cowork session (with the `tamam` folder connected):
+
+> أكمل مشروع TAMAM من المجلد المرتبط. اقرأ أولًا `docs/STATUS.md` ثم `docs/MASTER_DEVELOPMENT_PROMPT_TAMAM.pdf` كاملًا ثم `docs/ARCHITECTURE.md` و`docs/DATABASE.md`. نفّذ إجراء التشغيل في القسم 3 من STATUS.md (تثبيت الحزم، PostGIS، Prisma migrate)، وأصلح أي أخطاء ترجمة في الأساس الموجود، ثم تابع المراحل بالترتيب (Auth → Catalog/Zones/Partners → Job Engine → Pricing → Dispatch → Tracking → Customer App → Partner App → Flows → Payments/Ledger → Notifications/Chat → Admin → Support/Disputes → Analytics/Audit → Security → E2E → Production). حدّث STATUS.md في نهاية كل مرحلة وزامن الملفات إلى مجلدي.
+
 ## 1. What exists (by path)
 
 | Path | State | Notes |
