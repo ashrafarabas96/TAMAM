@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Prisma, type PrismaClient, type Wallet } from '@prisma/client';
+import { Prisma, type Wallet } from '@prisma/client';
 import {
   CONFIG_KEYS,
   ErrorCode,

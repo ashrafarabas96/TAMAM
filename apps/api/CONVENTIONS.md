@@ -70,7 +70,7 @@ Throw `AppException` only (`src/common/errors/app.exception.ts`): `AppException.
 | Dispatch | `DispatchService.start(jobId)`, `.cancel(jobId, reason)`, `.manualAssign(jobId, partnerId, actor)` |
 | Tracking | `TrackingService.latestPartnerLocation(partnerId)`, `TrackingGateway.emitJobStatus(job)` |
 | Chat | `ChatService.ensureForJob(jobId, tx)`, `.close(jobId)` |
-| Risk | `RiskService.assertCanCreateJob(userId)`, `.recordSignal(userId, signal, details)` |
+| Risk | `RiskService.assertCanCreateJob(userId, deviceId?)`, `.assertCanUsePromo(userId)`, `.assertCanUseWallet(userId)`, `.recordSignal(userId, signal, score, details?, jobId?)` |
 | Metrics | `MetricsService.<counter>.inc(...)` |
 
 Owners publish these exact signatures; if you must change one, change every caller.
