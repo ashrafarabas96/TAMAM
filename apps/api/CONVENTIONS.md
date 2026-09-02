@@ -44,7 +44,7 @@ Throw `AppException` only (`src/common/errors/app.exception.ts`): `AppException.
 ## 5. Data access & transactions
 
 * Inject `PrismaService`; for multi-step writes use `this.prisma.$transaction(async (tx) => { ... })` and pass `tx` to helpers (`type Tx`).
-* Money-moving code uses `prisma.ledgerTransaction(tx => ...)` (sets the wallet trigger flag).
+* Money-moving code uses `prisma.withLedgerWrite(tx => ...)` (sets the wallet trigger flag so wallet balance caches can be updated).
 * Optimistic concurrency: jobs/payments/quotes carry `version`; update with `where: { id, version }` and throw `AppException.versionConflict()` when `count === 0`.
 * Lists: keyset pagination via `decodeCursor/buildPage/cursorWhere` (`src/common/utils/cursor.ts`), `take: limit + 1`, order `[{ createdAt: 'desc' }, { id: 'desc' }]`.
 * Never `deleteMany` operational data; use status flags / soft delete where the schema provides them.
