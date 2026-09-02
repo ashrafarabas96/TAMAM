@@ -26,7 +26,7 @@ export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'que
    * Serializable-ish helper for money-critical work: runs the callback in a transaction
    * with the ledger write flag enabled so wallet balance triggers accept the update.
    */
-  async ledgerTransaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
+  async withLedgerWrite<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
     return this.$transaction(
       async (tx) => {
         await tx.$executeRawUnsafe(`SET LOCAL tamam.ledger_write = 'on'`);
