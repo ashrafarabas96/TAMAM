@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Environment / secrets — never commit real values
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Flutter / Dart
+apps/*/.dart_tool/
+apps/*/.flutter-plugins
+apps/*/.flutter-plugins-dependencies
+apps/*/.packages
+apps/*/build/
+apps/*/ios/Pods/
+apps/*/ios/.symlinks/
+apps/*/android/.gradle/
+apps/*/android/local.properties
+apps/*/android/key.properties
+apps/*/*.jks
+apps/*/*.keystore
+apps/*/pubspec.lock.bak
+
+# Prisma
+apps/api/prisma/*.db
+
+# Docker volumes
+infrastructure/docker/volumes/
+
+# Uploads (local object storage emulator)
+infrastructure/docker/minio-data/

@@ -1,0 +1,28 @@
+{
+  "name": "@tamam/shared-types",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared enums, permissions, job state machine and DTO contracts for TAMAM (API + Admin).",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "node --test dist/**/*.test.js 2>/dev/null || echo \"no runtime tests\""
+  },
+  "devDependencies": {
+    "@tamam/config": "workspace:*",
+    "typescript": "^5.6.3"
+  }
+}

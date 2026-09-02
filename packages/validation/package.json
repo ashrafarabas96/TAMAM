@@ -1,0 +1,33 @@
+{
+  "name": "@tamam/validation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zod validation schemas shared by the TAMAM API (request validation) and Admin (forms).",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tamam/shared-types": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@tamam/config": "workspace:*",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.3"
+  }
+}
