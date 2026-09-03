@@ -1,0 +1,878 @@
+{
+  "@@locale": "en",
+  "appTagline": "Work whenever you want — sorted",
+  "appPartnerTag": "Partner app",
+  "navHome": "Home",
+  "navJobs": "Jobs",
+  "navEarnings": "Earnings",
+  "navAccount": "Account",
+  "offlineBanner": "No internet connection — some data may be out of date.",
+  "activeJobBannerSemantics": "Job in progress, {status}. Tap to open.",
+  "@activeJobBannerSemantics": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "realtimeReconnecting": "Reconnecting…",
+  "actionAdd": "Add",
+  "actionAllow": "Allow",
+  "actionBack": "Back",
+  "actionCancel": "Cancel",
+  "actionChange": "Change",
+  "actionCheck": "Check",
+  "actionClear": "Clear",
+  "actionConfirm": "Confirm",
+  "actionContinue": "Continue",
+  "actionDismiss": "Dismiss",
+  "actionLoadMore": "Load more",
+  "actionMore": "More options",
+  "actionNext": "Next",
+  "actionOpenSettings": "Open settings",
+  "actionRemove": "Remove",
+  "actionRetry": "Try again",
+  "actionSave": "Save",
+  "actionSend": "Send",
+  "actionSkip": "Skip",
+  "distanceKm": "{value} km",
+  "@distanceKm": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceM": "{value} m",
+  "@distanceM": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "durationMin": "{value} min",
+  "@durationMin": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "signInTitle": "Welcome to TAMAM Partner",
+  "signInSubtitle": "Enter your phone number to reach your partner account",
+  "signInPhoneLabel": "Phone number",
+  "signInPhoneHint": "599123456",
+  "signInSendCode": "Send code",
+  "signInOtpExplainer": "We will text you a 6-digit code.",
+  "signInTerms": "By continuing you agree to the Partner Terms and the Privacy Policy.",
+  "signedOutExpired": "Your session ended. Please sign in again.",
+  "signedOutRevoked": "This session was ended from another device.",
+  "otpTitle": "Verification code",
+  "otpSubtitle": "We sent a code to {phone}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpVerify": "Verify",
+  "otpResend": "Resend code",
+  "otpResendIn": "You can resend in {seconds} seconds",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "otpDevCode": "Development code: {code}",
+  "@otpDevCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTitle": "Something went wrong",
+  "errorOfflineTitle": "You are offline",
+  "emptyTitle": "Nothing here yet",
+  "errorGeneric": "An unexpected error occurred. Please try again.",
+  "errorNetwork": "We could not reach the server. Try again.",
+  "errorOffline": "Check your internet connection and try again.",
+  "errorNotFound": "We could not find that.",
+  "errorForbidden": "You are not allowed to do that.",
+  "errorValidation": "Please check the details you entered.",
+  "errorRateLimited": "Too many attempts. Wait a moment and try again.",
+  "errorSessionExpired": "Your session expired. Please sign in again.",
+  "errorAccountRestricted": "Your account is temporarily restricted.",
+  "errorAccountSuspended": "Your account is suspended. Contact support.",
+  "errorFeatureDisabled": "That feature is switched off right now.",
+  "errorDuplicateRequest": "This request was already sent.",
+  "errorInvalidTransition": "The job status changed. Refresh and try again.",
+  "errorVersionConflict": "The job was updated elsewhere. Please try again.",
+  "errorOfferExpired": "That offer expired.",
+  "errorOfferTaken": "Another partner took this job.",
+  "errorPartnerNotAvailable": "You must be online to receive jobs.",
+  "errorPartnerNotApproved": "Your account is still under review, so you cannot go online yet.",
+  "errorOutsideZone": "You are outside your approved working zones.",
+  "errorOutsideHours": "This service is outside working hours right now.",
+  "errorStaleLocation": "Your location is too old. Make sure location is on and try again.",
+  "errorImpossibleMovement": "That location reading is not plausible. Check your GPS accuracy.",
+  "errorPickupOtpInvalid": "That pickup code is not correct.",
+  "errorDeliveryOtpInvalid": "That delivery code is not correct.",
+  "errorTripPinInvalid": "That trip PIN is not correct.",
+  "errorQuoteNotApproved": "The customer must approve the quote first.",
+  "errorRatingNotAllowed": "This job cannot be rated.",
+  "errorInsufficientBalance": "Your balance is not enough for this withdrawal.",
+  "errorUploadInvalid": "That file type is not supported.",
+  "errorUploadTooLarge": "That file is too large.",
+  "errorOtpInvalid": "That code is not correct.",
+  "errorOtpExpired": "The code expired. Request a new one.",
+  "errorOtpCooldown": "Wait a moment before requesting another code.",
+  "errorOtpTooManyAttempts": "Too many wrong attempts. Request a new code.",
+  "errorCannotCall": "This device cannot place the call.",
+  "errorCannotOpenLink": "The link could not be opened.",
+  "locationUnavailable": "We could not get your location right now.",
+  "homeGreeting": "Have a good shift",
+  "homeStatusOnline": "Online and ready for jobs",
+  "homeStatusOffline": "Offline",
+  "homeTodayEarnings": "Earnings today",
+  "homeCompletedJobs": "Jobs today",
+  "homeWaitingTitle": "Waiting for your first offer",
+  "homeWaitingBody": "Stay inside your working zone and we will send you the nearest suitable job as soon as one comes up.",
+  "homeOfflineEmptyTitle": "You are offline right now",
+  "homeOfflineEmptyBody": "Tap the toggle above to start receiving offers.",
+  "homeProfileUnavailable": "We could not load your profile right now",
+  "homePendingOffers": "You have {count} offers waiting",
+  "@homePendingOffers": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "statsRating": "Rating",
+  "statsCompleted": "Completed jobs",
+  "statsAcceptance": "Acceptance rate",
+  "availabilityOnline": "Online",
+  "availabilityOffline": "Offline",
+  "availabilityBusy": "On a job",
+  "availabilityToggleSemantics": "Work status: {state}. Tap to change it.",
+  "@availabilityToggleSemantics": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "availabilityPermissionDenied": "We need location permission to run a work shift.",
+  "availabilityServiceDisabled": "Location services are off on your device. Turn them on and try again.",
+  "availabilityExpiredDocuments": "Expired: {documents}. Renew them before going online.",
+  "@availabilityExpiredDocuments": {
+    "placeholders": {
+      "documents": {
+        "type": "String"
+      }
+    }
+  },
+  "availabilityActiveJobBlocksOffline": "You cannot go offline until the current job is finished.",
+  "goOnlineTitle": "Start your shift",
+  "goOnlineSubtitle": "Check your permissions and roles before going online.",
+  "goOnlineConfirm": "Go online",
+  "goOnlineDone": "You are online — good luck!",
+  "goOnlineLocationTitle": "Location while you work",
+  "goOnlineLocationBody": "We follow your location only while you are online, to send you the nearest jobs and show the customer that you are arriving. Tracking stops the moment you go offline.",
+  "goOnlineForegroundBody": "A persistent notification stays up during your shift — that is what keeps tracking alive when the screen is off.",
+  "goOnlinePermissionAlways": "Location permission: always — ideal",
+  "goOnlinePermissionWhileInUse": "Location permission: while using the app",
+  "goOnlinePermissionPending": "Location permission required",
+  "goOnlineRoles": "Roles active this shift",
+  "goOnlineVehicle": "Vehicle",
+  "goOnlineNoVehicle": "No active vehicle for your current role.",
+  "goOfflineTitle": "Go offline",
+  "goOfflineMessage": "You will not receive new offers until you go online again.",
+  "goOfflineConfirm": "Go offline",
+  "backgroundLimitedBanner": "Permission is \"while in use\" only — tracking may pause when the screen is off.",
+  "foregroundNotificationTitle": "TAMAM — shift in progress",
+  "foregroundNotificationIdle": "Online and waiting for offers",
+  "foregroundNotificationOnJob": "Job in progress — tracking is on",
+  "interruptionPermission": "Location permission was revoked, so you were set offline.",
+  "interruptionServiceDisabled": "Location services were switched off, so you were set offline.",
+  "interruptionServer": "The server ended your shift. You can go online again.",
+  "interruptionGeneric": "Your work shift stopped.",
+  "resumeWorkTitle": "Resume your shift?",
+  "resumeWorkBody": "The server still lists you as online, but tracking on this device is stopped.",
+  "resumeWorkConfirm": "Resume",
+  "resumeWorkDecline": "Go offline",
+  "warningNoActiveVehicle": "No active vehicle — activate one before your shift.",
+  "warningDocumentExpired": "{document} has expired.",
+  "@warningDocumentExpired": {
+    "placeholders": {
+      "document": {
+        "type": "String"
+      }
+    }
+  },
+  "warningDocumentRejected": "{document} was rejected. Upload it again.",
+  "@warningDocumentRejected": {
+    "placeholders": {
+      "document": {
+        "type": "String"
+      }
+    }
+  },
+  "warningDocumentExpiring": "{document} expires in {days} days.",
+  "@warningDocumentExpiring": {
+    "placeholders": {
+      "document": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "offerTitle": "New job",
+  "offerAccept": "Accept",
+  "offerDecline": "Decline",
+  "offerSecondsLeft": "{seconds} s",
+  "@offerSecondsLeft": {
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "offerQueuePosition": "and {count} more waiting",
+  "@offerQueuePosition": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "offerEstimatedEarnings": "Your estimated earnings",
+  "offerPickup": "Pickup",
+  "offerServiceLocation": "Service location",
+  "offerDestination": "Destination",
+  "offerWaypoint": "Stop on the way",
+  "offerToPickup": "Distance to you",
+  "offerEta": "Time to arrive",
+  "offerTripDistance": "Trip distance",
+  "jobTypeRide": "Ride",
+  "jobTypeDelivery": "Delivery",
+  "jobTypeFood": "Food delivery",
+  "jobTypeHomeService": "Home service",
+  "jobStatusDraft": "Draft",
+  "jobStatusSearching": "Finding a partner",
+  "jobStatusAssigned": "Assigned to you",
+  "jobStatusEnRoute": "You are on the way",
+  "jobStatusArrived": "You arrived",
+  "jobStatusWaitingCustomer": "Waiting for the customer",
+  "jobStatusInProgress": "In progress",
+  "jobStatusInspection": "Inspection in progress",
+  "jobStatusQuoteRequired": "Quote required",
+  "jobStatusQuoteSubmitted": "Quote sent — waiting for the customer",
+  "jobStatusQuoteApproved": "Quote approved",
+  "jobStatusQuoteRejected": "Quote rejected",
+  "jobStatusWorkStarted": "Work started",
+  "jobStatusWaitingForParts": "Waiting for parts",
+  "jobStatusWorkCompleted": "Work finished — awaiting the customer",
+  "jobStatusCustomerConfirmed": "Customer confirmed",
+  "jobStatusCompleted": "Completed",
+  "jobStatusCancelled": "Cancelled",
+  "jobStatusNoPartner": "No partner available",
+  "jobStatusDisputed": "Disputed",
+  "urgencyStandard": "Standard",
+  "urgencyUrgent": "Urgent",
+  "urgencyEmergency": "Emergency",
+  "paymentCash": "Cash",
+  "paymentCard": "Card",
+  "paymentWallet": "Wallet",
+  "paymentBank": "Bank transfer",
+  "paymentOnline": "Online payment",
+  "roleDriver": "Driver",
+  "roleCourier": "Courier",
+  "roleTechnician": "Technician",
+  "roleServiceProvider": "Service provider",
+  "roleDriverCaption": "Rides by car inside your city",
+  "roleCourierCaption": "Delivering parcels and food",
+  "roleTechnicianCaption": "Repairs and maintenance at the customer address",
+  "roleServiceProviderCaption": "Specialised home services with a quote",
+  "jobActionEnRoute": "I am on the way",
+  "jobActionArrive": "I have arrived",
+  "jobActionStartRide": "Start the trip",
+  "jobActionPickedUp": "Package picked up",
+  "jobActionStartInspection": "Start the inspection",
+  "jobActionCompleteRide": "Finish the trip",
+  "jobActionDeliver": "Deliver the package",
+  "jobActionSubmitQuote": "Send the quote",
+  "jobActionStartWork": "Start the work",
+  "jobActionCompleteWork": "Finish the work",
+  "jobActionResumeWork": "Resume the work",
+  "jobActionWaitingForParts": "Waiting for parts",
+  "jobActionChangeOrder": "Add extra work",
+  "jobPassiveAwaitQuote": "Your quote is with the customer; waiting for their decision.",
+  "jobPassiveAwaitConfirmation": "Waiting for the customer to confirm the work is done.",
+  "jobPassiveCancelled": "This job was cancelled.",
+  "jobPassiveNothing": "Nothing to do right now.",
+  "jobNavigate": "Navigate",
+  "navigateWith": "Navigate with",
+  "navigateGoogleMaps": "Google Maps",
+  "navigateWaze": "Waze",
+  "navigateUnavailable": "No navigation app is installed on this device.",
+  "jobCurrentTarget": "Your next stop",
+  "jobCallCustomer": "Call",
+  "jobChatCustomer": "Chat",
+  "jobWaitingSince": "Waiting for the customer for {duration}",
+  "@jobWaitingSince": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "arriveTooFar": "You are {meters} m from the location. Get closer, then confirm arrival.",
+  "@arriveTooFar": {
+    "placeholders": {
+      "meters": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "jobVersionConflictHint": "The job changed while you were working on it — review the details before continuing.",
+  "tripPinTitle": "Trip PIN",
+  "tripPinSubtitle": "Ask the rider for the PIN shown in their app.",
+  "pickupOtpTitle": "Pickup code",
+  "pickupOtpSubtitle": "Ask the sender for the pickup code.",
+  "completeRideConfirm": "The trip ends now and the final fare is calculated.",
+  "cancelJobTitle": "Cancel the job",
+  "cancelJobSubtitle": "Pick a clear reason — cancellations affect your acceptance rate.",
+  "cancelJobConfirm": "Confirm cancellation",
+  "cancelJobReasonRequired": "Details (required)",
+  "cancelJobReasonOptional": "More details (optional)",
+  "cancelJobNoShowAfterArrival": "The \"customer did not show\" option unlocks after you confirm arrival and the waiting time is over.",
+  "cancelReasonNoShow": "The customer did not show",
+  "cancelReasonUnreachable": "Could not reach the customer",
+  "cancelReasonWrongAddress": "Wrong address",
+  "cancelReasonVehicleIssue": "Vehicle problem",
+  "cancelReasonSafety": "Safety concern",
+  "cancelReasonOther": "Other",
+  "releaseJobTitle": "Return the job to dispatch",
+  "releaseJobSubtitle": "The job goes to another partner and is not counted as a cancellation.",
+  "releaseJobReason": "Why are you returning it?",
+  "releaseJobConfirm": "Return the job",
+  "releaseJobDone": "The job went back to dispatch.",
+  "podTitle": "Proof of delivery",
+  "podSubtitle": "Confirm that the package reached the recipient.",
+  "podSubtitleNamed": "Confirm the package reached {name}.",
+  "@podSubtitleNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "podModeOtp": "Delivery code",
+  "podModeManual": "Signature and photo",
+  "podOtpHint": "Ask the recipient for the delivery code shown in their app.",
+  "podReceiverName": "Recipient name",
+  "podPhotoLabel": "Delivery photo",
+  "podPhotoHint": "One clear photo of the package where you left it.",
+  "podSignatureLabel": "Recipient signature",
+  "podSignatureHint": "Ask the recipient to sign inside the frame with their finger.",
+  "completeWorkTitle": "Finish the work",
+  "completeWorkSubtitle": "Document what you did before handing the job back to the customer.",
+  "completeWorkPhotos": "Photos after the work",
+  "completeWorkPhotosHint": "Clear photos of the result — they protect you if anything is disputed.",
+  "completeWorkApprovedTotal": "Approved total",
+  "completeWorkCustomerConfirms": "The customer confirms the work is done, then your earnings land in your balance.",
+  "completionTitle": "Job done",
+  "completionSubtitle": "Job {number}",
+  "@completionSubtitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "completionAwaitingTitle": "Awaiting the customer",
+  "completionAwaitingSubtitle": "You finished the work. Earnings are added once the customer confirms.",
+  "completionCollectCash": "Collect the amount from the customer in cash.",
+  "completionPaidElectronically": "Already paid electronically — do not collect cash.",
+  "completionYourEarnings": "Your earnings from this job",
+  "completionRateCustomer": "Rate the customer",
+  "completionBackHome": "Back to home",
+  "jobsTitle": "Jobs",
+  "jobsFilterAll": "All",
+  "jobsFilterActive": "Active",
+  "jobsFilterCompleted": "Completed",
+  "jobsFilterCancelled": "Cancelled",
+  "jobsFilterByDate": "Filter by date",
+  "jobsEmptyTitle": "No jobs",
+  "jobsEmptyBody": "Every job you complete shows up here.",
+  "jobDetailTitle": "Job details",
+  "jobEarningsBreakdown": "Earnings breakdown",
+  "jobNoBreakdown": "No breakdown is available for this job.",
+  "jobTotalCharged": "Total charged to the customer",
+  "jobRatingTitle": "How the customer rated you",
+  "jobRatingUnavailable": "The customer has not rated you yet.",
+  "jobCancelledReason": "Cancellation reason: {reason}",
+  "@jobCancelledReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "jobReportProblem": "Report a problem",
+  "ratingTitle": "Rate the customer",
+  "ratingPrompt": "How was your experience with the customer?",
+  "ratingCustomer": "The customer",
+  "ratingCommentOptional": "Comments (optional)",
+  "ratingSubmit": "Submit rating",
+  "ratingThanks": "Thanks for your rating!",
+  "ratingTagPolite": "Polite",
+  "ratingTagPunctual": "On time",
+  "ratingTagClearAddress": "Clear address",
+  "ratingTagEasyParking": "Easy parking",
+  "ratingTagLate": "Late",
+  "ratingTagRude": "Rude",
+  "ratingTagWrongAddress": "Wrong address",
+  "ratingTagExtraStops": "Unagreed extra stops",
+  "chatTitle": "Chat",
+  "chatHint": "Write a message…",
+  "chatEmptyTitle": "No messages yet",
+  "chatEmptyBody": "Write a message to reach the customer.",
+  "chatLoadOlder": "Show older messages",
+  "chatSendPhoto": "Send a photo",
+  "chatSendLocation": "Send location",
+  "chatSharedLocation": "Location shared",
+  "quoteBuilderTitle": "Quote",
+  "quoteBuilderChangeOrderTitle": "Extra work",
+  "quoteItemsTitle": "Line items",
+  "quoteAddItem": "Add a line",
+  "quoteEditItem": "Edit the line",
+  "quoteEmptyHint": "Add at least one line before the quote can reach the customer.",
+  "quoteItemDescription": "What is this line for?",
+  "quoteItemQuantity": "Quantity",
+  "quoteItemUnitPrice": "Unit price",
+  "quoteLineTotal": "Line total: {total}",
+  "@quoteLineTotal": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteKindLabor": "Labour",
+  "quoteKindParts": "Parts",
+  "quoteKindFee": "Fees",
+  "quoteDiscount": "Discount",
+  "quoteDiscountTooLarge": "The discount is larger than the line items.",
+  "quoteDescriptionLabel": "Notes for the customer",
+  "quoteDurationLabel": "Estimated duration (minutes)",
+  "quoteDurationHint": "Helps the customer plan their day.",
+  "quotePreviewTitle": "Preview",
+  "quotePreviewTotal": "Estimated total",
+  "quotePreviewDisclaimer": "This preview is calculated on your device only. The server recalculates tax and final fees when you send it, and its figures are the ones that count.",
+  "quoteSubmit": "Send the quote",
+  "quoteSubmitChangeOrder": "Send the extra work",
+  "quoteSubmitted": "The quote was sent to the customer.",
+  "quoteChangeOrderHint": "Extra work is added to the approved quote once the customer accepts it.",
+  "quoteRejectionNote": "The customer wrote: {note}",
+  "@quoteRejectionNote": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteVersionConflict": "The quote changed elsewhere. Refresh and send it again.",
+  "quoteTitle": "Quote #{revision}",
+  "@quoteTitle": {
+    "placeholders": {
+      "revision": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "quoteChangeOrderTitle": "Extra work #{revision}",
+  "@quoteChangeOrderTitle": {
+    "placeholders": {
+      "revision": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "quoteTotal": "Total",
+  "quoteTax": "Tax",
+  "quoteEstimatedDuration": "Estimated duration: {minutes} min",
+  "@quoteEstimatedDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteStatusDraft": "Draft",
+  "quoteStatusSubmitted": "Awaiting the customer",
+  "quoteStatusApproved": "Approved",
+  "quoteStatusRejected": "Rejected",
+  "quoteStatusCancelled": "Cancelled",
+  "quoteStatusSuperseded": "Replaced by a newer quote",
+  "earningsTitle": "Earnings",
+  "earningsToday": "Today",
+  "earningsWeek": "This week",
+  "earningsMonth": "This month",
+  "earningsCompletedJobs": "{count} completed jobs",
+  "@earningsCompletedJobs": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "earningsGross": "Gross earnings",
+  "earningsCommission": "TAMAM commission",
+  "earningsBonuses": "Bonuses",
+  "earningsAdjustments": "Adjustments",
+  "earningsNet": "Your net earnings",
+  "earningsWithdrawals": "Withdrawals",
+  "earningsBalance": "Available balance",
+  "statementTitle": "Statement",
+  "statementEmptyTitle": "No entries",
+  "statementEmptyBody": "Every movement on your wallet shows up here.",
+  "statementBalanceAfter": "Balance after: {balance}",
+  "@statementBalanceAfter": {
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "withdrawTitle": "Withdraw",
+  "withdrawAvailable": "Available to withdraw: {amount}",
+  "@withdrawAvailable": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "withdrawAmount": "Amount",
+  "withdrawAmountInvalid": "Enter a valid amount.",
+  "withdrawAll": "Withdraw all",
+  "withdrawToAccount": "To the bank account",
+  "withdrawConfirm": "Confirm withdrawal",
+  "withdrawProcessingHint": "Withdrawals are reviewed on working days; the transfer arrives after approval.",
+  "withdrawRequested": "Your withdrawal request was sent.",
+  "withdrawalsTitle": "Withdrawals",
+  "withdrawalsEmptyTitle": "No withdrawals",
+  "withdrawalsEmptyBody": "Your withdrawal requests and their status appear here.",
+  "withdrawalFee": "Transfer fee: {fee}",
+  "@withdrawalFee": {
+    "placeholders": {
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "withdrawalStatusRequested": "Under review",
+  "withdrawalStatusApproved": "Approved",
+  "withdrawalStatusPaid": "Paid",
+  "withdrawalStatusRejected": "Rejected",
+  "bankAccountAdd": "Add a bank account",
+  "bankAccountHint": "The account must be in your own name, as it appears on your ID.",
+  "bankAccountHolder": "Account holder name",
+  "bankAccountBankName": "Bank name",
+  "bankAccountIban": "IBAN",
+  "onboardingStepPersonal": "Your details",
+  "onboardingStepRoles": "What you do",
+  "onboardingStepSkills": "Your skills",
+  "onboardingStepDocuments": "Documents",
+  "onboardingStepVehicle": "Vehicle",
+  "onboardingStepZones": "Working zones",
+  "onboardingStepReview": "Review",
+  "onboardingStepCounter": "Step {step} of {total}",
+  "@onboardingStepCounter": {
+    "placeholders": {
+      "step": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "onboardingFullName": "Full name",
+  "onboardingDateOfBirth": "Date of birth",
+  "onboardingDateOfBirthHint": "Pick your date of birth",
+  "onboardingNationalId": "National ID number",
+  "onboardingCity": "City",
+  "onboardingEmailOptional": "E-mail (optional)",
+  "onboardingPhotoHint": "A clear headshot on a light background — the customer sees it when you arrive.",
+  "onboardingRolesHint": "Pick everything you plan to do. You can change this later in your preferences.",
+  "onboardingSkillsHint": "Choose the services you are good at so you only get suitable work.",
+  "onboardingSkillsLabel": "Skill",
+  "onboardingSkillsHelper": "Type a skill and add it (for example: pipework).",
+  "onboardingYearsOfExperience": "Years of experience",
+  "onboardingNoCategories": "No categories are available right now",
+  "onboardingDocumentsHint": "Upload clear, fully visible documents. They are reviewed within one working day.",
+  "onboardingDocumentsComplete": "All required documents are in.",
+  "onboardingDocumentsPending": "Some required documents are still missing.",
+  "onboardingVehicleHint": "Add the vehicle you will work with. You can add more later.",
+  "onboardingZonesHint": "Pick the areas where you want to receive jobs.",
+  "onboardingNoZones": "No zones are available right now",
+  "onboardingReviewHint": "Check your details before sending — you can edit any step.",
+  "onboardingReviewIncomplete": "Complete the earlier steps to see the summary.",
+  "onboardingAcceptTerms": "I accept the Partner Terms and the Privacy Policy.",
+  "onboardingReadTerms": "Read the terms",
+  "onboardingSubmit": "Submit for review",
+  "documentNotUploaded": "Not uploaded",
+  "onboardingStatusTitle": "Your application",
+  "onboardingDraftTitle": "Your application is not finished",
+  "onboardingDraftBody": "Finish the remaining steps, then send the application for review.",
+  "onboardingUnderReviewTitle": "Under review",
+  "onboardingUnderReviewBody": "We are checking your details and documents. We will let you know by notification and SMS within one working day.",
+  "onboardingApprovedTitle": "You are approved",
+  "onboardingApprovedBody": "Welcome to TAMAM. You can go online and start receiving jobs.",
+  "onboardingRejectedTitle": "Your application needs changes",
+  "onboardingRejectedBody": "Fix the points below, then send it again.",
+  "onboardingRejectedWhatToFix": "What to fix",
+  "onboardingRejectedNoDocumentDetail": "The reviewer did not give a specific reason. Contact support for details.",
+  "onboardingResubmit": "Send it again",
+  "onboardingSuspendedTitle": "Your account is suspended",
+  "onboardingSuspendedBody": "Contact support to find out why and how to reactivate.",
+  "onboardingContactSupport": "Contact support",
+  "onboardingReviewProgress": "Review progress",
+  "onboardingDocumentsApproved": "{approved} of {total} documents approved",
+  "@onboardingDocumentsApproved": {
+    "placeholders": {
+      "approved": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "onboardingSubmittedOn": "Submitted on {date}",
+  "@onboardingSubmittedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingFixRejection": "Fix this step, then continue.",
+  "onboardingSeeReasons": "See the reasons",
+  "documentsTitle": "My documents",
+  "documentsRequired": "Required documents",
+  "documentsOther": "Other documents",
+  "documentsReviewHint": "Documents are reviewed within one working day. We will tell you about any change.",
+  "documentsBlockingWarning": "You cannot go online until every required document is approved and valid.",
+  "documentUpload": "Upload",
+  "documentReupload": "Upload again",
+  "documentUploadHint": "Photograph the whole document clearly, or upload a PDF.",
+  "documentUploadFailed": "The upload failed. Please try again.",
+  "documentUploaded": "Document uploaded.",
+  "documentNumber": "Document number",
+  "documentExpiryDate": "Expiry date",
+  "documentExpiryHint": "Pick the expiry date",
+  "documentExpiresOn": "Expires on {date}",
+  "@documentExpiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "documentRejectionReason": "Rejected because: {reason}",
+  "@documentRejectionReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "documentStatusPending": "Under review",
+  "documentStatusApproved": "Approved",
+  "documentStatusRejected": "Rejected",
+  "documentStatusExpired": "Expired",
+  "documentId": "National ID",
+  "documentDrivingLicense": "Driving licence",
+  "documentVehicleLicense": "Vehicle licence",
+  "documentInsurance": "Insurance",
+  "documentProfessionalCertificate": "Professional certificate",
+  "documentBusiness": "Business registration",
+  "documentProfilePicture": "Profile photo",
+  "vehiclesTitle": "My vehicles",
+  "vehiclesAdd": "Add a vehicle",
+  "vehiclesEmptyTitle": "No vehicles",
+  "vehiclesEmptyBody": "Add your vehicle so it can be approved before you start working.",
+  "vehicleDetailTitle": "Vehicle details",
+  "vehicleType": "Vehicle type",
+  "vehicleBrand": "Make",
+  "vehicleModel": "Model",
+  "vehicleYear": "Year",
+  "vehicleColor": "Colour",
+  "vehiclePlate": "Plate number",
+  "vehicleSeats": "Seats",
+  "vehiclePhotos": "Vehicle photos",
+  "vehiclePhotosHint": "At least one front view and one of the number plate.",
+  "vehicleDocuments": "Vehicle documents",
+  "vehicleActive": "Active vehicle",
+  "vehicleIsActive": "This is the vehicle you are working with.",
+  "vehicleActivate": "Make this the active one",
+  "vehicleActivated": "{vehicle} is now your active vehicle.",
+  "@vehicleActivated": {
+    "placeholders": {
+      "vehicle": {
+        "type": "String"
+      }
+    }
+  },
+  "vehicleNotActivatable": "A vehicle cannot be activated before it is approved.",
+  "vehicleReviewNotice": "A new vehicle is reviewed before you can work with it.",
+  "vehicleSubmittedForReview": "The vehicle was sent for review.",
+  "vehicleStatusPending": "Under review",
+  "vehicleStatusApproved": "Approved",
+  "vehicleStatusRejected": "Rejected",
+  "vehicleStatusSuspended": "Suspended",
+  "accountTitle": "Account",
+  "accountNoName": "Add your name",
+  "accountApproved": "Approved partner",
+  "accountNotApproved": "Under review",
+  "accountGroupWork": "Work",
+  "accountGroupActivity": "Activity",
+  "accountGroupSettings": "Settings",
+  "accountGroupHelp": "Help and safety",
+  "accountSignOut": "Sign out",
+  "accountSignOutConfirm": "You will be set offline and tracking on this device will stop.",
+  "profileTitle": "Profile",
+  "profilePhone": "Phone number",
+  "profilePhoneLocked": "Contact support to change your number.",
+  "profileEmail": "E-mail",
+  "profileSaved": "Changes saved",
+  "workPreferencesTitle": "Work preferences",
+  "workPreferencesActiveRoles": "Active roles",
+  "workPreferencesActiveRolesHint": "Choose what you want to receive this shift, from the roles you are approved for.",
+  "workPreferencesRolesApplyNextShift": "This choice applies on this device from your next shift.",
+  "workPreferencesZones": "Working zones",
+  "workPreferencesZonesHint": "The areas where jobs reach you.",
+  "workPreferencesCategories": "Services",
+  "workPreferencesCategoriesHint": "The services approved on your profile.",
+  "workPreferencesCategoriesReviewNotice": "Adding a new service may need a review and extra documents.",
+  "workPreferencesSaved": "Your preferences were saved",
+  "preferencesTitle": "Preferences",
+  "preferencesLanguage": "Language",
+  "preferencesAppearance": "Appearance",
+  "preferencesNotificationsMovedHint": "Notification settings now live on their own page.",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "notificationSettingsTitle": "Notification settings",
+  "notificationSettingsOffersAlwaysOn": "Job-offer alerts stay on during a shift — without them, jobs cannot reach you.",
+  "preferencesPush": "Push notifications",
+  "preferencesPushHint": "Job and earnings updates.",
+  "preferencesSms": "SMS",
+  "preferencesEmail": "E-mail",
+  "preferencesMarketing": "Marketing offers",
+  "preferencesMarketingHint": "Only incentives and bonuses.",
+  "notificationsTitle": "Notifications",
+  "notificationsEmptyTitle": "No notifications",
+  "notificationsEmptyBody": "We will tell you here about your jobs and earnings.",
+  "notificationsMarkAllRead": "Mark all read",
+  "sessionsTitle": "Active devices",
+  "sessionsEmptyTitle": "No other devices",
+  "sessionsThisDevice": "This device",
+  "sessionsLastSeen": "Last active {when}",
+  "@sessionsLastSeen": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionsRevoke": "End session",
+  "sessionsSignOutAll": "Sign out everywhere",
+  "sessionsSignOutAllConfirm": "Every session ends, including this device.",
+  "legalTitle": "Terms and privacy",
+  "legalTermsTitle": "Partner terms",
+  "legalTermsBody": "Working with TAMAM means giving accurate details, keeping your documents valid, treating customers with respect, and completing the jobs you accept. TAMAM commission is taken on every completed job at the rate published on this page, and repeated cancellations or refusals can reduce the offers you receive.",
+  "legalCommissionTitle": "Commission and earnings",
+  "legalCommissionBody": "Your earnings are the job total minus the TAMAM commission and any published fees. They are added to your balance as soon as the job completes and the customer confirms, and you can withdraw them to your bank account at any time above the minimum withdrawal amount.",
+  "legalTrackingTitle": "Location tracking",
+  "legalTrackingBody": "Your location is recorded only while you are online, and recording stops the moment you go offline or the permission is revoked. We use it to send you the nearest jobs, show the customer that you are arriving, and settle disputes. We do not share your location with third parties for marketing.",
+  "legalPrivacyTitle": "Privacy",
+  "legalPrivacyBody": "We keep your details and documents for as long as the law requires, and only for verification and accounting. The customer sees your first name, photo, rating and vehicle details; your phone number is not shown directly when number masking is on.",
+  "legalTermsVersion": "Terms version {version}",
+  "@legalTermsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "legalDeleteAccount": "Request account deletion",
+  "legalDeleteAccountHint": "Opens a support request for review.",
+  "legalDeleteAccountConfirm": "We will open a support request to delete your account. Outstanding earnings are settled first, and job and invoicing records may be kept as the law requires.",
+  "legalDeleteAccountCta": "Send request",
+  "legalDeleteAccountSubject": "Partner account deletion request",
+  "legalDeleteAccountBody": "I would like my TAMAM partner account and personal data deleted.",
+  "supportTitle": "Support",
+  "supportNewTicket": "New support request",
+  "supportNewTicketHint": "Describe the problem and our team will reply.",
+  "supportSubject": "Subject",
+  "supportDescription": "Details",
+  "supportEmptyTitle": "No support requests",
+  "supportEmptyBody": "Open a request if you need help.",
+  "supportTicketTitle": "Support request",
+  "supportReplyHint": "Write a reply…",
+  "ticketCategoryJob": "Job issue",
+  "ticketCategoryPayment": "Earnings and payment",
+  "ticketCategoryAccount": "Account and documents",
+  "ticketCategoryCustomer": "Customer behaviour",
+  "ticketCategorySafety": "Safety",
+  "ticketCategoryOther": "Other",
+  "ticketStatusOpen": "Open",
+  "ticketStatusInProgress": "In progress",
+  "ticketStatusWaitingUser": "Waiting for you",
+  "ticketStatusResolved": "Resolved",
+  "ticketStatusClosed": "Closed",
+  "mediaAttachPhotos": "Attach photos",
+  "mediaCamera": "Camera",
+  "mediaGallery": "Gallery",
+  "bannerLeaveAppTitle": "Open an external link",
+  "bannerLeaveAppMessage": "{host} will open outside the app.",
+  "@bannerLeaveAppMessage": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "bannerPromoCopied": "Code {code} copied.",
+  "@bannerPromoCopied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  }
+}

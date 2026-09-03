@@ -1,0 +1,878 @@
+{
+  "@@locale": "ar",
+  "appTagline": "اشتغل وقتما تشاء… تمام",
+  "appPartnerTag": "تطبيق الشركاء",
+  "navHome": "الرئيسية",
+  "navJobs": "المهام",
+  "navEarnings": "أرباحي",
+  "navAccount": "حسابي",
+  "offlineBanner": "لا يوجد اتصال بالإنترنت — بعض البيانات قد تكون قديمة.",
+  "activeJobBannerSemantics": "مهمة جارية، {status}. اضغط لفتحها.",
+  "@activeJobBannerSemantics": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "realtimeReconnecting": "جارٍ إعادة الاتصال…",
+  "actionAdd": "إضافة",
+  "actionAllow": "السماح",
+  "actionBack": "رجوع",
+  "actionCancel": "إلغاء",
+  "actionChange": "تغيير",
+  "actionCheck": "تحقّق",
+  "actionClear": "مسح",
+  "actionConfirm": "تأكيد",
+  "actionContinue": "متابعة",
+  "actionDismiss": "إخفاء",
+  "actionLoadMore": "تحميل المزيد",
+  "actionMore": "خيارات أخرى",
+  "actionNext": "التالي",
+  "actionOpenSettings": "فتح الإعدادات",
+  "actionRemove": "إزالة",
+  "actionRetry": "إعادة المحاولة",
+  "actionSave": "حفظ",
+  "actionSend": "إرسال",
+  "actionSkip": "تخطٍ",
+  "distanceKm": "{value} كم",
+  "@distanceKm": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceM": "{value} م",
+  "@distanceM": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "durationMin": "{value} دقيقة",
+  "@durationMin": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "signInTitle": "أهلاً بك في تمام للشركاء",
+  "signInSubtitle": "أدخل رقم هاتفك للدخول إلى حساب الشريك",
+  "signInPhoneLabel": "رقم الهاتف",
+  "signInPhoneHint": "599123456",
+  "signInSendCode": "إرسال رمز التحقق",
+  "signInOtpExplainer": "سنرسل لك رمزًا من ٦ أرقام عبر رسالة نصية.",
+  "signInTerms": "بمتابعتك فإنك توافق على شروط الشراكة وسياسة الخصوصية.",
+  "signedOutExpired": "انتهت جلستك، يرجى تسجيل الدخول من جديد.",
+  "signedOutRevoked": "تم إنهاء الجلسة من جهاز آخر.",
+  "otpTitle": "رمز التحقق",
+  "otpSubtitle": "أرسلنا رمزًا إلى {phone}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpVerify": "تأكيد",
+  "otpResend": "إعادة إرسال الرمز",
+  "otpResendIn": "يمكنك إعادة الإرسال بعد {seconds} ثانية",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "otpDevCode": "رمز بيئة التطوير: {code}",
+  "@otpDevCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTitle": "حدث خطأ",
+  "errorOfflineTitle": "لا يوجد اتصال",
+  "emptyTitle": "لا يوجد شيء هنا بعد",
+  "errorGeneric": "حدث خطأ غير متوقع. حاول مرة أخرى.",
+  "errorNetwork": "تعذّر الوصول إلى الخادم. حاول مرة أخرى.",
+  "errorOffline": "تحقق من اتصالك بالإنترنت ثم أعد المحاولة.",
+  "errorNotFound": "العنصر المطلوب غير موجود.",
+  "errorForbidden": "لا تملك صلاحية لهذا الإجراء.",
+  "errorValidation": "تحقق من البيانات المدخلة.",
+  "errorRateLimited": "محاولات كثيرة، انتظر قليلًا ثم أعد المحاولة.",
+  "errorSessionExpired": "انتهت جلستك، سجّل الدخول من جديد.",
+  "errorAccountRestricted": "حسابك مقيّد مؤقتًا.",
+  "errorAccountSuspended": "تم إيقاف حسابك. تواصل مع الدعم.",
+  "errorFeatureDisabled": "هذه الميزة غير مفعّلة حاليًا.",
+  "errorDuplicateRequest": "تم إرسال هذا الطلب مسبقًا.",
+  "errorInvalidTransition": "حالة المهمة تغيّرت. حدّث الشاشة ثم أعد المحاولة.",
+  "errorVersionConflict": "تم تحديث المهمة من جهة أخرى، أعد المحاولة.",
+  "errorOfferExpired": "انتهت مهلة هذا العرض.",
+  "errorOfferTaken": "قبل شريك آخر هذه المهمة.",
+  "errorPartnerNotAvailable": "يجب أن تكون متصلًا لاستقبال المهام.",
+  "errorPartnerNotApproved": "حسابك قيد المراجعة، ولا يمكنك الاتصال بعد.",
+  "errorOutsideZone": "موقعك خارج نطاق عملك المعتمد.",
+  "errorOutsideHours": "الخدمة خارج ساعات العمل الآن.",
+  "errorStaleLocation": "موقعك قديم جدًا. تأكد من تفعيل الموقع ثم أعد المحاولة.",
+  "errorImpossibleMovement": "قراءة الموقع غير منطقية. تحقق من دقة الـ GPS.",
+  "errorPickupOtpInvalid": "رمز الاستلام غير صحيح.",
+  "errorDeliveryOtpInvalid": "رمز التسليم غير صحيح.",
+  "errorTripPinInvalid": "رمز بدء الرحلة غير صحيح.",
+  "errorQuoteNotApproved": "يجب أن يوافق العميل على عرض السعر أولًا.",
+  "errorRatingNotAllowed": "لا يمكن تقييم هذه المهمة.",
+  "errorInsufficientBalance": "رصيدك غير كافٍ لهذا السحب.",
+  "errorUploadInvalid": "نوع الملف غير مدعوم.",
+  "errorUploadTooLarge": "حجم الملف كبير جدًا.",
+  "errorOtpInvalid": "الرمز غير صحيح.",
+  "errorOtpExpired": "انتهت صلاحية الرمز، اطلب رمزًا جديدًا.",
+  "errorOtpCooldown": "انتظر قليلًا قبل طلب رمز جديد.",
+  "errorOtpTooManyAttempts": "محاولات خاطئة كثيرة، اطلب رمزًا جديدًا.",
+  "errorCannotCall": "تعذّر إجراء المكالمة من هذا الجهاز.",
+  "errorCannotOpenLink": "تعذّر فتح الرابط.",
+  "locationUnavailable": "تعذّر تحديد موقعك الآن.",
+  "homeGreeting": "يومك سعيد",
+  "homeStatusOnline": "متصل ومستعد للمهام",
+  "homeStatusOffline": "غير متصل",
+  "homeTodayEarnings": "أرباح اليوم",
+  "homeCompletedJobs": "مهام اليوم",
+  "homeWaitingTitle": "بانتظار أول عرض",
+  "homeWaitingBody": "ابقَ ضمن منطقة عملك، وسنرسل لك أقرب مهمة مناسبة فور توفّرها.",
+  "homeOfflineEmptyTitle": "أنت غير متصل الآن",
+  "homeOfflineEmptyBody": "اضغط على زر الاتصال في الأعلى لتبدأ استقبال العروض.",
+  "homeProfileUnavailable": "تعذّر تحميل ملفك الآن",
+  "homePendingOffers": "لديك {count} عرض بانتظار ردّك",
+  "@homePendingOffers": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "statsRating": "التقييم",
+  "statsCompleted": "مهام مكتملة",
+  "statsAcceptance": "نسبة القبول",
+  "availabilityOnline": "متصل",
+  "availabilityOffline": "غير متصل",
+  "availabilityBusy": "في مهمة",
+  "availabilityToggleSemantics": "حالة العمل: {state}. اضغط لتغييرها.",
+  "@availabilityToggleSemantics": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "availabilityPermissionDenied": "نحتاج إذن الموقع لتشغيل وردية العمل.",
+  "availabilityServiceDisabled": "خدمة الموقع مغلقة على جهازك. فعّلها ثم أعد المحاولة.",
+  "availabilityExpiredDocuments": "انتهت صلاحية: {documents}. جدّدها لتتمكن من الاتصال.",
+  "@availabilityExpiredDocuments": {
+    "placeholders": {
+      "documents": {
+        "type": "String"
+      }
+    }
+  },
+  "availabilityActiveJobBlocksOffline": "لا يمكنك إيقاف الاتصال قبل إنهاء المهمة الجارية.",
+  "goOnlineTitle": "ابدأ ورديتك",
+  "goOnlineSubtitle": "راجع الأذونات والأدوار قبل الاتصال.",
+  "goOnlineConfirm": "اتصل الآن",
+  "goOnlineDone": "أنت متصل الآن — بالتوفيق!",
+  "goOnlineLocationTitle": "تتبّع الموقع أثناء العمل",
+  "goOnlineLocationBody": "نتابع موقعك فقط أثناء اتصالك، لنرسل لك أقرب المهام ونُظهر وصولك للعميل. يتوقف التتبّع فور إيقاف الاتصال.",
+  "goOnlineForegroundBody": "سيظهر إشعار دائم أثناء الوردية — هذا ما يبقي التتبّع يعمل عندما تكون الشاشة مغلقة.",
+  "goOnlinePermissionAlways": "إذن الموقع: دائمًا — مثالي",
+  "goOnlinePermissionWhileInUse": "إذن الموقع: أثناء الاستخدام فقط",
+  "goOnlinePermissionPending": "إذن الموقع مطلوب",
+  "goOnlineRoles": "الأدوار الفعّالة هذه الوردية",
+  "goOnlineVehicle": "المركبة",
+  "goOnlineNoVehicle": "لا توجد مركبة مفعّلة لدورك الحالي.",
+  "goOfflineTitle": "إيقاف الاتصال",
+  "goOfflineMessage": "لن تصلك عروض جديدة حتى تعود للاتصال.",
+  "goOfflineConfirm": "أوقف الاتصال",
+  "backgroundLimitedBanner": "الإذن ممنوح أثناء الاستخدام فقط — قد يتوقف التتبّع عند إغلاق الشاشة.",
+  "foregroundNotificationTitle": "تمام — وردية عمل جارية",
+  "foregroundNotificationIdle": "متصل وبانتظار العروض",
+  "foregroundNotificationOnJob": "مهمة جارية — التتبّع يعمل",
+  "interruptionPermission": "تم سحب إذن الموقع، لذلك أصبحت غير متصل.",
+  "interruptionServiceDisabled": "أُغلقت خدمة الموقع، لذلك أصبحت غير متصل.",
+  "interruptionServer": "أنهى الخادم ورديتك. يمكنك الاتصال من جديد.",
+  "interruptionGeneric": "توقفت وردية العمل.",
+  "resumeWorkTitle": "هل تريد متابعة الوردية؟",
+  "resumeWorkBody": "ما زلت مسجّلاً كمتصل لدى الخادم، لكن التتبّع على هذا الجهاز متوقف.",
+  "resumeWorkConfirm": "تابع الوردية",
+  "resumeWorkDecline": "أوقف الاتصال",
+  "warningNoActiveVehicle": "لا توجد مركبة مفعّلة — فعّل مركبة قبل بدء الوردية.",
+  "warningDocumentExpired": "انتهت صلاحية {document}.",
+  "@warningDocumentExpired": {
+    "placeholders": {
+      "document": {
+        "type": "String"
+      }
+    }
+  },
+  "warningDocumentRejected": "تم رفض {document}. أعد رفعه.",
+  "@warningDocumentRejected": {
+    "placeholders": {
+      "document": {
+        "type": "String"
+      }
+    }
+  },
+  "warningDocumentExpiring": "تنتهي صلاحية {document} خلال {days} يومًا.",
+  "@warningDocumentExpiring": {
+    "placeholders": {
+      "document": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "offerTitle": "مهمة جديدة",
+  "offerAccept": "قبول",
+  "offerDecline": "رفض",
+  "offerSecondsLeft": "{seconds} ث",
+  "@offerSecondsLeft": {
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "offerQueuePosition": "و{count} عروض أخرى بانتظارك",
+  "@offerQueuePosition": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "offerEstimatedEarnings": "أرباحك المتوقعة",
+  "offerPickup": "نقطة الاستلام",
+  "offerServiceLocation": "موقع الخدمة",
+  "offerDestination": "الوجهة",
+  "offerWaypoint": "محطة في الطريق",
+  "offerToPickup": "المسافة إليك",
+  "offerEta": "وقت الوصول",
+  "offerTripDistance": "مسافة الرحلة",
+  "jobTypeRide": "مشوار",
+  "jobTypeDelivery": "توصيل طرد",
+  "jobTypeFood": "توصيل طعام",
+  "jobTypeHomeService": "خدمة منزلية",
+  "jobStatusDraft": "مسودة",
+  "jobStatusSearching": "جارٍ البحث عن شريك",
+  "jobStatusAssigned": "تم إسنادها إليك",
+  "jobStatusEnRoute": "أنت في الطريق",
+  "jobStatusArrived": "وصلت",
+  "jobStatusWaitingCustomer": "بانتظار العميل",
+  "jobStatusInProgress": "جارية",
+  "jobStatusInspection": "جارٍ الكشف",
+  "jobStatusQuoteRequired": "مطلوب عرض سعر",
+  "jobStatusQuoteSubmitted": "أُرسل العرض — بانتظار العميل",
+  "jobStatusQuoteApproved": "تمت الموافقة على العرض",
+  "jobStatusQuoteRejected": "رُفض العرض",
+  "jobStatusWorkStarted": "العمل جارٍ",
+  "jobStatusWaitingForParts": "بانتظار قطع الغيار",
+  "jobStatusWorkCompleted": "انتهى العمل — بانتظار تأكيد العميل",
+  "jobStatusCustomerConfirmed": "أكّد العميل",
+  "jobStatusCompleted": "مكتملة",
+  "jobStatusCancelled": "ملغاة",
+  "jobStatusNoPartner": "لم يتوفر شريك",
+  "jobStatusDisputed": "قيد النزاع",
+  "urgencyStandard": "عادي",
+  "urgencyUrgent": "مستعجل",
+  "urgencyEmergency": "طارئ",
+  "paymentCash": "نقدًا",
+  "paymentCard": "بطاقة",
+  "paymentWallet": "المحفظة",
+  "paymentBank": "حوالة بنكية",
+  "paymentOnline": "دفع إلكتروني",
+  "roleDriver": "سائق",
+  "roleCourier": "مندوب توصيل",
+  "roleTechnician": "فنّي",
+  "roleServiceProvider": "مزوّد خدمة",
+  "roleDriverCaption": "مشاوير بالسيارة داخل مدينتك",
+  "roleCourierCaption": "توصيل الطرود والطعام",
+  "roleTechnicianCaption": "صيانة وإصلاح في منزل العميل",
+  "roleServiceProviderCaption": "خدمات منزلية متخصصة بعرض سعر",
+  "jobActionEnRoute": "أنا في الطريق",
+  "jobActionArrive": "وصلت",
+  "jobActionStartRide": "ابدأ الرحلة",
+  "jobActionPickedUp": "استلمت الطرد",
+  "jobActionStartInspection": "ابدأ الكشف",
+  "jobActionCompleteRide": "أنهِ الرحلة",
+  "jobActionDeliver": "سلّم الطرد",
+  "jobActionSubmitQuote": "أرسل عرض السعر",
+  "jobActionStartWork": "ابدأ العمل",
+  "jobActionCompleteWork": "أنهِ العمل",
+  "jobActionResumeWork": "استأنف العمل",
+  "jobActionWaitingForParts": "بانتظار قطع غيار",
+  "jobActionChangeOrder": "أضف عملاً إضافيًا",
+  "jobPassiveAwaitQuote": "أرسلنا عرضك إلى العميل، بانتظار قراره.",
+  "jobPassiveAwaitConfirmation": "بانتظار تأكيد العميل لانتهاء العمل.",
+  "jobPassiveCancelled": "أُلغيت هذه المهمة.",
+  "jobPassiveNothing": "لا يوجد إجراء مطلوب الآن.",
+  "jobNavigate": "الملاحة",
+  "navigateWith": "الملاحة عبر",
+  "navigateGoogleMaps": "خرائط Google",
+  "navigateWaze": "Waze",
+  "navigateUnavailable": "لا يوجد تطبيق ملاحة مثبّت على جهازك.",
+  "jobCurrentTarget": "وجهتك الآن",
+  "jobCallCustomer": "اتصال",
+  "jobChatCustomer": "محادثة",
+  "jobWaitingSince": "بانتظار العميل منذ {duration}",
+  "@jobWaitingSince": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "arriveTooFar": "أنت على بُعد {meters} متر من الموقع. اقترب أكثر ثم أكّد الوصول.",
+  "@arriveTooFar": {
+    "placeholders": {
+      "meters": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "jobVersionConflictHint": "تغيّرت المهمة أثناء عملك عليها — راجع التفاصيل قبل المتابعة.",
+  "tripPinTitle": "رمز بدء الرحلة",
+  "tripPinSubtitle": "اطلب من الراكب الرمز الظاهر في تطبيقه.",
+  "pickupOtpTitle": "رمز الاستلام",
+  "pickupOtpSubtitle": "اطلب رمز الاستلام من المُرسِل.",
+  "completeRideConfirm": "سيتم إنهاء الرحلة واحتساب الأجرة النهائية.",
+  "cancelJobTitle": "إلغاء المهمة",
+  "cancelJobSubtitle": "اختر سببًا واضحًا — يؤثر الإلغاء على نسبة قبولك.",
+  "cancelJobConfirm": "تأكيد الإلغاء",
+  "cancelJobReasonRequired": "التفاصيل (مطلوبة)",
+  "cancelJobReasonOptional": "تفاصيل إضافية (اختياري)",
+  "cancelJobNoShowAfterArrival": "خيار \"العميل لم يحضر\" متاح بعد تأكيد وصولك وانتهاء مدة الانتظار.",
+  "cancelReasonNoShow": "العميل لم يحضر",
+  "cancelReasonUnreachable": "تعذّر التواصل مع العميل",
+  "cancelReasonWrongAddress": "العنوان غير صحيح",
+  "cancelReasonVehicleIssue": "عطل في المركبة",
+  "cancelReasonSafety": "مخاوف تتعلق بالسلامة",
+  "cancelReasonOther": "سبب آخر",
+  "releaseJobTitle": "إعادة المهمة للتوزيع",
+  "releaseJobSubtitle": "ستُعرض المهمة على شريك آخر ولن تُحتسب إلغاءً عليك.",
+  "releaseJobReason": "سبب الإعادة",
+  "releaseJobConfirm": "أعِد المهمة",
+  "releaseJobDone": "أُعيدت المهمة للتوزيع.",
+  "podTitle": "إثبات التسليم",
+  "podSubtitle": "أكّد تسليم الطرد للمستلم.",
+  "podSubtitleNamed": "أكّد تسليم الطرد إلى {name}.",
+  "@podSubtitleNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "podModeOtp": "رمز التسليم",
+  "podModeManual": "توقيع وصورة",
+  "podOtpHint": "اطلب من المستلم رمز التسليم الظاهر في تطبيقه.",
+  "podReceiverName": "اسم المستلم",
+  "podPhotoLabel": "صورة التسليم",
+  "podPhotoHint": "صورة واضحة للطرد في مكان التسليم.",
+  "podSignatureLabel": "توقيع المستلم",
+  "podSignatureHint": "اطلب من المستلم التوقيع بإصبعه داخل الإطار.",
+  "completeWorkTitle": "إنهاء العمل",
+  "completeWorkSubtitle": "وثّق ما أنجزته قبل تسليم المهمة للعميل.",
+  "completeWorkPhotos": "صور بعد العمل",
+  "completeWorkPhotosHint": "صور واضحة تُظهر النتيجة — تحمي حقّك عند أي نزاع.",
+  "completeWorkApprovedTotal": "المبلغ المعتمد",
+  "completeWorkCustomerConfirms": "يؤكد العميل انتهاء العمل، ثم تُضاف أرباحك إلى رصيدك.",
+  "completionTitle": "أُنجزت المهمة",
+  "completionSubtitle": "المهمة رقم {number}",
+  "@completionSubtitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "completionAwaitingTitle": "بانتظار تأكيد العميل",
+  "completionAwaitingSubtitle": "أنهيت العمل. تُضاف الأرباح بعد تأكيد العميل.",
+  "completionCollectCash": "حصّل المبلغ نقدًا من العميل.",
+  "completionPaidElectronically": "تم الدفع إلكترونيًا — لا تحصّل نقدًا.",
+  "completionYourEarnings": "أرباحك من هذه المهمة",
+  "completionRateCustomer": "قيّم العميل",
+  "completionBackHome": "العودة للرئيسية",
+  "jobsTitle": "المهام",
+  "jobsFilterAll": "الكل",
+  "jobsFilterActive": "الجارية",
+  "jobsFilterCompleted": "المكتملة",
+  "jobsFilterCancelled": "الملغاة",
+  "jobsFilterByDate": "تصفية حسب التاريخ",
+  "jobsEmptyTitle": "لا توجد مهام",
+  "jobsEmptyBody": "ستظهر هنا كل المهام التي نفّذتها.",
+  "jobDetailTitle": "تفاصيل المهمة",
+  "jobEarningsBreakdown": "تفصيل الأرباح",
+  "jobNoBreakdown": "لا يوجد تفصيل متاح لهذه المهمة.",
+  "jobTotalCharged": "إجمالي ما دفعه العميل",
+  "jobRatingTitle": "تقييم العميل لك",
+  "jobRatingUnavailable": "لم يقيّمك العميل بعد.",
+  "jobCancelledReason": "سبب الإلغاء: {reason}",
+  "@jobCancelledReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "jobReportProblem": "الإبلاغ عن مشكلة",
+  "ratingTitle": "تقييم العميل",
+  "ratingPrompt": "كيف كانت تجربتك مع العميل؟",
+  "ratingCustomer": "العميل",
+  "ratingCommentOptional": "ملاحظات (اختياري)",
+  "ratingSubmit": "إرسال التقييم",
+  "ratingThanks": "شكرًا لتقييمك!",
+  "ratingTagPolite": "لبق",
+  "ratingTagPunctual": "ملتزم بالوقت",
+  "ratingTagClearAddress": "عنوان واضح",
+  "ratingTagEasyParking": "موقف سهل",
+  "ratingTagLate": "تأخر",
+  "ratingTagRude": "غير لبق",
+  "ratingTagWrongAddress": "عنوان غير صحيح",
+  "ratingTagExtraStops": "محطات إضافية غير متفق عليها",
+  "chatTitle": "المحادثة",
+  "chatHint": "اكتب رسالة…",
+  "chatEmptyTitle": "لا توجد رسائل بعد",
+  "chatEmptyBody": "اكتب رسالة للتواصل مع العميل.",
+  "chatLoadOlder": "عرض الرسائل الأقدم",
+  "chatSendPhoto": "إرسال صورة",
+  "chatSendLocation": "إرسال الموقع",
+  "chatSharedLocation": "تمت مشاركة الموقع",
+  "quoteBuilderTitle": "عرض السعر",
+  "quoteBuilderChangeOrderTitle": "عمل إضافي",
+  "quoteItemsTitle": "البنود",
+  "quoteAddItem": "إضافة بند",
+  "quoteEditItem": "تعديل البند",
+  "quoteEmptyHint": "أضف بندًا واحدًا على الأقل ليصل العرض إلى العميل.",
+  "quoteItemDescription": "وصف البند",
+  "quoteItemQuantity": "الكمية",
+  "quoteItemUnitPrice": "سعر الوحدة",
+  "quoteLineTotal": "إجمالي البند: {total}",
+  "@quoteLineTotal": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteKindLabor": "أجرة عمل",
+  "quoteKindParts": "قطع غيار",
+  "quoteKindFee": "رسوم",
+  "quoteDiscount": "خصم",
+  "quoteDiscountTooLarge": "الخصم أكبر من مجموع البنود.",
+  "quoteDescriptionLabel": "ملاحظات للعميل",
+  "quoteDurationLabel": "المدة المتوقعة (دقيقة)",
+  "quoteDurationHint": "تساعد العميل على تنظيم وقته.",
+  "quotePreviewTitle": "معاينة",
+  "quotePreviewTotal": "الإجمالي التقديري",
+  "quotePreviewDisclaimer": "هذه معاينة على جهازك فقط. يحتسب الخادم الضريبة والرسوم النهائية عند الإرسال، وأرقامه هي المعتمدة.",
+  "quoteSubmit": "إرسال العرض",
+  "quoteSubmitChangeOrder": "إرسال العمل الإضافي",
+  "quoteSubmitted": "أُرسل العرض إلى العميل.",
+  "quoteChangeOrderHint": "يُضاف العمل الإضافي إلى العرض المعتمد بعد موافقة العميل عليه.",
+  "quoteRejectionNote": "ملاحظة العميل على الرفض: {note}",
+  "@quoteRejectionNote": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteVersionConflict": "تغيّر العرض من جهة أخرى. حدّث الشاشة ثم أعد الإرسال.",
+  "quoteTitle": "عرض السعر رقم {revision}",
+  "@quoteTitle": {
+    "placeholders": {
+      "revision": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "quoteChangeOrderTitle": "عمل إضافي رقم {revision}",
+  "@quoteChangeOrderTitle": {
+    "placeholders": {
+      "revision": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "quoteTotal": "الإجمالي",
+  "quoteTax": "ضريبة",
+  "quoteEstimatedDuration": "المدة المتوقعة: {minutes} دقيقة",
+  "@quoteEstimatedDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteStatusDraft": "مسودة",
+  "quoteStatusSubmitted": "بانتظار العميل",
+  "quoteStatusApproved": "معتمد",
+  "quoteStatusRejected": "مرفوض",
+  "quoteStatusCancelled": "ملغى",
+  "quoteStatusSuperseded": "استُبدل بعرض أحدث",
+  "earningsTitle": "أرباحي",
+  "earningsToday": "اليوم",
+  "earningsWeek": "هذا الأسبوع",
+  "earningsMonth": "هذا الشهر",
+  "earningsCompletedJobs": "{count} مهمة مكتملة",
+  "@earningsCompletedJobs": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "earningsGross": "إجمالي الأرباح",
+  "earningsCommission": "عمولة تمام",
+  "earningsBonuses": "حوافز ومكافآت",
+  "earningsAdjustments": "تسويات",
+  "earningsNet": "صافي أرباحك",
+  "earningsWithdrawals": "مسحوبات",
+  "earningsBalance": "الرصيد المتاح",
+  "statementTitle": "كشف الحساب",
+  "statementEmptyTitle": "لا توجد حركات",
+  "statementEmptyBody": "ستظهر هنا كل الحركات المالية على محفظتك.",
+  "statementBalanceAfter": "الرصيد بعدها: {balance}",
+  "@statementBalanceAfter": {
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "withdrawTitle": "سحب الأرباح",
+  "withdrawAvailable": "المتاح للسحب: {amount}",
+  "@withdrawAvailable": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "withdrawAmount": "المبلغ",
+  "withdrawAmountInvalid": "أدخل مبلغًا صحيحًا.",
+  "withdrawAll": "سحب الكل",
+  "withdrawToAccount": "إلى الحساب البنكي",
+  "withdrawConfirm": "تأكيد السحب",
+  "withdrawProcessingHint": "تُراجَع طلبات السحب خلال أيام العمل، وتصل الحوالة بعد الموافقة.",
+  "withdrawRequested": "أُرسل طلب السحب.",
+  "withdrawalsTitle": "طلبات السحب",
+  "withdrawalsEmptyTitle": "لا توجد طلبات سحب",
+  "withdrawalsEmptyBody": "ستظهر هنا طلبات السحب وحالتها.",
+  "withdrawalFee": "رسوم التحويل: {fee}",
+  "@withdrawalFee": {
+    "placeholders": {
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "withdrawalStatusRequested": "قيد المراجعة",
+  "withdrawalStatusApproved": "معتمد",
+  "withdrawalStatusPaid": "تم التحويل",
+  "withdrawalStatusRejected": "مرفوض",
+  "bankAccountAdd": "إضافة حساب بنكي",
+  "bankAccountHint": "يجب أن يكون الحساب باسمك كما هو في الهوية.",
+  "bankAccountHolder": "اسم صاحب الحساب",
+  "bankAccountBankName": "اسم البنك",
+  "bankAccountIban": "رقم الآيبان (IBAN)",
+  "onboardingStepPersonal": "بياناتك",
+  "onboardingStepRoles": "نوع العمل",
+  "onboardingStepSkills": "مهاراتك",
+  "onboardingStepDocuments": "الوثائق",
+  "onboardingStepVehicle": "المركبة",
+  "onboardingStepZones": "مناطق العمل",
+  "onboardingStepReview": "المراجعة",
+  "onboardingStepCounter": "الخطوة {step} من {total}",
+  "@onboardingStepCounter": {
+    "placeholders": {
+      "step": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "onboardingFullName": "الاسم الكامل",
+  "onboardingDateOfBirth": "تاريخ الميلاد",
+  "onboardingDateOfBirthHint": "اختر تاريخ ميلادك",
+  "onboardingNationalId": "رقم الهوية",
+  "onboardingCity": "المدينة",
+  "onboardingEmailOptional": "البريد الإلكتروني (اختياري)",
+  "onboardingPhotoHint": "صورة شخصية واضحة بخلفية فاتحة — يراها العميل عند وصولك.",
+  "onboardingRolesHint": "اختر كل ما تنوي العمل به. يمكنك تعديل ذلك لاحقًا من التفضيلات.",
+  "onboardingSkillsHint": "حدّد الخدمات التي تتقنها ليصلك العمل المناسب فقط.",
+  "onboardingSkillsLabel": "مهارة",
+  "onboardingSkillsHelper": "اكتب مهارة ثم أضفها (مثل: تمديدات صحية).",
+  "onboardingYearsOfExperience": "سنوات الخبرة",
+  "onboardingNoCategories": "لا توجد تصنيفات متاحة حاليًا",
+  "onboardingDocumentsHint": "ارفع وثائقك بصورة واضحة وكاملة الأطراف. تُراجَع خلال يوم عمل.",
+  "onboardingDocumentsComplete": "اكتملت كل الوثائق المطلوبة.",
+  "onboardingDocumentsPending": "ما زالت هناك وثائق مطلوبة.",
+  "onboardingVehicleHint": "أضف المركبة التي ستعمل بها. يمكنك إضافة غيرها لاحقًا.",
+  "onboardingZonesHint": "اختر المناطق التي تريد استقبال المهام فيها.",
+  "onboardingNoZones": "لا توجد مناطق متاحة حاليًا",
+  "onboardingReviewHint": "راجع بياناتك قبل الإرسال — يمكنك تعديل أي خطوة.",
+  "onboardingReviewIncomplete": "أكمل الخطوات السابقة لعرض الملخّص.",
+  "onboardingAcceptTerms": "أوافق على شروط الشراكة وسياسة الخصوصية.",
+  "onboardingReadTerms": "اقرأ الشروط",
+  "onboardingSubmit": "إرسال الطلب للمراجعة",
+  "documentNotUploaded": "لم تُرفع",
+  "onboardingStatusTitle": "حالة طلبك",
+  "onboardingDraftTitle": "طلبك غير مكتمل",
+  "onboardingDraftBody": "أكمل الخطوات المتبقية ثم أرسل الطلب للمراجعة.",
+  "onboardingUnderReviewTitle": "قيد المراجعة",
+  "onboardingUnderReviewBody": "نراجع بياناتك ووثائقك الآن. سنُعلمك بالنتيجة عبر إشعار ورسالة نصية خلال يوم عمل.",
+  "onboardingApprovedTitle": "تم قبولك",
+  "onboardingApprovedBody": "أهلاً بك في تمام. يمكنك الاتصال وبدء استقبال المهام.",
+  "onboardingRejectedTitle": "يحتاج طلبك إلى تعديل",
+  "onboardingRejectedBody": "صحّح النقاط التالية ثم أعد الإرسال.",
+  "onboardingRejectedWhatToFix": "ما يجب تصحيحه",
+  "onboardingRejectedNoDocumentDetail": "لم يوضّح المراجع سببًا محددًا. تواصل مع الدعم للتفاصيل.",
+  "onboardingResubmit": "أعد إرسال الطلب",
+  "onboardingSuspendedTitle": "حسابك موقوف",
+  "onboardingSuspendedBody": "تواصل مع الدعم لمعرفة السبب وخطوات إعادة التفعيل.",
+  "onboardingContactSupport": "تواصل مع الدعم",
+  "onboardingReviewProgress": "تقدّم المراجعة",
+  "onboardingDocumentsApproved": "تمت الموافقة على {approved} من {total} وثائق",
+  "@onboardingDocumentsApproved": {
+    "placeholders": {
+      "approved": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "onboardingSubmittedOn": "أُرسل الطلب في {date}",
+  "@onboardingSubmittedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingFixRejection": "صحّح هذه الخطوة ثم تابع.",
+  "onboardingSeeReasons": "عرض أسباب الرفض",
+  "documentsTitle": "وثائقي",
+  "documentsRequired": "وثائق مطلوبة",
+  "documentsOther": "وثائق أخرى",
+  "documentsReviewHint": "تُراجَع الوثائق خلال يوم عمل. سنُعلمك بأي تغيير.",
+  "documentsBlockingWarning": "لا يمكنك الاتصال حتى تُعتمد كل الوثائق المطلوبة وتكون سارية.",
+  "documentUpload": "رفع",
+  "documentReupload": "إعادة الرفع",
+  "documentUploadHint": "صوّر الوثيقة كاملة وواضحة، أو ارفع ملف PDF.",
+  "documentUploadFailed": "تعذّر رفع الملف. حاول مرة أخرى.",
+  "documentUploaded": "تم رفع الوثيقة.",
+  "documentNumber": "رقم الوثيقة",
+  "documentExpiryDate": "تاريخ انتهاء الصلاحية",
+  "documentExpiryHint": "اختر تاريخ الانتهاء",
+  "documentExpiresOn": "تنتهي في {date}",
+  "@documentExpiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "documentRejectionReason": "سبب الرفض: {reason}",
+  "@documentRejectionReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "documentStatusPending": "قيد المراجعة",
+  "documentStatusApproved": "معتمدة",
+  "documentStatusRejected": "مرفوضة",
+  "documentStatusExpired": "منتهية",
+  "documentId": "الهوية الشخصية",
+  "documentDrivingLicense": "رخصة القيادة",
+  "documentVehicleLicense": "رخصة المركبة",
+  "documentInsurance": "التأمين",
+  "documentProfessionalCertificate": "شهادة مهنية",
+  "documentBusiness": "سجل تجاري",
+  "documentProfilePicture": "الصورة الشخصية",
+  "vehiclesTitle": "مركباتي",
+  "vehiclesAdd": "إضافة مركبة",
+  "vehiclesEmptyTitle": "لا توجد مركبات",
+  "vehiclesEmptyBody": "أضف مركبتك ليتم اعتمادها قبل بدء العمل.",
+  "vehicleDetailTitle": "تفاصيل المركبة",
+  "vehicleType": "نوع المركبة",
+  "vehicleBrand": "الشركة المصنّعة",
+  "vehicleModel": "الطراز",
+  "vehicleYear": "سنة الصنع",
+  "vehicleColor": "اللون",
+  "vehiclePlate": "رقم اللوحة",
+  "vehicleSeats": "عدد المقاعد",
+  "vehiclePhotos": "صور المركبة",
+  "vehiclePhotosHint": "صورة أمامية وأخرى للوحة الأرقام على الأقل.",
+  "vehicleDocuments": "وثائق المركبة",
+  "vehicleActive": "المركبة الفعّالة",
+  "vehicleIsActive": "هذه هي المركبة التي تعمل بها الآن.",
+  "vehicleActivate": "اجعلها الفعّالة",
+  "vehicleActivated": "أصبحت {vehicle} مركبتك الفعّالة.",
+  "@vehicleActivated": {
+    "placeholders": {
+      "vehicle": {
+        "type": "String"
+      }
+    }
+  },
+  "vehicleNotActivatable": "لا يمكن تفعيل مركبة قبل اعتمادها.",
+  "vehicleReviewNotice": "تُراجَع المركبة الجديدة قبل السماح بالعمل بها.",
+  "vehicleSubmittedForReview": "أُرسلت المركبة للمراجعة.",
+  "vehicleStatusPending": "قيد المراجعة",
+  "vehicleStatusApproved": "معتمدة",
+  "vehicleStatusRejected": "مرفوضة",
+  "vehicleStatusSuspended": "موقوفة",
+  "accountTitle": "حسابي",
+  "accountNoName": "أضف اسمك",
+  "accountApproved": "شريك معتمد",
+  "accountNotApproved": "قيد المراجعة",
+  "accountGroupWork": "العمل",
+  "accountGroupActivity": "النشاط",
+  "accountGroupSettings": "الإعدادات",
+  "accountGroupHelp": "المساعدة والأمان",
+  "accountSignOut": "تسجيل الخروج",
+  "accountSignOutConfirm": "سيتم إيقاف اتصالك وإنهاء التتبّع على هذا الجهاز.",
+  "profileTitle": "الملف الشخصي",
+  "profilePhone": "رقم الهاتف",
+  "profilePhoneLocked": "لتغيير الرقم تواصل مع الدعم.",
+  "profileEmail": "البريد الإلكتروني",
+  "profileSaved": "تم حفظ التغييرات",
+  "workPreferencesTitle": "تفضيلات العمل",
+  "workPreferencesActiveRoles": "الأدوار الفعّالة",
+  "workPreferencesActiveRolesHint": "اختر ما تريد استقباله هذه الوردية من بين أدوارك المعتمدة.",
+  "workPreferencesRolesApplyNextShift": "يُطبَّق هذا الخيار على هذا الجهاز فور اتصالك القادم.",
+  "workPreferencesZones": "مناطق العمل",
+  "workPreferencesZonesHint": "المناطق التي تصلك فيها المهام.",
+  "workPreferencesCategories": "الخدمات",
+  "workPreferencesCategoriesHint": "الخدمات المعتمدة في ملفك.",
+  "workPreferencesCategoriesReviewNotice": "قد تحتاج إضافة خدمة جديدة إلى مراجعة ووثائق إضافية.",
+  "workPreferencesSaved": "تم حفظ تفضيلاتك",
+  "preferencesTitle": "التفضيلات",
+  "preferencesLanguage": "اللغة",
+  "preferencesAppearance": "المظهر",
+  "preferencesNotificationsMovedHint": "إعدادات الإشعارات أصبحت في صفحة مستقلة.",
+  "themeSystem": "حسب النظام",
+  "themeLight": "فاتح",
+  "themeDark": "داكن",
+  "notificationSettingsTitle": "إعدادات الإشعارات",
+  "notificationSettingsOffersAlwaysOn": "إشعارات عروض المهام تبقى مفعّلة دائمًا أثناء الوردية — بدونها لن تصلك المهام.",
+  "preferencesPush": "إشعارات التطبيق",
+  "preferencesPushHint": "تحديثات المهام والأرباح.",
+  "preferencesSms": "الرسائل النصية",
+  "preferencesEmail": "البريد الإلكتروني",
+  "preferencesMarketing": "العروض التسويقية",
+  "preferencesMarketingHint": "أخبار الحوافز والمكافآت فقط.",
+  "notificationsTitle": "الإشعارات",
+  "notificationsEmptyTitle": "لا توجد إشعارات",
+  "notificationsEmptyBody": "سنخبرك هنا بكل جديد عن مهامك وأرباحك.",
+  "notificationsMarkAllRead": "تعليم الكل كمقروء",
+  "sessionsTitle": "الأجهزة النشطة",
+  "sessionsEmptyTitle": "لا توجد أجهزة أخرى",
+  "sessionsThisDevice": "هذا الجهاز",
+  "sessionsLastSeen": "آخر نشاط {when}",
+  "@sessionsLastSeen": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionsRevoke": "إنهاء الجلسة",
+  "sessionsSignOutAll": "تسجيل الخروج من كل الأجهزة",
+  "sessionsSignOutAllConfirm": "سيتم إنهاء كل الجلسات بما فيها هذا الجهاز.",
+  "legalTitle": "الشروط والخصوصية",
+  "legalTermsTitle": "شروط الشراكة",
+  "legalTermsBody": "بعملك مع تمام تلتزم بتقديم بيانات صحيحة، والحفاظ على سريان وثائقك، ومعاملة العملاء باحترام، وتنفيذ المهام التي تقبلها. تُحتسب عمولة تمام على كل مهمة مكتملة وفق النسبة المعلنة في هذه الصفحة، وقد يؤدي الإلغاء المتكرر أو رفض المهام إلى تقليل ما يصلك من عروض.",
+  "legalCommissionTitle": "العمولة والأرباح",
+  "legalCommissionBody": "تُحتسب أرباحك من إجمالي قيمة المهمة بعد خصم عمولة تمام وأي رسوم معلنة. تُضاف الأرباح إلى رصيدك فور اكتمال المهمة وتأكيد العميل، ويمكنك سحبها إلى حسابك البنكي في أي وقت وفق حدّ السحب الأدنى.",
+  "legalTrackingTitle": "تتبّع الموقع",
+  "legalTrackingBody": "يُسجَّل موقعك أثناء اتصالك فقط، ويتوقف التسجيل فور إيقاف الاتصال أو سحب الإذن. نستخدمه لإرسال أقرب المهام إليك، وإظهار وصولك للعميل، وحل النزاعات. لا نشارك موقعك مع أطراف ثالثة لأغراض تسويقية.",
+  "legalPrivacyTitle": "الخصوصية",
+  "legalPrivacyBody": "نحتفظ ببياناتك ووثائقك للمدة التي يفرضها القانون ولأغراض التحقق والمحاسبة فقط. يظهر للعميل اسمك الأول وصورتك وتقييمك وبيانات مركبتك، ولا يظهر رقم هاتفك مباشرة عند تفعيل إخفاء الأرقام.",
+  "legalTermsVersion": "إصدار الشروط {version}",
+  "@legalTermsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "legalDeleteAccount": "طلب حذف الحساب",
+  "legalDeleteAccountHint": "يفتح طلب دعم لمراجعة الحذف.",
+  "legalDeleteAccountConfirm": "سنفتح طلب دعم لحذف حسابك. تُسوّى الأرباح المستحقة أولًا، وقد نحتفظ بسجلات المهام والفواتير كما يقتضي القانون.",
+  "legalDeleteAccountCta": "أرسل الطلب",
+  "legalDeleteAccountSubject": "طلب حذف حساب شريك",
+  "legalDeleteAccountBody": "أرغب بحذف حساب الشريك الخاص بي وبياناتي الشخصية من تمام.",
+  "supportTitle": "الدعم",
+  "supportNewTicket": "طلب دعم جديد",
+  "supportNewTicketHint": "صف مشكلتك وسيتواصل معك فريق الدعم.",
+  "supportSubject": "الموضوع",
+  "supportDescription": "التفاصيل",
+  "supportEmptyTitle": "لا توجد طلبات دعم",
+  "supportEmptyBody": "افتح طلبًا جديدًا إذا احتجت مساعدة.",
+  "supportTicketTitle": "طلب الدعم",
+  "supportReplyHint": "اكتب ردك…",
+  "ticketCategoryJob": "مشكلة في مهمة",
+  "ticketCategoryPayment": "الأرباح والدفع",
+  "ticketCategoryAccount": "الحساب والوثائق",
+  "ticketCategoryCustomer": "سلوك عميل",
+  "ticketCategorySafety": "السلامة",
+  "ticketCategoryOther": "أخرى",
+  "ticketStatusOpen": "مفتوح",
+  "ticketStatusInProgress": "قيد المعالجة",
+  "ticketStatusWaitingUser": "بانتظار ردك",
+  "ticketStatusResolved": "تم الحل",
+  "ticketStatusClosed": "مغلق",
+  "mediaAttachPhotos": "إرفاق صور",
+  "mediaCamera": "الكاميرا",
+  "mediaGallery": "المعرض",
+  "bannerLeaveAppTitle": "فتح رابط خارجي",
+  "bannerLeaveAppMessage": "سيتم فتح {host} خارج التطبيق.",
+  "@bannerLeaveAppMessage": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "bannerPromoCopied": "تم نسخ الكود {code}.",
+  "@bannerPromoCopied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  }
+}

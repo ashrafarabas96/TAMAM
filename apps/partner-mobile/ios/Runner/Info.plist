@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>ar</string>
+	<key>CFBundleDisplayName</key>
+	<string>تمام شريك</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>tamam_partner</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+
+	<!-- Arabic first; English is the fallback. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ar</string>
+		<string>en</string>
+	</array>
+
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+
+	<!-- Background execution.
+	     `location` is what keeps the shift alive with the screen off; iOS shows
+	     the blue status bar whenever it is in use, which is intended — the
+	     partner should always be able to see that a shift is running.
+	     `fetch` refreshes documents/earnings quietly, `remote-notification`
+	     lets a silent push wake the app for a new offer. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+
+	<!-- Permission prompts, Arabic first then English. Both state plainly that
+	     tracking happens only while the partner is online, because that is the
+	     claim App Review checks against the app's behaviour. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نتابع موقعك أثناء اتصالك فقط، لنرسل لك أقرب المهام ونُظهر وصولك للعميل. يتوقف التتبّع فور إيقاف الاتصال. We follow your location only while you are online, to send you the nearest jobs and show the customer that you are arriving. Tracking stops the moment you go offline.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>يسمح خيار «دائمًا» بمتابعة موقعك أثناء الوردية حتى والشاشة مغلقة، وهو ما يبقي المهام تصلك والعميل يرى اقترابك. لا نسجّل موقعك عندما تكون غير متصل. Choosing "Always" lets us follow your location during a shift even with the screen off, which is what keeps jobs reaching you and shows the customer you are approaching. We do not record your location while you are offline.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>نتابع موقعك أثناء الوردية فقط لإرسال المهام وتتبّع وصولك، ويتوقف التتبّع عند إيقاف الاتصال. We follow your location during a shift only, to dispatch jobs and track your arrival; tracking stops when you go offline.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>نحتاج الكاميرا لتصوير وثائقك ومركبتك وإثبات التسليم وصور إنهاء العمل. The camera is used for your documents, your vehicle, proof of delivery and completion photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>نحتاج الوصول إلى الصور لرفع وثائقك أو إرفاق صور بالمهمة أو بمحادثة الدعم. Photo access lets you upload documents or attach images to a job or a support chat.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>لحفظ الصور التي تلتقطها داخل التطبيق. To save photos you take inside the app.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>نستخدم مستشعرات الحركة لتقليل استهلاك البطارية عندما تكون المركبة متوقفة. Motion data lets us save battery while your vehicle is parked.</string>
+
+	<!-- Deep links: tamam-partner://… (see lib/core/routing/deep_links.dart) -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>app.tamam.partner</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tamam-partner</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Outbound schemes: navigation hand-off and calling the customer. -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>https</string>
+		<string>mailto</string>
+		<string>comgooglemaps</string>
+		<string>waze</string>
+	</array>
+
+	<!-- No ATS exceptions: every endpoint (API, socket, tiles) is HTTPS. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,153 @@
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Network: the app is API-driven and holds a socket while a shift runs. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Location.
+         FINE is required: dispatch matches on distance to the pickup and the
+         arrival geofence is metres-tight, so COARSE alone is not usable.
+         BACKGROUND is requested separately, and only after the partner has
+         granted the foreground permission and tapped "go online" once — see
+         GoOnlineSheet. The app never asks for it at first launch. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- Continuous work session. The service is what keeps location flowing
+         while the screen is off; without it Android freezes the process. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Re-arms the shift notification after a reboot mid-shift. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Job offers arrive as high-priority notifications (Android 13+ asks at
+         runtime). Without them a partner simply never sees work. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Documents, vehicle photos, proof of delivery and completion photos. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Calling the customer from the active-job screen. -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!-- Battery state rides along on the heartbeat so ops can see a partner
+         whose phone is about to die. Reading the level needs no permission.
+         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS is deliberately NOT declared: the
+         app does not ask for an exemption, and Play review treats an unused
+         declaration as a red flag. Add it only alongside the code that uses it. -->
+
+    <application
+        android:label="تمام شريك"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:windowSoftInputMode="adjustResize">
+
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Custom scheme: offer pushes, job deep links, banner actions.
+                 Matches DeepLinks.scheme in lib/core/routing/deep_links.dart. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="tamam-partner" />
+            </intent-filter>
+
+            <!-- App Links. autoVerify needs assetlinks.json served from
+                 https://partner.tamam.app/.well-known/. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="partner.tamam.app" />
+            </intent-filter>
+        </activity>
+
+        <!-- The work session. `location` is the only declared type: Play policy
+             requires the declared type to match what the service actually does,
+             and this one exists solely to keep GPS alive during a shift.
+             `stopWithTask=false` so a swipe-away does not silently end a shift
+             the partner believes is running. -->
+        <!-- `tools:replace` because the plugin's own manifest already declares
+             this service with a different foregroundServiceType; without it the
+             manifest merger fails the build. -->
+        <service
+            android:name="id.flutter.flutter_background_service.BackgroundService"
+            android:foregroundServiceType="location"
+            android:exported="false"
+            android:stopWithTask="false"
+            tools:replace="android:foregroundServiceType,android:stopWithTask" />
+
+        <receiver
+            android:name="id.flutter.flutter_background_service.BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+
+    <!-- Package visibility (Android 11+) for the intents the app launches:
+         navigation hand-off, phone calls, sharing and the media pickers. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="waze" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="text/plain" />
+        </intent>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.GET_CONTENT" />
+            <data android:mimeType="*/*" />
+        </intent>
+    </queries>
+</manifest>
