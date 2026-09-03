@@ -1,5 +1,7 @@
 'use client';
 
+import { Suspense } from 'react';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Permission } from '@tamam/shared-types';
@@ -14,7 +16,9 @@ import { useI18n } from '@/i18n';
 export default function JobsPage() {
   return (
     <RequirePermission anyOf={[Permission.JOBS_READ_ALL]}>
-      <JobsScreen />
+      <Suspense fallback={null}>
+        <JobsScreen />
+      </Suspense>
     </RequirePermission>
   );
 }

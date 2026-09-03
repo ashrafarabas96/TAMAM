@@ -7,13 +7,13 @@ import { LOCALE_COOKIE_NAME } from '@/lib/env';
 
 import { ar } from './ar';
 import { en } from './en';
+import { localeDirection } from './locale';
 import type { Dictionary, EnumGroup, Locale, TFunction, TranslateParams, TranslationKey } from './types';
 
 export type { EnumGroup, Locale, TFunction, TranslationKey } from './types';
+export { localeDirection } from './locale';
 
 const dictionaries: Record<Locale, Dictionary> = { ar, en };
-
-export const localeDirection = (locale: Locale): 'rtl' | 'ltr' => (locale === 'ar' ? 'rtl' : 'ltr');
 
 function interpolate(template: string, params?: TranslateParams): string {
   if (!params) return template;

@@ -21,6 +21,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // Formatting tests assert wall-clock output in the platform timezone.
+    env: { TZ: 'Asia/Jerusalem' },
     css: false,
   },
 });

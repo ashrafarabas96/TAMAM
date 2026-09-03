@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { type JobDto, JobStatus, JobType } from '@tamam/shared-types';
@@ -21,13 +21,12 @@ import { useZoneOptions } from '@/lib/query/reference-data';
 import { useCursorList } from '@/lib/query/use-cursor-list';
 import { useEnumOptions } from '@/lib/query/use-enum-options';
 
-export function JobsList({ fixed }: { fixed?: { customerId?: string; partnerId?: string } }) {
+export function JobsList({ fixed, initialStatus }: { fixed?: { customerId?: string; partnerId?: string }; initialStatus?: string }) {
   const { t } = useI18n();
   const router = useRouter();
-  const params = useSearchParams();
   const [q, setQ] = useState('');
-  const [status, setStatus] = useState(params.get('status') ?? '');
-  const [statusGroup, setStatusGroup] = useState<'active' | 'completed' | 'cancelled' | 'all'>((params.get('statusGroup') as 'active') ?? 'all');
+  const [status, setStatus] = useState(initialStatus ?? '');
+  const [statusGroup, setStatusGroup] = useState<'active' | 'completed' | 'cancelled' | 'all'>('all');
   const [type, setType] = useState('');
   const [zoneId, setZoneId] = useState('');
   const [from, setFrom] = useState('');

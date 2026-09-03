@@ -5,6 +5,7 @@ import { type Control, Controller, type FieldPath, type FieldValues, type UseFor
 
 import { useT } from '@/i18n';
 import { isApiError } from '@/lib/api/errors';
+import { isSupportedCurrency, majorToMinor, minorToMajor } from '@/lib/format/money';
 import { cn } from '@/lib/utils/cn';
 
 import { Checkbox, Switch } from './checkbox';
@@ -240,5 +241,84 @@ export function FormError({ message }: { message: string | null | undefined }) {
     <div className="rounded-md border border-danger/40 bg-danger-soft px-3 py-2 text-xs text-danger-strong" role="alert">
       {message}
     </div>
+  );
+}
+
+/**
+ * Money input: the operator types major units (e.g. 12.50 ILS) and the form stores
+ * `{ amount: <integer minor units>, currency }` exactly as `moneySchema` requires.
+ */
+export function MoneyField<TValues extends FieldValues>({ control, name, label, required, hint, className, currency, nullable = false, disabled }: BaseFieldProps<TValues> & { currency: 'ILS' | 'USD' | 'JOD'; nullable?: boolean; disabled?: boolean }) {
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field, fieldState }) => {
+        const money = field.value as { amount: number; currency: string } | null | undefined;
+        const major = money && typeof money.amount === 'number' ? String(minorToMajor(money.amount, currency)) : '';
+        return (
+          <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
+            <div className="flex items-center gap-2">
+              <Input
+                id={name}
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min={0}
+                dir="ltr"
+                disabled={disabled}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                value={major}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw === '') field.onChange(nullable ? null : undefined);
+                  else field.onChange({ amount: majorToMinor(Number(raw), currency), currency });
+                }}
+                invalid={!!fieldState.error}
+              />
+              <span className="shrink-0 text-xs font-semibold text-text-secondary">{currency}</span>
+            </div>
+          </Field>
+        );
+      }}
+    />
+  );
+}
+
+/** Minor-units integer field (schemas that store `*_minor` numbers directly). */
+export function MinorAmountField<TValues extends FieldValues>({ control, name, label, required, hint, className, currency, disabled }: BaseFieldProps<TValues> & { currency: string; disabled?: boolean }) {
+  const supported = isSupportedCurrency(currency) ? currency : 'ILS';
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field, fieldState }) => {
+        const value = typeof field.value === 'number' ? String(minorToMajor(field.value, supported)) : '';
+        return (
+          <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
+            <div className="flex items-center gap-2">
+              <Input
+                id={name}
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min={0}
+                dir="ltr"
+                disabled={disabled}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                value={value}
+                onChange={(e) => field.onChange(e.target.value === '' ? undefined : majorToMinor(Number(e.target.value), supported))}
+                invalid={!!fieldState.error}
+              />
+              <span className="shrink-0 text-xs font-semibold text-text-secondary">{currency}</span>
+            </div>
+          </Field>
+        );
+      }}
+    />
   );
 }

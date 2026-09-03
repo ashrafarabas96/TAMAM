@@ -5,7 +5,8 @@ import { type ReactNode, useState } from 'react';
 
 import { ToastProvider } from '@/components/ui/toast';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { I18nProvider, type Locale } from '@/i18n';
+import { I18nProvider } from '@/i18n';
+import type { Locale } from '@/i18n/locale';
 import { isApiError } from '@/lib/api/errors';
 import { SessionProvider } from '@/lib/auth/session-context';
 import { ThemeProvider } from '@/lib/theme';

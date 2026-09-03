@@ -6,9 +6,9 @@ import { type ReactNode } from 'react';
 import '@tamam/ui-tokens/css';
 import './globals.css';
 
-import { localeDirection, type Locale } from '@/i18n';
+import { type Locale, localeDirection } from '@/i18n/locale';
 import { env, LOCALE_COOKIE_NAME } from '@/lib/env';
-import { THEME_BOOT_SCRIPT } from '@/lib/theme';
+import { THEME_BOOT_SCRIPT } from '@/lib/theme-script';
 
 import { Providers } from './providers';
 
