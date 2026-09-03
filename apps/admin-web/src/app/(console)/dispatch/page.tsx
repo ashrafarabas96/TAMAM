@@ -112,7 +112,7 @@ function DispatchConsole() {
       <DataTable columns={columns} rows={list.items} rowKey={(r) => r.job.id} isLoading={list.isLoading} error={list.error} onRetry={() => void list.refetch()} hasMore={list.hasMore} onLoadMore={list.loadMore} isLoadingMore={list.isLoadingMore} emptyTitle={t('dispatch.emptyTitle')} emptyDescription={t('dispatch.emptyDescription')} rowClassName={(r) => (r.problems.includes('NO_PARTNER_AVAILABLE') || r.problems.includes('ETA_EXCEEDED') ? 'bg-danger-soft/30' : undefined)} />
       <AssignSheet job={assignJob} onClose={() => setAssignJob(null)} />
       <PartnerTimelineSheet partnerId={timelinePartner} onClose={() => setTimelinePartner(null)} />
-      <ConfirmDialog open={!!redispatchJob} onOpenChange={(o) => !o && setRedispatchJob(null)} title={t('dispatch.redispatchTitle')} description={redispatchJob ? t('dispatch.redispatchDescription', { job: redispatchJob.number }) : undefined} loading={redispatch.isPending} confirmLabel={t('dispatch.redispatch')} onConfirm={() => redispatchJob && redispatch.mutate(redispatchJob.id)} />
+      <ConfirmDialog open={!!redispatchJob} onOpenChange={(o) => !o && setRedispatchJob(null)} title={t('dispatch.redispatchTitle')} description={redispatchJob ? t('dispatch.redispatchDescription', { job: redispatchJob.number }) : undefined} loading={redispatch.isPending} confirmLabel={t('dispatch.redispatch')} onConfirm={() => { if (redispatchJob) redispatch.mutate(redispatchJob.id); }} />
     </div>
   );
 }

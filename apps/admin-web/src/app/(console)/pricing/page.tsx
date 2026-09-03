@@ -251,7 +251,7 @@ function SurgeTab() {
           <TextareaField control={form.control} name="reason" label={t('common.reason')} required placeholder={t('common.reasonPlaceholder')} />
         </form>
       </Dialog>
-      <ConfirmDialog open={!!ending} onOpenChange={(o) => !o && setEnding(null)} title={t('pricing.endSurge')} description={ending ? `${zones.nameOf(ending.zoneId)} · ×${Number(ending.multiplier).toFixed(2)}` : undefined} tone="danger" loading={endMutation.isPending} confirmLabel={t('pricing.endSurge')} onConfirm={() => ending && endMutation.mutate(ending.id)} />
+      <ConfirmDialog open={!!ending} onOpenChange={(o) => !o && setEnding(null)} title={t('pricing.endSurge')} description={ending ? `${zones.nameOf(ending.zoneId)} · ×${Number(ending.multiplier).toFixed(2)}` : undefined} tone="danger" loading={endMutation.isPending} confirmLabel={t('pricing.endSurge')} onConfirm={() => { if (ending) endMutation.mutate(ending.id); }} />
     </div>
   );
 }

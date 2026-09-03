@@ -1,4 +1,11 @@
-import type { BannerActionType, BannerAudience, BannerPlacement, CampaignStatus, JobType } from '@tamam/shared-types';
+import type {
+  BannerActionType,
+  BannerAudience,
+  BannerPlacement,
+  BannerTheme,
+  CampaignStatus,
+  JobType,
+} from '@tamam/shared-types';
 
 /**
  * Shapes shared by the feed, the events pipeline and the admin service. They are cached in
@@ -49,7 +56,7 @@ export interface CandidateBanner {
   badgeEn: string | null;
   imageAr: BannerMediaRef;
   imageEn: BannerMediaRef;
-  theme: string;
+  theme: BannerTheme;
   actionType: BannerActionType;
   actionValue: string | null;
   priority: number;

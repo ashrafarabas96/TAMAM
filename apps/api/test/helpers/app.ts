@@ -113,7 +113,8 @@ export class TestApp {
     const logger = app.get(Logger);
     app.useLogger(logger);
     app.setGlobalPrefix(API_PREFIX, { exclude: ['health/live', 'health/ready', 'metrics'] });
-    app.useGlobalFilters(new AllExceptionsFilter(app.get(PinoLogger)));
+    // PinoLogger is a transient provider, so it must be resolved rather than fetched.
+    app.useGlobalFilters(new AllExceptionsFilter(await app.resolve(PinoLogger)));
     await app.init();
 
     const instance = new TestApp(app, app.get(PrismaService), app.get(RedisService));

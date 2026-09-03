@@ -63,7 +63,7 @@ export function RestrictionsTable({ filters }: { filters: { targetType?: string;
   return (
     <>
       <DataTable columns={columns} rows={list.items} rowKey={(r) => r.id} isLoading={list.isLoading} error={list.error} onRetry={() => void list.refetch()} hasMore={list.hasMore} onLoadMore={list.loadMore} isLoadingMore={list.isLoadingMore} emptyTitle={t('risk.noRestrictions')} dense />
-      <ConfirmDialog open={!!lifting} onOpenChange={(o) => !o && setLifting(null)} title={t('risk.liftTitle')} description={lifting ? enumLabel('restrictionKind', lifting.kind) : undefined} requireReason loading={lift.isPending} confirmLabel={t('risk.lift')} onConfirm={(reason) => lifting && lift.mutate({ id: lifting.id, reason })} />
+      <ConfirmDialog open={!!lifting} onOpenChange={(o) => !o && setLifting(null)} title={t('risk.liftTitle')} description={lifting ? enumLabel('restrictionKind', lifting.kind) : undefined} requireReason loading={lift.isPending} confirmLabel={t('risk.lift')} onConfirm={(reason) => { if (lifting) lift.mutate({ id: lifting.id, reason }); }} />
     </>
   );
 }

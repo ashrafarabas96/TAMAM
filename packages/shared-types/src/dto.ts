@@ -5,6 +5,7 @@ import type {
   BannerActionType,
   BannerAudience,
   BannerPlacement,
+  BannerTheme,
   CampaignStatus,
   DocumentStatus,
   DocumentType,
@@ -585,7 +586,7 @@ export interface BannerCreativeDto {
   /** Full-bleed creative image (2.25:1 for hero, 3.6:1 for inline). Localised so Arabic art can differ. */
   imageUrl: LocalizedText;
   /** Theme key from ui-tokens banner.themes — controls text colour and fallback background. */
-  theme: string;
+  theme: BannerTheme;
   /** Optional small badge, e.g. "خصم 20%" */
   badge: LocalizedText | null;
 }

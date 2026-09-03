@@ -134,6 +134,9 @@ CREATE TYPE "media_kind" AS ENUM ('IMAGE', 'VIDEO', 'AUDIO', 'DOCUMENT');
 CREATE TYPE "media_purpose" AS ENUM ('PROFILE', 'PARTNER_DOCUMENT', 'VEHICLE_PHOTO', 'JOB_ATTACHMENT', 'PROOF_OF_DELIVERY', 'CHAT', 'SUPPORT', 'DISPUTE_EVIDENCE', 'BANNER_CREATIVE', 'SERVICE_ICON');
 
 -- CreateEnum
+CREATE TYPE "banner_theme" AS ENUM ('purple', 'yellow', 'dark', 'light', 'gradientPurple', 'gradientSunset');
+
+-- CreateEnum
 CREATE TYPE "media_status" AS ENUM ('PENDING_UPLOAD', 'UPLOADED', 'PROCESSING', 'READY', 'REJECTED', 'DELETED');
 
 -- CreateEnum
@@ -1641,7 +1644,7 @@ CREATE TABLE "banners" (
     "badge_en" VARCHAR(30),
     "image_ar_media_id" UUID NOT NULL,
     "image_en_media_id" UUID NOT NULL,
-    "theme" VARCHAR(30) NOT NULL DEFAULT 'purple',
+    "theme" "banner_theme" NOT NULL DEFAULT 'purple',
     "action_type" "banner_action_type" NOT NULL DEFAULT 'NONE',
     "action_value" VARCHAR(500),
     "priority" INTEGER NOT NULL DEFAULT 0,

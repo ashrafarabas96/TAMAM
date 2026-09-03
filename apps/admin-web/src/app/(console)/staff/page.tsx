@@ -108,7 +108,7 @@ function StaffUsersTab() {
       <CreateStaffDialog open={creating} onOpenChange={setCreating} onCreated={(password) => setTemporaryPassword(password)} />
       <RolesDialog staff={rolesFor} onClose={() => setRolesFor(null)} />
       {statusFor ? <AccountStatusDialog open onOpenChange={(o) => !o && setStatusFor(null)} subject={statusFor.user.fullName ?? statusFor.email ?? ''} submit={(input) => adminApi.staffChangeStatus(statusFor.user.id, input)} onDone={invalidate} /> : null}
-      <ConfirmDialog open={!!resetFor} onOpenChange={(o) => !o && setResetFor(null)} title={t('staff.resetPassword')} description={t('staff.resetHint')} requireReason loading={reset.isPending} tone="danger" onConfirm={(reason) => resetFor && reset.mutate({ id: resetFor.user.id, reason })} />
+      <ConfirmDialog open={!!resetFor} onOpenChange={(o) => !o && setResetFor(null)} title={t('staff.resetPassword')} description={t('staff.resetHint')} requireReason loading={reset.isPending} tone="danger" onConfirm={(reason) => { if (resetFor) reset.mutate({ id: resetFor.user.id, reason }); }} />
       <Dialog open={!!temporaryPassword} onOpenChange={(o) => !o && setTemporaryPassword(null)} size="sm" title={t('staff.temporaryPassword')} description={t('staff.temporaryPasswordHint')} footer={<Button onClick={() => setTemporaryPassword(null)}>{t('common.close')}</Button>}>
         <p className="select-all rounded-md bg-surface-alt p-3 text-center font-mono text-lg font-bold" dir="ltr">{temporaryPassword}</p>
       </Dialog>

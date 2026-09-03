@@ -150,7 +150,7 @@ function CampaignDetail() {
         loading={statusMutation.isPending}
         requireReason={action === 'END' || action === 'ARCHIVE'}
         reasonMinLength={3}
-        onConfirm={(reason) => action && statusMutation.mutate({ action, ...(reason ? { reason } : {}) })}
+        onConfirm={(reason) => { if (action) statusMutation.mutate({ action, ...(reason ? { reason } : {}) }); }}
       />
     </div>
   );

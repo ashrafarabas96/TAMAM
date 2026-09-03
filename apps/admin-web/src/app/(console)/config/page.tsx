@@ -105,7 +105,7 @@ function SystemConfigTab() {
         requireReason
         reasonMinLength={3}
         loading={mutation.isPending}
-        onConfirm={(reason) => pending && mutation.mutate({ key: pending.config.key, value: pending.value, reason })}
+        onConfirm={(reason) => { if (pending) mutation.mutate({ key: pending.config.key, value: pending.value, reason }); }}
       />
     </div>
   );
@@ -204,7 +204,7 @@ function FeatureFlagsTab() {
         requireReason
         reasonMinLength={3}
         loading={mutation.isPending}
-        onConfirm={(reason) => pending && mutation.mutate({ key: pending.flag.key, enabled: pending.enabled, reason })}
+        onConfirm={(reason) => { if (pending) mutation.mutate({ key: pending.flag.key, enabled: pending.enabled, reason }); }}
       />
     </div>
   );

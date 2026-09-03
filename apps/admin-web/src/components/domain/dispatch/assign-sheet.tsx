@@ -103,7 +103,7 @@ export function AssignSheet({ job, onClose }: { job: JobDto | null; onClose: () 
         requireReason
         loading={assign.isPending}
         confirmLabel={t('dispatch.assign')}
-        onConfirm={(reason) => candidate && assign.mutate({ partnerId: candidate.id, reason })}
+        onConfirm={(reason) => { if (candidate) assign.mutate({ partnerId: candidate.id, reason }); }}
       />
     </Sheet>
   );

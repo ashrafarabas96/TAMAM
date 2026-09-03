@@ -1,4 +1,13 @@
-import { BannerActionType, BannerAudience, BannerPlacement, CampaignStatus, MediaKind, MediaPurpose, MediaStatus } from '@tamam/shared-types';
+import {
+  BannerActionType,
+  BannerAudience,
+  BannerPlacement,
+  type BannerTheme,
+  CampaignStatus,
+  MediaKind,
+  MediaPurpose,
+  MediaStatus,
+} from '@tamam/shared-types';
 
 import type { CatalogSeedResult } from './catalog';
 import type { SeedContext } from './context';
@@ -19,7 +28,7 @@ interface BannerSeed {
   ctaLabelEn: string;
   badgeAr: string | null;
   badgeEn: string | null;
-  theme: string;
+  theme: BannerTheme;
   actionType: BannerActionType;
   /** Resolved at seed time — `SERVICE_CATEGORY` needs the seeded category id. */
   actionValue: string | { categorySlug: string };

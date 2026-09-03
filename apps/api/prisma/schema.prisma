@@ -466,6 +466,17 @@ enum MediaPurpose {
   @@map("media_purpose")
 }
 
+enum BannerTheme {
+  purple
+  yellow
+  dark
+  light
+  gradientPurple
+  gradientSunset
+
+  @@map("banner_theme")
+}
+
 enum MediaStatus {
   PENDING_UPLOAD
   UPLOADED
@@ -2489,7 +2500,7 @@ model Banner {
   badgeEn        String?          @map("badge_en") @db.VarChar(30)
   imageArMediaId String           @map("image_ar_media_id") @db.Uuid
   imageEnMediaId String           @map("image_en_media_id") @db.Uuid
-  theme          String           @default("purple") @db.VarChar(30)
+  theme          BannerTheme      @default(purple)
   actionType     BannerActionType @default(NONE) @map("action_type")
   actionValue    String?          @map("action_value") @db.VarChar(500)
   priority       Int              @default(0)

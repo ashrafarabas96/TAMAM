@@ -450,6 +450,11 @@ export const MediaStatus = {
 } as const;
 export type MediaStatus = (typeof MediaStatus)[keyof typeof MediaStatus];
 
+/* ---------------------------------------------------------------- banners */
+/** Theme keys defined in `packages/ui-tokens/tokens.json` under `banner.themes`. */
+export const BANNER_THEMES = ['purple', 'yellow', 'dark', 'light', 'gradientPurple', 'gradientSunset'] as const;
+export type BannerTheme = (typeof BANNER_THEMES)[number];
+
 /* ---------------------------------------------------------------- currency */
 export const SUPPORTED_CURRENCIES = ['ILS', 'USD', 'JOD'] as const;
 export type CurrencyCode = (typeof SUPPORTED_CURRENCIES)[number];

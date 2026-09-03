@@ -66,11 +66,13 @@ describe('api client', () => {
   });
 
   it('single-flights the refresh when several requests fail at once', async () => {
-    let resolveRefresh: ((token: string) => void) | null = null;
+    // Held on an object: control-flow analysis narrows a `let` assigned only inside a
+    // callback down to `null`, which makes the call below unreachable to the compiler.
+    const deferred: { resolve: ((token: string) => void) | null } = { resolve: null };
     const refresh = vi.fn(
       () =>
         new Promise<string | null>((resolve) => {
-          resolveRefresh = resolve as (token: string) => void;
+          deferred.resolve = resolve;
         }),
     );
     const client = createApiClient({
@@ -81,7 +83,7 @@ describe('api client', () => {
     });
     const inflight = Promise.all([client.get('/a'), client.get('/b'), client.get('/c')]);
     await vi.waitFor(() => expect(refresh).toHaveBeenCalled());
-    resolveRefresh?.('fresh');
+    deferred.resolve?.('fresh');
     await expect(inflight).resolves.toEqual([{ ok: true }, { ok: true }, { ok: true }]);
     expect(refresh).toHaveBeenCalledTimes(1);
     // three initial 401s + three retries

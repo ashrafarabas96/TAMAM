@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  BANNER_THEMES,
   BannerActionType,
   BannerAudience,
   BannerPlacement,
@@ -25,7 +26,7 @@ export const bannerCreativeSchema = z.object({
   ctaLabel: optionalLocalized,
   /** Media IDs per language (uploaded via /media with purpose BANNER_CREATIVE). */
   imageMediaId: z.object({ ar: uuidSchema, en: uuidSchema }),
-  theme: z.enum(['purple', 'yellow', 'dark', 'light', 'gradientPurple', 'gradientSunset']).default('purple'),
+  theme: z.enum(BANNER_THEMES).default('purple'),
   badge: optionalLocalized,
 });
 

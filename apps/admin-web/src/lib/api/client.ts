@@ -1,4 +1,4 @@
-import { Headers as ApiHeaders } from '@tamam/shared-types';
+import { Headers as ApiHeaders, type ApiError as ApiErrorShape } from '@tamam/shared-types';
 
 import { env } from '@/lib/env';
 import { randomId } from '@/lib/utils/id';
@@ -61,12 +61,34 @@ export function buildQueryString(query: QueryParams | undefined): string {
   return s ? `?${s}` : '';
 }
 
-async function parseErrorBody(response: Response): Promise<{ code?: string; message?: string; details?: unknown; requestId?: string } | null> {
+/**
+ * `details` is either the field-error array from a validation failure or a free-form object.
+ * The body is arbitrary JSON off the wire, so narrow it instead of asserting a shape: anything
+ * that matches neither form is dropped rather than smuggled through as the wrong type.
+ */
+function narrowDetails(value: unknown): ApiErrorShape['details'] {
+  if (Array.isArray(value)) {
+    const isFieldError = (v: unknown): v is { field: string; message: string } =>
+      typeof v === 'object' && v !== null && typeof (v as { field?: unknown }).field === 'string' && typeof (v as { message?: unknown }).message === 'string';
+    return value.every(isFieldError) ? value : undefined;
+  }
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : undefined;
+}
+
+async function parseErrorBody(response: Response): Promise<Partial<ApiErrorShape> | null> {
   try {
     const text = await response.text();
     if (!text) return null;
     const parsed: unknown = JSON.parse(text);
-    return typeof parsed === 'object' && parsed !== null ? (parsed as { code?: string; message?: string; details?: unknown; requestId?: string }) : null;
+    if (typeof parsed !== 'object' || parsed === null) return null;
+    const body = parsed as { code?: unknown; message?: unknown; details?: unknown; requestId?: unknown };
+    const details = narrowDetails(body.details);
+    return {
+      ...(typeof body.code === 'string' ? { code: body.code } : {}),
+      ...(typeof body.message === 'string' ? { message: body.message } : {}),
+      ...(details === undefined ? {} : { details }),
+      ...(typeof body.requestId === 'string' ? { requestId: body.requestId } : {}),
+    };
   } catch {
     return null;
   }

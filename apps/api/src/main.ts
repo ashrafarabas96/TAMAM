@@ -34,7 +34,8 @@ async function bootstrap(): Promise<void> {
     maxAge: 600,
   });
   app.setGlobalPrefix(API_PREFIX, { exclude: ['health/live', 'health/ready', 'metrics'] });
-  app.useGlobalFilters(new AllExceptionsFilter(app.get(PinoLogger)));
+  // PinoLogger is a transient provider, so it must be resolved rather than fetched.
+  app.useGlobalFilters(new AllExceptionsFilter(await app.resolve(PinoLogger)));
   app.enableShutdownHooks();
 
   const ioAdapter = new RedisIoAdapter(app);
