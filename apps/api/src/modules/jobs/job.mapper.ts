@@ -6,6 +6,7 @@ import type { RequestUser } from '../../common/types/request-user';
 import { decrypt, maskPhone } from '../../common/utils/crypto.util';
 import { AppConfigService } from '../../config';
 import { MediaUrlService } from '../media/media-url.service';
+
 import { JobPolicy } from './domain/job-policy';
 import type { JobWithRelations } from './jobs.types';
 

@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { CONFIG_KEYS, ErrorCode, JobActorType, type JobDto, JobStatus, JobType, MediaPurpose, NotificationEvent } from '@tamam/shared-types';
 import type { ArriveJobInput, CancelJobInput, CompleteJobInput, SimpleTransitionInput, StartJobInput } from '@tamam/validation';
 import type { Queue } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -22,10 +22,14 @@ import { PaymentsService } from '../payments/payments.service';
 import { PricingService } from '../pricing/pricing.service';
 import { PromotionsService } from '../promotions/promotions.service';
 import { TrackingService } from '../tracking/tracking.service';
+
 import { JobPolicy } from './domain/job-policy';
 import { JobStateMachine } from './domain/job-state-machine';
 import { JobsService, type TransitionActor } from './jobs.service';
 import type { JobWithRelations } from './jobs.types';
+
+/** Exactly what `PricingService.cancellationFee` returns — kept derived so the two never drift. */
+type CancellationFee = Awaited<ReturnType<PricingService['cancellationFee']>>;
 
 /**
  * Type-specific job behaviour on top of JobsService.transition(): arrival geofence, trip PIN,
@@ -43,7 +47,7 @@ export class JobLifecycleService {
     private readonly promotions: PromotionsService,
     private readonly media: MediaService,
     private readonly notifications: NotificationsService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(forwardRef(() => DispatchService)) private readonly dispatch: DispatchService,
     @Inject(forwardRef(() => TrackingService)) private readonly tracking: TrackingService,
     @Inject(forwardRef(() => PaymentsService)) private readonly payments: PaymentsService,
@@ -87,7 +91,7 @@ export class JobLifecycleService {
     await this.afterCancellation(updated, actor.type, { customerFeeMinor: 0n, partnerCompensationMinor: 0n, partnerPenaltyPoints: 0, policyId: null }, null);
   }
 
-  private async afterCancellation(job: JobWithRelations, actorType: JobActorType, fee: { customerFeeMinor: bigint; partnerCompensationMinor: bigint; partnerPenaltyPoints: number }, user: RequestUser | null): Promise<void> {
+  private async afterCancellation(job: JobWithRelations, actorType: JobActorType, fee: CancellationFee, user: RequestUser | null): Promise<void> {
     await this.dispatch.cancel(job.id, 'job_cancelled');
     await this.prisma.$transaction(async (tx) => {
       await this.promotions.release(job.id, tx);

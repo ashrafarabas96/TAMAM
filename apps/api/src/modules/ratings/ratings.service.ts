@@ -9,6 +9,7 @@ import { buildPage, cursorWhere, decodeCursor } from '../../common/utils/cursor'
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
 import { SystemConfigService } from '../config/system-config.service';
 import { type JobLike, JobPolicy } from '../jobs/domain/job-policy';
+
 import {
   type RatingAggregateDelta,
   RatingDirection,

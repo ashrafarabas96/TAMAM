@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { CONFIG_KEYS } from '@tamam/shared-types';
 import type { Job } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { MAINTENANCE_JOBS, QUEUES } from '../../infrastructure/queue/queue.constants';
@@ -12,6 +12,7 @@ import { CampaignsService } from '../campaigns/campaigns.service';
 import { SystemConfigService } from '../config/system-config.service';
 import { PartnerAvailabilityService } from '../partners/partner-availability.service';
 import { TrackingService } from '../tracking/tracking.service';
+
 import { DocumentExpiryService } from './document-expiry.service';
 import type { MaintenanceJobData } from './maintenance.scheduler';
 
@@ -43,7 +44,7 @@ export class MaintenanceProcessor extends WorkerHost {
     private readonly analytics: AnalyticsService,
     private readonly sessions: SessionService,
     private readonly documents: DocumentExpiryService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {
     super();
   }

@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { type AuthTokens, CONFIG_KEYS, ErrorCode, type UserRole } from '@tamam/shared-types';
 import type { DeviceInfoInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import { randomToken, sha256 } from '../../common/utils/crypto.util';
@@ -11,6 +11,7 @@ import { addSeconds } from '../../common/utils/time';
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { SystemConfigService } from '../config/system-config.service';
+
 import { TokenService } from './token.service';
 
 /**
@@ -27,7 +28,7 @@ export class SessionService {
     private readonly tokens: TokenService,
     private readonly sysConfig: SystemConfigService,
     private readonly audit: AuditService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   async create(userId: string, roles: UserRole[], device: DeviceInfoInput, ip: string | null, userAgent: string | null, tx?: Tx): Promise<AuthTokens> {

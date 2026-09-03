@@ -18,7 +18,7 @@ import {
   WithdrawalStatus,
 } from '@tamam/shared-types';
 import type { TopUpWalletInput, WalletAdjustmentInput, WithdrawalDecisionInput, WithdrawalRequestInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -87,7 +87,7 @@ export class WalletService {
     private readonly config: SystemConfigService,
     private readonly audit: AuditService,
     private readonly metrics: MetricsService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(PAYMENT_GATEWAY) private readonly gateway: PaymentGatewayProvider,
   ) {}
 

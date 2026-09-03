@@ -12,7 +12,7 @@ import {
   WalletOwnerType,
 } from '@tamam/shared-types';
 import type { UpsertReferralProgramInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -99,7 +99,7 @@ export class ReferralsService {
     private readonly wallets: WalletService,
     private readonly audit: AuditService,
     private readonly appConfig: AppConfigService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   /* ------------------------------------------------------------------ self */

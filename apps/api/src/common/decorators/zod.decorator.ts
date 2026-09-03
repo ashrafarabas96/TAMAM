@@ -1,10 +1,15 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
-import type { ZodSchema } from 'zod';
+import type { ZodSchema, ZodTypeAny, output } from 'zod';
 
 import { AppException } from '../errors/app.exception';
 
-function parseOrThrow<T>(schema: ZodSchema<T>, value: unknown): T {
+/**
+ * Returns the schema's *output* type. `ZodSchema<T>` fixes input and output to the same
+ * `T`, which is wrong for any schema carrying `.default()` or `.transform()` — there the
+ * parsed value has required fields the raw input does not.
+ */
+function parseOrThrow<S extends ZodTypeAny>(schema: S, value: unknown): output<S> {
   const result = schema.safeParse(value);
   if (!result.success) {
     throw AppException.validation(result.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })));

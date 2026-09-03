@@ -3,7 +3,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ConnectedSocket, MessageBody, type OnGatewayConnection, type OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { type JobOfferDto, type JobStatus, type LocationSample, Permission, WsEvent, WsNamespace } from '@tamam/shared-types';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import type { Server, Socket } from 'socket.io';
 import { z } from 'zod';
 
@@ -57,7 +57,7 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly prisma: PrismaService,
     private readonly analytics: AnalyticsService,
     private readonly metrics: MetricsService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   /* --------------------------------------------------------- lifecycle */

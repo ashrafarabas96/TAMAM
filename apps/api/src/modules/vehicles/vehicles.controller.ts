@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { AllowRestricted, Audited, CurrentUser, RequestId, RequirePermission, RequireRole, ZodBody, ZodQuery } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { VehiclesService } from './vehicles.service';
 
 const adminVehicleListSchema = pageRequestSchema.extend({

@@ -10,6 +10,7 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { IDEMPOTENT_KEY } from '../decorators/metadata.decorators';
 import { AppException } from '../errors/app.exception';
 import type { RequestUser } from '../types/request-user';
+
 import { toJsonSafe } from './serialize.interceptor';
 
 const TTL_HOURS = 24;

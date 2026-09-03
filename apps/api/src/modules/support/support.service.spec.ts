@@ -16,6 +16,7 @@ import type { AuditService } from '../audit/audit.service';
 import type { MediaUrlService } from '../media/media-url.service';
 import type { MediaService } from '../media/media.service';
 import type { NotificationsService } from '../notifications/notifications.service';
+
 import { canTransitionTicket, priorityFor, routeReport, ticketNumber } from './domain/ticket-state';
 import { SupportService } from './support.service';
 

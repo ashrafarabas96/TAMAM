@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CONFIG_KEYS, ErrorCode, type RequestOtpResponse } from '@tamam/shared-types';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import { hmacHash, randomDigits, safeEqual } from '../../common/utils/crypto.util';
@@ -24,7 +24,7 @@ export class OtpService {
     private readonly sysConfig: SystemConfigService,
     private readonly limiter: RateLimitService,
     private readonly templates: NotificationTemplateService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(SMS_PROVIDER) private readonly sms: SmsProvider,
   ) {}
 

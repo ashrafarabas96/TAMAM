@@ -10,7 +10,7 @@ import {
   PaymentStatus,
   UserRole,
 } from '@tamam/shared-types';
-import type { Logger } from 'nestjs-pino';
+import type { PinoLogger } from 'nestjs-pino';
 
 import type { RequestUser } from '../../common/types/request-user';
 import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
@@ -22,6 +22,7 @@ import type { MediaService } from '../media/media.service';
 import type { NotificationsService } from '../notifications/notifications.service';
 import type { PaymentsService } from '../payments/payments.service';
 import type { WalletService } from '../wallet/wallet.service';
+
 import { DisputesService } from './disputes.service';
 import { assertJobDisputable, disputeNumber, partnerAdjustmentEntries } from './domain/dispute-decision';
 
@@ -171,7 +172,7 @@ function buildHarness(options: { dispute?: DisputeState; jobStatus?: JobStatus; 
   const wallets = { getOrCreate } as unknown as WalletService;
   const record = jest.fn(async () => undefined);
   const audit = { record } as unknown as AuditService;
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as Logger;
+  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as PinoLogger;
   const transition = jest.fn(async () => ({ id: JOB_ID }));
   const jobs = { transition } as unknown as JobsService;
 

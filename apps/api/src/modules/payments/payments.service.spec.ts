@@ -1,7 +1,7 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ErrorCode, NotificationEvent, PaymentMethod, PaymentStatus } from '@tamam/shared-types';
 import type { Queue } from 'bullmq';
-import type { Logger } from 'nestjs-pino';
+import type { PinoLogger } from 'nestjs-pino';
 
 import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { PaymentGatewayProvider } from '../../infrastructure/providers/payment-gateway/payment-gateway.provider';
@@ -10,6 +10,7 @@ import type { LedgerService } from '../ledger/ledger.service';
 import type { MetricsService } from '../metrics/metrics.service';
 import type { NotificationsService } from '../notifications/notifications.service';
 import type { WalletService } from '../wallet/wallet.service';
+
 import { PaymentsService } from './payments.service';
 
 const JOB_ID = '11111111-1111-4111-8111-111111111111';
@@ -147,7 +148,7 @@ function buildHarness(options: { payment?: PaymentState; job?: Record<string, un
   const paymentFailuresInc = jest.fn();
   const metrics = { paymentFailures: { inc: paymentFailuresInc } } as unknown as MetricsService;
   const events = new EventEmitter2();
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as Logger;
+  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as PinoLogger;
 
   const authorize = jest.fn(async () => ({ status: 'CAPTURED', providerRef: 'mock_ref' }));
   const capture = jest.fn(async () => ({ status: 'CAPTURED', providerRef: 'mock_ref' }));

@@ -8,6 +8,7 @@ import { AppException } from '../../common/errors/app.exception';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 import { JobsService } from '../jobs/jobs.service';
+
 import { TrackingService } from './tracking.service';
 
 @ApiTags('tracking')

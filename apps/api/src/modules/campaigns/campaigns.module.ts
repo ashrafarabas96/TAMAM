@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 
 import { MediaModule } from '../media/media.module';
+
 import { BannerAttributionService } from './banner-attribution.service';
 import { BannerEventsService } from './banner-events.service';
 import { BannerFeedService } from './banner-feed.service';

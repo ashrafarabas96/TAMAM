@@ -351,6 +351,7 @@ export interface JobDto {
   tripPinRequired: boolean;
   tripPin?: string; // customer only
   pickupOtpRequired: boolean;
+  pickupOtp?: string; // customer only — the sender reads it out to the courier at pickup
   deliveryOtpRequired: boolean;
   deliveryOtp?: string; // customer/recipient only
   delivery?: DeliveryDetailsDto;

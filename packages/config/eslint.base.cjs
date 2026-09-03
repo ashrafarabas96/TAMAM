@@ -23,9 +23,14 @@ module.exports = {
     'no-console': ['error', { allow: ['warn', 'error'] }],
     'no-empty': ['error', { allowEmptyCatch: false }],
     eqeqeq: ['error', 'always'],
+    // Spec §200 bans work-in-progress markers. Markers are written in caps as whole
+    // words; matching case-insensitive substrings flagged ordinary English instead
+    // ("attempts", "Template", "temporarily"). Comments are where markers actually
+    // live, and a Literal selector cannot see them — hence no-warning-comments too.
     'no-restricted-syntax': [
       'error',
-      { selector: "Literal[value=/TODO|FIXME|HACK|TEMP/i]", message: 'No TODO/FIXME/HACK/TEMP markers in production code (spec §200).' },
+      { selector: 'Literal[value=/\\b(TODO|FIXME|HACK|XXX)\\b/]', message: 'No TODO/FIXME/HACK/XXX markers in production code (spec §200).' },
     ],
+    'no-warning-comments': ['error', { terms: ['todo', 'fixme', 'hack:', 'xxx'], location: 'anywhere' }],
   },
 };

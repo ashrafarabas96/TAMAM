@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { API_PREFIX, type AuthSession } from '@tamam/shared-types';
-import { Logger } from 'nestjs-pino';
+import { Logger, PinoLogger } from 'nestjs-pino';
 import supertest from 'supertest';
 
 import { AppModule } from '../../src/app.module';
@@ -113,7 +113,7 @@ export class TestApp {
     const logger = app.get(Logger);
     app.useLogger(logger);
     app.setGlobalPrefix(API_PREFIX, { exclude: ['health/live', 'health/ready', 'metrics'] });
-    app.useGlobalFilters(new AllExceptionsFilter(logger));
+    app.useGlobalFilters(new AllExceptionsFilter(app.get(PinoLogger)));
     await app.init();
 
     const instance = new TestApp(app, app.get(PrismaService), app.get(RedisService));

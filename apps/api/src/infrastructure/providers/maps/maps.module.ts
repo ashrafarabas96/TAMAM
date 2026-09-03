@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppConfigService } from '../../../config';
+
 import { GoogleMapsProvider } from './google-maps.provider';
 import { MAPS_PROVIDER } from './maps.provider';
 import { OsrmMapsProvider } from './osrm-maps.provider';
@@ -10,8 +11,8 @@ import { OsrmMapsProvider } from './osrm-maps.provider';
   providers: [
     {
       provide: MAPS_PROVIDER,
-      inject: [AppConfigService, Logger],
-      useFactory: (config: AppConfigService, logger: Logger) =>
+      inject: [AppConfigService, PinoLogger],
+      useFactory: (config: AppConfigService, logger: PinoLogger) =>
         config.env.MAPS_PROVIDER === 'google' ? new GoogleMapsProvider(config) : new OsrmMapsProvider(config, logger),
     },
   ],

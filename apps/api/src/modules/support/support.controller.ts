@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { AllowRestricted, Audited, CurrentUser, RateLimit, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { SupportService } from './support.service';
 
 const ticketListSchema = pageRequestSchema.extend({

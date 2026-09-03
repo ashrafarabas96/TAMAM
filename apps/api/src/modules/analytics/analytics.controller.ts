@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { CurrentUser, Public, RateLimit, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
 import { toJsonSafe } from '../../common/interceptors/serialize.interceptor';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { AnalyticsService } from './analytics.service';
 
 const trackEventsSchema = z.object({

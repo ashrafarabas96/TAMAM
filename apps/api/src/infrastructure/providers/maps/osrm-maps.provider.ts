@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import type { GeoPoint } from '@tamam/shared-types';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { estimateEtaSeconds, haversineMeters } from '../../../common/utils/geo';
 import { AppConfigService } from '../../../config';
+
 import { fetchJson, withRetry } from './http.util';
 import type { DistanceMatrixResult, GeocodeResult, MapsProvider, PlaceSuggestion, RouteResult } from './maps.provider';
 
@@ -21,7 +22,7 @@ export class OsrmMapsProvider implements MapsProvider {
   readonly name = 'osrm';
   constructor(
     private readonly config: AppConfigService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   async route(origin: GeoPoint, destination: GeoPoint, waypoints: GeoPoint[] = []): Promise<RouteResult> {

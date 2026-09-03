@@ -20,7 +20,7 @@ import {
 } from '@tamam/shared-types';
 import type { IssueRefundInput } from '@tamam/validation';
 import type { Queue } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -135,7 +135,7 @@ export class PaymentsService {
     private readonly audit: AuditService,
     private readonly metrics: MetricsService,
     private readonly events: EventEmitter2,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(PAYMENT_GATEWAY) private readonly gateway: PaymentGatewayProvider,
     @InjectQueue(QUEUES.FINANCE) private readonly queue: Queue,
   ) {}

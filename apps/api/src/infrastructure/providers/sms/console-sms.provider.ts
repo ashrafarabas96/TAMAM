@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import type { SmsMessage, SmsProvider, SmsResult } from './sms.provider';
 
@@ -10,7 +10,7 @@ import type { SmsMessage, SmsProvider, SmsResult } from './sms.provider';
 @Injectable()
 export class ConsoleSmsProvider implements SmsProvider {
   readonly name = 'console';
-  constructor(private readonly logger: Logger) {}
+  constructor(private readonly logger: PinoLogger) {}
 
   async send(message: SmsMessage): Promise<SmsResult> {
     this.logger.info({ to: message.to, category: message.category, body: message.body }, '[DEV SMS]');

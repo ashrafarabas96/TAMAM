@@ -23,6 +23,7 @@ import { type JobLike, JobPolicy } from '../jobs/domain/job-policy';
 import { MediaUrlService } from '../media/media-url.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
+
 import { ACTIVE_TICKET_STATUSES, assertTicketTransition, priorityFor, routeReport, ticketNumber } from './domain/ticket-state';
 
 /* ------------------------------------------------------------- contracts */

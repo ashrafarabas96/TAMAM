@@ -1,5 +1,5 @@
 import { AccountStatus, ErrorCode, JobStatus, MessageType, NotificationEvent, Permission, UserRole } from '@tamam/shared-types';
-import type { Logger } from 'nestjs-pino';
+import type { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -9,6 +9,7 @@ import type { SystemConfigService } from '../config/system-config.service';
 import type { MediaUrlService } from '../media/media-url.service';
 import type { MediaService } from '../media/media.service';
 import type { NotificationsService } from '../notifications/notifications.service';
+
 import type { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 
@@ -129,7 +130,7 @@ function buildHarness(options: { jobStatus?: JobStatus; closedAt?: Date | null; 
   const systemConfig = { assertEnabled } as unknown as SystemConfigService;
   const hit = jest.fn(async () => ({ allowed: options.allowRate ?? true, remaining: 29, retryAfterSeconds: 60 }));
   const rateLimit = { hit } as unknown as RateLimitService;
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as Logger;
+  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as PinoLogger;
   const emitToJob = jest.fn();
   const isUserInRoom = jest.fn(async () => false);
   const gateway = { emitToJob, isUserInRoom } as unknown as ChatGateway;

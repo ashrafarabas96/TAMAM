@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { AllowRestricted, Audited, CurrentUser, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
 import type { RequestUser } from '../../common/types/request-user';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
+
 import { NotificationTemplateService } from './notification-template.service';
 import { NotificationsService } from './notifications.service';
 

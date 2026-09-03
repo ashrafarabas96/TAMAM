@@ -3,7 +3,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Prisma, type RestrictionKind } from '@prisma/client';
 import { CONFIG_KEYS, ErrorCode, type Page, RestrictionTargetType, RiskSignal } from '@tamam/shared-types';
 import type { UpsertRestrictionInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -12,6 +12,7 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { AuditService } from '../audit/audit.service';
 import { SystemConfigService } from '../config/system-config.service';
+
 import { type RiskCounters, type RiskFinding, type RiskThresholds, emptyCounters, evaluateRiskRules } from './domain/risk.rules';
 
 /* ------------------------------------------------------------- contracts */
@@ -108,7 +109,7 @@ export class RiskService {
     private readonly redis: RedisService,
     private readonly audit: AuditService,
     private readonly systemConfig: SystemConfigService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   /* -------------------------------------------------------------- signals */

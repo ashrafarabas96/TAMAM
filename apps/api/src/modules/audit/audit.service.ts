@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import type { AuditLogDto, Page } from '@tamam/shared-types';
 import type { AuditListFilterInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { buildPage, cursorWhere, decodeCursor } from '../../common/utils/cursor';
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
@@ -29,7 +29,7 @@ const REDACT_KEYS = /password|secret|token|otp|pin|iban|card|cvv|nationalid|nati
 export class AuditService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   static redact(value: unknown): unknown {

@@ -5,6 +5,7 @@ import { type UpsertRoleInput, upsertRoleSchema } from '@tamam/validation';
 
 import { CurrentUser, RequestId, RequirePermission, ZodBody } from '../../common/decorators';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { RbacService } from './rbac.service';
 
 @ApiTags('admin/rbac')

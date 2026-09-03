@@ -1,9 +1,10 @@
 import { createSign } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppConfigService } from '../../../config';
+
 import type { PushMessage, PushProvider, PushResult } from './push.provider';
 
 interface ServiceAccount { client_email: string; private_key: string; project_id: string; token_uri?: string }
@@ -21,7 +22,7 @@ export class FcmPushProvider implements PushProvider {
 
   constructor(
     config: AppConfigService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {
     const raw = Buffer.from(config.env.FCM_SERVICE_ACCOUNT_JSON ?? '', 'base64').toString('utf8');
     this.account = JSON.parse(raw) as ServiceAccount;

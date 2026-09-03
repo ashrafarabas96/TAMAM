@@ -1,9 +1,10 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import type { Job } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { JOB_JOBS, QUEUES } from '../../infrastructure/queue/queue.constants';
 import { QuotesService } from '../quotes/quotes.service';
+
 import { JobLifecycleService } from './job-lifecycle.service';
 
 @Processor(QUEUES.JOBS, { concurrency: 8 })
@@ -11,7 +12,7 @@ export class JobsProcessor extends WorkerHost {
   constructor(
     private readonly lifecycle: JobLifecycleService,
     private readonly quotes: QuotesService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {
     super();
   }

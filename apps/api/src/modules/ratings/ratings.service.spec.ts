@@ -3,6 +3,7 @@ import { AccountStatus, ErrorCode, JobStatus, UserRole } from '@tamam/shared-typ
 import type { RequestUser } from '../../common/types/request-user';
 import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { SystemConfigService } from '../config/system-config.service';
+
 import { RatingDirection, aggregateDelta, averageOf, editableUntilFrom, normaliseTags } from './domain/rating-tags';
 import { RatingsService } from './ratings.service';
 

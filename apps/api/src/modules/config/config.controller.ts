@@ -5,6 +5,7 @@ import { type UpdateConfigInput, type UpdateFeatureFlagInput, updateConfigSchema
 
 import { CurrentUser, Public, RequestId, RequirePermission, ZodBody } from '../../common/decorators';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { SystemConfigService } from './system-config.service';
 
 @ApiTags('config')

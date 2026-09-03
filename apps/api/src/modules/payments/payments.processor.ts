@@ -1,10 +1,11 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import type { Job } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import { FINANCE_JOBS, QUEUES } from '../../infrastructure/queue/queue.constants';
 import { LedgerService } from '../ledger/ledger.service';
+
 import { PaymentsService } from './payments.service';
 
 interface FinanceJobData {
@@ -18,7 +19,7 @@ export class PaymentsProcessor extends WorkerHost {
   constructor(
     private readonly payments: PaymentsService,
     private readonly ledger: LedgerService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {
     super();
   }

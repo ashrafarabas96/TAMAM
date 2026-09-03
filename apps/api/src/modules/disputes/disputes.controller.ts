@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { AllowRestricted, Audited, CurrentUser, Idempotent, RateLimit, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { DisputesService } from './disputes.service';
 
 const disputeListSchema = pageRequestSchema.extend({

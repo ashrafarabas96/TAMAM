@@ -5,6 +5,7 @@ import { type DecideQuoteInput, type SimpleTransitionInput, type SubmitQuoteInpu
 import { AllowRestricted, CurrentUser, RequestId, RequireRole, ZodBody } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { QuotesService } from './quotes.service';
 
 @ApiTags('quotes')

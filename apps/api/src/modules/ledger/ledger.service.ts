@@ -13,13 +13,14 @@ import {
   PaymentMethod,
   WalletOwnerType,
 } from '@tamam/shared-types';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import { buildPage, cursorWhere, decodeCursor } from '../../common/utils/cursor';
 import { percentOf, toMoney } from '../../common/utils/money';
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
+
 import { CommissionService } from './commission.service';
 import { assertBalanced, assertSupportedCurrency, platformAccountCode, settlementEntries, walletAccountCode } from './domain/ledger.rules';
 
@@ -127,7 +128,7 @@ export class LedgerService {
     private readonly commission: CommissionService,
     @Inject(forwardRef(() => WalletService)) private readonly wallets: WalletService,
     private readonly events: EventEmitter2,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   private get transactionsModel(): PrismaClient['ledgerTransaction'] {

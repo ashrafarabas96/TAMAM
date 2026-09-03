@@ -1,10 +1,11 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Prisma } from '@prisma/client';
-import { ErrorCode, LedgerAccountType, LedgerEntryDirection, LedgerTransactionType, PaymentMethod } from '@tamam/shared-types';
-import type { Logger } from 'nestjs-pino';
+import { ErrorCode, type LedgerAccountType, LedgerEntryDirection, LedgerTransactionType, PaymentMethod } from '@tamam/shared-types';
+import type { PinoLogger } from 'nestjs-pino';
 
 import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { WalletService } from '../wallet/wallet.service';
+
 import type { CommissionService } from './commission.service';
 import { LedgerService } from './ledger.service';
 
@@ -99,7 +100,7 @@ function buildHarness(options: { job?: Record<string, unknown>; existingTransact
     getOrCreate: jest.fn(async (_ownerType: string, ownerId: string) => wallets.get(ownerId === PARTNER_ID ? PARTNER_WALLET : PARTNER_WALLET)),
   } as unknown as WalletService;
   const events = new EventEmitter2();
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as Logger;
+  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as PinoLogger;
 
   const service = new LedgerService(prisma, commission, walletService, events, logger);
   return { service, tx, prisma, accounts, wallets, entries, events };

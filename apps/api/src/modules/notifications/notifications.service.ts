@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { NotificationChannel, type NotificationDto, NotificationEvent, type Page } from '@tamam/shared-types';
 import type { BroadcastNotificationInput, NotificationPreferencesInput } from '@tamam/validation';
 import type { Queue } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { buildPage, cursorWhere, decodeCursor } from '../../common/utils/cursor';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
@@ -11,6 +11,7 @@ import { EMAIL_PROVIDER, type EmailProvider } from '../../infrastructure/provide
 import { PUSH_PROVIDER, type PushProvider } from '../../infrastructure/providers/push/push.provider';
 import { SMS_PROVIDER, type SmsProvider } from '../../infrastructure/providers/sms/sms.provider';
 import { NOTIFICATION_JOBS, QUEUES } from '../../infrastructure/queue/queue.constants';
+
 import { NotificationTemplateService } from './notification-template.service';
 
 export interface NotifyOptions {
@@ -35,7 +36,7 @@ export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly templates: NotificationTemplateService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @InjectQueue(QUEUES.NOTIFICATIONS) private readonly queue: Queue,
     @Inject(PUSH_PROVIDER) private readonly push: PushProvider,
     @Inject(SMS_PROVIDER) private readonly sms: SmsProvider,

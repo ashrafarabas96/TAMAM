@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { AppException } from '../../../common/errors/app.exception';
 import { AppConfigService } from '../../../config';
+
 import type { SmsMessage, SmsProvider, SmsResult } from './sms.provider';
 
 /**

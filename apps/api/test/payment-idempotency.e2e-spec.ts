@@ -1,9 +1,10 @@
 import { createHmac, randomUUID } from 'node:crypto';
 
+import { PaymentsService, type RefundDto } from '../src/modules/payments/payments.service';
+
 import { type AuthContext, SEED, TestApp, waitFor } from './helpers/app';
 import { runCashRide } from './helpers/flows';
 // RefundDto lives in the payments module, not in @tamam/shared-types (see the contract notes).
-import { PaymentsService, type RefundDto } from '../src/modules/payments/payments.service';
 
 const WEBHOOK_SECRET = process.env.PAYMENT_GATEWAY_WEBHOOK_SECRET ?? 'mock-webhook-secret';
 

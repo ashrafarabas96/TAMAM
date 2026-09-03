@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '@prisma/client';
 import { CONFIG_KEYS, ErrorCode, type GeoPoint, JobStatus, type LiveMapJobDto, type LiveMapPartnerDto, type LocationSample, RiskSignal } from '@tamam/shared-types';
 import type { LiveMapQueryInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import { haversineMeters } from '../../common/utils/geo';
@@ -14,6 +14,9 @@ import { SystemConfigService } from '../config/system-config.service';
 import type { JobWithRelations } from '../jobs/jobs.types';
 import { MetricsService } from '../metrics/metrics.service';
 import { RiskService } from '../risk/risk.service';
+
+/** While the partner is still heading to the pickup, the ETA is measured to the first stop. */
+const BEFORE_START_STATUSES: readonly JobStatus[] = [JobStatus.ASSIGNED, JobStatus.PARTNER_EN_ROUTE];
 
 export interface PartnerLocationState {
   lat: number;
@@ -45,7 +48,7 @@ export class TrackingService {
     private readonly config: SystemConfigService,
     private readonly metrics: MetricsService,
     private readonly events: EventEmitter2,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(forwardRef(() => RiskService)) private readonly risk: RiskService,
     @Inject(MAPS_PROVIDER) private readonly maps: MapsProvider,
   ) {}
@@ -127,7 +130,7 @@ export class TrackingService {
   private async computeEta(job: { id: string; status: JobStatus; stops: Array<{ kind: string; lat: Prisma.Decimal; lng: Prisma.Decimal }> }, from: GeoPoint): Promise<{ etaToPickupSeconds: number | null; etaToDestinationSeconds: number | null }> {
     const pickup = job.stops[0];
     const dest = job.stops[job.stops.length - 1];
-    const beforeStart = [JobStatus.ASSIGNED, JobStatus.PARTNER_EN_ROUTE].includes(job.status);
+    const beforeStart = BEFORE_START_STATUSES.includes(job.status);
     let etaToPickupSeconds: number | null = null;
     let etaToDestinationSeconds: number | null = null;
     let remainingMeters: number | null = null;

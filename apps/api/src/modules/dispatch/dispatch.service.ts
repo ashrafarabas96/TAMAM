@@ -5,7 +5,7 @@ import { Prisma } from '@prisma/client';
 import { AssignmentStatus, CONFIG_KEYS, ErrorCode, JobActorType, type JobOfferDto, JobStatus, JobType, type LiveMapPartnerDto, NotificationEvent, type PartnerRoleType } from '@tamam/shared-types';
 import type { NearbyPartnersQueryInput } from '@tamam/validation';
 import type { Queue } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -25,6 +25,7 @@ import { MetricsService } from '../metrics/metrics.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PartnerAvailabilityService } from '../partners/partner-availability.service';
 import { PricingService } from '../pricing/pricing.service';
+
 import { type CandidateInput, scoreCandidates } from './domain/candidate-scoring';
 
 interface CandidateRow {
@@ -64,7 +65,7 @@ export class DispatchService {
     private readonly audit: AuditService,
     private readonly mapper: JobMapper,
     private readonly events: EventEmitter2,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(forwardRef(() => JobsService)) private readonly jobs: JobsService,
     @Inject(forwardRef(() => PricingService)) private readonly pricing: PricingService,
     @Inject(forwardRef(() => PartnerAvailabilityService)) private readonly availability: PartnerAvailabilityService,

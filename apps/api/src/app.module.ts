@@ -4,10 +4,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 
+import { AccountStatusGuard, JwtAuthGuard, PermissionsGuard, RateLimitGuard } from './common/guards';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { SerializeInterceptor } from './common/interceptors/serialize.interceptor';
-import { AccountStatusGuard, JwtAuthGuard, PermissionsGuard, RateLimitGuard } from './common/guards';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { AppConfigModule, AppConfigService } from './config';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';

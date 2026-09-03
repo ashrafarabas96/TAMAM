@@ -7,10 +7,10 @@ import type { DeliveryEstimateInput, DeliveryPricingRule, HomeServicePricingRule
 import { deliveryPricingRuleSchema, homeServicePricingRuleSchema, ridePricingRuleSchema } from '@tamam/validation';
 
 import { AppException } from '../../common/errors/app.exception';
+import type { RequestUser } from '../../common/types/request-user';
 import { estimateEtaSeconds, haversineMeters } from '../../common/utils/geo';
 import { max0, percentOf } from '../../common/utils/money';
 import { addSeconds } from '../../common/utils/time';
-import type { RequestUser } from '../../common/types/request-user';
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
 import { MAPS_PROVIDER, type MapsProvider } from '../../infrastructure/providers/maps/maps.provider';
 import { RedisService } from '../../infrastructure/redis/redis.service';
@@ -20,6 +20,7 @@ import { SystemConfigService } from '../config/system-config.service';
 import { CommissionService } from '../ledger/commission.service';
 import { MediaUrlService } from '../media/media-url.service';
 import { ZonesService } from '../zones/zones.service';
+
 import { type FareResult, applyPromoAndTax, computeDeliveryFare, computeHomeServiceFare, computeRideFare, taxPercentOf, toBreakdown } from './domain/fare-calculator';
 
 type AnyRule = RidePricingRule | DeliveryPricingRule | HomeServicePricingRule;

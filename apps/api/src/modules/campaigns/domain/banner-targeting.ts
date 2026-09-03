@@ -1,4 +1,4 @@
-import { BannerAudience, CampaignStatus, type JobType } from '@tamam/shared-types';
+import { type BannerAudience, CampaignStatus, type JobType } from '@tamam/shared-types';
 
 /**
  * Pure targeting rules for promotional banners (spec §80–§82).

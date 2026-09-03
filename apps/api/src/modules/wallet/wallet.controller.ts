@@ -18,6 +18,7 @@ import { AllowRestricted, Audited, CurrentUser, Idempotent, RateLimit, RequestId
 import { AppException } from '../../common/errors/app.exception';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { type EarningsPeriod, type WalletOwner, WalletService } from './wallet.service';
 
 const walletQuerySchema = z.object({ owner: z.enum(['CUSTOMER', 'PARTNER']).optional() });

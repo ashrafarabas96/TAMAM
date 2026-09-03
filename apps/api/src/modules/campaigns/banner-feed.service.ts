@@ -19,6 +19,8 @@ import { RedisService } from '../../infrastructure/redis/redis.service';
 import { SystemConfigService } from '../config/system-config.service';
 import { MediaUrlService } from '../media/media-url.service';
 import { ZonesService } from '../zones/zones.service';
+
+import { type CandidateBanner, type CandidateCampaign, PLACEMENT_LIMITS, bannerMediaSelect } from './campaigns.types';
 import {
   ANONYMOUS_VIEWER_ID,
   type BannerViewer,
@@ -28,7 +30,6 @@ import {
   matchesTargeting,
 } from './domain/banner-targeting';
 import { signBannerToken } from './domain/banner-token';
-import { type CandidateBanner, type CandidateCampaign, PLACEMENT_LIMITS, bannerMediaSelect } from './campaigns.types';
 
 /** Redis key holding the candidate campaigns of one placement (targeting is applied after the cache). */
 export const candidatesKey = (placement: BannerPlacement): string => `banners:candidates:${placement}`;

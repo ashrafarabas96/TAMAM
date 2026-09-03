@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { AccountStatus, ErrorCode, WsEvent, WsNamespace } from '@tamam/shared-types';
 import { markReadSchema, sendMessageSchema, uuidSchema } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import type { Server, Socket } from 'socket.io';
 import { z } from 'zod';
 
@@ -17,6 +17,7 @@ import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
 import { TokenService } from '../auth/token.service';
 import { MetricsService } from '../metrics/metrics.service';
+
 import { ChatService } from './chat.service';
 
 /* ------------------------------------------------------------- contracts */
@@ -71,7 +72,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly tokens: TokenService,
     private readonly metrics: MetricsService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(forwardRef(() => ChatService)) private readonly chat: ChatService,
   ) {}
 

@@ -10,6 +10,7 @@ import { addMinutes } from '../../common/utils/time';
 import { AppConfigService } from '../../config';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { SystemConfigService } from '../config/system-config.service';
+
 import { JobPolicy } from './domain/job-policy';
 import { JobMapper } from './job.mapper';
 import { JobsService } from './jobs.service';

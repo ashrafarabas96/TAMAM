@@ -2,6 +2,7 @@ import type { AppConfigService } from '../../config';
 import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { RedisService } from '../../infrastructure/redis/redis.service';
 import type { SystemConfigService } from '../config/system-config.service';
+
 import { AnalyticsService, isTrackedEvent, stripPii, zonedDateKey, zonedDayRange } from './analytics.service';
 
 const USER_ID = '11111111-1111-4111-8111-111111111111';

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ErrorCode } from '@tamam/shared-types';
 
 import { AppException } from '../../../common/errors/app.exception';
+
 import type { GatewayAuthorizeRequest, GatewayResult, GatewayWebhookEvent, PaymentGatewayProvider } from './payment-gateway.provider';
 
 /** Used when no external gateway is configured: card payments are reported as disabled. */

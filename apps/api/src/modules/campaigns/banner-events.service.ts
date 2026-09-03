@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Prisma } from '@prisma/client';
 import { type BannerEventType, CONFIG_KEYS } from '@tamam/shared-types';
 import type { BannerEventBatchInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import type { RequestUser } from '../../common/types/request-user';
 import { AppConfigService } from '../../config';
@@ -11,6 +11,7 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { SystemConfigService } from '../config/system-config.service';
 import { MetricsService } from '../metrics/metrics.service';
+
 import { frequencyKey, secondsUntilNextUtcDay, utcDayKey } from './banner-feed.service';
 import { ANONYMOUS_VIEWER_ID } from './domain/banner-targeting';
 import { verifyBannerToken } from './domain/banner-token';
@@ -44,7 +45,7 @@ export class BannerEventsService {
     private readonly metrics: MetricsService,
     private readonly events: EventEmitter2,
     private readonly config: AppConfigService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   /**

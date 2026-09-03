@@ -1,13 +1,14 @@
 import { Injectable, Module } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppConfigService } from '../../../config';
+
 import { EMAIL_PROVIDER, type EmailMessage, type EmailProvider } from './email.provider';
 
 @Injectable()
 export class ConsoleEmailProvider implements EmailProvider {
   readonly name = 'console';
-  constructor(private readonly logger: Logger) {}
+  constructor(private readonly logger: PinoLogger) {}
   async send(message: EmailMessage): Promise<{ accepted: boolean; providerRef: string | null }> {
     this.logger.info({ to: message.to, subject: message.subject }, '[DEV EMAIL]');
     return { accepted: true, providerRef: `console-${Date.now()}` };
@@ -22,7 +23,7 @@ export class ConsoleEmailProvider implements EmailProvider {
 export class SmtpEmailProvider implements EmailProvider {
   readonly name = 'smtp';
   private readonly url: URL;
-  constructor(config: AppConfigService, private readonly logger: Logger) {
+  constructor(config: AppConfigService, private readonly logger: PinoLogger) {
     this.url = new URL(config.env.SMTP_URL ?? 'smtps://localhost:465');
   }
 
@@ -68,8 +69,8 @@ export class SmtpEmailProvider implements EmailProvider {
   providers: [
     {
       provide: EMAIL_PROVIDER,
-      inject: [AppConfigService, Logger],
-      useFactory: (config: AppConfigService, logger: Logger) => (config.env.EMAIL_PROVIDER === 'smtp' ? new SmtpEmailProvider(config, logger) : new ConsoleEmailProvider(logger)),
+      inject: [AppConfigService, PinoLogger],
+      useFactory: (config: AppConfigService, logger: PinoLogger) => (config.env.EMAIL_PROVIDER === 'smtp' ? new SmtpEmailProvider(config, logger) : new ConsoleEmailProvider(logger)),
     },
   ],
   exports: [EMAIL_PROVIDER],

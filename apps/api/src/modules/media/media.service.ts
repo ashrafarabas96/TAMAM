@@ -13,6 +13,7 @@ import { AppConfigService } from '../../config';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { STORAGE_PROVIDER, type StorageProvider } from '../../infrastructure/providers/storage/storage.provider';
 import { MEDIA_JOBS, QUEUES } from '../../infrastructure/queue/queue.constants';
+
 import { MediaUrlService } from './media-url.service';
 
 const ALLOWED: Record<MediaKind, { mimes: string[]; maxBytes: number; extensions: string[] }> = {

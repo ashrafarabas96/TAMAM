@@ -1,15 +1,16 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import type { Job } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { DISPATCH_JOBS, QUEUES } from '../../infrastructure/queue/queue.constants';
+
 import { DispatchService } from './dispatch.service';
 
 @Processor(QUEUES.DISPATCH, { concurrency: 10 })
 export class DispatchProcessor extends WorkerHost {
   constructor(
     private readonly dispatch: DispatchService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {
     super();
   }

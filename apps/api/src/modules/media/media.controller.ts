@@ -6,6 +6,7 @@ import type { Response } from 'express';
 import { AllowRestricted, CurrentUser, RateLimit, ZodBody } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { MediaService } from './media.service';
 
 @ApiTags('media')

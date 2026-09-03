@@ -16,7 +16,7 @@ import {
   WalletOwnerType,
 } from '@tamam/shared-types';
 import type { DecideDisputeInput, DisputeMessageInput, OpenDisputeInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -32,6 +32,7 @@ import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PaymentsService } from '../payments/payments.service';
 import { WalletService } from '../wallet/wallet.service';
+
 import { LIVE_DISPUTE_STATUSES, assertDecidable, assertJobDisputable, disputeNumber, partnerAdjustmentEntries } from './domain/dispute-decision';
 
 /* ------------------------------------------------------------- contracts */
@@ -115,7 +116,7 @@ export class DisputesService {
     private readonly ledger: LedgerService,
     private readonly wallets: WalletService,
     private readonly audit: AuditService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(forwardRef(() => JobsService)) private readonly jobs: JobsService,
   ) {}
 

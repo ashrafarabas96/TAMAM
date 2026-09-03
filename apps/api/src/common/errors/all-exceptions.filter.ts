@@ -2,7 +2,7 @@ import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, HttpSta
 import { Prisma } from '@prisma/client';
 import { type ApiError, ErrorCode } from '@tamam/shared-types';
 import type { Request, Response } from 'express';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import { ZodError } from 'zod';
 
 import { AppException } from './app.exception';
@@ -13,7 +13,7 @@ import { AppException } from './app.exception';
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly logger: Logger) {}
+  constructor(private readonly logger: PinoLogger) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();

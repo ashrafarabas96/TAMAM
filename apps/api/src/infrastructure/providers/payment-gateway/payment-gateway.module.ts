@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AppConfigService } from '../../../config';
+
 import { MockGatewayProvider } from './mock-gateway.provider';
 import { NoneGatewayProvider } from './none-gateway.provider';
 import { PAYMENT_GATEWAY } from './payment-gateway.provider';

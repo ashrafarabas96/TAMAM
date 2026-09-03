@@ -18,6 +18,7 @@ import type { MediaUrlService } from '../media/media-url.service';
 import type { MediaService } from '../media/media.service';
 import type { NotificationsService } from '../notifications/notifications.service';
 import type { VehiclesService } from '../vehicles/vehicles.service';
+
 import { PartnerAvailabilityService } from './partner-availability.service';
 import { PARTNER_ONBOARDING_STEPS, PartnersService } from './partners.service';
 
@@ -267,8 +268,17 @@ describe('PartnerAvailabilityService', () => {
   const buildService = (prismaMock: Record<string, unknown>) =>
     new PartnerAvailabilityService(prismaMock as unknown as PrismaService, systemConfigStub());
 
+  type AvailabilityUpsertArgs = {
+    where: { partnerId: string };
+    update: { status?: string; onlineSince?: Date | null; lastHeartbeatAt?: Date; batteryPercent?: number | null };
+    create: Record<string, unknown>;
+  };
+
   const prismaFor = (partner: ReturnType<typeof partnerFixture>) => {
-    const upsert = jest.fn(async () => partner.availability);
+    // Typed with the argument the service actually passes, so `upsert.mock.calls[0][0]`
+    // is inspectable. setAvailability() and heartbeat() write different subsets of
+    // `update`, hence the optional fields.
+    const upsert = jest.fn(async (_args: AvailabilityUpsertArgs) => partner.availability);
     const update = jest.fn(async () => partner.availability);
     return {
       mock: {
@@ -334,7 +344,7 @@ describe('PartnerAvailabilityService', () => {
     const dto = await service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.ONLINE });
 
     expect(upsert).toHaveBeenCalledTimes(1);
-    const call = upsert.mock.calls[0]?.[0] as { update: { status: string; onlineSince: Date | null } } | undefined;
+    const call = upsert.mock.calls[0]?.[0];
     expect(call?.update.status).toBe(AvailabilityStatus.ONLINE);
     expect(call?.update.onlineSince).toBeInstanceOf(Date);
     expect(dto.partnerId).toBe(PARTNER_ID);

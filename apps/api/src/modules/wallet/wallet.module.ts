@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 
 import { LedgerModule } from '../ledger/ledger.module';
+
 import { WalletController } from './wallet.controller';
 import { WalletService } from './wallet.service';
 

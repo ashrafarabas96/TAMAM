@@ -13,7 +13,7 @@ import {
   WsEvent,
 } from '@tamam/shared-types';
 import type { SendMessageInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -25,6 +25,7 @@ import { type JobLike, JobPolicy } from '../jobs/domain/job-policy';
 import { MediaUrlService } from '../media/media-url.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
+
 import { ChatGateway } from './chat.gateway';
 
 /* ------------------------------------------------------------- contracts */
@@ -98,7 +99,7 @@ export class ChatService {
     private readonly notifications: NotificationsService,
     private readonly systemConfig: SystemConfigService,
     private readonly rateLimit: RateLimitService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(forwardRef(() => ChatGateway)) private readonly gateway: ChatGateway,
   ) {}
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ErrorCode, type JobType, type Money, type Page, PaymentMethod, type PromoType } from '@tamam/shared-types';
 import type { ApplyPromoInput, UpsertPromoCodeInput } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import { buildPage, cursorWhere, decodeCursor } from '../../common/utils/cursor';
@@ -10,6 +10,7 @@ import { toMoney } from '../../common/utils/money';
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { AuditService } from '../audit/audit.service';
+
 import { type PromoRule, evaluatePromo } from './domain/promo.rules';
 
 export interface EvaluatePromoContext {
@@ -106,7 +107,7 @@ export class PromotionsService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     private readonly audit: AuditService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   /* ------------------------------------------------------------ evaluation */

@@ -9,6 +9,7 @@ import { PricingModule } from '../pricing/pricing.module';
 import { PromotionsModule } from '../promotions/promotions.module';
 import { QuotesModule } from '../quotes/quotes.module';
 import { TrackingModule } from '../tracking/tracking.module';
+
 import { JobLifecycleService } from './job-lifecycle.service';
 import { JobSafetyService } from './job-safety.service';
 import { JobMapper } from './job.mapper';

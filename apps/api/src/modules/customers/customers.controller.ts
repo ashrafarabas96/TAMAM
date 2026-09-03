@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { AllowRestricted, CurrentUser, RequireRole, ZodBody, ZodQuery } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { CustomersService } from './customers.service';
 
 const customerJobsQuerySchema = jobListFilterSchema.merge(pageRequestSchema);

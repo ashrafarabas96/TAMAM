@@ -5,7 +5,7 @@ import { Prisma } from '@prisma/client';
 import { CONFIG_KEYS, ErrorCode, FEATURE_FLAGS, JobActorType, type JobDto, JobStatus, JobStopKind, JobType, MediaPurpose, NotificationEvent, type Page, PaymentMethod, SchedulingMode } from '@tamam/shared-types';
 import type { CreateJobInput, JobListFilterInput, PageRequestInput } from '@tamam/validation';
 import type { Queue } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -26,6 +26,7 @@ import { PricingService } from '../pricing/pricing.service';
 import { PromotionsService } from '../promotions/promotions.service';
 import { RiskService } from '../risk/risk.service';
 import { ZonesService } from '../zones/zones.service';
+
 import { JobDomainEvents, type JobStatusChangedEvent } from './domain/job-events';
 import { formatJobNumber } from './domain/job-number';
 import { JobPolicy } from './domain/job-policy';
@@ -71,7 +72,7 @@ export class JobsService {
     private readonly metrics: MetricsService,
     private readonly mapper: JobMapper,
     private readonly events: EventEmitter2,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
     @Inject(forwardRef(() => PaymentsService)) private readonly payments: PaymentsService,
     @Inject(forwardRef(() => ChatService)) private readonly chat: ChatService,
     @InjectQueue(QUEUES.DISPATCH) private readonly dispatchQueue: Queue,

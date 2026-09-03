@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { AllowRestricted, CurrentUser, Public, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { CatalogService } from './catalog.service';
 
 const categoriesQuery = z.object({ jobType: z.nativeEnum(JobType).optional(), zoneId: z.string().uuid().optional() });

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { AvailabilityStatus, DocumentStatus, NotificationEvent } from '@tamam/shared-types';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PartnerAvailabilityService } from '../partners/partner-availability.service';
+
 import { DOCUMENT_EXPIRY_WARNING_DAYS, type ExpiringDocument, dayMs, daysUntil, documentsToExpire, documentsToWarn } from './domain/document-expiry';
 
 export interface DocumentExpiryResult {
@@ -26,7 +27,7 @@ export class DocumentExpiryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   async run(now: Date = new Date()): Promise<DocumentExpiryResult> {

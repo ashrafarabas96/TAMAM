@@ -3,17 +3,18 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { type JobOfferDto, type LocationSample, WsEvent, WsNamespace } from '@tamam/shared-types';
 import { locationBatchSchema } from '@tamam/validation';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import type { Server, Socket } from 'socket.io';
 import { z } from 'zod';
 
 import type { RequestUser } from '../../common/types/request-user';
-import { TokenService } from '../auth/token.service';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
+import { TokenService } from '../auth/token.service';
 import { DispatchEvents } from '../dispatch/dispatch.service';
 import { JobDomainEvents, type JobStatusChangedEvent } from '../jobs/domain/job-events';
 import { JobPolicy } from '../jobs/domain/job-policy';
 import { MetricsService } from '../metrics/metrics.service';
+
 import { TrackingEvents, TrackingService } from './tracking.service';
 
 type AuthedSocket = Socket & { data: { user?: RequestUser } };
@@ -36,7 +37,7 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
     private readonly prisma: PrismaService,
     private readonly tracking: TrackingService,
     private readonly metrics: MetricsService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   async handleConnection(socket: AuthedSocket): Promise<void> {

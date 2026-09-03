@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import type { Queue } from 'bullmq';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { startOfUtcDay } from '../../common/utils/time';
 import { MAINTENANCE_JOBS, QUEUES } from '../../infrastructure/queue/queue.constants';
@@ -39,7 +39,7 @@ export const isoDate = (d: Date): string => d.toISOString().slice(0, 10);
 export class MaintenanceScheduler {
   constructor(
     @InjectQueue(QUEUES.MAINTENANCE) private readonly queue: Queue<MaintenanceJobData>,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   @Cron('* * * * *', { name: 'maintenance.minute', timeZone: 'UTC' })

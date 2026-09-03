@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import type { BannerPlacement } from '@tamam/shared-types';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
+
 import { attributionKey } from './banner-events.service';
 
 interface JobCreatedEventLike {
@@ -42,7 +43,7 @@ export class BannerAttributionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
-    private readonly logger: Logger,
+    private readonly logger: PinoLogger,
   ) {}
 
   /* --------------------------------------------------------- attribution */

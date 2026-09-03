@@ -1,4 +1,4 @@
-import { type FareBreakdownLine, JobType, JobUrgency, type LocalizedText } from '@tamam/shared-types';
+import { type FareBreakdownLine, JobType, type JobUrgency, type LocalizedText } from '@tamam/shared-types';
 import type { DeliveryPricingRule, HomeServicePricingRule, RidePricingRule } from '@tamam/validation';
 
 import { max0, multiply, percentOf, roundDiv } from '../../../common/utils/money';

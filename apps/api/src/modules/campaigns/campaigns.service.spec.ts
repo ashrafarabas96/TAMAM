@@ -8,6 +8,7 @@ import type { AuditService } from '../audit/audit.service';
 import type { SystemConfigService } from '../config/system-config.service';
 import type { MediaUrlService } from '../media/media-url.service';
 import type { ZonesService } from '../zones/zones.service';
+
 import { BannerFeedService } from './banner-feed.service';
 import { CampaignsService } from './campaigns.service';
 import { PLACEMENT_LIMITS } from './campaigns.types';
@@ -111,7 +112,9 @@ interface Harness {
 }
 
 function harness(current = campaignRow()): Harness {
-  const prisma = {
+  // Annotated because `$transaction` closes over `prismaTx`, which in turn borrows
+  // `prisma.campaign` — inference cannot resolve that cycle on its own.
+  const prisma: Harness['prisma'] = {
     campaign: {
       findUnique: jest.fn(async (args: { include?: unknown }) => (args.include ? current : current)),
       update: jest.fn(async () => current),

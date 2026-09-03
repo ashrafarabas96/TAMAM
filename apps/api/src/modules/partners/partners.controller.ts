@@ -45,6 +45,7 @@ import {
 } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
+
 import { PartnerAvailabilityService } from './partner-availability.service';
 import { PartnersService } from './partners.service';
 

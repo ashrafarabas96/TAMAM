@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 
 import { AppException } from '../../../common/errors/app.exception';
 import { AppConfigService } from '../../../config';
+
 import type { GatewayAuthorizeRequest, GatewayResult, GatewayWebhookEvent, PaymentGatewayProvider } from './payment-gateway.provider';
 
 /**

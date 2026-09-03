@@ -48,6 +48,7 @@ import { MediaUrlService } from '../media/media-url.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { VEHICLE_REQUIRED_ROLES, VehiclesService, normalizePlate } from '../vehicles/vehicles.service';
+
 import { PartnerAvailabilityService } from './partner-availability.service';
 
 /** Resumable onboarding wizard (spec §126). `partner_profiles.onboarding_step` stores the furthest completed step. */

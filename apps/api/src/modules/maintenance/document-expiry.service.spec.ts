@@ -1,8 +1,9 @@
 import { NotificationEvent } from '@tamam/shared-types';
-import type { Logger } from 'nestjs-pino';
+import type { PinoLogger } from 'nestjs-pino';
 
 import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { NotificationsService } from '../notifications/notifications.service';
+
 import { DocumentExpiryService } from './document-expiry.service';
 import { dayMs } from './domain/document-expiry';
 
@@ -20,7 +21,7 @@ function prismaMock() {
   };
 }
 
-const loggerMock = (): Logger => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn(), log: jest.fn() }) as unknown as Logger;
+const loggerMock = (): PinoLogger => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn(), log: jest.fn() }) as unknown as PinoLogger;
 
 describe('DocumentExpiryService', () => {
   let prisma: ReturnType<typeof prismaMock>;

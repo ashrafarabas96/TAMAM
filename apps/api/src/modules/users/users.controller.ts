@@ -7,6 +7,7 @@ import { AllowRestricted, Audited, CurrentUser, RequestId, RequirePermission, Zo
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 import { SessionService } from '../auth/session.service';
+
 import { UsersService } from './users.service';
 
 @ApiTags('users')
