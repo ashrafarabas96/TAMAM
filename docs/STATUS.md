@@ -2,7 +2,7 @@
 
 > **Read this first when resuming work.** It is the exact state of the repository, what is verified, what is written-but-unverified, and the next commands to run.
 
-_Last updated: 2026-09-02 (session 1 — cloud sandbox without package-registry access)_
+_Last updated: 2026-09-03 (end of session 1 — cloud sandbox without package-registry access). All four applications are written; **nothing has been compiled or tested**. See `FINAL_IMPLEMENTATION_REPORT.md` for the honest per-area status and the full gap list._
 
 ## 0. Environment facts that shaped session 1
 
@@ -22,7 +22,7 @@ _Last updated: 2026-09-02 (session 1 — cloud sandbox without package-registry 
 
 Paste this as the first message of the new Cowork session (with the `tamam` folder connected):
 
-> أكمل مشروع TAMAM من المجلد المرتبط. اقرأ أولًا `docs/STATUS.md` ثم `docs/MASTER_DEVELOPMENT_PROMPT_TAMAM.pdf` كاملًا ثم `docs/ARCHITECTURE.md` و`docs/DATABASE.md`. نفّذ إجراء التشغيل في القسم 3 من STATUS.md (تثبيت الحزم، PostGIS، Prisma migrate)، وأصلح أي أخطاء ترجمة في الأساس الموجود، ثم تابع المراحل بالترتيب (Auth → Catalog/Zones/Partners → Job Engine → Pricing → Dispatch → Tracking → Customer App → Partner App → Flows → Payments/Ledger → Notifications/Chat → Admin → Support/Disputes → Analytics/Audit → Security → E2E → Production). حدّث STATUS.md في نهاية كل مرحلة وزامن الملفات إلى مجلدي.
+> أكمل مشروع TAMAM من المجلد المرتبط. الشيفرة كاملة (خادم NestJS + لوحة إدارة Next.js + تطبيقا Flutter) لكنها **لم تُترجَم ولم تُختبر أبدًا** بسبب حجب الشبكة في الجلسة السابقة. اقرأ أولًا `FINAL_IMPLEMENTATION_REPORT.md` ثم `docs/STATUS.md` ثم `docs/MASTER_DEVELOPMENT_PROMPT_TAMAM.pdf`. نفّذ إجراء التشغيل في القسم 3 من STATUS.md بالكامل (تثبيت الحزم، PostGIS، Prisma migrate، seed، ثم typecheck/lint/test لكل تطبيق و`flutter analyze`/`flutter test` للتطبيقين)، وأصلح كل خطأ من **جذره** دون حذف اختبار أو تخفيف نوع. ثم عالج الثغرات المذكورة في القسم 7 من التقرير النهائي (A1–A12 نواقص في الـ API، C1–C6 تناقضات داخلية). حدّث STATUS.md والتقرير النهائي بعد كل مرحلة وزامن الملفات إلى مجلدي.
 
 ## 1. What exists (by path)
 
@@ -43,26 +43,27 @@ Paste this as the first message of the new Cowork session (with the `tamam` fold
 
 ## 2. Module status matrix
 
-Status values: **Implemented** (written + compiled + tested), **Written-Unverified** (code complete, never compiled), **Partial**, **Blocked**, **Not Implemented**.
+Status values: **Implemented** (written + executed here), **Written-Unverified** (code complete,
+never compiled), **Partial**, **Blocked**, **Not Implemented**.
 
 | Area | Status | Detail |
 | --- | --- | --- |
-| Design tokens / identity | Implemented | generator verified |
-| Shared types & validation | Written-Unverified | |
-| Prisma schema + custom SQL | Written-Unverified | |
-| API: bootstrap, config, logging, errors, requestId, health | _see git log_ | updated at end of session |
-| API: auth (OTP, JWT, sessions), RBAC, users | _see git log_ | |
-| API: catalog, zones, partners, vehicles | _see git log_ | |
-| API: jobs engine, pricing, dispatch, tracking | _see git log_ | |
-| API: payments, wallet, ledger, promotions, campaigns/banners | _see git log_ | |
-| API: notifications, chat, ratings, support, disputes, media, admin, config, audit, analytics, risk | _see git log_ | |
-| Admin web | _see git log_ | |
-| Customer app | _see git log_ | |
-| Partner app | _see git log_ | |
-| Infrastructure (docker, CI) | _see git log_ | |
-| Tests | Not Implemented until toolchain available | unit specs are written next to code where noted |
-
-(The rows marked _see git log_ are updated by the closing commit of each session — run `git log --stat` in the repo root.)
+| Design tokens / identity (`packages/ui-tokens`) | Implemented | generator executed; emits TS, CSS and Dart |
+| Dart contracts generator (`scripts/generate-dart-contracts.mjs`) | Implemented | executed; 48 enums + API constants into both apps |
+| Shared types & validation | Written-Unverified | one vocabulary for all four apps |
+| Prisma schema (96 models) + PostGIS/integrity SQL | Written-Unverified | `prisma validate` pending |
+| API: bootstrap, config, logging, errors, health, metrics | Written-Unverified | |
+| API: auth (OTP, rotating refresh, sessions), RBAC, users | Written-Unverified | |
+| API: catalog, zones, partners, vehicles, customers | Written-Unverified | |
+| API: jobs engine, pricing, dispatch, tracking, quotes | Written-Unverified | core engine, authored directly |
+| API: payments, wallet, ledger, promotions, campaigns/banners | Written-Unverified | double-entry ledger with DB-enforced immutability |
+| API: notifications, chat, ratings, support, disputes, media, admin, config, audit, analytics, risk, maintenance | Written-Unverified | 32 modules, 31 controllers, 313 routes |
+| Admin web (`apps/admin-web`, 164 files) | Written-Unverified | 29 permission-gated pages incl. the campaign/banner manager |
+| Customer app (`apps/customer-mobile`, 151 Dart files) | Written-Unverified | all services, banner surfaces, live tracking |
+| Partner app (`apps/partner-mobile`, 182 Dart files) | Written-Unverified | onboarding → offer → job → quote → earnings, background location |
+| Infrastructure (docker compose, Dockerfiles, CI) | Written-Unverified | blocked on a lockfile until `pnpm install` runs |
+| Tests (31 files: unit specs + 6 e2e suites) | Written-Unverified | never executed |
+| Compile / migrate / seed / test run | **Not Implemented** | blocked by network policy — section 3 below |
 
 ## 3. Next session — exact bring-up procedure
 
@@ -103,7 +104,9 @@ pnpm --filter @tamam/admin-web typecheck && pnpm --filter @tamam/admin-web build
 pnpm --filter @tamam/api test:e2e
 ```
 
-Then update this file and `FINAL_IMPLEMENTATION_REPORT.md`.
+Then update this file and `FINAL_IMPLEMENTATION_REPORT.md` — specifically section 7 of the report,
+which lists every known gap (B1–B3 blocking, A1–A12 API gaps, C1–C6 internal inconsistencies).
+Fix root causes only; never delete a test or loosen a type to make something pass (spec §201).
 
 ## 4. Decisions log
 
