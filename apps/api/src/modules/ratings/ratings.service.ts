@@ -82,12 +82,14 @@ export class RatingsService {
       if (existing) {
         if (existing.raterId !== user.id) throw AppException.forbidden('This rating belongs to someone else');
         assertEditable(existing.editableUntil, now);
+        // Read the score being replaced before the row is written, not after.
+        const previousRating = existing.rating;
         const updated = await tx.review.update({
           where: { id: existing.id },
           data: { rating: input.rating, tags, comment },
           include: reviewInclude,
         });
-        await this.moveAggregate(tx, target, aggregateDelta(existing.rating, input.rating));
+        await this.moveAggregate(tx, target, aggregateDelta(previousRating, input.rating));
         return updated;
       }
 

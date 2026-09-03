@@ -133,7 +133,7 @@ function buildHarness(options: { payment?: PaymentState; job?: Record<string, un
     paymentAttempt: { count: jest.fn(async () => 0), create: jest.fn(async () => ({})) },
     webhookEvent: { findUnique: webhookFindUnique, create: webhookCreate, update: jest.fn(async () => ({})) },
     nextCounter: jest.fn(async () => 42n),
-    ledgerTransaction: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
+    withLedgerWrite: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
     $transaction: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
   } as unknown as PrismaService;
 

@@ -91,8 +91,9 @@ function buildHarness(options: { job?: Record<string, unknown>; existingTransact
 
   const prisma = {
     ...tx,
-    // PrismaService exposes the transaction helper under this name (it shadows the model delegate).
-    ledgerTransaction: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
+    // PrismaService.withLedgerWrite opens a transaction with the ledger-write GUC set;
+    // the harness just hands the callback the same tx mock.
+    withLedgerWrite: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
   } as unknown as PrismaService;
 
   const commission = { resolve: jest.fn(async () => ({ percent: 10, fixedMinor: 0n, policyId: null })) } as unknown as CommissionService;

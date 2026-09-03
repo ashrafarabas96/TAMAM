@@ -78,11 +78,19 @@ function buildHarness(options: { jobStatus?: JobStatus; existing?: ReviewRowStat
     return row;
   });
 
+  // Prisma returns a detached row per call; returning the stored object itself would let an
+  // update retroactively change what an earlier findUnique appeared to read.
   const reviewUpdate = jest.fn(async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
-    const row = reviews.find((r) => r.id === where.id);
-    if (!row) throw new Error('review not found');
-    Object.assign(row, { rating: Number(data.rating), tags: data.tags as string[], comment: (data.comment as string | null) ?? null });
-    return row;
+    const index = reviews.findIndex((r) => r.id === where.id);
+    if (index === -1) throw new Error('review not found');
+    const updated: ReviewRowState = {
+      ...reviews[index]!,
+      rating: Number(data.rating),
+      tags: data.tags as string[],
+      comment: (data.comment as string | null) ?? null,
+    };
+    reviews[index] = updated;
+    return { ...updated };
   });
 
   const partnerUpdate = jest.fn(async ({ data }: { data: { ratingSum: { increment: number }; ratingCount: { increment: number } } }) => {
@@ -99,9 +107,10 @@ function buildHarness(options: { jobStatus?: JobStatus; existing?: ReviewRowStat
   const prisma = {
     job: { findUnique: jest.fn(async () => job) },
     review: {
-      findUnique: jest.fn(async ({ where }: { where: { jobId_direction: { direction: RatingDirection } } }) =>
-        reviews.find((r) => r.direction === where.jobId_direction.direction) ?? null,
-      ),
+      findUnique: jest.fn(async ({ where }: { where: { jobId_direction: { direction: RatingDirection } } }) => {
+        const row = reviews.find((r) => r.direction === where.jobId_direction.direction);
+        return row ? { ...row } : null;
+      }),
       findMany: jest.fn(async () => reviews),
       create: reviewCreate,
       update: reviewUpdate,
