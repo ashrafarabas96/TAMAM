@@ -1,0 +1,60 @@
+# TAMAM reverse proxy — automatic HTTPS via ACME.
+{
+	email {$ACME_EMAIL}
+	admin 127.0.0.1:2019
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+# ------------------------------------------------------------------ API
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		X-Frame-Options "DENY"
+		-Server
+	}
+
+	# Socket.IO namespaces (/tracking, /jobs, /chat, /admin) — long-lived upgrades.
+	@websocket {
+		header Connection *Upgrade*
+		header Upgrade websocket
+	}
+	handle @websocket {
+		reverse_proxy api:3000
+	}
+
+	# Never expose Prometheus metrics publicly.
+	handle /metrics* {
+		respond 404
+	}
+
+	handle {
+		reverse_proxy api:3000 {
+			header_up X-Forwarded-Proto {scheme}
+			health_uri /health/live
+			health_interval 30s
+		}
+	}
+}
+
+# ------------------------------------------------------------ admin panel
+{$ADMIN_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		X-Frame-Options "DENY"
+		-Server
+	}
+
+	reverse_proxy admin-web:3001 {
+		header_up X-Forwarded-Proto {scheme}
+	}
+}

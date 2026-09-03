@@ -1,0 +1,238 @@
+# =====================================================================
+# TAMAM — continuous integration.
+# This file is the source of truth; `.github/workflows/ci.yml` is a copy of it
+# (GitHub only reads workflows from `.github/workflows`). Keep the two in sync.
+# =====================================================================
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.28.0'
+  FLUTTER_CHANNEL: stable
+
+jobs:
+  # ------------------------------------------------------------------ lint
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tokens:generate
+      - run: pnpm --filter @tamam/api exec prisma generate
+      - run: pnpm lint
+      # `pnpm format:check` is intentionally not run yet: the existing sources predate the
+      # printWidth:100 Prettier config, so enabling it needs its own formatting commit first.
+
+  # ------------------------------------------------------------- typecheck
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tokens:generate
+      - run: pnpm --filter @tamam/shared-types --filter @tamam/validation build
+      - run: pnpm --filter @tamam/api exec prisma generate
+      - run: pnpm typecheck
+
+  # ------------------------------------------------------------ unit tests
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tokens:generate
+      - run: pnpm --filter @tamam/shared-types --filter @tamam/validation build
+      # Unit specs mock PrismaService — no database is needed here.
+      - run: pnpm --filter @tamam/api exec prisma generate
+      - run: pnpm --filter @tamam/validation test
+      - run: pnpm --filter @tamam/api test -- --coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-coverage
+          path: apps/api/coverage
+          retention-days: 7
+
+  # ------------------------------------------------------------- e2e tests
+  e2e-tests:
+    name: E2E tests
+    runs-on: ubuntu-latest
+    needs: typecheck
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: tamam
+          POSTGRES_PASSWORD: tamam
+          POSTGRES_DB: tamam_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tamam -d tamam_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      minio:
+        image: bitnami/minio:2024
+        env:
+          MINIO_ROOT_USER: tamam
+          MINIO_ROOT_PASSWORD: tamam-secret
+          MINIO_DEFAULT_BUCKETS: 'tamam-private,tamam-public:download'
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://tamam:tamam@localhost:5432/tamam_test
+      REDIS_URL: redis://localhost:6379/0
+      JWT_ACCESS_SECRET: ci-access-secret-must-be-at-least-32-characters
+      JWT_REFRESH_SECRET: ci-refresh-secret-must-be-at-least-32-characters
+      OTP_PEPPER: ci-otp-pepper-must-be-at-least-32-characters
+      ENCRYPTION_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      S3_ENDPOINT: http://localhost:9000
+      S3_ACCESS_KEY: tamam
+      S3_SECRET_KEY: tamam-secret
+      S3_BUCKET_PRIVATE: tamam-private
+      S3_BUCKET_PUBLIC: tamam-public
+      S3_PUBLIC_BASE_URL: http://localhost:9000/tamam-public
+      SMS_PROVIDER: console
+      PUSH_PROVIDER: console
+      MAPS_PROVIDER: osrm
+      PAYMENT_GATEWAY_PROVIDER: mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @tamam/shared-types --filter @tamam/validation build
+      - run: bash scripts/db/create-init-migration.sh
+      - run: pnpm --filter @tamam/api exec prisma generate
+      - run: pnpm --filter @tamam/api exec prisma migrate deploy
+      - run: pnpm --filter @tamam/api test:e2e
+
+  # ----------------------------------------------------------------- build
+  build:
+    name: Build images
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: false
+          tags: tamam/api:ci
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Build Admin image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/admin-web/Dockerfile
+          push: false
+          tags: tamam/admin-web:ci
+          cache-from: type=gha,scope=admin
+          cache-to: type=gha,mode=max,scope=admin
+
+  # --------------------------------------------------------------- flutter
+  flutter:
+    name: Flutter (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [customer-mobile, partner-mobile]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+      - name: flutter pub get
+        working-directory: apps/${{ matrix.app }}
+        run: flutter pub get
+      - name: flutter gen-l10n
+        working-directory: apps/${{ matrix.app }}
+        run: flutter gen-l10n
+      - name: flutter analyze
+        working-directory: apps/${{ matrix.app }}
+        run: flutter analyze --no-fatal-infos
+      - name: flutter test
+        working-directory: apps/${{ matrix.app }}
+        run: flutter test
+
+  # -------------------------------------------------------------- security
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Dependency audit
+        run: pnpm audit --audit-level=high
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

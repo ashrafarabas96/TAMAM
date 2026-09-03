@@ -30,6 +30,7 @@ import { JobsService } from './jobs.service';
   ],
   controllers: [JobsController],
   providers: [JobsService, JobLifecycleService, JobSafetyService, JobMapper, JobsProcessor],
-  exports: [JobsService, JobLifecycleService, JobMapper],
+  // JobSafetyService is exported so AdminModule can count open SOS alerts on the overview screen.
+  exports: [JobsService, JobLifecycleService, JobMapper, JobSafetyService],
 })
 export class JobsModule {}

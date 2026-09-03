@@ -1,0 +1,161 @@
+# =====================================================================
+# TAMAM — local development stack.
+#   docker compose -f infrastructure/docker/docker-compose.yml up -d db redis minio
+#   docker compose -f infrastructure/docker/docker-compose.yml up -d --build
+#
+# `db`, `redis` and `minio` are all `scripts/setup.sh` needs; the `api` and
+# `admin-web` services are for running the whole platform in containers.
+# =====================================================================
+name: tamam
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: tamam-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tamam
+      POSTGRES_PASSWORD: tamam
+      POSTGRES_DB: tamam
+      # Deterministic collation so ORDER BY matches production.
+      POSTGRES_INITDB_ARGS: '--locale-provider=icu --icu-locale=en-US --encoding=UTF8'
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tamam -d tamam']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: tamam-redis
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory-policy', 'noeviction']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2024-09-22T00-33-43Z
+    container_name: tamam-minio
+    restart: unless-stopped
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: tamam
+      MINIO_ROOT_PASSWORD: tamam-secret
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Creates the two buckets the API expects and makes the public one readable.
+  minio-init:
+    image: minio/mc:RELEASE.2024-09-16T17-43-14Z
+    container_name: tamam-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 tamam tamam-secret &&
+      mc mb --ignore-existing local/tamam-private &&
+      mc mb --ignore-existing local/tamam-public &&
+      mc anonymous set download local/tamam-public &&
+      mc anonymous set none local/tamam-private &&
+      echo 'buckets ready: tamam-private (private), tamam-public (download)'
+      "
+    restart: 'no'
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    container_name: tamam-api
+    restart: unless-stopped
+    env_file:
+      # Optional so `docker compose up -d db redis minio` works before scripts/setup.sh
+      # has written the file (needs Compose v2.24+).
+      - path: ../../apps/api/.env
+        required: false
+    environment:
+      # Inside the compose network the datastores are reachable by service name.
+      DATABASE_URL: postgresql://tamam:tamam@db:5432/tamam
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_BASE_URL: http://localhost:9000/tamam-public
+      RUN_MIGRATIONS: 'true'
+      PORT: '3000'
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', "require('node:http').get('http://127.0.0.1:3000/health/live',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  admin-web:
+    build:
+      context: ../..
+      dockerfile: apps/admin-web/Dockerfile
+    container_name: tamam-admin
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3000
+      PORT: '3001'
+      HOSTNAME: '0.0.0.0'
+    ports:
+      - '3001:3001'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # ------------------------------------------------------------------
+  # Optional: self-hosted OSRM so routing does not depend on the public
+  # demo server. Download a region extract first, then uncomment:
+  #
+  #   mkdir -p infrastructure/docker/osrm && cd infrastructure/docker/osrm
+  #   curl -LO https://download.geofabrik.de/asia/israel-and-palestine-latest.osm.pbf
+  #   docker run -t -v "$PWD:/data" osrm/osrm-backend osrm-extract -p /opt/car.lua /data/israel-and-palestine-latest.osm.pbf
+  #   docker run -t -v "$PWD:/data" osrm/osrm-backend osrm-partition /data/israel-and-palestine-latest.osrm
+  #   docker run -t -v "$PWD:/data" osrm/osrm-backend osrm-customize /data/israel-and-palestine-latest.osrm
+  #
+  # then set OSRM_BASE_URL=http://osrm:5000 in apps/api/.env
+  # ------------------------------------------------------------------
+  # osrm:
+  #   image: osrm/osrm-backend:v5.27.1
+  #   container_name: tamam-osrm
+  #   restart: unless-stopped
+  #   command: ['osrm-routed', '--algorithm', 'mld', '/data/israel-and-palestine-latest.osrm']
+  #   volumes:
+  #     - ./osrm:/data
+  #   ports:
+  #     - '5000:5000'
+
+volumes:
+  db-data:
+  redis-data:
+  minio-data:

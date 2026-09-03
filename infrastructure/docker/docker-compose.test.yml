@@ -1,0 +1,76 @@
+# =====================================================================
+# TAMAM — datastores for the integration / e2e suite.
+# Deliberately on different ports so it can run next to the dev stack.
+#
+#   docker compose -f infrastructure/docker/docker-compose.test.yml up -d
+#   DATABASE_URL=postgresql://tamam:tamam@localhost:55432/tamam_test \
+#   REDIS_URL=redis://localhost:56379/0 \
+#   S3_ENDPOINT=http://localhost:59000 \
+#   pnpm --filter @tamam/api test:e2e
+# =====================================================================
+name: tamam-test
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: tamam-test-db
+    environment:
+      POSTGRES_USER: tamam
+      POSTGRES_PASSWORD: tamam
+      POSTGRES_DB: tamam_test
+    ports:
+      - '55432:5432'
+    # tmpfs: the test database is disposable and this makes the suite noticeably faster.
+    tmpfs:
+      - /var/lib/postgresql/data
+    command: ['postgres', '-c', 'fsync=off', '-c', 'synchronous_commit=off', '-c', 'full_page_writes=off']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tamam -d tamam_test']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    container_name: tamam-test-redis
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    ports:
+      - '56379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  minio:
+    image: minio/minio:RELEASE.2024-09-22T00-33-43Z
+    container_name: tamam-test-minio
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: tamam
+      MINIO_ROOT_PASSWORD: tamam-secret
+    ports:
+      - '59000:9000'
+      - '59001:9001'
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  minio-init:
+    image: minio/mc:RELEASE.2024-09-16T17-43-14Z
+    container_name: tamam-test-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 tamam tamam-secret &&
+      mc mb --ignore-existing local/tamam-private &&
+      mc mb --ignore-existing local/tamam-public &&
+      mc anonymous set download local/tamam-public
+      "
+    restart: 'no'

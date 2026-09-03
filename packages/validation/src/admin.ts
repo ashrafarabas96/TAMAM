@@ -149,3 +149,4 @@ export type DispatcherJobsFilterInput = z.infer<typeof dispatcherJobsFilterSchem
 export type NearbyPartnersQueryInput = z.infer<typeof nearbyPartnersQuerySchema>;
 export type LiveMapQueryInput = z.infer<typeof liveMapQuerySchema>;
 export type UpsertRestrictionInput = z.infer<typeof upsertRestrictionSchema>;
+export type AdminSearchInput = z.infer<typeof adminSearchSchema>;

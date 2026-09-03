@@ -1,0 +1,109 @@
+# =====================================================================
+# TAMAM — production stack (single-host / small-cluster deployment).
+#
+# What this file does NOT contain, on purpose:
+#   • no database, no Redis, no object storage — production uses managed
+#     Postgres+PostGIS, managed Redis and an S3-compatible bucket, supplied
+#     through DATABASE_URL / REDIS_URL / S3_* in the environment file.
+#   • no published database ports — nothing but Caddy is reachable.
+#
+# Usage:
+#   cp infrastructure/docker/.env.prod.example /etc/tamam/api.env   # then fill in real secrets
+#   DOMAIN=api.tamam.app ADMIN_DOMAIN=admin.tamam.app \
+#     docker compose -f infrastructure/docker/docker-compose.prod.yml up -d
+#
+# See docs/DEPLOYMENT.md for the full procedure and docs/OPERATIONS.md for runbooks.
+# =====================================================================
+name: tamam-prod
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '20m'
+    max-file: '5'
+
+services:
+  api:
+    image: ${API_IMAGE:-ghcr.io/tamam/api:latest}
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    restart: always
+    env_file:
+      - ${API_ENV_FILE:-/etc/tamam/api.env}
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      # Exactly one replica runs migrations; scale-out replicas set RUN_MIGRATIONS=false.
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+    expose:
+      - '3000'
+    logging: *default-logging
+    healthcheck:
+      test: ['CMD', 'node', '-e', "require('node:http').get('http://127.0.0.1:3000/health/live',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  admin-web:
+    image: ${ADMIN_IMAGE:-ghcr.io/tamam/admin-web:latest}
+    build:
+      context: ../..
+      dockerfile: apps/admin-web/Dockerfile
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: '3001'
+      HOSTNAME: '0.0.0.0'
+      NEXT_PUBLIC_API_BASE_URL: https://${DOMAIN:?set DOMAIN}
+    expose:
+      - '3001'
+    logging: *default-logging
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'node', '-e', "require('node:http').get('http://127.0.0.1:3001/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # Automatic HTTPS (ACME), HTTP/2 + HTTP/3, gzip, and WebSocket pass-through.
+  caddy:
+    image: caddy:2.8-alpine
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:?set ADMIN_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *default-logging
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://127.0.0.1:2019/config/']
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  caddy-data:
+  caddy-config:
