@@ -1,0 +1,706 @@
+{
+  "@@locale": "en",
+  "appTagline": "Everything you need — sorted",
+  "actionApply": "Apply",
+  "actionBrowse": "Browse services",
+  "actionCancel": "Cancel",
+  "actionChange": "Change",
+  "actionClear": "Clear",
+  "actionContinue": "Continue",
+  "actionCopy": "Copy",
+  "actionDelete": "Delete",
+  "actionDismiss": "Dismiss",
+  "actionFavorite": "Add to favourites",
+  "actionUnfavorite": "Remove from favourites",
+  "actionLoadMore": "Load more",
+  "actionManage": "Manage",
+  "actionNext": "Next",
+  "actionOpenSettings": "Open settings",
+  "actionRemove": "Remove",
+  "actionRetry": "Try again",
+  "actionSave": "Save",
+  "actionSchedule": "Schedule",
+  "actionSeeAll": "See all",
+  "actionSend": "Send",
+  "actionSkip": "Skip",
+  "navHome": "Home",
+  "navOrders": "Orders",
+  "navWallet": "Wallet",
+  "navAccount": "Account",
+  "onboardingRideTitle": "Your ride starts here",
+  "onboardingRideBody": "Book a car in seconds and follow your driver on the map all the way.",
+  "onboardingDeliveryTitle": "Deliver anything",
+  "onboardingDeliveryBody": "Send and receive parcels across your city, with the price shown up front.",
+  "onboardingServicesTitle": "Home services you can trust",
+  "onboardingServicesBody": "Plumbers, electricians, AC technicians and more — verified, with a clear quote.",
+  "onboardingStart": "Get started",
+  "signInTitle": "Welcome to TAMAM",
+  "signInSubtitle": "Enter your phone number to sign in or create an account",
+  "signInPhoneLabel": "Phone number",
+  "signInPhoneHint": "599123456",
+  "signInSendCode": "Send code",
+  "signInOtpExplainer": "We will text you a 6-digit code.",
+  "signInTerms": "By continuing you agree to our Terms of Use and Privacy Policy.",
+  "signedOutExpired": "Your session ended. Please sign in again.",
+  "signedOutRevoked": "This session was ended from another device.",
+  "otpTitle": "Verification code",
+  "otpSubtitle": "We sent a code to {phone}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpVerify": "Verify",
+  "otpResend": "Resend code",
+  "otpResendIn": "You can resend in {seconds} seconds",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "otpDevCode": "Development code: {code}",
+  "@otpDevCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "nameTitle": "What is your name?",
+  "nameSubtitle": "So your partner knows who to look for",
+  "nameFieldLabel": "Full name",
+  "nameFieldHint": "e.g. Ahmad Mahmoud",
+  "nameWhy": "Your name is only shown to the partner assigned to your order.",
+  "locationPermissionTitle": "Turn on location for faster service",
+  "locationPermissionBody": "We use your location to set the pickup point and estimate arrival accurately.",
+  "locationReasonPickup": "Set your pickup point automatically",
+  "locationReasonEta": "Estimate arrival time accurately",
+  "locationReasonZone": "Show the services available in your area",
+  "locationAllow": "Allow location access",
+  "locationChooseManually": "I will pick the address myself",
+  "locationBlockedHint": "Location permission is permanently denied. Enable it in system settings.",
+  "locationServiceOffHint": "Location services are switched off on this device.",
+  "locationUnavailable": "We could not get your location right now.",
+  "homeDeliverTo": "Deliver to",
+  "homeChooseAddress": "Choose your address",
+  "homeChangeAddress": "Change address",
+  "homeSearchHint": "Search a service: plumber, electrician, AC…",
+  "homePopular": "Most requested",
+  "homeRecentOrders": "Your recent orders",
+  "homeSavedPlaces": "Saved places",
+  "homeAddPlace": "Add your first address to order faster",
+  "homeOffers": "Offers",
+  "homeOffersTitle": "Discount codes waiting for you",
+  "homeOffersBody": "Enter a code now and it applies to your next order.",
+  "homeActiveJob": "Active order",
+  "homeSearchingPartner": "Finding a partner…",
+  "serviceRide": "Ride",
+  "serviceRideCaption": "A car in minutes",
+  "serviceDelivery": "Delivery",
+  "serviceDeliveryCaption": "Send a parcel now",
+  "serviceHome": "Home services",
+  "serviceHomeCaption": "Verified technicians",
+  "serviceUrgent": "Urgent service",
+  "serviceUrgentCaption": "Fast response",
+  "serviceOther": "Service",
+  "searchTitle": "Search",
+  "searchNoResultsTitle": "No results",
+  "searchNoResultsBody": "Nothing matched “{query}”.",
+  "@searchNoResultsBody": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDirectoryEmptyTitle": "No services in your area yet",
+  "searchDirectoryEmptyBody": "We are expanding — try another address.",
+  "categoryOrderNow": "Order now",
+  "categorySubcategories": "Choose what you need",
+  "categoryDuration": "About {minutes} minutes",
+  "@categoryDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "pricingFixed": "Fixed price",
+  "pricingStartingFrom": "Starting from",
+  "pricingHourly": "Hourly rate",
+  "pricingInspectionFee": "Inspection fee",
+  "pricingDueNow": "Due now",
+  "pricingInspectionExplainer": "You pay the inspection fee when the technician arrives; they then send a quote before starting work.",
+  "ridePickupLabel": "Pickup",
+  "ridePickupEmpty": "Choose a pickup point",
+  "ridePickupTitle": "Pickup point",
+  "rideDestinationLabel": "Destination",
+  "rideDestinationEmpty": "Where to?",
+  "rideDestinationTitle": "Destination",
+  "rideSwap": "Swap",
+  "rideGetEstimate": "Get a price",
+  "rideOrderCta": "Order now",
+  "rideScheduleCta": "Book for the chosen time",
+  "fareSeats": "{seats} seats",
+  "@fareSeats": {
+    "placeholders": {
+      "seats": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "fareEtaMinutes": "in {minutes} min",
+  "@fareEtaMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPaymentMethod": "Payment method",
+  "checkoutPromoLabel": "Promo code",
+  "checkoutPromoHint": "Enter code",
+  "checkoutPromoApplied": "Code {code} applied",
+  "@checkoutPromoApplied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutSchedule": "When",
+  "checkoutScheduleNow": "Now",
+  "checkoutTotal": "Total",
+  "paymentCash": "Cash",
+  "paymentWallet": "Wallet",
+  "paymentCard": "Card",
+  "paymentOnline": "Online payment",
+  "deliveryRoute": "Route",
+  "deliveryPickupLabel": "Pick up from",
+  "deliveryPickupTitle": "Pickup location",
+  "deliveryDropoffLabel": "Deliver to",
+  "deliveryDropoffTitle": "Drop-off location",
+  "deliveryPackage": "Package details",
+  "deliverySize": "Approximate size",
+  "deliveryWeight": "Approximate weight",
+  "deliveryDescription": "What is inside",
+  "deliveryPhotosHint": "Photos help the partner come prepared.",
+  "deliverySender": "Sender",
+  "deliveryRecipient": "Recipient",
+  "deliveryNotes": "Delivery notes",
+  "deliveryUrgency": "Priority",
+  "deliveryContactsRequired": "Add a name and phone for both sender and recipient.",
+  "deliveryCategoriesUnavailable": "Package types could not be loaded.",
+  "packageSizeSmall": "Small",
+  "packageSizeMedium": "Medium",
+  "packageSizeLarge": "Large",
+  "packageSizeXl": "Extra large",
+  "contactName": "Name",
+  "contactPhone": "Phone",
+  "unitKg": "kg",
+  "unitMinutes": "min",
+  "serviceLocationTitle": "Service location",
+  "serviceLocationEmpty": "Choose the service location",
+  "serviceSubcategory": "Type of work",
+  "serviceOptions": "Add-ons",
+  "serviceProblemTitle": "Describe the problem",
+  "serviceProblemHint": "Explain the problem so the technician arrives prepared.",
+  "serviceProblemTooShort": "Add at least 5 characters.",
+  "serviceProblemRequired": "Describe the problem before ordering.",
+  "serviceMediaOptional": "Add photos if you can (optional).",
+  "serviceMediaRequired": "At least {count} photo(s) required.",
+  "@serviceMediaRequired": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "serviceInstructions": "Extra instructions",
+  "serviceUrgencyTitle": "Urgency",
+  "serviceUrgencySurcharge": "An urgency surcharge is added to the final price.",
+  "serviceWhenTitle": "Visit time",
+  "serviceWhenNow": "As soon as possible",
+  "serviceWhenScheduled": "Pick a day",
+  "timeSlotMorning": "Morning",
+  "timeSlotAfternoon": "Afternoon",
+  "timeSlotEvening": "Evening",
+  "urgencyStandard": "Standard",
+  "urgencyUrgent": "Urgent",
+  "urgencyEmergency": "Emergency",
+  "formRequired": "This field is required",
+  "formTooSmall": "Below the allowed minimum ({min})",
+  "@formTooSmall": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "formTooLarge": "Above the allowed maximum ({max})",
+  "@formTooLarge": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "formTooManyItems": "At most {count} items",
+  "@formTooManyItems": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "formNotANumber": "Enter a valid number",
+  "formInvalidOption": "Invalid choice",
+  "formChooseDate": "Choose a date",
+  "formChooseTime": "Choose a time",
+  "mediaAttachPhotos": "Attach photos",
+  "mediaGallery": "Gallery",
+  "mediaCamera": "Camera",
+  "ordersTitle": "My orders",
+  "ordersTabAll": "All",
+  "ordersTabActive": "Active",
+  "ordersTabCompleted": "Completed",
+  "ordersTabCancelled": "Cancelled",
+  "ordersEmptyTitle": "No orders yet",
+  "ordersEmptyBody": "Start your first order from home.",
+  "ordersEmptyCta": "Go to home",
+  "ordersReorder": "Reorder",
+  "jobPricePending": "Price after inspection",
+  "jobStatusDraft": "Draft",
+  "jobStatusRequested": "Order received",
+  "jobStatusSearching": "Finding a partner",
+  "jobStatusAssigned": "Partner assigned",
+  "jobStatusEnRoute": "Partner on the way",
+  "jobStatusArrived": "Partner arrived",
+  "jobStatusWaitingCustomer": "Waiting for you",
+  "jobStatusInProgress": "In progress",
+  "jobStatusInspection": "Inspection in progress",
+  "jobStatusQuoteRequired": "Quote pending",
+  "jobStatusQuoteSubmitted": "Quote awaiting your approval",
+  "jobStatusQuoteApproved": "Quote approved",
+  "jobStatusQuoteRejected": "Quote rejected",
+  "jobStatusWorkStarted": "Work started",
+  "jobStatusWaitingForParts": "Waiting for parts",
+  "jobStatusWorkCompleted": "Work finished — confirm please",
+  "jobStatusCustomerConfirmed": "Confirmed",
+  "jobStatusCompleted": "Completed",
+  "jobStatusCancelled": "Cancelled",
+  "jobStatusNoPartner": "No partner available",
+  "jobStatusDisputed": "Disputed",
+  "trackingTitle": "Track order",
+  "trackingSupport": "Support",
+  "trackingEta": "Arriving in {minutes} min",
+  "@trackingEta": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingEtaUnknown": "Updating arrival time…",
+  "trackingFinished": "This order is finished.",
+  "trackingPollingFallback": "Live updates unavailable — refreshing every few seconds.",
+  "trackingProgressLabel": "Step {step} of {total}: {status}",
+  "@trackingProgressLabel": {
+    "placeholders": {
+      "step": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingCallPartner": "Call partner",
+  "trackingChatPartner": "Chat with partner",
+  "trackingTripPin": "Trip PIN",
+  "trackingTripPinHint": "Give this code to the driver when you get in.",
+  "trackingDeliveryOtp": "Delivery code",
+  "trackingDeliveryOtpHint": "This code is needed at hand-over.",
+  "trackingNoPartnerTitle": "No partner was available",
+  "trackingNoPartnerBody": "You can try again now or change the order.",
+  "trackingRetryDispatch": "Search again",
+  "trackingEstimatedTotal": "Estimated total",
+  "trackingShare": "Share trip",
+  "trackingShareMessage": "Follow my trip on TAMAM: {url}",
+  "@trackingShareMessage": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingSos": "SOS",
+  "sosTitle": "Send an SOS",
+  "sosBody": "Our safety team is alerted immediately with your location and order details.",
+  "sosConfirm": "Send SOS",
+  "sosSent": "SOS sent. We are contacting you now.",
+  "cancelTitle": "Cancel order",
+  "cancelSubtitle": "Tell us why, so we can improve",
+  "cancelConfirm": "Confirm cancellation",
+  "cancelNote": "More details",
+  "cancelFeeWarning": "A cancellation fee may apply if the partner is already on the way.",
+  "cancelReasonChangedMind": "I changed my mind",
+  "cancelReasonWaitTooLong": "The wait is too long",
+  "cancelReasonWrongAddress": "Wrong address",
+  "cancelReasonPriceTooHigh": "The price is too high",
+  "cancelReasonPartnerNotMoving": "The partner is not moving",
+  "cancelReasonSafety": "Safety concern",
+  "cancelReasonDuplicate": "Duplicate order",
+  "cancelReasonOther": "Other",
+  "quoteTitle": "Quote",
+  "quoteChangeOrderTitle": "Change order",
+  "quoteReadyTitle": "Your quote is ready",
+  "quoteReview": "Review quote",
+  "quoteRevision": "Revision {revision}",
+  "@quoteRevision": {
+    "placeholders": {
+      "revision": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "quoteApprove": "Approve quote",
+  "quoteReject": "Reject quote",
+  "quoteConfirmReject": "Confirm rejection",
+  "quoteRejectReason": "Reason (optional)",
+  "quoteLabor": "Labour",
+  "quoteParts": "Parts",
+  "quoteFees": "Additional fees",
+  "quoteDiscount": "Discount",
+  "quoteTax": "Tax",
+  "quoteDuration": "Estimated {minutes} minutes",
+  "@quoteDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "quoteItemMeta": "{kind} · qty {quantity}",
+  "@quoteItemMeta": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "quantity": {
+        "type": "String"
+      }
+    }
+  },
+  "workCompletedTitle": "Work finished",
+  "workCompletedBody": "Check the work, then confirm it to complete payment.",
+  "workConfirmTitle": "Confirm the work",
+  "workConfirmBody": "Confirming marks the work done and settles the final amount.",
+  "workConfirmCta": "Confirm work",
+  "ratingTitle": "Rate the service",
+  "ratingCta": "Rate the service",
+  "ratingPrompt": "How was your experience?",
+  "ratingPartnerFallback": "Your partner",
+  "ratingComment": "Add a comment (optional)",
+  "ratingThanks": "Thanks for your rating!",
+  "ratingTagPunctual": "On time",
+  "ratingTagPolite": "Polite",
+  "ratingTagClean": "Clean",
+  "ratingTagProfessional": "Professional",
+  "ratingTagGoodPrice": "Fair price",
+  "ratingTagCarefulDriving": "Safe driving",
+  "ratingTagLate": "Late",
+  "ratingTagRude": "Rude",
+  "ratingTagUnclean": "Not clean",
+  "ratingTagUnprofessional": "Unprofessional",
+  "ratingTagOvercharged": "Overcharged",
+  "ratingTagUnsafeDriving": "Unsafe driving",
+  "receiptTitle": "Receipt",
+  "receiptCta": "View receipt",
+  "receiptPayment": "Payment",
+  "receiptRefunded": "Refunded",
+  "receiptCancellationFee": "Cancellation fee",
+  "receiptProofOfDelivery": "Proof of delivery",
+  "receiptReceivedBy": "Received by {name}",
+  "@receiptReceivedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentStatusPending": "Pending",
+  "paymentStatusAuthorized": "Authorised",
+  "paymentStatusCaptured": "Paid",
+  "paymentStatusFailed": "Failed",
+  "paymentStatusRefunded": "Refunded",
+  "paymentStatusCancelled": "Cancelled",
+  "chatTitle": "Chat",
+  "chatHint": "Write a message…",
+  "chatSendPhoto": "Send a photo",
+  "chatSendLocation": "Send location",
+  "chatSharedLocation": "Location shared",
+  "chatLoadOlder": "Show older messages",
+  "chatEmptyTitle": "No messages yet",
+  "chatEmptyBody": "Write a message to reach your partner.",
+  "walletTitle": "Wallet",
+  "walletBalance": "Your balance",
+  "walletPending": "Pending",
+  "walletTopUp": "Top up",
+  "walletTopUpHint": "Choose an amount, then finish payment with the provider.",
+  "walletStatement": "Statement",
+  "walletEmptyTitle": "No transactions yet",
+  "walletEmptyBody": "Every payment and refund will appear here.",
+  "walletPromos": "Offers",
+  "walletReferrals": "Invite a friend",
+  "promosTitle": "Offers and codes",
+  "promoEnterTitle": "Have a promo code?",
+  "promoEnterBody": "Save it and we will apply it to your next order.",
+  "promoSaved": "Code {code} saved",
+  "@promoSaved": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "promoPending": "Code {code} will be applied to your next order.",
+  "@promoPending": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "referralsTitle": "Invite your friends",
+  "referralsRewardPrefix": "Your friend gets",
+  "referralsStats": "You invited {invited} friends and earned {rewarded} rewards.",
+  "@referralsStats": {
+    "placeholders": {
+      "invited": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "rewarded": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "referralsShare": "Share invite code",
+  "referralsCopied": "Code copied",
+  "accountTitle": "Account",
+  "accountNoName": "Add your name",
+  "accountGroupActivity": "Activity",
+  "accountGroupSettings": "Settings",
+  "accountGroupHelp": "Help and safety",
+  "accountSignOut": "Sign out",
+  "accountSignOutConfirm": "You will be signed out on this device.",
+  "favoritesTitle": "Favourites",
+  "favoritesEmptyTitle": "No favourites yet",
+  "favoritesEmptyBody": "Add the services you use most for quick access.",
+  "profileTitle": "Profile",
+  "profileEmail": "E-mail",
+  "profilePhone": "Phone number",
+  "profilePhoneLocked": "Contact support to change your number.",
+  "profileSaved": "Changes saved",
+  "preferencesTitle": "Preferences",
+  "preferencesLanguage": "Language",
+  "preferencesAppearance": "Appearance",
+  "preferencesNotifications": "Notifications",
+  "preferencesNotificationsUnavailable": "Notification settings could not be loaded.",
+  "preferencesPush": "Push notifications",
+  "preferencesSms": "SMS",
+  "preferencesEmail": "E-mail",
+  "preferencesMarketing": "Marketing offers",
+  "preferencesMarketingHint": "Only offers and discounts.",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "sessionsTitle": "Active devices",
+  "sessionsEmptyTitle": "No other devices",
+  "sessionsLastSeen": "Last active {when}",
+  "@sessionsLastSeen": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionsThisDevice": "This device",
+  "sessionsRevoke": "End session",
+  "sessionsSignOutAll": "Sign out everywhere",
+  "sessionsSignOutAllConfirm": "Every session ends, including this device.",
+  "savedPlacesTitle": "Saved places",
+  "savedPlacesAdd": "Add a place",
+  "savedPlacesEdit": "Edit place",
+  "savedPlacesLabel": "Place name",
+  "savedPlacesEmptyTitle": "No saved places yet",
+  "savedPlacesEmptyBody": "Save home and work to order with one tap.",
+  "savedPlacesDeleteTitle": "Delete place",
+  "savedPlacesDeleteBody": "“{label}” will be deleted.",
+  "@savedPlacesDeleteBody": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "placeKindHome": "Home",
+  "placeKindWork": "Work",
+  "placeKindCustom": "Other",
+  "addressSheetTitle": "Choose an address",
+  "addressSearchHint": "Search a street or area",
+  "addressUseCurrent": "My location",
+  "addressPickOnMap": "Pick on map",
+  "addressManagePlaces": "Manage saved places",
+  "addressNoResults": "No matching results.",
+  "addressSearchFailed": "Search is unavailable right now.",
+  "addressAttribution": "Search results from OpenStreetMap",
+  "addressBuilding": "Building",
+  "addressFloor": "Floor",
+  "addressApartment": "Apartment",
+  "addressNotes": "Arrival notes",
+  "locationPickerTitle": "Pick a location",
+  "locationPickerHint": "Move the map to place the pin",
+  "locationPickerMoveMap": "Move the map to set the address",
+  "locationPickerConfirm": "Confirm location",
+  "notificationsTitle": "Notifications",
+  "notificationsMarkAllRead": "Mark all read",
+  "notificationsEmptyTitle": "No notifications",
+  "notificationsEmptyBody": "We will tell you here about your orders.",
+  "supportTitle": "Support",
+  "supportNewTicket": "New support request",
+  "supportNewTicketHint": "Describe the problem and our team will reply.",
+  "supportSubject": "Subject",
+  "supportDescription": "Details",
+  "supportReplyHint": "Write a reply…",
+  "supportTicketTitle": "Support request",
+  "supportEmptyTitle": "No support requests",
+  "supportEmptyBody": "Open a request if you need help.",
+  "ticketCategoryPayment": "Payment",
+  "ticketCategoryJob": "Order issue",
+  "ticketCategoryPartner": "Partner behaviour",
+  "ticketCategoryLostItem": "Lost item",
+  "ticketCategoryAccount": "Account",
+  "ticketCategorySafety": "Safety",
+  "ticketCategoryOther": "Other",
+  "ticketStatusOpen": "Open",
+  "ticketStatusInProgress": "In progress",
+  "ticketStatusWaitingUser": "Waiting for you",
+  "ticketStatusResolved": "Resolved",
+  "ticketStatusClosed": "Closed",
+  "disputesTitle": "Disputes",
+  "disputesEmptyTitle": "No disputes",
+  "disputesEmptyBody": "Open one from an order if something went wrong.",
+  "disputeDetailTitle": "Dispute details",
+  "disputeOpen": "Open a dispute",
+  "disputeReasonLabel": "Reason",
+  "disputeDescription": "Explain what happened",
+  "disputeRefunded": "Refunded",
+  "disputeReasonNotCompleted": "Work not completed",
+  "disputeReasonPoorQuality": "Poor quality",
+  "disputeReasonOvercharged": "Overcharged",
+  "disputeReasonDamage": "Damage",
+  "disputeReasonItemMissing": "Item missing",
+  "disputeReasonMisconduct": "Partner misconduct",
+  "disputeReasonOther": "Other",
+  "disputeStatusOpen": "Open",
+  "disputeStatusUnderReview": "Under review",
+  "disputeStatusResolvedCustomer": "Resolved for you",
+  "disputeStatusResolvedPartner": "Resolved for the partner",
+  "disputeStatusResolvedSplit": "Partially settled",
+  "disputeStatusRejected": "Rejected",
+  "legalTitle": "About",
+  "legalTermsTitle": "Terms of use",
+  "legalTermsBody": "By using TAMAM you agree to provide accurate details, treat partners with respect, and pay for the services you request. Cancellation fees follow the policy shown in the app.",
+  "legalPrivacyTitle": "Privacy",
+  "legalPrivacyBody": "We use your location and phone number only to fulfil orders. We do not share your data with third parties for marketing, and you can switch marketing messages off in Preferences.",
+  "legalDeleteAccount": "Request account deletion",
+  "legalDeleteAccountHint": "Opens a support request for review.",
+  "legalDeleteAccountConfirm": "We will open a support request to delete your account. Invoicing records may be kept as the law requires.",
+  "legalDeleteAccountCta": "Send request",
+  "legalDeleteAccountSubject": "Account deletion request",
+  "legalDeleteAccountBody": "I would like my TAMAM account and personal data deleted.",
+  "bannerPromoCopied": "Code {code} copied — it will apply to your next order.",
+  "@bannerPromoCopied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "bannerLeaveAppTitle": "Open an external link",
+  "bannerLeaveAppMessage": "{host} will open outside the app.",
+  "@bannerLeaveAppMessage": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "publicTrackTitle": "Trip tracking",
+  "publicTrackPartner": "Partner: {name}",
+  "@publicTrackPartner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyTitle": "Nothing here yet",
+  "errorTitle": "Something went wrong",
+  "errorOfflineTitle": "You are offline",
+  "offlineBanner": "No internet connection — some data may be out of date.",
+  "errorOffline": "Check your internet connection and try again.",
+  "errorNetwork": "We could not reach the server. Try again.",
+  "errorGeneric": "An unexpected error occurred. Please try again.",
+  "errorValidation": "Please check the details you entered.",
+  "errorSessionExpired": "Your session expired. Please sign in again.",
+  "errorForbidden": "You are not allowed to do that.",
+  "errorNotFound": "We could not find that.",
+  "errorRateLimited": "Too many attempts. Wait a moment and try again.",
+  "errorOtpInvalid": "That code is not correct.",
+  "errorOtpExpired": "The code expired. Request a new one.",
+  "errorOtpTooManyAttempts": "Too many wrong attempts. Request a new code.",
+  "errorOtpCooldown": "Wait a moment before requesting another code.",
+  "errorAccountSuspended": "Your account is suspended. Contact support.",
+  "errorAccountRestricted": "Your account is temporarily restricted.",
+  "errorOutsideZone": "We do not operate at this location yet.",
+  "errorServiceUnavailableInZone": "This service is not available in your area.",
+  "errorOutsideHours": "This service is outside working hours right now.",
+  "errorNoPartners": "No partner is available right now.",
+  "errorVersionConflict": "The order changed. Please try again.",
+  "errorJobAlreadyAssigned": "This order already has a partner.",
+  "errorInsufficientBalance": "Your wallet balance is not enough.",
+  "errorPaymentMethodDisabled": "That payment method is unavailable right now.",
+  "errorPaymentFailed": "The payment failed.",
+  "errorPromoInvalid": "That promo code is not valid.",
+  "errorPromoExpired": "That promo code has expired.",
+  "errorPromoUsageExceeded": "This code has been fully used.",
+  "errorPromoMinOrder": "Your order is below the code's minimum.",
+  "errorPromoNotEligible": "This code does not apply to your order.",
+  "errorRatingNotAllowed": "This order cannot be rated.",
+  "errorUploadTooLarge": "That file is too large.",
+  "errorUploadInvalid": "That file type is not supported.",
+  "errorFeatureDisabled": "That feature is switched off right now.",
+  "errorDuplicateRequest": "This request was already sent.",
+  "errorQuoteNotApproved": "The quote must be approved first.",
+  "errorCannotOpenLink": "The link could not be opened."
+}

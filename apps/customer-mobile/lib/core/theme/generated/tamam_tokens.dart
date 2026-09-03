@@ -216,8 +216,16 @@ abstract final class TamamSize {
   static const double serviceCardHeight = 118.0;
   static const double bannerHeroHeight = 156.0;
   static const double bannerInlineHeight = 96.0;
-  static const double bannerAspectHero = 2.25.0;
-  static const double bannerAspectInline = 3.6.0;
+  static const double bannerAspectHero = 2.25;
+  static const double bannerAspectInline = 3.6;
+}
+
+/// Elevation tokens as ready-to-use shadow lists (soft, brand-tinted).
+abstract final class TamamElevation {
+  static const List<BoxShadow> card = <BoxShadow>[BoxShadow(color: Color(0x0F1E1050), offset: Offset(0.0, 2.0), blurRadius: 10.0, spreadRadius: 0.0)];
+  static const List<BoxShadow> raised = <BoxShadow>[BoxShadow(color: Color(0x191E1050), offset: Offset(0.0, 6.0), blurRadius: 20.0, spreadRadius: 0.0)];
+  static const List<BoxShadow> sheet = <BoxShadow>[BoxShadow(color: Color(0x261E1050), offset: Offset(0.0, -4.0), blurRadius: 24.0, spreadRadius: 0.0)];
+  static const List<BoxShadow> floating = <BoxShadow>[BoxShadow(color: Color(0x331E1050), offset: Offset(0.0, 8.0), blurRadius: 28.0, spreadRadius: 0.0)];
 }
 
 abstract final class TamamMotion {
@@ -252,12 +260,12 @@ class TamamTypeStyle {
 abstract final class TamamType {
   static const TamamTypeStyle displayLg = TamamTypeStyle(34.0, 42.0, FontWeight.w800, -0.5);
   static const TamamTypeStyle displaySm = TamamTypeStyle(28.0, 36.0, FontWeight.w800, -0.3);
-  static const TamamTypeStyle headingLg = TamamTypeStyle(22.0, 30.0, FontWeight.w700, 0);
-  static const TamamTypeStyle headingMd = TamamTypeStyle(18.0, 26.0, FontWeight.w700, 0);
-  static const TamamTypeStyle headingSm = TamamTypeStyle(16.0, 24.0, FontWeight.w600, 0);
-  static const TamamTypeStyle bodyLg = TamamTypeStyle(16.0, 24.0, FontWeight.w400, 0);
-  static const TamamTypeStyle bodyMd = TamamTypeStyle(14.0, 22.0, FontWeight.w400, 0);
-  static const TamamTypeStyle bodySm = TamamTypeStyle(12.0, 18.0, FontWeight.w400, 0);
+  static const TamamTypeStyle headingLg = TamamTypeStyle(22.0, 30.0, FontWeight.w700, 0.0);
+  static const TamamTypeStyle headingMd = TamamTypeStyle(18.0, 26.0, FontWeight.w700, 0.0);
+  static const TamamTypeStyle headingSm = TamamTypeStyle(16.0, 24.0, FontWeight.w600, 0.0);
+  static const TamamTypeStyle bodyLg = TamamTypeStyle(16.0, 24.0, FontWeight.w400, 0.0);
+  static const TamamTypeStyle bodyMd = TamamTypeStyle(14.0, 22.0, FontWeight.w400, 0.0);
+  static const TamamTypeStyle bodySm = TamamTypeStyle(12.0, 18.0, FontWeight.w400, 0.0);
   static const TamamTypeStyle labelLg = TamamTypeStyle(15.0, 20.0, FontWeight.w600, 0.1);
   static const TamamTypeStyle labelMd = TamamTypeStyle(13.0, 18.0, FontWeight.w600, 0.1);
   static const TamamTypeStyle labelSm = TamamTypeStyle(11.0, 16.0, FontWeight.w600, 0.2);
@@ -278,10 +286,10 @@ abstract final class TamamBannerSpecs {
   static const Map<BannerPlacement, BannerPlacementSpec> byPlacement = {
     BannerPlacement.homeHero: BannerPlacementSpec(aspectRatio: 2.25, maxItems: 6, autoplay: Duration(milliseconds: 4500), style: 'carousel'),
     BannerPlacement.homeInline: BannerPlacementSpec(aspectRatio: 3.6, maxItems: 3, autoplay: Duration(milliseconds: 0), style: 'stack'),
-    BannerPlacement.serviceCategoryTop: BannerPlacementSpec(aspectRatio: 3, maxItems: 3, autoplay: Duration(milliseconds: 5000), style: 'carousel'),
+    BannerPlacement.serviceCategoryTop: BannerPlacementSpec(aspectRatio: 3.0, maxItems: 3, autoplay: Duration(milliseconds: 5000), style: 'carousel'),
     BannerPlacement.checkoutPromo: BannerPlacementSpec(aspectRatio: 4.5, maxItems: 1, autoplay: Duration(milliseconds: 0), style: 'single'),
     BannerPlacement.orderTracking: BannerPlacementSpec(aspectRatio: 4.5, maxItems: 1, autoplay: Duration(milliseconds: 0), style: 'single'),
-    BannerPlacement.partnerHome: BannerPlacementSpec(aspectRatio: 3, maxItems: 3, autoplay: Duration(milliseconds: 5000), style: 'carousel'),
+    BannerPlacement.partnerHome: BannerPlacementSpec(aspectRatio: 3.0, maxItems: 3, autoplay: Duration(milliseconds: 5000), style: 'carousel'),
   };
   static BannerPlacement? fromApi(String value) {
     switch (value) {

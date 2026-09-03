@@ -43,6 +43,22 @@ enum AccountStatus {
   }
 }
 
+enum Language {
+  ar('ar'),
+  en('en');
+
+  const Language(this.value);
+  final String value;
+
+  static Language? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in Language.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum PartnerRoleType {
   driver('DRIVER'),
   courier('COURIER'),
@@ -212,6 +228,58 @@ enum JobUrgency {
   }
 }
 
+enum SchedulingMode {
+  now('NOW'),
+  scheduled('SCHEDULED');
+
+  const SchedulingMode(this.value);
+  final String value;
+
+  static SchedulingMode? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in SchedulingMode.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum JobStopKind {
+  pickup('PICKUP'),
+  dropoff('DROPOFF'),
+  waypoint('WAYPOINT'),
+  serviceLocation('SERVICE_LOCATION');
+
+  const JobStopKind(this.value);
+  final String value;
+
+  static JobStopKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in JobStopKind.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum JobActorType {
+  customer('CUSTOMER'),
+  partner('PARTNER'),
+  admin('ADMIN'),
+  system('SYSTEM');
+
+  const JobActorType(this.value);
+  final String value;
+
+  static JobActorType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in JobActorType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum AssignmentStatus {
   offered('OFFERED'),
   accepted('ACCEPTED'),
@@ -232,6 +300,24 @@ enum AssignmentStatus {
   }
 }
 
+enum CancellationActor {
+  customer('CUSTOMER'),
+  partner('PARTNER'),
+  admin('ADMIN'),
+  system('SYSTEM');
+
+  const CancellationActor(this.value);
+  final String value;
+
+  static CancellationActor? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in CancellationActor.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum QuoteStatus {
   draft('DRAFT'),
   submitted('SUBMITTED'),
@@ -246,6 +332,22 @@ enum QuoteStatus {
   static QuoteStatus? fromValue(String? value) {
     if (value == null) return null;
     for (final e in QuoteStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum QuoteKind {
+  initial('INITIAL'),
+  changeOrder('CHANGE_ORDER');
+
+  const QuoteKind(this.value);
+  final String value;
+
+  static QuoteKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in QuoteKind.values) {
       if (e.value == value) return e;
     }
     return null;
@@ -299,6 +401,22 @@ enum DynamicFieldType {
   }
 }
 
+enum VehicleStatus {
+  active('ACTIVE'),
+  inactive('INACTIVE');
+
+  const VehicleStatus(this.value);
+  final String value;
+
+  static VehicleStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in VehicleStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum PaymentMethod {
   cash('CASH'),
   wallet('WALLET'),
@@ -339,6 +457,41 @@ enum PaymentStatus {
   }
 }
 
+enum RefundStatus {
+  pending('PENDING'),
+  processed('PROCESSED'),
+  failed('FAILED'),
+  rejected('REJECTED');
+
+  const RefundStatus(this.value);
+  final String value;
+
+  static RefundStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in RefundStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum WalletOwnerType {
+  customer('CUSTOMER'),
+  partner('PARTNER'),
+  platform('PLATFORM');
+
+  const WalletOwnerType(this.value);
+  final String value;
+
+  static WalletOwnerType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in WalletOwnerType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum LedgerAccountType {
   customerWallet('CUSTOMER_WALLET'),
   partnerWallet('PARTNER_WALLET'),
@@ -355,6 +508,22 @@ enum LedgerAccountType {
   static LedgerAccountType? fromValue(String? value) {
     if (value == null) return null;
     for (final e in LedgerAccountType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum LedgerEntryDirection {
+  debit('DEBIT'),
+  credit('CREDIT');
+
+  const LedgerEntryDirection(this.value);
+  final String value;
+
+  static LedgerEntryDirection? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in LedgerEntryDirection.values) {
       if (e.value == value) return e;
     }
     return null;
@@ -388,6 +557,40 @@ enum LedgerTransactionType {
   }
 }
 
+enum WithdrawalStatus {
+  requested('REQUESTED'),
+  approved('APPROVED'),
+  paid('PAID'),
+  rejected('REJECTED');
+
+  const WithdrawalStatus(this.value);
+  final String value;
+
+  static WithdrawalStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in WithdrawalStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum PromoType {
+  percentage('PERCENTAGE'),
+  fixedAmount('FIXED_AMOUNT');
+
+  const PromoType(this.value);
+  final String value;
+
+  static PromoType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in PromoType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum CommissionScope {
   global('GLOBAL'),
   jobType('JOB_TYPE'),
@@ -402,6 +605,24 @@ enum CommissionScope {
   static CommissionScope? fromValue(String? value) {
     if (value == null) return null;
     for (final e in CommissionScope.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum NotificationChannel {
+  push('PUSH'),
+  inApp('IN_APP'),
+  sms('SMS'),
+  email('EMAIL');
+
+  const NotificationChannel(this.value);
+  final String value;
+
+  static NotificationChannel? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in NotificationChannel.values) {
       if (e.value == value) return e;
     }
     return null;
@@ -444,6 +665,43 @@ enum NotificationEvent {
   }
 }
 
+enum NotificationStatus {
+  queued('QUEUED'),
+  sent('SENT'),
+  delivered('DELIVERED'),
+  read('READ'),
+  failed('FAILED');
+
+  const NotificationStatus(this.value);
+  final String value;
+
+  static NotificationStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in NotificationStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum MessageType {
+  text('TEXT'),
+  image('IMAGE'),
+  location('LOCATION'),
+  system('SYSTEM');
+
+  const MessageType(this.value);
+  final String value;
+
+  static MessageType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in MessageType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum TicketCategory {
   payment('PAYMENT'),
   jobIssue('JOB_ISSUE'),
@@ -460,6 +718,24 @@ enum TicketCategory {
   static TicketCategory? fromValue(String? value) {
     if (value == null) return null;
     for (final e in TicketCategory.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum TicketPriority {
+  low('LOW'),
+  normal('NORMAL'),
+  high('HIGH'),
+  critical('CRITICAL');
+
+  const TicketPriority(this.value);
+  final String value;
+
+  static TicketPriority? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in TicketPriority.values) {
       if (e.value == value) return e;
     }
     return null;
@@ -545,6 +821,22 @@ enum CampaignStatus {
   }
 }
 
+enum BannerAudience {
+  customer('CUSTOMER'),
+  partner('PARTNER');
+
+  const BannerAudience(this.value);
+  final String value;
+
+  static BannerAudience? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in BannerAudience.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum BannerActionType {
   none('NONE'),
   deepLink('DEEP_LINK'),
@@ -558,6 +850,23 @@ enum BannerActionType {
   static BannerActionType? fromValue(String? value) {
     if (value == null) return null;
     for (final e in BannerActionType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum BannerEventType {
+  impression('IMPRESSION'),
+  click('CLICK'),
+  dismiss('DISMISS');
+
+  const BannerEventType(this.value);
+  final String value;
+
+  static BannerEventType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in BannerEventType.values) {
       if (e.value == value) return e;
     }
     return null;
@@ -578,6 +887,41 @@ enum RiskSignal {
   static RiskSignal? fromValue(String? value) {
     if (value == null) return null;
     for (final e in RiskSignal.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum RestrictionTargetType {
+  user('USER'),
+  partner('PARTNER'),
+  device('DEVICE');
+
+  const RestrictionTargetType(this.value);
+  final String value;
+
+  static RestrictionTargetType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in RestrictionTargetType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum MediaKind {
+  image('IMAGE'),
+  video('VIDEO'),
+  audio('AUDIO'),
+  document('DOCUMENT');
+
+  const MediaKind(this.value);
+  final String value;
+
+  static MediaKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in MediaKind.values) {
       if (e.value == value) return e;
     }
     return null;

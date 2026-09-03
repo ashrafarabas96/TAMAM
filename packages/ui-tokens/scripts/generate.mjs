@@ -96,6 +96,11 @@ function hexToDart(hex) {
 function camel(s) {
   return s.replace(/[-_ ](\w)/g, (_, ch) => ch.toUpperCase());
 }
+/** Emits a valid Dart double literal for any JSON number (2 → `2.0`, 2.25 → `2.25`). */
+function dartDouble(v) {
+  if (typeof v !== 'number' || !Number.isFinite(v)) throw new Error(`Unsupported numeric token ${String(v)}`);
+  return Number.isInteger(v) ? `${v}.0` : `${v}`;
+}
 function emitDart(targetDir) {
   const c = tokens.color;
   const lines = [];
@@ -139,15 +144,24 @@ function emitDart(targetDir) {
   lines.push(`}\n`);
 
   lines.push(`abstract final class TamamSpacing {`);
-  for (const [k, v] of Object.entries(tokens.spacing)) lines.push(`  static const double s${k} = ${v}.0;`);
+  for (const [k, v] of Object.entries(tokens.spacing)) lines.push(`  static const double s${k} = ${dartDouble(v)};`);
   lines.push(`}\n`);
 
   lines.push(`abstract final class TamamRadius {`);
-  for (const [k, v] of Object.entries(tokens.radius)) lines.push(`  static const double ${k} = ${v}.0;`);
+  for (const [k, v] of Object.entries(tokens.radius)) lines.push(`  static const double ${k} = ${dartDouble(v)};`);
   lines.push(`}\n`);
 
   lines.push(`abstract final class TamamSize {`);
-  for (const [k, v] of Object.entries(tokens.size)) lines.push(`  static const double ${k} = ${v}.0;`);
+  for (const [k, v] of Object.entries(tokens.size)) lines.push(`  static const double ${k} = ${dartDouble(v)};`);
+  lines.push(`}\n`);
+
+  lines.push(`/// Elevation tokens as ready-to-use shadow lists (soft, brand-tinted).`);
+  lines.push(`abstract final class TamamElevation {`);
+  for (const [k, v] of Object.entries(tokens.elevation)) {
+    lines.push(
+      `  static const List<BoxShadow> ${k} = <BoxShadow>[BoxShadow(color: ${hexToDart(v.color)}, offset: Offset(0.0, ${dartDouble(v.y)}), blurRadius: ${dartDouble(v.blur)}, spreadRadius: ${dartDouble(v.spread)})];`,
+    );
+  }
   lines.push(`}\n`);
 
   lines.push(`abstract final class TamamMotion {`);
@@ -181,7 +195,9 @@ function emitDart(targetDir) {
   const fw = (w) => `FontWeight.w${w}`;
   lines.push(`abstract final class TamamType {`);
   for (const [k, v] of Object.entries(tokens.typography.scale)) {
-    lines.push(`  static const TamamTypeStyle ${k} = TamamTypeStyle(${v.size}.0, ${v.lineHeight}.0, ${fw(v.weight)}, ${v.letterSpacing});`);
+    lines.push(
+      `  static const TamamTypeStyle ${k} = TamamTypeStyle(${dartDouble(v.size)}, ${dartDouble(v.lineHeight)}, ${fw(v.weight)}, ${dartDouble(v.letterSpacing)});`,
+    );
   }
   lines.push(`}\n`);
 
@@ -196,7 +212,7 @@ function emitDart(targetDir) {
   lines.push(`abstract final class TamamBannerSpecs {`);
   lines.push(`  static const Map<BannerPlacement, BannerPlacementSpec> byPlacement = {`);
   for (const [k, v] of Object.entries(tokens.banner.placements)) {
-    lines.push(`    BannerPlacement.${camel(k.toLowerCase())}: BannerPlacementSpec(aspectRatio: ${v.aspectRatio}, maxItems: ${v.maxItems}, autoplay: Duration(milliseconds: ${v.autoplayMs}), style: '${v.style}'),`);
+    lines.push(`    BannerPlacement.${camel(k.toLowerCase())}: BannerPlacementSpec(aspectRatio: ${dartDouble(v.aspectRatio)}, maxItems: ${v.maxItems}, autoplay: Duration(milliseconds: ${v.autoplayMs}), style: '${v.style}'),`);
   }
   lines.push(`  };`);
   lines.push(`  static BannerPlacement? fromApi(String value) {`);

@@ -22,7 +22,8 @@ function parseConstObjects(src) {
     const name = m[1];
     const body = m[2];
     const entries = [];
-    const entryRe = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*'([^']*)'\s*,?\s*(?:\/\/.*)?$/gm;
+    // Not line-anchored on purpose: single-line objects (`{ AR: 'ar', EN: 'en' }`) must parse too.
+    const entryRe = /([A-Za-z_][A-Za-z0-9_]*)\s*:\s*'([^']*)'/g;
     let e;
     while ((e = entryRe.exec(body))) entries.push([e[1], e[2]]);
     if (entries.length) out.push({ name, entries });

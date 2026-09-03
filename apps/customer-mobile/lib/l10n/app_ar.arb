@@ -1,0 +1,706 @@
+{
+  "@@locale": "ar",
+  "appTagline": "كل خدماتك… تمام",
+  "actionApply": "تطبيق",
+  "actionBrowse": "تصفّح الخدمات",
+  "actionCancel": "إلغاء",
+  "actionChange": "تغيير",
+  "actionClear": "مسح",
+  "actionContinue": "متابعة",
+  "actionCopy": "نسخ",
+  "actionDelete": "حذف",
+  "actionDismiss": "إخفاء",
+  "actionFavorite": "أضف إلى المفضلة",
+  "actionUnfavorite": "إزالة من المفضلة",
+  "actionLoadMore": "تحميل المزيد",
+  "actionManage": "إدارة",
+  "actionNext": "التالي",
+  "actionOpenSettings": "فتح الإعدادات",
+  "actionRemove": "إزالة",
+  "actionRetry": "إعادة المحاولة",
+  "actionSave": "حفظ",
+  "actionSchedule": "جدولة",
+  "actionSeeAll": "عرض الكل",
+  "actionSend": "إرسال",
+  "actionSkip": "تخطٍ",
+  "navHome": "الرئيسية",
+  "navOrders": "طلباتي",
+  "navWallet": "المحفظة",
+  "navAccount": "حسابي",
+  "onboardingRideTitle": "مشوارك يبدأ من هنا",
+  "onboardingRideBody": "اطلب سيارة خلال ثوانٍ، وتابع سائقك على الخريطة حتى الوصول.",
+  "onboardingDeliveryTitle": "توصيل أي طرد",
+  "onboardingDeliveryBody": "أرسل واستلم الطرود داخل مدينتك بسعر واضح قبل الطلب.",
+  "onboardingServicesTitle": "خدمات منزلية موثوقة",
+  "onboardingServicesBody": "سباك، كهربائي، فني تكييف وغيرهم — بفنّيين معتمدين وعرض سعر واضح.",
+  "onboardingStart": "لنبدأ",
+  "signInTitle": "أهلاً بك في تمام",
+  "signInSubtitle": "أدخل رقم هاتفك لإنشاء حساب أو تسجيل الدخول",
+  "signInPhoneLabel": "رقم الهاتف",
+  "signInPhoneHint": "599123456",
+  "signInSendCode": "إرسال رمز التحقق",
+  "signInOtpExplainer": "سنرسل لك رمزًا من ٦ أرقام عبر رسالة نصية.",
+  "signInTerms": "بمتابعتك فإنك توافق على شروط الاستخدام وسياسة الخصوصية.",
+  "signedOutExpired": "انتهت جلستك، يرجى تسجيل الدخول من جديد.",
+  "signedOutRevoked": "تم إنهاء الجلسة من جهاز آخر.",
+  "otpTitle": "رمز التحقق",
+  "otpSubtitle": "أرسلنا رمزًا إلى {phone}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpVerify": "تأكيد",
+  "otpResend": "إعادة إرسال الرمز",
+  "otpResendIn": "يمكنك إعادة الإرسال بعد {seconds} ثانية",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "otpDevCode": "رمز بيئة التطوير: {code}",
+  "@otpDevCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "nameTitle": "ما اسمك؟",
+  "nameSubtitle": "حتى يعرف الشريك بمن سيلتقي",
+  "nameFieldLabel": "الاسم الكامل",
+  "nameFieldHint": "مثال: أحمد محمود",
+  "nameWhy": "نعرض اسمك للشريك المكلّف بطلبك فقط.",
+  "locationPermissionTitle": "فعِّل الموقع للحصول على خدمة أسرع",
+  "locationPermissionBody": "نستخدم موقعك لتحديد نقطة الانطلاق وحساب وقت الوصول بدقة.",
+  "locationReasonPickup": "تحديد نقطة الانطلاق تلقائيًا",
+  "locationReasonEta": "حساب وقت الوصول بدقة",
+  "locationReasonZone": "معرفة الخدمات المتاحة في منطقتك",
+  "locationAllow": "السماح بالوصول للموقع",
+  "locationChooseManually": "سأختار العنوان يدويًا",
+  "locationBlockedHint": "تم رفض إذن الموقع نهائيًا. فعّله من إعدادات النظام.",
+  "locationServiceOffHint": "خدمة الموقع مغلقة في جهازك.",
+  "locationUnavailable": "تعذّر تحديد موقعك الآن.",
+  "homeDeliverTo": "التوصيل إلى",
+  "homeChooseAddress": "اختر عنوانك",
+  "homeChangeAddress": "تغيير العنوان",
+  "homeSearchHint": "ابحث عن خدمة: سباك، كهربائي، تكييف…",
+  "homePopular": "الأكثر طلبًا",
+  "homeRecentOrders": "طلباتك الأخيرة",
+  "homeSavedPlaces": "الأماكن المفضلة",
+  "homeAddPlace": "أضف عنوانك الأول لتطلب أسرع",
+  "homeOffers": "العروض",
+  "homeOffersTitle": "أكواد خصم بانتظارك",
+  "homeOffersBody": "أدخل الكود الآن ليُطبَّق تلقائيًا على طلبك القادم.",
+  "homeActiveJob": "طلب نشط الآن",
+  "homeSearchingPartner": "نبحث عن شريك مناسب…",
+  "serviceRide": "مشوار",
+  "serviceRideCaption": "سيارة خلال دقائق",
+  "serviceDelivery": "توصيل",
+  "serviceDeliveryCaption": "أرسل طردك الآن",
+  "serviceHome": "خدمات منزلية",
+  "serviceHomeCaption": "فنيّون معتمدون",
+  "serviceUrgent": "خدمة عاجلة",
+  "serviceUrgentCaption": "استجابة فورية",
+  "serviceOther": "خدمة",
+  "searchTitle": "بحث",
+  "searchNoResultsTitle": "لا توجد نتائج",
+  "searchNoResultsBody": "لم نجد خدمة تطابق «{query}».",
+  "@searchNoResultsBody": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDirectoryEmptyTitle": "لا توجد خدمات في منطقتك بعد",
+  "searchDirectoryEmptyBody": "نعمل على التوسّع — جرّب عنوانًا آخر.",
+  "categoryOrderNow": "اطلب الآن",
+  "categorySubcategories": "اختر ما تحتاجه",
+  "categoryDuration": "المدة التقديرية {minutes} دقيقة",
+  "@categoryDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "pricingFixed": "سعر ثابت",
+  "pricingStartingFrom": "يبدأ من",
+  "pricingHourly": "أجرة الساعة",
+  "pricingInspectionFee": "رسوم الكشف",
+  "pricingDueNow": "المستحق الآن",
+  "pricingInspectionExplainer": "تدفع رسوم الكشف عند وصول الفني، ثم يقدّم لك عرض سعر للعمل قبل البدء.",
+  "ridePickupLabel": "نقطة الانطلاق",
+  "ridePickupEmpty": "اختر نقطة الانطلاق",
+  "ridePickupTitle": "نقطة الانطلاق",
+  "rideDestinationLabel": "الوجهة",
+  "rideDestinationEmpty": "إلى أين تريد الذهاب؟",
+  "rideDestinationTitle": "الوجهة",
+  "rideSwap": "تبديل الاتجاه",
+  "rideGetEstimate": "احسب السعر",
+  "rideOrderCta": "اطلب الآن",
+  "rideScheduleCta": "احجز للموعد المحدد",
+  "fareSeats": "{seats} مقاعد",
+  "@fareSeats": {
+    "placeholders": {
+      "seats": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "fareEtaMinutes": "خلال {minutes} د",
+  "@fareEtaMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutPaymentMethod": "طريقة الدفع",
+  "checkoutPromoLabel": "كود الخصم",
+  "checkoutPromoHint": "أدخل الكود",
+  "checkoutPromoApplied": "تم تطبيق الكود {code}",
+  "@checkoutPromoApplied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutSchedule": "موعد الطلب",
+  "checkoutScheduleNow": "الآن",
+  "checkoutTotal": "الإجمالي",
+  "paymentCash": "نقدًا",
+  "paymentWallet": "المحفظة",
+  "paymentCard": "بطاقة",
+  "paymentOnline": "دفع إلكتروني",
+  "deliveryRoute": "المسار",
+  "deliveryPickupLabel": "الاستلام من",
+  "deliveryPickupTitle": "مكان الاستلام",
+  "deliveryDropoffLabel": "التسليم إلى",
+  "deliveryDropoffTitle": "مكان التسليم",
+  "deliveryPackage": "تفاصيل الطرد",
+  "deliverySize": "الحجم التقريبي",
+  "deliveryWeight": "الوزن التقريبي",
+  "deliveryDescription": "وصف محتوى الطرد",
+  "deliveryPhotosHint": "صور الطرد تساعد الشريك على التحضير.",
+  "deliverySender": "بيانات المُرسِل",
+  "deliveryRecipient": "بيانات المُستلِم",
+  "deliveryNotes": "ملاحظات للتسليم",
+  "deliveryUrgency": "الأولوية",
+  "deliveryContactsRequired": "أكمل اسم ورقم كل من المُرسِل والمُستلِم.",
+  "deliveryCategoriesUnavailable": "تعذّر تحميل أنواع الطرود.",
+  "packageSizeSmall": "صغير",
+  "packageSizeMedium": "متوسط",
+  "packageSizeLarge": "كبير",
+  "packageSizeXl": "كبير جدًا",
+  "contactName": "الاسم",
+  "contactPhone": "رقم الهاتف",
+  "unitKg": "كغم",
+  "unitMinutes": "دقيقة",
+  "serviceLocationTitle": "موقع الخدمة",
+  "serviceLocationEmpty": "اختر موقع الخدمة",
+  "serviceSubcategory": "نوع العمل",
+  "serviceOptions": "إضافات",
+  "serviceProblemTitle": "وصف المشكلة",
+  "serviceProblemHint": "اشرح المشكلة بالتفصيل ليصل الفني مستعدًا.",
+  "serviceProblemTooShort": "أضف وصفًا من ٥ أحرف على الأقل.",
+  "serviceProblemRequired": "أضف وصفًا للمشكلة قبل الإرسال.",
+  "serviceMediaOptional": "أضف صورًا إن أمكن (اختياري).",
+  "serviceMediaRequired": "مطلوب {count} صورة على الأقل.",
+  "@serviceMediaRequired": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "serviceInstructions": "تعليمات إضافية",
+  "serviceUrgencyTitle": "مستوى الاستعجال",
+  "serviceUrgencySurcharge": "تُضاف رسوم استعجال إلى السعر النهائي.",
+  "serviceWhenTitle": "موعد الزيارة",
+  "serviceWhenNow": "في أقرب وقت",
+  "serviceWhenScheduled": "اختر يومًا",
+  "timeSlotMorning": "صباحًا",
+  "timeSlotAfternoon": "بعد الظهر",
+  "timeSlotEvening": "مساءً",
+  "urgencyStandard": "عادي",
+  "urgencyUrgent": "مستعجل",
+  "urgencyEmergency": "طارئ",
+  "formRequired": "هذا الحقل مطلوب",
+  "formTooSmall": "القيمة أقل من الحد المسموح ({min})",
+  "@formTooSmall": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "formTooLarge": "القيمة أكبر من الحد المسموح ({max})",
+  "@formTooLarge": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "formTooManyItems": "الحد الأقصى {count} عناصر",
+  "@formTooManyItems": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "formNotANumber": "أدخل رقمًا صحيحًا",
+  "formInvalidOption": "اختيار غير صالح",
+  "formChooseDate": "اختر التاريخ",
+  "formChooseTime": "اختر الوقت",
+  "mediaAttachPhotos": "إرفاق صور",
+  "mediaGallery": "المعرض",
+  "mediaCamera": "الكاميرا",
+  "ordersTitle": "طلباتي",
+  "ordersTabAll": "الكل",
+  "ordersTabActive": "نشط",
+  "ordersTabCompleted": "مكتمل",
+  "ordersTabCancelled": "ملغي",
+  "ordersEmptyTitle": "لا توجد طلبات بعد",
+  "ordersEmptyBody": "ابدأ أول طلب لك من الشاشة الرئيسية.",
+  "ordersEmptyCta": "اذهب للرئيسية",
+  "ordersReorder": "أعد الطلب",
+  "jobPricePending": "السعر بعد الكشف",
+  "jobStatusDraft": "مسودة",
+  "jobStatusRequested": "تم استلام الطلب",
+  "jobStatusSearching": "نبحث عن شريك",
+  "jobStatusAssigned": "تم تعيين الشريك",
+  "jobStatusEnRoute": "الشريك في الطريق",
+  "jobStatusArrived": "الشريك وصل",
+  "jobStatusWaitingCustomer": "بانتظارك",
+  "jobStatusInProgress": "جارٍ التنفيذ",
+  "jobStatusInspection": "جارٍ الكشف",
+  "jobStatusQuoteRequired": "بانتظار عرض السعر",
+  "jobStatusQuoteSubmitted": "عرض سعر بانتظار موافقتك",
+  "jobStatusQuoteApproved": "تمت الموافقة على العرض",
+  "jobStatusQuoteRejected": "تم رفض العرض",
+  "jobStatusWorkStarted": "بدأ العمل",
+  "jobStatusWaitingForParts": "بانتظار قطع الغيار",
+  "jobStatusWorkCompleted": "انتهى العمل — بانتظار تأكيدك",
+  "jobStatusCustomerConfirmed": "تم التأكيد",
+  "jobStatusCompleted": "مكتمل",
+  "jobStatusCancelled": "ملغي",
+  "jobStatusNoPartner": "لا يوجد شريك متاح",
+  "jobStatusDisputed": "قيد النزاع",
+  "trackingTitle": "تتبّع الطلب",
+  "trackingSupport": "الدعم",
+  "trackingEta": "الوصول خلال {minutes} دقيقة",
+  "@trackingEta": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingEtaUnknown": "نحدّث وقت الوصول…",
+  "trackingFinished": "انتهى هذا الطلب.",
+  "trackingPollingFallback": "التحديث المباشر غير متاح — نحدّث كل بضع ثوانٍ.",
+  "trackingProgressLabel": "الخطوة {step} من {total}: {status}",
+  "@trackingProgressLabel": {
+    "placeholders": {
+      "step": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingCallPartner": "اتصال بالشريك",
+  "trackingChatPartner": "محادثة الشريك",
+  "trackingTripPin": "رمز بدء الرحلة",
+  "trackingTripPinHint": "أعطِ هذا الرمز للسائق عند الركوب.",
+  "trackingDeliveryOtp": "رمز التسليم",
+  "trackingDeliveryOtpHint": "يُطلب هذا الرمز عند تسليم الطرد.",
+  "trackingNoPartnerTitle": "لم نجد شريكًا متاحًا",
+  "trackingNoPartnerBody": "يمكنك إعادة المحاولة الآن أو تعديل الطلب.",
+  "trackingRetryDispatch": "أعد البحث عن شريك",
+  "trackingEstimatedTotal": "الإجمالي التقديري",
+  "trackingShare": "مشاركة الرحلة",
+  "trackingShareMessage": "تابع رحلتي عبر تمام: {url}",
+  "@trackingShareMessage": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingSos": "استغاثة",
+  "sosTitle": "إرسال استغاثة",
+  "sosBody": "سيصل فريق السلامة إشعارًا فوريًا بموقعك وتفاصيل الطلب.",
+  "sosConfirm": "أرسل الاستغاثة",
+  "sosSent": "تم إرسال الاستغاثة، سنتواصل معك فورًا.",
+  "cancelTitle": "إلغاء الطلب",
+  "cancelSubtitle": "أخبرنا بالسبب حتى نتحسّن",
+  "cancelConfirm": "تأكيد الإلغاء",
+  "cancelNote": "تفاصيل إضافية",
+  "cancelFeeWarning": "قد تُحتسب رسوم إلغاء إذا كان الشريك في طريقه إليك.",
+  "cancelReasonChangedMind": "غيّرت رأيي",
+  "cancelReasonWaitTooLong": "الانتظار طويل",
+  "cancelReasonWrongAddress": "العنوان غير صحيح",
+  "cancelReasonPriceTooHigh": "السعر مرتفع",
+  "cancelReasonPartnerNotMoving": "الشريك لا يتحرك",
+  "cancelReasonSafety": "مخاوف تتعلق بالسلامة",
+  "cancelReasonDuplicate": "طلب مكرر",
+  "cancelReasonOther": "سبب آخر",
+  "quoteTitle": "عرض السعر",
+  "quoteChangeOrderTitle": "تعديل على العرض",
+  "quoteReadyTitle": "وصل عرض السعر",
+  "quoteReview": "مراجعة العرض",
+  "quoteRevision": "المراجعة رقم {revision}",
+  "@quoteRevision": {
+    "placeholders": {
+      "revision": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "quoteApprove": "الموافقة على العرض",
+  "quoteReject": "رفض العرض",
+  "quoteConfirmReject": "تأكيد الرفض",
+  "quoteRejectReason": "سبب الرفض (اختياري)",
+  "quoteLabor": "أجرة العمل",
+  "quoteParts": "قطع الغيار",
+  "quoteFees": "رسوم إضافية",
+  "quoteDiscount": "خصم",
+  "quoteTax": "ضريبة",
+  "quoteDuration": "المدة التقديرية {minutes} دقيقة",
+  "@quoteDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "quoteItemMeta": "{kind} · الكمية {quantity}",
+  "@quoteItemMeta": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "quantity": {
+        "type": "String"
+      }
+    }
+  },
+  "workCompletedTitle": "انتهى العمل",
+  "workCompletedBody": "راجع العمل ثم أكّد إنجازه لإتمام الدفع.",
+  "workConfirmTitle": "تأكيد إنجاز العمل",
+  "workConfirmBody": "بتأكيدك، يُعتبر العمل منجزًا ويُحتسب المبلغ النهائي.",
+  "workConfirmCta": "تأكيد إنجاز العمل",
+  "ratingTitle": "تقييم الخدمة",
+  "ratingCta": "قيّم الخدمة",
+  "ratingPrompt": "كيف كانت تجربتك؟",
+  "ratingPartnerFallback": "الشريك",
+  "ratingComment": "أضف تعليقًا (اختياري)",
+  "ratingThanks": "شكرًا لتقييمك!",
+  "ratingTagPunctual": "ملتزم بالوقت",
+  "ratingTagPolite": "لبق",
+  "ratingTagClean": "نظيف",
+  "ratingTagProfessional": "محترف",
+  "ratingTagGoodPrice": "سعر مناسب",
+  "ratingTagCarefulDriving": "قيادة آمنة",
+  "ratingTagLate": "تأخر",
+  "ratingTagRude": "غير لبق",
+  "ratingTagUnclean": "غير نظيف",
+  "ratingTagUnprofessional": "غير محترف",
+  "ratingTagOvercharged": "سعر مبالغ",
+  "ratingTagUnsafeDriving": "قيادة غير آمنة",
+  "receiptTitle": "الفاتورة",
+  "receiptCta": "عرض الفاتورة",
+  "receiptPayment": "الدفع",
+  "receiptRefunded": "المبلغ المُعاد",
+  "receiptCancellationFee": "رسوم الإلغاء",
+  "receiptProofOfDelivery": "إثبات التسليم",
+  "receiptReceivedBy": "استلمها: {name}",
+  "@receiptReceivedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentStatusPending": "قيد الانتظار",
+  "paymentStatusAuthorized": "محجوز",
+  "paymentStatusCaptured": "مدفوع",
+  "paymentStatusFailed": "فشل الدفع",
+  "paymentStatusRefunded": "مُسترد",
+  "paymentStatusCancelled": "ملغي",
+  "chatTitle": "المحادثة",
+  "chatHint": "اكتب رسالة…",
+  "chatSendPhoto": "إرسال صورة",
+  "chatSendLocation": "إرسال الموقع",
+  "chatSharedLocation": "تمت مشاركة الموقع",
+  "chatLoadOlder": "عرض الرسائل الأقدم",
+  "chatEmptyTitle": "لا توجد رسائل بعد",
+  "chatEmptyBody": "اكتب رسالة للتواصل مع الشريك.",
+  "walletTitle": "المحفظة",
+  "walletBalance": "رصيدك",
+  "walletPending": "قيد التسوية",
+  "walletTopUp": "شحن الرصيد",
+  "walletTopUpHint": "اختر المبلغ ثم أكمل الدفع عبر مزوّد الدفع.",
+  "walletStatement": "كشف الحساب",
+  "walletEmptyTitle": "لا توجد حركات بعد",
+  "walletEmptyBody": "ستظهر هنا كل عمليات الدفع والاسترداد.",
+  "walletPromos": "العروض",
+  "walletReferrals": "دعوة صديق",
+  "promosTitle": "العروض والأكواد",
+  "promoEnterTitle": "لديك كود خصم؟",
+  "promoEnterBody": "احفظ الكود ليُطبَّق تلقائيًا على طلبك القادم.",
+  "promoSaved": "تم حفظ الكود {code}",
+  "@promoSaved": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "promoPending": "الكود {code} سيُطبَّق على طلبك القادم.",
+  "@promoPending": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "referralsTitle": "ادعُ أصدقاءك",
+  "referralsRewardPrefix": "يحصل صديقك على",
+  "referralsStats": "دعوت {invited} صديقًا، وحصلت على {rewarded} مكافأة.",
+  "@referralsStats": {
+    "placeholders": {
+      "invited": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "rewarded": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "referralsShare": "مشاركة رمز الدعوة",
+  "referralsCopied": "تم نسخ الرمز",
+  "accountTitle": "حسابي",
+  "accountNoName": "أضف اسمك",
+  "accountGroupActivity": "نشاطي",
+  "accountGroupSettings": "الإعدادات",
+  "accountGroupHelp": "المساعدة والأمان",
+  "accountSignOut": "تسجيل الخروج",
+  "accountSignOutConfirm": "سيتم تسجيل خروجك من هذا الجهاز.",
+  "favoritesTitle": "المفضلة",
+  "favoritesEmptyTitle": "لا توجد خدمات مفضلة",
+  "favoritesEmptyBody": "أضف الخدمات التي تستخدمها كثيرًا للوصول السريع.",
+  "profileTitle": "الملف الشخصي",
+  "profileEmail": "البريد الإلكتروني",
+  "profilePhone": "رقم الهاتف",
+  "profilePhoneLocked": "لتغيير الرقم تواصل مع الدعم.",
+  "profileSaved": "تم حفظ التغييرات",
+  "preferencesTitle": "التفضيلات",
+  "preferencesLanguage": "اللغة",
+  "preferencesAppearance": "المظهر",
+  "preferencesNotifications": "الإشعارات",
+  "preferencesNotificationsUnavailable": "تعذّر تحميل إعدادات الإشعارات.",
+  "preferencesPush": "إشعارات التطبيق",
+  "preferencesSms": "الرسائل النصية",
+  "preferencesEmail": "البريد الإلكتروني",
+  "preferencesMarketing": "العروض التسويقية",
+  "preferencesMarketingHint": "أخبار العروض والخصومات فقط.",
+  "themeSystem": "حسب النظام",
+  "themeLight": "فاتح",
+  "themeDark": "داكن",
+  "sessionsTitle": "الأجهزة النشطة",
+  "sessionsEmptyTitle": "لا توجد أجهزة أخرى",
+  "sessionsLastSeen": "آخر نشاط {when}",
+  "@sessionsLastSeen": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionsThisDevice": "هذا الجهاز",
+  "sessionsRevoke": "إنهاء الجلسة",
+  "sessionsSignOutAll": "تسجيل الخروج من كل الأجهزة",
+  "sessionsSignOutAllConfirm": "سيتم إنهاء كل الجلسات بما فيها هذا الجهاز.",
+  "savedPlacesTitle": "الأماكن المحفوظة",
+  "savedPlacesAdd": "إضافة مكان",
+  "savedPlacesEdit": "تعديل المكان",
+  "savedPlacesLabel": "اسم المكان",
+  "savedPlacesEmptyTitle": "لم تحفظ أي مكان بعد",
+  "savedPlacesEmptyBody": "احفظ المنزل والعمل لتطلب بضغطة واحدة.",
+  "savedPlacesDeleteTitle": "حذف المكان",
+  "savedPlacesDeleteBody": "سيتم حذف «{label}» نهائيًا.",
+  "@savedPlacesDeleteBody": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "placeKindHome": "المنزل",
+  "placeKindWork": "العمل",
+  "placeKindCustom": "مكان آخر",
+  "addressSheetTitle": "اختر العنوان",
+  "addressSearchHint": "ابحث عن شارع أو منطقة",
+  "addressUseCurrent": "موقعي الحالي",
+  "addressPickOnMap": "تحديد على الخريطة",
+  "addressManagePlaces": "إدارة الأماكن المحفوظة",
+  "addressNoResults": "لا توجد نتائج مطابقة.",
+  "addressSearchFailed": "تعذّر البحث الآن، حاول لاحقًا.",
+  "addressAttribution": "نتائج البحث من OpenStreetMap",
+  "addressBuilding": "المبنى",
+  "addressFloor": "الطابق",
+  "addressApartment": "الشقة",
+  "addressNotes": "ملاحظات للوصول",
+  "locationPickerTitle": "تحديد الموقع",
+  "locationPickerHint": "حرّك الخريطة لضبط الدبوس",
+  "locationPickerMoveMap": "حرّك الخريطة لتحديد العنوان",
+  "locationPickerConfirm": "تأكيد الموقع",
+  "notificationsTitle": "الإشعارات",
+  "notificationsMarkAllRead": "تعليم الكل كمقروء",
+  "notificationsEmptyTitle": "لا توجد إشعارات",
+  "notificationsEmptyBody": "سنخبرك هنا بكل جديد عن طلباتك.",
+  "supportTitle": "الدعم",
+  "supportNewTicket": "طلب دعم جديد",
+  "supportNewTicketHint": "صف مشكلتك وسيتواصل معك فريق الدعم.",
+  "supportSubject": "الموضوع",
+  "supportDescription": "التفاصيل",
+  "supportReplyHint": "اكتب ردك…",
+  "supportTicketTitle": "طلب الدعم",
+  "supportEmptyTitle": "لا توجد طلبات دعم",
+  "supportEmptyBody": "افتح طلبًا جديدًا إذا احتجت مساعدة.",
+  "ticketCategoryPayment": "الدفع",
+  "ticketCategoryJob": "مشكلة في الطلب",
+  "ticketCategoryPartner": "سلوك الشريك",
+  "ticketCategoryLostItem": "غرض مفقود",
+  "ticketCategoryAccount": "الحساب",
+  "ticketCategorySafety": "السلامة",
+  "ticketCategoryOther": "أخرى",
+  "ticketStatusOpen": "مفتوح",
+  "ticketStatusInProgress": "قيد المعالجة",
+  "ticketStatusWaitingUser": "بانتظار ردك",
+  "ticketStatusResolved": "تم الحل",
+  "ticketStatusClosed": "مغلق",
+  "disputesTitle": "النزاعات",
+  "disputesEmptyTitle": "لا توجد نزاعات",
+  "disputesEmptyBody": "افتح نزاعًا من صفحة الطلب إذا واجهت مشكلة.",
+  "disputeDetailTitle": "تفاصيل النزاع",
+  "disputeOpen": "فتح نزاع",
+  "disputeReasonLabel": "سبب النزاع",
+  "disputeDescription": "اشرح ما حدث",
+  "disputeRefunded": "المبلغ المُعاد",
+  "disputeReasonNotCompleted": "لم يُنجز العمل",
+  "disputeReasonPoorQuality": "جودة سيئة",
+  "disputeReasonOvercharged": "مبالغة في السعر",
+  "disputeReasonDamage": "أضرار",
+  "disputeReasonItemMissing": "غرض مفقود",
+  "disputeReasonMisconduct": "سوء تصرف من الشريك",
+  "disputeReasonOther": "سبب آخر",
+  "disputeStatusOpen": "مفتوح",
+  "disputeStatusUnderReview": "قيد المراجعة",
+  "disputeStatusResolvedCustomer": "لصالحك",
+  "disputeStatusResolvedPartner": "لصالح الشريك",
+  "disputeStatusResolvedSplit": "تسوية جزئية",
+  "disputeStatusRejected": "مرفوض",
+  "legalTitle": "عن التطبيق",
+  "legalTermsTitle": "شروط الاستخدام",
+  "legalTermsBody": "باستخدامك تمام فإنك توافق على تقديم بيانات صحيحة، واحترام الشركاء، وسداد قيمة الخدمات المطلوبة. تُطبَّق رسوم الإلغاء وفق سياسة معلنة داخل التطبيق.",
+  "legalPrivacyTitle": "الخصوصية",
+  "legalPrivacyBody": "نستخدم موقعك ورقم هاتفك لتنفيذ الطلبات فقط. لا نشارك بياناتك مع أطراف ثالثة لأغراض تسويقية، ويمكنك إيقاف الرسائل التسويقية من التفضيلات.",
+  "legalDeleteAccount": "طلب حذف الحساب",
+  "legalDeleteAccountHint": "يفتح طلب دعم لمراجعة الحذف.",
+  "legalDeleteAccountConfirm": "سنفتح طلب دعم لحذف حسابك. قد نحتفظ بسجلات الفواتير كما يقتضي القانون.",
+  "legalDeleteAccountCta": "أرسل الطلب",
+  "legalDeleteAccountSubject": "طلب حذف الحساب",
+  "legalDeleteAccountBody": "أرغب بحذف حسابي وبياناتي الشخصية من تطبيق تمام.",
+  "bannerPromoCopied": "تم نسخ الكود {code} وسيُطبَّق على طلبك القادم.",
+  "@bannerPromoCopied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "bannerLeaveAppTitle": "فتح رابط خارجي",
+  "bannerLeaveAppMessage": "سيتم فتح {host} خارج التطبيق.",
+  "@bannerLeaveAppMessage": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "publicTrackTitle": "تتبّع الرحلة",
+  "publicTrackPartner": "الشريك: {name}",
+  "@publicTrackPartner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyTitle": "لا يوجد شيء هنا بعد",
+  "errorTitle": "حدث خطأ",
+  "errorOfflineTitle": "لا يوجد اتصال",
+  "offlineBanner": "لا يوجد اتصال بالإنترنت — بعض البيانات قد تكون قديمة.",
+  "errorOffline": "تحقق من اتصالك بالإنترنت ثم أعد المحاولة.",
+  "errorNetwork": "تعذّر الوصول إلى الخادم. حاول مرة أخرى.",
+  "errorGeneric": "حدث خطأ غير متوقع. حاول مرة أخرى.",
+  "errorValidation": "تحقق من البيانات المدخلة.",
+  "errorSessionExpired": "انتهت جلستك، سجّل الدخول من جديد.",
+  "errorForbidden": "لا تملك صلاحية لهذا الإجراء.",
+  "errorNotFound": "العنصر المطلوب غير موجود.",
+  "errorRateLimited": "محاولات كثيرة، انتظر قليلًا ثم أعد المحاولة.",
+  "errorOtpInvalid": "الرمز غير صحيح.",
+  "errorOtpExpired": "انتهت صلاحية الرمز، اطلب رمزًا جديدًا.",
+  "errorOtpTooManyAttempts": "محاولات خاطئة كثيرة، اطلب رمزًا جديدًا.",
+  "errorOtpCooldown": "انتظر قليلًا قبل طلب رمز جديد.",
+  "errorAccountSuspended": "تم إيقاف حسابك. تواصل مع الدعم.",
+  "errorAccountRestricted": "حسابك مقيّد مؤقتًا.",
+  "errorOutsideZone": "موقعك خارج نطاق خدمتنا حاليًا.",
+  "errorServiceUnavailableInZone": "هذه الخدمة غير متاحة في منطقتك.",
+  "errorOutsideHours": "الخدمة خارج ساعات العمل الآن.",
+  "errorNoPartners": "لا يوجد شريك متاح حاليًا.",
+  "errorVersionConflict": "تم تحديث الطلب، أعد المحاولة.",
+  "errorJobAlreadyAssigned": "تم تعيين شريك لهذا الطلب بالفعل.",
+  "errorInsufficientBalance": "رصيد المحفظة غير كافٍ.",
+  "errorPaymentMethodDisabled": "طريقة الدفع هذه غير متاحة حاليًا.",
+  "errorPaymentFailed": "فشلت عملية الدفع.",
+  "errorPromoInvalid": "كود الخصم غير صالح.",
+  "errorPromoExpired": "انتهت صلاحية كود الخصم.",
+  "errorPromoUsageExceeded": "تم استهلاك هذا الكود بالكامل.",
+  "errorPromoMinOrder": "قيمة الطلب أقل من الحد المطلوب للكود.",
+  "errorPromoNotEligible": "هذا الكود غير متاح لطلبك.",
+  "errorRatingNotAllowed": "لا يمكن تقييم هذا الطلب.",
+  "errorUploadTooLarge": "حجم الملف كبير جدًا.",
+  "errorUploadInvalid": "نوع الملف غير مدعوم.",
+  "errorFeatureDisabled": "هذه الميزة غير مفعّلة حاليًا.",
+  "errorDuplicateRequest": "تم إرسال هذا الطلب مسبقًا.",
+  "errorQuoteNotApproved": "يجب الموافقة على عرض السعر أولًا.",
+  "errorCannotOpenLink": "تعذّر فتح الرابط."
+}
