@@ -14,6 +14,7 @@ export const jobInclude = {
   customer: { include: { user: { select: { id: true, fullName: true, phone: true, profileImage: true } } } },
   partner: { include: { user: { select: { id: true, fullName: true, phone: true, profileImage: true } }, availability: true } },
   promoCode: { select: { code: true } },
+  pricingSnapshot: { select: { id: true, commissionPercent: true, commissionFixedMinor: true, surgeMultiplier: true } },
   quotes: { orderBy: { revision: 'desc' as const }, take: 1, include: { items: true } },
 } satisfies Prisma.JobInclude;
 
