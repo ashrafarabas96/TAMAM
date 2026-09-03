@@ -1,0 +1,698 @@
+// AUTO-GENERATED from packages/shared-types — DO NOT EDIT. Regenerate: node scripts/generate-dart-contracts.mjs
+// ignore_for_file: constant_identifier_names, public_member_api_docs
+
+enum UserRole {
+  customer('CUSTOMER'),
+  partner('PARTNER'),
+  admin('ADMIN'),
+  support('SUPPORT'),
+  dispatcher('DISPATCHER'),
+  finance('FINANCE'),
+  operationsManager('OPERATIONS_MANAGER'),
+  marketing('MARKETING'),
+  analyst('ANALYST'),
+  superAdmin('SUPER_ADMIN');
+
+  const UserRole(this.value);
+  final String value;
+
+  static UserRole? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in UserRole.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum AccountStatus {
+  active('ACTIVE'),
+  restricted('RESTRICTED'),
+  suspended('SUSPENDED'),
+  deleted('DELETED');
+
+  const AccountStatus(this.value);
+  final String value;
+
+  static AccountStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in AccountStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum PartnerRoleType {
+  driver('DRIVER'),
+  courier('COURIER'),
+  technician('TECHNICIAN'),
+  serviceProvider('SERVICE_PROVIDER');
+
+  const PartnerRoleType(this.value);
+  final String value;
+
+  static PartnerRoleType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in PartnerRoleType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum VerificationStatus {
+  draft('DRAFT'),
+  pending('PENDING'),
+  underReview('UNDER_REVIEW'),
+  approved('APPROVED'),
+  rejected('REJECTED'),
+  suspended('SUSPENDED');
+
+  const VerificationStatus(this.value);
+  final String value;
+
+  static VerificationStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in VerificationStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum AvailabilityStatus {
+  online('ONLINE'),
+  offline('OFFLINE'),
+  busy('BUSY');
+
+  const AvailabilityStatus(this.value);
+  final String value;
+
+  static AvailabilityStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in AvailabilityStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum DocumentType {
+  id('ID'),
+  drivingLicense('DRIVING_LICENSE'),
+  vehicleLicense('VEHICLE_LICENSE'),
+  insurance('INSURANCE'),
+  professionalCertificate('PROFESSIONAL_CERTIFICATE'),
+  businessDocument('BUSINESS_DOCUMENT'),
+  profilePicture('PROFILE_PICTURE');
+
+  const DocumentType(this.value);
+  final String value;
+
+  static DocumentType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in DocumentType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum DocumentStatus {
+  pending('PENDING'),
+  approved('APPROVED'),
+  rejected('REJECTED'),
+  expired('EXPIRED');
+
+  const DocumentStatus(this.value);
+  final String value;
+
+  static DocumentStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in DocumentStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum JobType {
+  ride('RIDE'),
+  delivery('DELIVERY'),
+  homeService('HOME_SERVICE'),
+  food('FOOD'),
+  grocery('GROCERY'),
+  pharmacy('PHARMACY'),
+  shopping('SHOPPING'),
+  moving('MOVING'),
+  roadAssistance('ROAD_ASSISTANCE');
+
+  const JobType(this.value);
+  final String value;
+
+  static JobType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in JobType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum JobStatus {
+  draft('DRAFT'),
+  requested('REQUESTED'),
+  searching('SEARCHING'),
+  assigned('ASSIGNED'),
+  partnerEnRoute('PARTNER_EN_ROUTE'),
+  partnerArrived('PARTNER_ARRIVED'),
+  waitingCustomer('WAITING_CUSTOMER'),
+  inProgress('IN_PROGRESS'),
+  inspectionStarted('INSPECTION_STARTED'),
+  quoteRequired('QUOTE_REQUIRED'),
+  quoteSubmitted('QUOTE_SUBMITTED'),
+  quoteApproved('QUOTE_APPROVED'),
+  quoteRejected('QUOTE_REJECTED'),
+  workStarted('WORK_STARTED'),
+  waitingForParts('WAITING_FOR_PARTS'),
+  workCompleted('WORK_COMPLETED'),
+  customerConfirmed('CUSTOMER_CONFIRMED'),
+  completed('COMPLETED'),
+  cancelled('CANCELLED'),
+  noPartnerAvailable('NO_PARTNER_AVAILABLE'),
+  disputed('DISPUTED');
+
+  const JobStatus(this.value);
+  final String value;
+
+  static JobStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in JobStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum JobUrgency {
+  standard('STANDARD'),
+  urgent('URGENT'),
+  emergency('EMERGENCY');
+
+  const JobUrgency(this.value);
+  final String value;
+
+  static JobUrgency? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in JobUrgency.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum AssignmentStatus {
+  offered('OFFERED'),
+  accepted('ACCEPTED'),
+  rejected('REJECTED'),
+  expired('EXPIRED'),
+  cancelled('CANCELLED'),
+  reassigned('REASSIGNED');
+
+  const AssignmentStatus(this.value);
+  final String value;
+
+  static AssignmentStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in AssignmentStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum QuoteStatus {
+  draft('DRAFT'),
+  submitted('SUBMITTED'),
+  approved('APPROVED'),
+  rejected('REJECTED'),
+  superseded('SUPERSEDED'),
+  cancelled('CANCELLED');
+
+  const QuoteStatus(this.value);
+  final String value;
+
+  static QuoteStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in QuoteStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum PricingMethod {
+  metered('METERED'),
+  distanceWeight('DISTANCE_WEIGHT'),
+  fixed('FIXED'),
+  inspectionQuote('INSPECTION_QUOTE'),
+  hourly('HOURLY'),
+  startingFrom('STARTING_FROM'),
+  customQuote('CUSTOM_QUOTE');
+
+  const PricingMethod(this.value);
+  final String value;
+
+  static PricingMethod? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in PricingMethod.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum DynamicFieldType {
+  text('TEXT'),
+  textarea('TEXTAREA'),
+  number('NUMBER'),
+  select('SELECT'),
+  multiSelect('MULTI_SELECT'),
+  boolean('BOOLEAN'),
+  date('DATE'),
+  time('TIME'),
+  image('IMAGE'),
+  images('IMAGES'),
+  video('VIDEO'),
+  audio('AUDIO');
+
+  const DynamicFieldType(this.value);
+  final String value;
+
+  static DynamicFieldType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in DynamicFieldType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum PaymentMethod {
+  cash('CASH'),
+  wallet('WALLET'),
+  card('CARD'),
+  bank('BANK'),
+  externalGateway('EXTERNAL_GATEWAY');
+
+  const PaymentMethod(this.value);
+  final String value;
+
+  static PaymentMethod? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in PaymentMethod.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum PaymentStatus {
+  pending('PENDING'),
+  authorized('AUTHORIZED'),
+  captured('CAPTURED'),
+  failed('FAILED'),
+  cancelled('CANCELLED'),
+  refunded('REFUNDED'),
+  partiallyRefunded('PARTIALLY_REFUNDED');
+
+  const PaymentStatus(this.value);
+  final String value;
+
+  static PaymentStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in PaymentStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum LedgerAccountType {
+  customerWallet('CUSTOMER_WALLET'),
+  partnerWallet('PARTNER_WALLET'),
+  platformRevenue('PLATFORM_REVENUE'),
+  platformCashClearing('PLATFORM_CASH_CLEARING'),
+  platformGatewayClearing('PLATFORM_GATEWAY_CLEARING'),
+  platformPromoExpense('PLATFORM_PROMO_EXPENSE'),
+  platformRefundExpense('PLATFORM_REFUND_EXPENSE'),
+  platformPayables('PLATFORM_PAYABLES');
+
+  const LedgerAccountType(this.value);
+  final String value;
+
+  static LedgerAccountType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in LedgerAccountType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum LedgerTransactionType {
+  jobCharge('JOB_CHARGE'),
+  jobCommission('JOB_COMMISSION'),
+  partnerEarning('PARTNER_EARNING'),
+  cashCollected('CASH_COLLECTED'),
+  walletTopup('WALLET_TOPUP'),
+  walletWithdrawal('WALLET_WITHDRAWAL'),
+  refund('REFUND'),
+  promoDiscount('PROMO_DISCOUNT'),
+  referralReward('REFERRAL_REWARD'),
+  cancellationFee('CANCELLATION_FEE'),
+  bonus('BONUS'),
+  manualAdjustment('MANUAL_ADJUSTMENT'),
+  disputeSettlement('DISPUTE_SETTLEMENT');
+
+  const LedgerTransactionType(this.value);
+  final String value;
+
+  static LedgerTransactionType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in LedgerTransactionType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum CommissionScope {
+  global('GLOBAL'),
+  jobType('JOB_TYPE'),
+  category('CATEGORY'),
+  zone('ZONE'),
+  partner('PARTNER'),
+  campaign('CAMPAIGN');
+
+  const CommissionScope(this.value);
+  final String value;
+
+  static CommissionScope? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in CommissionScope.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum NotificationEvent {
+  otpCode('OTP_CODE'),
+  jobCreated('JOB_CREATED'),
+  jobOffer('JOB_OFFER'),
+  jobAccepted('JOB_ACCEPTED'),
+  partnerArriving('PARTNER_ARRIVING'),
+  partnerArrived('PARTNER_ARRIVED'),
+  jobStarted('JOB_STARTED'),
+  quoteReceived('QUOTE_RECEIVED'),
+  quoteApproved('QUOTE_APPROVED'),
+  quoteRejected('QUOTE_REJECTED'),
+  jobCompleted('JOB_COMPLETED'),
+  jobCancelled('JOB_CANCELLED'),
+  noPartnerAvailable('NO_PARTNER_AVAILABLE'),
+  paymentSuccess('PAYMENT_SUCCESS'),
+  paymentFailed('PAYMENT_FAILED'),
+  documentExpiring('DOCUMENT_EXPIRING'),
+  documentReviewed('DOCUMENT_REVIEWED'),
+  partnerApproved('PARTNER_APPROVED'),
+  newMessage('NEW_MESSAGE'),
+  supportReply('SUPPORT_REPLY'),
+  promoCampaign('PROMO_CAMPAIGN'),
+  scheduledReminder('SCHEDULED_REMINDER');
+
+  const NotificationEvent(this.value);
+  final String value;
+
+  static NotificationEvent? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in NotificationEvent.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum TicketCategory {
+  payment('PAYMENT'),
+  jobIssue('JOB_ISSUE'),
+  partnerBehaviour('PARTNER_BEHAVIOUR'),
+  customerBehaviour('CUSTOMER_BEHAVIOUR'),
+  lostItem('LOST_ITEM'),
+  account('ACCOUNT'),
+  safety('SAFETY'),
+  other('OTHER');
+
+  const TicketCategory(this.value);
+  final String value;
+
+  static TicketCategory? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in TicketCategory.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum TicketStatus {
+  open('OPEN'),
+  inProgress('IN_PROGRESS'),
+  waitingUser('WAITING_USER'),
+  resolved('RESOLVED'),
+  closed('CLOSED');
+
+  const TicketStatus(this.value);
+  final String value;
+
+  static TicketStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in TicketStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum DisputeStatus {
+  open('OPEN'),
+  underReview('UNDER_REVIEW'),
+  resolvedCustomer('RESOLVED_CUSTOMER'),
+  resolvedPartner('RESOLVED_PARTNER'),
+  resolvedSplit('RESOLVED_SPLIT'),
+  rejected('REJECTED');
+
+  const DisputeStatus(this.value);
+  final String value;
+
+  static DisputeStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in DisputeStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum BannerPlacement {
+  homeHero('HOME_HERO'),
+  homeInline('HOME_INLINE'),
+  serviceCategoryTop('SERVICE_CATEGORY_TOP'),
+  checkoutPromo('CHECKOUT_PROMO'),
+  orderTracking('ORDER_TRACKING'),
+  partnerHome('PARTNER_HOME');
+
+  const BannerPlacement(this.value);
+  final String value;
+
+  static BannerPlacement? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in BannerPlacement.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum CampaignStatus {
+  draft('DRAFT'),
+  scheduled('SCHEDULED'),
+  active('ACTIVE'),
+  paused('PAUSED'),
+  ended('ENDED'),
+  archived('ARCHIVED');
+
+  const CampaignStatus(this.value);
+  final String value;
+
+  static CampaignStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in CampaignStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum BannerActionType {
+  none('NONE'),
+  deepLink('DEEP_LINK'),
+  externalUrl('EXTERNAL_URL'),
+  promoCode('PROMO_CODE'),
+  serviceCategory('SERVICE_CATEGORY');
+
+  const BannerActionType(this.value);
+  final String value;
+
+  static BannerActionType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in BannerActionType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum RiskSignal {
+  excessiveCancellations('EXCESSIVE_CANCELLATIONS'),
+  promoAbuse('PROMO_ABUSE'),
+  multipleAccounts('MULTIPLE_ACCOUNTS'),
+  impossibleGpsMovement('IMPOSSIBLE_GPS_MOVEMENT'),
+  repeatedFailedPayments('REPEATED_FAILED_PAYMENTS'),
+  unusualReferralBehaviour('UNUSUAL_REFERRAL_BEHAVIOUR');
+
+  const RiskSignal(this.value);
+  final String value;
+
+  static RiskSignal? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in RiskSignal.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum MediaPurpose {
+  profile('PROFILE'),
+  partnerDocument('PARTNER_DOCUMENT'),
+  vehiclePhoto('VEHICLE_PHOTO'),
+  jobAttachment('JOB_ATTACHMENT'),
+  proofOfDelivery('PROOF_OF_DELIVERY'),
+  chat('CHAT'),
+  support('SUPPORT'),
+  disputeEvidence('DISPUTE_EVIDENCE'),
+  bannerCreative('BANNER_CREATIVE'),
+  serviceIcon('SERVICE_ICON');
+
+  const MediaPurpose(this.value);
+  final String value;
+
+  static MediaPurpose? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in MediaPurpose.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+abstract final class ErrorCode {
+  static const String validationFailed = 'VALIDATION_FAILED';
+  static const String unauthenticated = 'UNAUTHENTICATED';
+  static const String forbidden = 'FORBIDDEN';
+  static const String notFound = 'NOT_FOUND';
+  static const String conflict = 'CONFLICT';
+  static const String rateLimited = 'RATE_LIMITED';
+  static const String idempotencyKeyReused = 'IDEMPOTENCY_KEY_REUSED';
+  static const String idempotencyKeyRequired = 'IDEMPOTENCY_KEY_REQUIRED';
+  static const String otpInvalid = 'OTP_INVALID';
+  static const String otpExpired = 'OTP_EXPIRED';
+  static const String otpTooManyAttempts = 'OTP_TOO_MANY_ATTEMPTS';
+  static const String otpResendCooldown = 'OTP_RESEND_COOLDOWN';
+  static const String tokenExpired = 'TOKEN_EXPIRED';
+  static const String tokenRevoked = 'TOKEN_REVOKED';
+  static const String accountSuspended = 'ACCOUNT_SUSPENDED';
+  static const String accountRestricted = 'ACCOUNT_RESTRICTED';
+  static const String partnerNotApproved = 'PARTNER_NOT_APPROVED';
+  static const String partnerNotAvailable = 'PARTNER_NOT_AVAILABLE';
+  static const String outsideServiceZone = 'OUTSIDE_SERVICE_ZONE';
+  static const String serviceUnavailableInZone = 'SERVICE_UNAVAILABLE_IN_ZONE';
+  static const String outsideOperatingHours = 'OUTSIDE_OPERATING_HOURS';
+  static const String invalidStateTransition = 'INVALID_STATE_TRANSITION';
+  static const String jobAlreadyAssigned = 'JOB_ALREADY_ASSIGNED';
+  static const String offerExpired = 'OFFER_EXPIRED';
+  static const String versionConflict = 'VERSION_CONFLICT';
+  static const String tripPinInvalid = 'TRIP_PIN_INVALID';
+  static const String deliveryOtpInvalid = 'DELIVERY_OTP_INVALID';
+  static const String pickupOtpInvalid = 'PICKUP_OTP_INVALID';
+  static const String quoteNotApproved = 'QUOTE_NOT_APPROVED';
+  static const String insufficientWalletBalance = 'INSUFFICIENT_WALLET_BALANCE';
+  static const String paymentMethodDisabled = 'PAYMENT_METHOD_DISABLED';
+  static const String paymentFailed = 'PAYMENT_FAILED';
+  static const String promoInvalid = 'PROMO_INVALID';
+  static const String promoExpired = 'PROMO_EXPIRED';
+  static const String promoUsageExceeded = 'PROMO_USAGE_EXCEEDED';
+  static const String promoMinOrderNotMet = 'PROMO_MIN_ORDER_NOT_MET';
+  static const String promoNotEligible = 'PROMO_NOT_ELIGIBLE';
+  static const String ratingNotAllowed = 'RATING_NOT_ALLOWED';
+  static const String uploadInvalid = 'UPLOAD_INVALID';
+  static const String uploadTooLarge = 'UPLOAD_TOO_LARGE';
+  static const String staleLocation = 'STALE_LOCATION';
+  static const String impossibleMovement = 'IMPOSSIBLE_MOVEMENT';
+  static const String featureDisabled = 'FEATURE_DISABLED';
+  static const String configOutOfRange = 'CONFIG_OUT_OF_RANGE';
+  static const String externalServiceError = 'EXTERNAL_SERVICE_ERROR';
+  static const String internalError = 'INTERNAL_ERROR';
+}
+
+abstract final class Headers {
+  static const String idempotencyKey = 'Idempotency-Key';
+  static const String requestId = 'X-Request-Id';
+  static const String deviceId = 'X-Device-Id';
+  static const String appVersion = 'X-App-Version';
+  static const String acceptLanguage = 'Accept-Language';
+  static const String timezone = 'X-Timezone';
+}
+
+abstract final class WsNamespace {
+  static const String tracking = '/tracking';
+  static const String jobs = '/jobs';
+  static const String chat = '/chat';
+  static const String admin = '/admin';
+}
+
+abstract final class WsEvent {
+  static const String partnerLocation = 'partner:location';
+  static const String subscribeJob = 'job:subscribe';
+  static const String unsubscribeJob = 'job:unsubscribe';
+  static const String chatSend = 'chat:send';
+  static const String chatRead = 'chat:read';
+  static const String adminSubscribeMap = 'admin:map:subscribe';
+  static const String jobLocation = 'job:location';
+  static const String jobStatus = 'job:status';
+  static const String jobOffer = 'job:offer';
+  static const String jobOfferExpired = 'job:offer:expired';
+  static const String jobEta = 'job:eta';
+  static const String chatMessage = 'chat:message';
+  static const String chatDelivery = 'chat:delivery';
+  static const String adminMapUpdate = 'admin:map:update';
+  static const String adminMetrics = 'admin:metrics';
+  static const String error = 'error';
+}
+
+abstract final class ApiVersion {
+  static const String version = 'v1';
+  static const String prefix = '/api/v1';
+}
