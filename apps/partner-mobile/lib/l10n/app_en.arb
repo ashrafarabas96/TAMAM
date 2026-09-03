@@ -270,6 +270,7 @@
   "jobTypeDelivery": "Delivery",
   "jobTypeFood": "Food delivery",
   "jobTypeHomeService": "Home service",
+  "jobTypeOther": "Service",
   "jobStatusDraft": "Draft",
   "jobStatusSearching": "Finding a partner",
   "jobStatusAssigned": "Assigned to you",

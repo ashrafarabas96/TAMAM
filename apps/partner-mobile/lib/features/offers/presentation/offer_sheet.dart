@@ -215,32 +215,36 @@ class _OfferBody extends ConsumerWidget {
                 style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: TamamSpacing.s3),
+              // Each metric takes an equal share of the row. Three metrics separated by
+              // fixed 32 px gaps overflowed a 390 px sheet by 122 px.
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  _Metric(
-                    icon: Icons.near_me_rounded,
-                    value: units.isKilometres(offer.distanceToPickupMeters)
-                        ? l10n.distanceKm(units.distanceValue(offer.distanceToPickupMeters))
-                        : l10n.distanceM(units.distanceValue(offer.distanceToPickupMeters)),
-                    label: l10n.offerToPickup,
-                  ),
-                  const SizedBox(width: TamamSpacing.s8),
-                  _Metric(
-                    icon: Icons.schedule_rounded,
-                    value: l10n.durationMin(units.minutesValue(offer.etaToPickupSeconds)),
-                    label: l10n.offerEta,
-                  ),
-                  if (job.distanceMeters != null) ...<Widget>[
-                    const SizedBox(width: TamamSpacing.s8),
-                    _Metric(
-                      icon: Icons.route_rounded,
-                      value: units.isKilometres(job.distanceMeters!)
-                          ? l10n.distanceKm(units.distanceValue(job.distanceMeters!))
-                          : l10n.distanceM(units.distanceValue(job.distanceMeters!)),
-                      label: l10n.offerTripDistance,
+                  Expanded(
+                    child: _Metric(
+                      icon: Icons.near_me_rounded,
+                      value: units.isKilometres(offer.distanceToPickupMeters)
+                          ? l10n.distanceKm(units.distanceValue(offer.distanceToPickupMeters))
+                          : l10n.distanceM(units.distanceValue(offer.distanceToPickupMeters)),
+                      label: l10n.offerToPickup,
                     ),
-                  ],
+                  ),
+                  Expanded(
+                    child: _Metric(
+                      icon: Icons.schedule_rounded,
+                      value: l10n.durationMin(units.minutesValue(offer.etaToPickupSeconds)),
+                      label: l10n.offerEta,
+                    ),
+                  ),
+                  if (job.distanceMeters != null)
+                    Expanded(
+                      child: _Metric(
+                        icon: Icons.route_rounded,
+                        value: units.isKilometres(job.distanceMeters!)
+                            ? l10n.distanceKm(units.distanceValue(job.distanceMeters!))
+                            : l10n.distanceM(units.distanceValue(job.distanceMeters!)),
+                        label: l10n.offerTripDistance,
+                      ),
+                    ),
                 ],
               ),
             ],
@@ -319,8 +323,20 @@ class _Metric extends StatelessWidget {
       children: <Widget>[
         Icon(icon, size: TamamSize.iconSm, color: TamamBrand.purple200),
         const SizedBox(height: 2),
-        Text(value, style: TamamType.headingSm.toTextStyle(color: colors.textOnBrand)),
-        Text(label, style: TamamType.labelSm.toTextStyle(color: TamamBrand.purple200)),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TamamType.headingSm.toTextStyle(color: colors.textOnBrand),
+        ),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TamamType.labelSm.toTextStyle(color: TamamBrand.purple200),
+        ),
       ],
     );
   }

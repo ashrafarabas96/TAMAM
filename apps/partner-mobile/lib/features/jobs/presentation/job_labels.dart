@@ -62,7 +62,12 @@ abstract final class JobLabels {
       case JobType.homeService:
         return l10n.jobTypeHomeService;
       case JobType.food:
-        return l10n.jobTypeFood;
+      case JobType.grocery:
+      case JobType.pharmacy:
+      case JobType.shopping:
+      case JobType.moving:
+      case JobType.roadAssistance:
+        return l10n.jobTypeOther;
     }
   }
 
@@ -75,7 +80,12 @@ abstract final class JobLabels {
       case JobType.homeService:
         return Icons.handyman_rounded;
       case JobType.food:
-        return Icons.restaurant_rounded;
+      case JobType.grocery:
+      case JobType.pharmacy:
+      case JobType.shopping:
+      case JobType.moving:
+      case JobType.roadAssistance:
+        return Icons.local_offer_rounded;
     }
   }
 
@@ -88,6 +98,11 @@ abstract final class JobLabels {
       case JobType.homeService:
         return TamamServiceColors.homeService;
       case JobType.food:
+      case JobType.grocery:
+      case JobType.pharmacy:
+      case JobType.shopping:
+      case JobType.moving:
+      case JobType.roadAssistance:
         return TamamServiceColors.delivery;
     }
   }

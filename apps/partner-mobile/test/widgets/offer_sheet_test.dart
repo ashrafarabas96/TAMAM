@@ -173,6 +173,11 @@ void main() {
     await pumpSheet(tester, OfferQueue(offers: <JobOffer>[_offer(now: now)]));
     expect(find.text(ar.offerQueuePosition(1)), findsNothing);
 
+    // Tear the tree down first: pumping a second ProviderScope with different overrides
+    // over the top of the first one keeps the original container, so the sheet would
+    // still be reading the single-offer queue.
+    await tester.pumpWidget(const SizedBox.shrink());
+
     await pumpSheet(
       tester,
       OfferQueue(offers: <JobOffer>[_offer(now: now), _offer(now: now)]),

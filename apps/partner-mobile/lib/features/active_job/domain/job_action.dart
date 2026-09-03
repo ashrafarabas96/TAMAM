@@ -87,10 +87,19 @@ abstract final class JobActions {
         return PartnerJobAction.arrive;
       case JobStatus.partnerArrived:
       case JobStatus.waitingCustomer:
+        // The six reserved job types are feature-flagged off, but the switch must still be
+        // total. Anything that collects and drops off items follows the package flow; an
+        // on-site call-out follows the inspection flow.
         return switch (job.type) {
           JobType.ride => PartnerJobAction.startRide,
-          JobType.delivery || JobType.food => PartnerJobAction.pickUpPackage,
-          JobType.homeService => PartnerJobAction.startInspection,
+          JobType.delivery ||
+          JobType.food ||
+          JobType.grocery ||
+          JobType.pharmacy ||
+          JobType.shopping ||
+          JobType.moving =>
+            PartnerJobAction.pickUpPackage,
+          JobType.homeService || JobType.roadAssistance => PartnerJobAction.startInspection,
         };
       case JobStatus.inProgress:
         return job.isRide ? PartnerJobAction.completeRide : PartnerJobAction.deliverPackage;

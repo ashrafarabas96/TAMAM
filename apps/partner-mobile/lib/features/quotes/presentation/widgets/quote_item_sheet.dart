@@ -33,7 +33,7 @@ int? parseMajorToMinor(String raw, String currency) {
   String fraction = parts.length == 2 ? parts[1] : '';
   if (fraction.length > decimals) fraction = fraction.substring(0, decimals);
   while (fraction.length < decimals) {
-    fraction = '$fraction0';
+    fraction = '${fraction}0';
   }
   final int fractionValue = fraction.isEmpty ? 0 : (int.tryParse(fraction) ?? 0);
   int scale = 1;

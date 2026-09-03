@@ -34,6 +34,9 @@ class AvailabilityToggle extends StatelessWidget {
       button: true,
       toggled: online,
       label: l10n.availabilityToggleSemantics(label),
+      // The label already names the state and the action; without this the chip's own
+      // text is merged in as well and the state is announced twice.
+      excludeSemantics: true,
       child: Material(
         color: background,
         borderRadius: BorderRadius.circular(TamamRadius.pill),

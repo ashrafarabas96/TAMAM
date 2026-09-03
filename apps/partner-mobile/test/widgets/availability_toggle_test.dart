@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tamam_partner/features/home/presentation/widgets/availability_toggle.dart';
@@ -91,10 +92,19 @@ void main() {
       overrides: overrides,
     );
 
-    expect(
-      find.bySemanticsLabel(ar.availabilityToggleSemantics(ar.availabilityOnline)),
-      findsOneWidget,
-    );
+    // Read the published tree: find.bySemanticsLabel inspects RenderObject.debugSemantics,
+    // which is not populated for this annotation.
+    final List<String> labels = <String>[];
+    void walk(SemanticsNode node) {
+      if (node.label.isNotEmpty) labels.add(node.label);
+      node.visitChildren((SemanticsNode child) {
+        walk(child);
+        return true;
+      });
+    }
+
+    walk(tester.binding.pipelineOwner.semanticsOwner!.rootSemanticsNode!);
+    expect(labels, <String>[ar.availabilityToggleSemantics(ar.availabilityOnline)]);
     handle.dispose();
   });
 

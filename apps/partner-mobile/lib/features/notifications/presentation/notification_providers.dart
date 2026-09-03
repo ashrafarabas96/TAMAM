@@ -62,7 +62,9 @@ class NotificationPreferencesController extends AsyncNotifier<NotificationPrefer
   @override
   Future<NotificationPreferences> build() => ref.watch(notificationsRepositoryProvider).preferences();
 
-  Future<void> update(NotificationPreferences next) async {
+  /// Named `save`, not `update`: `AsyncNotifier` already defines an `update` with a
+  /// different signature, and overriding it with this one is not valid.
+  Future<void> save(NotificationPreferences next) async {
     state = AsyncValue<NotificationPreferences>.data(next);
     state = await AsyncValue.guard(
       () => ref.read(notificationsRepositoryProvider).updatePreferences(next),

@@ -270,6 +270,7 @@
   "jobTypeDelivery": "توصيل طرد",
   "jobTypeFood": "توصيل طعام",
   "jobTypeHomeService": "خدمة منزلية",
+  "jobTypeOther": "خدمة",
   "jobStatusDraft": "مسودة",
   "jobStatusSearching": "جارٍ البحث عن شريك",
   "jobStatusAssigned": "تم إسنادها إليك",

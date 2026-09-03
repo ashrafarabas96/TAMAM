@@ -1,4 +1,4 @@
-package app.tamam.tamam_customer
+package app.tamam.customer
 
 import io.flutter.embedding.android.FlutterActivity
 

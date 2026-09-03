@@ -952,6 +952,26 @@ enum MediaPurpose {
   }
 }
 
+enum MediaStatus {
+  pendingUpload('PENDING_UPLOAD'),
+  uploaded('UPLOADED'),
+  processing('PROCESSING'),
+  ready('READY'),
+  rejected('REJECTED'),
+  deleted('DELETED');
+
+  const MediaStatus(this.value);
+  final String value;
+
+  static MediaStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in MediaStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 abstract final class ErrorCode {
   static const String validationFailed = 'VALIDATION_FAILED';
   static const String unauthenticated = 'UNAUTHENTICATED';
