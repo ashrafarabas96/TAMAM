@@ -1,0 +1,85 @@
+/* Design-token custom properties are imported in src/app/layout.tsx via `@tamam/ui-tokens/css`. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* next/font exposes --font-inter / --font-cairo; the token fallbacks come after them. */
+  --font-ui: var(--font-inter), var(--font-latin);
+  --slide-in-from: 100%;
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+:root[lang='ar'] {
+  --font-ui: var(--font-cairo), var(--font-arabic);
+}
+[dir='rtl'] {
+  --slide-in-from: -100%;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-text-primary font-sans antialiased text-sm;
+  }
+  * {
+    @apply border-border;
+  }
+  ::selection {
+    background: var(--purple-200);
+    color: var(--purple-900);
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
+  :focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 2px;
+  }
+  /* Numbers inside tables are easier to scan when they align. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-card bg-surface shadow-card border border-border;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--c-borderStrong);
+    border-radius: 999px;
+  }
+}
+
+/* MapLibre controls follow the panel theme. */
+.maplibregl-ctrl-group {
+  background: var(--c-surface) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
+}
+.maplibregl-ctrl-group button + button {
+  border-top-color: var(--c-border) !important;
+}
+.maplibregl-popup-content {
+  background: var(--c-surface) !important;
+  color: var(--c-textPrimary) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 6px 20px rgba(30, 16, 80, 0.16) !important;
+  padding: 10px 12px !important;
+}
+.maplibregl-popup-tip {
+  border-top-color: var(--c-surface) !important;
+}

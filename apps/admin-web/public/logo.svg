@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" width="240" height="64" role="img" aria-label="TAMAM">
+  <rect x="0" y="0" width="64" height="64" rx="16" fill="#5D3EBC"/>
+  <path d="M16 22h32v9H35v21h-9V31H16z" fill="#FFD300"/>
+  <circle cx="49" cy="15" r="6" fill="#FFD300"/>
+  <text x="80" y="43" font-family="Inter, Cairo, system-ui, sans-serif" font-size="30" font-weight="800" fill="#5D3EBC" letter-spacing="1">TAMAM</text>
+  <text x="196" y="43" font-family="Cairo, Inter, system-ui, sans-serif" font-size="26" font-weight="800" fill="#FFD300">تمام</text>
+</svg>
