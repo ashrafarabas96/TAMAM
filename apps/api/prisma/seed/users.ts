@@ -12,6 +12,7 @@ import {
 } from '@tamam/shared-types';
 
 import { encrypt, randomReferralCode } from '../../src/common/utils/crypto.util';
+import { optionalEnv } from '../../src/config/env.schema';
 import { AuthService } from '../../src/modules/auth/auth.service';
 import type { CatalogSeedResult } from './catalog';
 import type { SeedContext } from './context';
@@ -124,7 +125,7 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
   });
 
   /* ---------------------------------------------------------- staff users */
-  const rawPassword = process.env.SEED_ADMIN_PASSWORD ?? DEFAULT_ADMIN_PASSWORD;
+  const rawPassword = optionalEnv(process.env.SEED_ADMIN_PASSWORD) ?? DEFAULT_ADMIN_PASSWORD;
   if (rawPassword.length < 12) throw new Error('SEED_ADMIN_PASSWORD must be at least 12 characters');
   const passwordHash = await AuthService.hashPassword(rawPassword);
   const adminRoles = await prisma.adminRole.findMany({ select: { id: true, name: true } });
@@ -152,7 +153,7 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
     if (staff.roles.includes(UserRole.SUPER_ADMIN)) superAdminId = user.id;
   }
   summary.set('staff users', STAFF.length);
-  summary.note(`admin login: admin@tamam.app / ${process.env.SEED_ADMIN_PASSWORD ? '(SEED_ADMIN_PASSWORD)' : DEFAULT_ADMIN_PASSWORD} — must be changed on first login`);
+  summary.note(`admin login: admin@tamam.app / ${optionalEnv(process.env.SEED_ADMIN_PASSWORD) ? '(SEED_ADMIN_PASSWORD)' : DEFAULT_ADMIN_PASSWORD} — must be changed on first login`);
 
   /* ------------------------------------------------------- demo customer */
   const customerPhone = '+970599000001';

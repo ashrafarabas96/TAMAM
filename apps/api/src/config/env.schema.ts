@@ -90,8 +90,27 @@ export const envSchema = z
 
 export type Env = z.infer<typeof envSchema>;
 
+/**
+ * A variable set to an empty string in a `.env` file means "not configured" — dotenv
+ * cannot tell that apart from "configured as empty", so treat blanks as absent and let
+ * `.optional()` and `.default()` do their job. Without this, every commented-out
+ * placeholder in `.env.example` (SMS_HTTP_URL, SMTP_URL, GOOGLE_MAPS_API_KEY, …) fails
+ * validation the moment the file is copied.
+ */
+export const optionalEnv = (value: string | undefined): string | undefined =>
+  value !== undefined && value.trim() !== '' ? value : undefined;
+
+function stripBlankEnv(raw: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const out: NodeJS.ProcessEnv = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (typeof value === 'string' && value.trim() === '') continue;
+    out[key] = value;
+  }
+  return out;
+}
+
 export function parseEnv(raw: NodeJS.ProcessEnv): Env {
-  const result = envSchema.safeParse(raw);
+  const result = envSchema.safeParse(stripBlankEnv(raw));
   if (!result.success) {
     const lines = result.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid environment configuration:\n${lines}`);

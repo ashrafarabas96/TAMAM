@@ -439,6 +439,17 @@ export const MediaPurpose = {
 } as const;
 export type MediaPurpose = (typeof MediaPurpose)[keyof typeof MediaPurpose];
 
+/** Lifecycle of an uploaded asset. Mirrors the `media_status` enum in schema.prisma. */
+export const MediaStatus = {
+  PENDING_UPLOAD: 'PENDING_UPLOAD',
+  UPLOADED: 'UPLOADED',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  REJECTED: 'REJECTED',
+  DELETED: 'DELETED',
+} as const;
+export type MediaStatus = (typeof MediaStatus)[keyof typeof MediaStatus];
+
 /* ---------------------------------------------------------------- currency */
 export const SUPPORTED_CURRENCIES = ['ILS', 'USD', 'JOD'] as const;
 export type CurrencyCode = (typeof SUPPORTED_CURRENCIES)[number];
