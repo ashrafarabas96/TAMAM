@@ -130,25 +130,25 @@ class _NotificationToggles extends ConsumerWidget {
                     title: Text(l10n.preferencesPush),
                     value: prefs.push,
                     onChanged: (bool value) =>
-                        unawaited(controller.update(prefs.copyWith(push: value))),
+                        unawaited(controller.save(prefs.copyWith(push: value))),
                   ),
                   SwitchListTile.adaptive(
                     title: Text(l10n.preferencesSms),
                     value: prefs.sms,
-                    onChanged: (bool value) => unawaited(controller.update(prefs.copyWith(sms: value))),
+                    onChanged: (bool value) => unawaited(controller.save(prefs.copyWith(sms: value))),
                   ),
                   SwitchListTile.adaptive(
                     title: Text(l10n.preferencesEmail),
                     value: prefs.email,
                     onChanged: (bool value) =>
-                        unawaited(controller.update(prefs.copyWith(email: value))),
+                        unawaited(controller.save(prefs.copyWith(email: value))),
                   ),
                   SwitchListTile.adaptive(
                     title: Text(l10n.preferencesMarketing),
                     subtitle: Text(l10n.preferencesMarketingHint),
                     value: prefs.marketing,
                     onChanged: (bool value) =>
-                        unawaited(controller.update(prefs.copyWith(marketing: value))),
+                        unawaited(controller.save(prefs.copyWith(marketing: value))),
                   ),
                 ],
               ),

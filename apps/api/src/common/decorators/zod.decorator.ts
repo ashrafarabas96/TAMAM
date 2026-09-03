@@ -1,6 +1,6 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
-import type { ZodSchema, ZodTypeAny, output } from 'zod';
+import type { ZodTypeAny, output } from 'zod';
 
 import { AppException } from '../errors/app.exception';
 
@@ -17,22 +17,37 @@ function parseOrThrow<S extends ZodTypeAny>(schema: S, value: unknown): output<S
   return result.data;
 }
 
+/**
+ * The schema travels inside a wrapper, and this is not decoration.
+ *
+ * `createParamDecorator(factory)(data, ...pipes)` decides whether its first argument is
+ * parameter data or a pipe by asking whether it has a `transform` function — and every zod
+ * schema does. Passing a schema directly therefore stores it as a *pipe* and hands the
+ * factory `data === undefined`, so every `@ZodBody(...)` route fails at runtime with
+ * "Cannot read properties of undefined (reading 'safeParse')". A plain object has no
+ * `transform`, so it survives as data. Call sites are unchanged: `@ZodBody(schema)`.
+ */
+interface SchemaCarrier<S extends ZodTypeAny> {
+  schema: S;
+}
+
+const readFrom = <S extends ZodTypeAny>(source: (req: Request) => unknown) =>
+  createParamDecorator((carrier: SchemaCarrier<S>, ctx: ExecutionContext) => {
+    const req = ctx.switchToHttp().getRequest<Request>();
+    return parseOrThrow(carrier.schema, source(req));
+  });
+
+const zodBodyDecorator = readFrom((req) => req.body);
+const zodQueryDecorator = readFrom((req) => req.query);
+const zodParamsDecorator = readFrom((req) => req.params);
+
 /** `@ZodBody(schema) body: Input` — validates and strips unknown keys. */
-export const ZodBody = createParamDecorator((schema: ZodSchema, ctx: ExecutionContext) => {
-  const req = ctx.switchToHttp().getRequest<Request>();
-  return parseOrThrow(schema, req.body);
-});
+export const ZodBody = <S extends ZodTypeAny>(schema: S): ParameterDecorator => zodBodyDecorator({ schema });
 
 /** `@ZodQuery(schema) query: Input` — coerces from query string. */
-export const ZodQuery = createParamDecorator((schema: ZodSchema, ctx: ExecutionContext) => {
-  const req = ctx.switchToHttp().getRequest<Request>();
-  return parseOrThrow(schema, req.query);
-});
+export const ZodQuery = <S extends ZodTypeAny>(schema: S): ParameterDecorator => zodQueryDecorator({ schema });
 
 /** `@ZodParams(schema) params: Input` */
-export const ZodParams = createParamDecorator((schema: ZodSchema, ctx: ExecutionContext) => {
-  const req = ctx.switchToHttp().getRequest<Request>();
-  return parseOrThrow(schema, req.params);
-});
+export const ZodParams = <S extends ZodTypeAny>(schema: S): ParameterDecorator => zodParamsDecorator({ schema });
 
 export { parseOrThrow };

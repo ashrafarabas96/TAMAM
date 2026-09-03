@@ -107,6 +107,10 @@ function emitDart(targetDir) {
   lines.push(HEADER.replace(/\/\/ /g, '// '));
   lines.push(`// ignore_for_file: constant_identifier_names, public_member_api_docs`);
   lines.push(`import 'package:flutter/material.dart';\n`);
+  // BannerPlacement is part of the API vocabulary and is emitted by the contracts
+  // generator. Declaring it here as well made every `BannerPlacement.x` in the apps an
+  // ambiguous_import error, so import that one instead of shipping a second enum.
+  lines.push(`import '../../contracts/generated/tamam_contracts.dart';\n`);
 
   lines.push(`/// Brand palette (purple + yellow) — Getir-inspired identity.`);
   lines.push(`abstract final class TamamBrand {`);
@@ -201,7 +205,6 @@ function emitDart(targetDir) {
   }
   lines.push(`}\n`);
 
-  lines.push(`enum BannerPlacement { ${Object.keys(tokens.banner.placements).map((k) => camel(k.toLowerCase())).join(', ')} }\n`);
   lines.push(`class BannerPlacementSpec {`);
   lines.push(`  const BannerPlacementSpec({required this.aspectRatio, required this.maxItems, required this.autoplay, required this.style});`);
   lines.push(`  final double aspectRatio;`);

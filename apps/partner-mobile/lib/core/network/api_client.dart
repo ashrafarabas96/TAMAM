@@ -116,6 +116,7 @@ class ApiClient {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
+      case DioExceptionType.transformTimeout:
         return AppFailure.network(error.message ?? 'Request timed out');
       case DioExceptionType.cancel:
         return const AppFailure(code: 'CANCELLED', message: 'Request cancelled');

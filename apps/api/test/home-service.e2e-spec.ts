@@ -175,11 +175,11 @@ describe('Home service end-to-end (§127)', () => {
     /* --------------------------------------------------------------- work */
     job = await getJob(technician, jobId);
     expect(job.status).toBe('QUOTE_APPROVED');
-    const workStarted = (await api.request().post(api.url(`jobs/${jobId}/work/start`)).set(technician.headers).send({ version: job.version }).expect(201)).body as JobDto;
+    const workStarted = (await api.request().post(api.url(`jobs/${jobId}/work/start`)).set(technician.headers).send({ version: job.version }).expect(200)).body as JobDto;
     expect(workStarted.status).toBe('WORK_STARTED');
 
     const workCompleted = (
-      await api.request().post(api.url(`jobs/${jobId}/work/complete`)).set(technician.headers).send({ version: workStarted.version }).expect(201)
+      await api.request().post(api.url(`jobs/${jobId}/work/complete`)).set(technician.headers).send({ version: workStarted.version }).expect(200)
     ).body as JobDto;
     expect(workCompleted.status).toBe('WORK_COMPLETED');
 

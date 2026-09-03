@@ -25,27 +25,30 @@ Future<List<Override>> testOverrides({Map<String, Object> prefs = const <String,
 
 /// Pumps [child] inside the real theme, localisations and a Riverpod scope, so
 /// widget tests exercise the same wiring the app uses.
+/// Pass [container] when the test needs to read providers back; [overrides] is then
+/// ignored because the container already carries them.
 Future<void> pumpAppWidget(
   WidgetTester tester,
   Widget child, {
   List<Override> overrides = const <Override>[],
+  ProviderContainer? container,
   Locale locale = const Locale('ar'),
   Size surfaceSize = const Size(390, 844),
 }) async {
   await tester.binding.setSurfaceSize(surfaceSize);
   addTearDown(() => tester.binding.setSurfaceSize(null));
 
+  final Widget app = MaterialApp(
+    locale: locale,
+    supportedLocales: supportedAppLocales,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    theme: TamamTheme.light(locale.languageCode),
+    home: Scaffold(body: child),
+  );
   await tester.pumpWidget(
-    ProviderScope(
-      overrides: overrides,
-      child: MaterialApp(
-        locale: locale,
-        supportedLocales: supportedAppLocales,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        theme: TamamTheme.light(locale.languageCode),
-        home: Scaffold(body: child),
-      ),
-    ),
+    container == null
+        ? ProviderScope(overrides: overrides, child: app)
+        : UncontrolledProviderScope(container: container, child: app),
   );
   await tester.pump();
 }

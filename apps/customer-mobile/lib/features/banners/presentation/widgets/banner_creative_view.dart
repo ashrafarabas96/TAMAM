@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -211,8 +213,14 @@ class _BannerImpressionTrackerState extends State<BannerImpressionTracker> {
   static const Duration _dwell = Duration(seconds: 1);
   static const double _threshold = 0.5;
 
-  DateTime? _visibleSince;
   bool _reported = false;
+  Timer? _dwellTimer;
+
+  @override
+  void dispose() {
+    _dwellTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,29 +232,27 @@ class _BannerImpressionTrackerState extends State<BannerImpressionTracker> {
     );
   }
 
+  /// An impression is one uninterrupted second at or above [_threshold] visibility. The
+  /// timer *is* the dwell: it starts when the banner becomes visible and is cancelled the
+  /// moment it stops being visible. Measuring elapsed time with `DateTime.now()` as well
+  /// was both redundant and untestable — widget tests advance a fake clock, which the wall
+  /// clock never sees, so the impression could never fire under test.
   void _onVisibilityChanged(VisibilityInfo info) {
     if (_reported || !mounted) return;
     if (info.visibleFraction < _threshold) {
-      _visibleSince = null;
+      _dwellTimer?.cancel();
+      _dwellTimer = null;
       return;
     }
-    final DateTime now = DateTime.now();
-    final DateTime? since = _visibleSince;
-    if (since == null) {
-      _visibleSince = now;
-      // Visibility only fires on change, so re-check once the dwell has elapsed.
-      Future<void>.delayed(_dwell, () {
-        if (!mounted || _reported) return;
-        final DateTime? start = _visibleSince;
-        if (start != null && DateTime.now().difference(start) >= _dwell) _report();
-      });
-      return;
-    }
-    if (now.difference(since) >= _dwell) _report();
+    if (_dwellTimer?.isActive ?? false) return;
+    _dwellTimer = Timer(_dwell, () {
+      if (mounted && !_reported) _report();
+    });
   }
 
   void _report() {
     _reported = true;
+    _dwellTimer?.cancel();
     widget.onImpression();
   }
 }

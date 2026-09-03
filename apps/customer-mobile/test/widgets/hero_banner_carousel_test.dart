@@ -20,15 +20,24 @@ PromoBanner _banner(String id, {String headline = 'خصم ٢٠٪'}) => PromoBann
         imageUrl: const LocalizedText(ar: '', en: ''),
         theme: 'gradientPurple',
         headline: LocalizedText(ar: headline, en: headline),
-        subheadline: const LocalizedText(ar: 'على أول مشوار', en: 'on your first ride'),
-        ctaLabel: const LocalizedText(ar: 'اطلب الآن', en: 'Order now'),
-        badge: const LocalizedText(ar: 'جديد', en: 'New'),
+        // Every line carries the id: with viewportFraction 0.92 the neighbouring page is
+        // also mounted, so shared copy would match twice and defeat findsOneWidget.
+        subheadline: LocalizedText(ar: 'على أول مشوار $id', en: 'on your first ride $id'),
+        ctaLabel: LocalizedText(ar: 'اطلب الآن $id', en: 'Order now $id'),
+        badge: LocalizedText(ar: 'جديد $id', en: 'New $id'),
       ),
       actionType: BannerActionType.promoCode,
       actionValue: 'TAMAM20',
       priority: 10,
       trackingToken: 'token-$id-0123456789',
     );
+
+/// Replaces the tree so every widget is disposed. The impression tracker arms a
+/// one-second dwell timer as soon as a banner becomes visible, and flutter_test fails a
+/// test that ends with a timer still pending.
+Future<void> disposeTree(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -50,9 +59,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('خصم ٢٠٪'), findsOneWidget);
-      expect(find.text('على أول مشوار'), findsOneWidget);
-      expect(find.text('اطلب الآن'), findsOneWidget);
-      expect(find.text('جديد'), findsOneWidget);
+      expect(find.text('على أول مشوار a'), findsOneWidget);
+      expect(find.text('اطلب الآن a'), findsOneWidget);
+      expect(find.text('جديد a'), findsOneWidget);
+
+      await disposeTree(tester);
     });
 
     testWidgets('shows page dots only when there is more than one banner', (WidgetTester tester) async {
@@ -75,6 +86,8 @@ void main() {
         ),
         findsNothing,
       );
+
+      await disposeTree(tester);
     });
 
     testWidgets('collapses to nothing when the feed is empty', (WidgetTester tester) async {
@@ -92,29 +105,27 @@ void main() {
 
     testWidgets('records one impression per visible banner', (WidgetTester tester) async {
       final ProviderContainer container = ProviderContainer(overrides: await testOverrides());
-      addTearDown(container.dispose);
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            locale: const Locale('ar'),
-            supportedLocales: const <Locale>[Locale('ar'), Locale('en')],
-            home: Scaffold(
-              body: HeroBannerCarousel(
-                banners: <PromoBanner>[_banner('a')],
-                placement: BannerPlacement.homeHero,
-              ),
-            ),
-          ),
+      // Through the shared harness so the localisation delegates are present — a
+      // hand-rolled MaterialApp without them throws a delegate warning that fails the test.
+      await pumpAppWidget(
+        tester,
+        HeroBannerCarousel(
+          banners: <PromoBanner>[_banner('a')],
+          placement: BannerPlacement.homeHero,
         ),
+        container: container,
       );
 
       // Impressions need ≥50 % visibility held for one second.
-      await tester.pump();
       await tester.pump(const Duration(milliseconds: 1200));
 
       expect(container.read(bannerEventQueueProvider).pendingCount, 1);
+
+      await disposeTree(tester);
+      // Disposed here rather than in a tearDown: recording an impression arms the queue's
+      // flush timer, and flutter_test checks for pending timers before tearDowns run.
+      container.dispose();
     });
 
     testWidgets('swipes to the next banner', (WidgetTester tester) async {
@@ -134,6 +145,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('توصيل مجاني'), findsOneWidget);
+
+      await disposeTree(tester);
     });
   });
 }

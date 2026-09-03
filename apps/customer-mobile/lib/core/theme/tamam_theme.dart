@@ -122,7 +122,7 @@ abstract final class TamamTheme {
         titleTextStyle: TamamType.headingMd.toTextStyle(color: c.textOnBrand).merge(text.titleMedium),
         iconTheme: IconThemeData(color: c.textOnBrand, size: TamamSize.iconMd),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: c.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
@@ -175,7 +175,7 @@ abstract final class TamamTheme {
           borderRadius: BorderRadius.vertical(top: Radius.circular(TamamRadius.sheet)),
         ),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: c.surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TamamRadius.xl)),
@@ -207,7 +207,7 @@ abstract final class TamamTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TamamRadius.md)),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelColor: c.primary,
         unselectedLabelColor: c.textTertiary,
         labelStyle: TamamType.labelLg.toTextStyle(),

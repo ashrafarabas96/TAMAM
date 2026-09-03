@@ -4,6 +4,8 @@
 // ignore_for_file: constant_identifier_names, public_member_api_docs
 import 'package:flutter/material.dart';
 
+import '../../contracts/generated/tamam_contracts.dart';
+
 /// Brand palette (purple + yellow) — Getir-inspired identity.
 abstract final class TamamBrand {
   static const Color purple50 = Color(0xFFF1EEFB);
@@ -213,7 +215,7 @@ abstract final class TamamSize {
   static const double avatarSm = 32.0;
   static const double avatarMd = 44.0;
   static const double avatarLg = 64.0;
-  static const double serviceCardHeight = 118.0;
+  static const double serviceCardHeight = 120.0;
   static const double bannerHeroHeight = 156.0;
   static const double bannerInlineHeight = 96.0;
   static const double bannerAspectHero = 2.25;
@@ -271,8 +273,6 @@ abstract final class TamamType {
   static const TamamTypeStyle labelSm = TamamTypeStyle(11.0, 16.0, FontWeight.w600, 0.2);
   static const TamamTypeStyle price = TamamTypeStyle(20.0, 28.0, FontWeight.w800, -0.2);
 }
-
-enum BannerPlacement { homeHero, homeInline, serviceCategoryTop, checkoutPromo, orderTracking, partnerHome }
 
 class BannerPlacementSpec {
   const BannerPlacementSpec({required this.aspectRatio, required this.maxItems, required this.autoplay, required this.style});

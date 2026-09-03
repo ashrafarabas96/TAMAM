@@ -10,6 +10,7 @@ import supertest from 'supertest';
 
 import { AppModule } from '../../src/app.module';
 import { AllExceptionsFilter } from '../../src/common/errors/all-exceptions.filter';
+import { optionalEnv } from '../../src/config/env.schema';
 import { PrismaService } from '../../src/infrastructure/prisma/prisma.service';
 import { RedisService } from '../../src/infrastructure/redis/redis.service';
 
@@ -24,7 +25,9 @@ export const SEED = {
   technicianPhone: '+970599000004',
   adminEmail: 'admin@tamam.app',
   supportEmail: 'support@tamam.app',
-  adminPassword: process.env.SEED_ADMIN_PASSWORD ?? 'TamamAdmin#2026',
+  // `??` would accept the empty string that .env ships for this key (dotenv runs while the
+  // app module chain is imported, before this constant is evaluated).
+  adminPassword: optionalEnv(process.env.SEED_ADMIN_PASSWORD) ?? 'TamamAdmin#2026',
 } as const;
 
 export interface AuthContext {

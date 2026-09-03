@@ -49,8 +49,10 @@ class TamamCard extends StatelessWidget {
       ),
     );
     final Widget wrapped = margin == null ? content : Padding(padding: margin!, child: content);
-    return semanticLabel == null
-        ? wrapped
-        : Semantics(label: semanticLabel, button: onTap != null, child: wrapped);
+    if (semanticLabel == null && onTap == null) return wrapped;
+    // The label is merged with whatever the card's own text already announces, so it must
+    // supply only what that text does not — a label repeating the visible copy is read
+    // twice. The button role follows onTap, independently of the label.
+    return Semantics(label: semanticLabel, button: onTap != null, child: wrapped);
   }
 }

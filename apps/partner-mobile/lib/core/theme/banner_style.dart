@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
-// The generated token file declares its own `BannerPlacement`; the contract enum
-// is the one the API speaks, so the token side is always prefixed.
+// The token file no longer declares its own `BannerPlacement` — it imports the contract
+// enum, which is the one the API speaks. The prefix stays only to mark the spec lookups.
 import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart' as tokens;
 
 /// Layout + autoplay rules for one placement, read from the design tokens.
@@ -26,9 +26,9 @@ class BannerStyle {
   /// Falls back to the hero spec when a new placement is added server-side
   /// before the app ships support for it.
   static BannerStyle forPlacement(BannerPlacement placement) {
-    final tokens.BannerPlacement? key = tokens.TamamBannerSpecs.fromApi(placement.value);
+    final BannerPlacement? key = tokens.TamamBannerSpecs.fromApi(placement.value);
     final tokens.BannerPlacementSpec spec = tokens.TamamBannerSpecs.byPlacement[key] ??
-        tokens.TamamBannerSpecs.byPlacement[tokens.BannerPlacement.homeHero]!;
+        tokens.TamamBannerSpecs.byPlacement[BannerPlacement.homeHero]!;
     return BannerStyle(
       aspectRatio: spec.aspectRatio,
       maxItems: spec.maxItems,

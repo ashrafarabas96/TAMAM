@@ -102,7 +102,15 @@ export class PricingService {
         isActive: true,
         validFrom: { lte: at },
         OR: [{ validTo: null }, { validTo: { gt: at } }],
-        AND: [{ OR: [{ zoneId }, { zoneId: null }] }, { OR: [{ vehicleTypeId: vehicleTypeId ?? '__none__' }, { vehicleTypeId: null }] }, { OR: [{ categoryId: categoryId ?? '__none__' }, { categoryId: null }] }],
+        // A null argument means "no vehicle type / category was asked for", so only the
+        // global rules apply. The previous '__none__' sentinel was compared against uuid
+        // columns, which Postgres rejects outright (22P02) — and estimateRide's
+        // `catch { continue }` turned that into "not priced in your area".
+        AND: [
+          { OR: [{ zoneId }, { zoneId: null }] },
+          vehicleTypeId ? { OR: [{ vehicleTypeId }, { vehicleTypeId: null }] } : { vehicleTypeId: null },
+          categoryId ? { OR: [{ categoryId }, { categoryId: null }] } : { categoryId: null },
+        ],
       },
     });
     if (!rows.length) throw AppException.badRequest(ErrorCode.SERVICE_UNAVAILABLE_IN_ZONE, 'No pricing configured for this service in your area');

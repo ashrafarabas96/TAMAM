@@ -36,7 +36,6 @@ class ServiceTile extends StatelessWidget {
       opacity: enabled ? 1 : 0.5,
       child: TamamCard(
         onTap: enabled ? onTap : null,
-        semanticLabel: caption == null ? title : '$title. $caption',
         padding: const EdgeInsets.all(TamamSpacing.s4),
         child: SizedBox(
           height: TamamSize.serviceCardHeight - TamamSpacing.s8,
@@ -55,24 +54,30 @@ class ServiceTile extends StatelessWidget {
                     ),
                     child: Icon(icon, size: TamamSize.iconLg, color: color),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TamamType.headingSm.toTextStyle(color: colors.textPrimary),
-                      ),
-                      if (caption != null)
+                  // Flexible, not a bare Column: title + caption at their natural line
+                  // heights are a couple of pixels taller than the fixed card leaves them,
+                  // and any user text scaling makes that worse. Both lines already
+                  // ellipsize, so shrinking degrades gracefully instead of overflowing.
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
                         Text(
-                          caption!,
+                          title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TamamType.bodySm.toTextStyle(color: colors.textTertiary),
+                          style: TamamType.headingSm.toTextStyle(color: colors.textPrimary),
                         ),
-                    ],
+                        if (caption != null)
+                          Text(
+                            caption!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TamamType.bodySm.toTextStyle(color: colors.textTertiary),
+                          ),
+                      ],
+                    ),
                   ),
                 ],
               ),

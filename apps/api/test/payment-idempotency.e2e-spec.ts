@@ -1,12 +1,14 @@
 import { createHmac, randomUUID } from 'node:crypto';
 
+import { optionalEnv } from '../src/config/env.schema';
 import { PaymentsService, type RefundDto } from '../src/modules/payments/payments.service';
 
 import { type AuthContext, SEED, TestApp, waitFor } from './helpers/app';
 import { runCashRide } from './helpers/flows';
 // RefundDto lives in the payments module, not in @tamam/shared-types (see the contract notes).
 
-const WEBHOOK_SECRET = process.env.PAYMENT_GATEWAY_WEBHOOK_SECRET ?? 'mock-webhook-secret';
+// Same trap as SEED_ADMIN_PASSWORD: .env ships this key empty, and `??` would keep ''.
+const WEBHOOK_SECRET = optionalEnv(process.env.PAYMENT_GATEWAY_WEBHOOK_SECRET) ?? 'mock-webhook-secret';
 
 /**
  * Spec §129 — money must never be applied twice.
