@@ -1,6 +1,6 @@
+import { CommissionScope, JobType, PaymentMethod, PromoType } from '@tamam/shared-types';
 import { z } from 'zod';
 
-import { CommissionScope, JobType, PaymentMethod, PromoType } from '@tamam/shared-types';
 
 import { isoDateTimeSchema, moneyAmountSchema, moneySchema, uuidSchema } from './common';
 

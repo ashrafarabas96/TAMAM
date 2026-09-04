@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_partner/core/format/money_formatter.dart';
 import 'package:tamam_partner/core/format/phone_formatter.dart';
 import 'package:tamam_partner/core/models/money.dart';

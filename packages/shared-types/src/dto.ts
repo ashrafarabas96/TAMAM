@@ -1,3 +1,4 @@
+import type { Address, GeoPoint, LocalizedText, Money } from './api';
 import type {
   AccountStatus,
   AssignmentStatus,
@@ -7,6 +8,17 @@ import type {
   BannerPlacement,
   BannerTheme,
   CampaignStatus,
+  ChaletApprovalStatus,
+  ChaletBlockKind,
+  ChaletBookingEventType,
+  ChaletBookingSource,
+  ChaletBookingStatus,
+  ChaletDepositType,
+  ChaletOfferKind,
+  ChaletPricingMode,
+  ChaletPricingProfile,
+  ChaletStatus,
+  DevicePlatform,
   DocumentStatus,
   DocumentType,
   DynamicFieldType,
@@ -19,14 +31,18 @@ import type {
   MessageType,
   NotificationChannel,
   NotificationEvent,
+  PackageSize,
   PartnerRoleType,
   PaymentMethod,
   PaymentStatus,
   PricingMethod,
+  QuoteItemKind,
   QuoteKind,
   QuoteStatus,
   RefundStatus,
+  ReviewDirection,
   RiskSignal,
+  SavedPlaceKind,
   SchedulingMode,
   TicketCategory,
   TicketPriority,
@@ -34,7 +50,6 @@ import type {
   UserRole,
   VerificationStatus,
 } from './enums';
-import type { Address, GeoPoint, LocalizedText, Money } from './api';
 import type { Permission } from './permissions';
 
 /* ------------------------------------------------------------------ auth */
@@ -65,7 +80,7 @@ export interface DeviceSessionDto {
   id: string;
   deviceId: string;
   deviceName: string | null;
-  platform: 'ios' | 'android' | 'web' | 'unknown';
+  platform: DevicePlatform;
   appVersion: string | null;
   lastSeenAt: string;
   createdAt: string;
@@ -105,7 +120,7 @@ export interface CustomerProfileDto {
 
 export interface SavedPlaceDto extends Address {
   id: string;
-  kind: 'HOME' | 'WORK' | 'CUSTOM';
+  kind: SavedPlaceKind;
   createdAt: string;
 }
 
@@ -393,7 +408,7 @@ export interface JobDto {
 export interface DeliveryDetailsDto {
   packageCategoryId: string;
   packageCategoryName: LocalizedText;
-  approximateSize: 'SMALL' | 'MEDIUM' | 'LARGE' | 'XL';
+  approximateSize: PackageSize;
   approximateWeightKg: number | null;
   senderName: string;
   senderPhone: string;
@@ -473,7 +488,7 @@ export interface JobAssignmentDto {
 /* ----------------------------------------------------------------- quotes */
 export interface QuoteItemDto {
   id: string;
-  kind: 'LABOR' | 'PARTS' | 'FEE';
+  kind: QuoteItemKind;
   description: string;
   quantity: number;
   unitPrice: Money;
@@ -710,7 +725,7 @@ export interface ReviewDto {
   jobId: string;
   raterId: string;
   rateeId: string;
-  direction: 'CUSTOMER_TO_PARTNER' | 'PARTNER_TO_CUSTOMER';
+  direction: ReviewDirection;
   rating: number; // 1..5
   tags: string[];
   comment: string | null;
@@ -868,5 +883,258 @@ export interface RiskSignalDto {
   jobId: string | null;
   reviewedAt: string | null;
   reviewedById: string | null;
+  createdAt: string;
+}
+
+/* ----------------------------------------------------------------- chalet */
+
+/**
+ * TAMAM Chalet describes time, so every instant below is ISO-8601 with an
+ * offset and every duration is whole minutes. The API renders these from the
+ * database through the global serializer, so BigInt money arrives as a number
+ * and timestamps as strings.
+ */
+
+export interface ChaletSchedulingDto {
+  openingTime: string; // HH:mm, chalet-local
+  closingTime: string; // HH:mm
+  /** The grid every start time sits on. 15 by default. */
+  bookingIntervalMinutes: number;
+  minimumBookingDurationMinutes: number;
+  maximumBookingDurationMinutes: number;
+  /** Applied after every booking unless the chalet overrides it per booking. */
+  defaultCleaningDurationMinutes: number;
+  holdDurationMinutes: number;
+}
+
+export interface ChaletPricingDto {
+  baseHourlyRate: Money;
+  /** Smart Pricing never quotes below this, whatever the demand. */
+  minimumHourlyRate: Money;
+  maximumHourlyRate: Money | null;
+  pricingProfile: ChaletPricingProfile;
+  pricingMode: ChaletPricingMode;
+  maxAutoDiscountPercent: number | null;
+  targetOccupancyPercent: number;
+}
+
+export interface ChaletDto {
+  id: string;
+  ownerId: string;
+  nameAr: string;
+  nameEn: string;
+  descriptionAr: string | null;
+  descriptionEn: string | null;
+  address: Address;
+  serviceZoneId: string;
+  maximumGuests: number;
+  minimumGuests: number | null;
+  amenities: string[];
+  media: Array<{ id: string; url: string; sortOrder: number; isCover: boolean }>;
+  scheduling: ChaletSchedulingDto;
+  pricing: ChaletPricingDto;
+  depositType: ChaletDepositType;
+  deposit: Money | null;
+  depositPercent: number | null;
+  status: ChaletStatus;
+  approvalStatus: ChaletApprovalStatus;
+  instantBookingEnabled: boolean;
+  smartPricingEnabled: boolean;
+  gapFillerEnabled: boolean;
+  lastMinutePricingEnabled: boolean;
+  autoExtensionOffersEnabled: boolean;
+  rating: number;
+  ratingCount: number;
+  createdAt: string;
+}
+
+/** What a search result needs, without the full chalet. */
+export interface ChaletSummaryDto {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  city: string;
+  location: GeoPoint;
+  coverUrl: string | null;
+  maximumGuests: number;
+  /** What this chalet actually costs right now, after any active offer. */
+  effectiveHourlyRate: Money;
+  baseHourlyRate: Money;
+  rating: number;
+  ratingCount: number;
+  instantBookingEnabled: boolean;
+  /** Set when an offer is what makes the rate lower than the base. */
+  activeOfferKind: ChaletOfferKind | null;
+}
+
+/**
+ * A window the customer can actually book. The engine returns these already
+ * clear of other bookings, owner blocks and cleaning buffers, so the app never
+ * has to subtract anything itself.
+ */
+export interface ChaletAvailabilityWindowDto {
+  startAt: string;
+  endAt: string;
+  availableMinutes: number;
+  /** True when this window is short and sits between two bookings. */
+  isGap: boolean;
+}
+
+export interface ChaletAvailabilityDto {
+  chaletId: string;
+  date: string; // YYYY-MM-DD, chalet-local
+  windows: ChaletAvailabilityWindowDto[];
+  /** Start times on the chalet's grid that fit the requested duration. */
+  suggestedStartTimes: string[];
+  bookingIntervalMinutes: number;
+  cleaningDurationMinutes: number;
+}
+
+/**
+ * Why a price is what it is. Every component is shown so nothing about the
+ * number is mysterious to the owner or the customer — and so a confirmed
+ * booking's price can be explained months later from its snapshot alone.
+ */
+export interface ChaletPriceBreakdownDto {
+  baseHourlyRate: Money;
+  /** Rate after rate rules and demand, never below minimumHourlyRate. */
+  effectiveHourlyRate: Money;
+  durationMinutes: number;
+  subtotal: Money;
+  adjustments: Array<{
+    label: string;
+    labelAr: string;
+    /** Signed percentage applied to the base rate; -20 is a discount. */
+    percent: number;
+    amount: Money;
+  }>;
+  discount: Money;
+  serviceFee: Money;
+  tax: Money;
+  deposit: Money;
+  total: Money;
+  /**
+   * True when the floor stopped the price from going lower. Surfaced so an
+   * owner can see that their own minimum, not the platform, set the price.
+   */
+  clampedToMinimum: boolean;
+}
+
+export interface ChaletBookingDto {
+  id: string;
+  bookingNumber: string;
+  chaletId: string;
+  chaletNameAr: string;
+  chaletNameEn: string;
+  customerId: string | null;
+  startAt: string;
+  endAt: string;
+  /** endAt plus cleaning: what the calendar is actually occupied until. */
+  blockedUntil: string;
+  bookingDurationMinutes: number;
+  cleaningDurationMinutes: number;
+  guestCount: number;
+  status: ChaletBookingStatus;
+  source: ChaletBookingSource;
+  /** Set only while the booking is HELD. */
+  holdExpiresAt: string | null;
+  price: ChaletPriceBreakdownDto;
+  paymentStatus: PaymentStatus | null;
+  guestName: string | null;
+  guestPhone: string | null;
+  cancellationReason: string | null;
+  overstayMinutes: number;
+  overstayFee: Money;
+  createdAt: string;
+  confirmedAt: string | null;
+  checkedInAt: string | null;
+  checkedOutAt: string | null;
+}
+
+/**
+ * The answer to "can I book exactly this window?" — the check that runs before
+ * the customer is shown a price. A false here is advisory: the database is
+ * what finally decides, when the hold is written.
+ */
+export interface ChaletSlotCheckDto {
+  available: boolean;
+  reason: 'FREE' | 'OVERLAPS_BOOKING' | 'OVERLAPS_BLOCK' | 'OUTSIDE_HOURS' | 'DURATION_OUT_OF_BOUNDS' | 'NOT_ON_INTERVAL';
+  /** The nearest windows that would work, when the requested one does not. */
+  alternatives: ChaletAvailabilityWindowDto[];
+  price: ChaletPriceBreakdownDto | null;
+}
+
+export interface ChaletBlockDto {
+  id: string;
+  chaletId: string;
+  startAt: string;
+  endAt: string;
+  kind: ChaletBlockKind;
+  reason: string | null;
+  createdAt: string;
+}
+
+/**
+ * A discount the platform generated for one specific empty window — the gap
+ * between two bookings, or a slot that is still empty an hour before it starts.
+ */
+export interface ChaletOfferDto {
+  id: string;
+  chaletId: string;
+  kind: ChaletOfferKind;
+  slotStartAt: string;
+  slotEndAt: string;
+  discountPercent: number;
+  originalHourlyRate: Money;
+  offeredHourlyRate: Money;
+  startsAt: string;
+  expiresAt: string;
+  isActive: boolean;
+}
+
+/**
+ * What the owner's dashboard is for: whether the chalet is earning, and where
+ * the empty hours are. Occupancy counts booked minutes against bookable ones,
+ * so cleaning time does not flatter the number.
+ */
+export interface ChaletOccupancyDto {
+  chaletId: string;
+  fromDate: string;
+  toDate: string;
+  bookableMinutes: number;
+  bookedMinutes: number;
+  occupancyPercent: number;
+  bookingCount: number;
+  cancelledCount: number;
+  revenue: Money;
+  averageBookingDurationMinutes: number;
+  averageHourlyRate: Money;
+  /** 0 = Sunday. Lets the dashboard show which days sit empty. */
+  byDayOfWeek: Array<{ dayOfWeek: number; bookedMinutes: number; occupancyPercent: number }>;
+  /** Local hour 0-23, for the same reason. */
+  byHourOfDay: Array<{ hour: number; bookedMinutes: number }>;
+}
+
+/** A Smart Pricing suggestion the owner has not accepted yet. */
+export interface ChaletPricingSuggestionDto {
+  chaletId: string;
+  windowStartAt: string;
+  windowEndAt: string;
+  currentHourlyRate: Money;
+  suggestedHourlyRate: Money;
+  /** Plain-language reasons, not a score: "three of the last four Thursdays sat empty". */
+  reasons: Array<{ code: string; en: string; ar: string }>;
+  expectedOccupancyChangePercent: number;
+  clampedToMinimum: boolean;
+}
+
+export interface ChaletBookingEventDto {
+  id: string;
+  bookingId: string;
+  type: ChaletBookingEventType;
+  actorId: string | null;
+  fromStatus: ChaletBookingStatus | null;
+  toStatus: ChaletBookingStatus | null;
+  data: Record<string, unknown> | null;
   createdAt: string;
 }

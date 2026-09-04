@@ -1,6 +1,6 @@
+import { AvailabilityStatus, DocumentType, PartnerRoleType } from '@tamam/shared-types';
 import { z } from 'zod';
 
-import { AvailabilityStatus, DocumentType, PartnerRoleType } from '@tamam/shared-types';
 
 import { isoDateTimeSchema, locationSampleSchema, uuidSchema } from './common';
 

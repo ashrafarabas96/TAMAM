@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tamam_customer/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_customer/core/maps/geocoding_service.dart';
 import 'package:tamam_customer/core/models/geo.dart';
 import 'package:tamam_customer/core/routing/routes.dart';

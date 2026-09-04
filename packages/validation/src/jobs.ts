@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import {
   JobActorType,
   JobStatus,
@@ -8,6 +6,8 @@ import {
   PaymentMethod,
   SchedulingMode,
 } from '@tamam/shared-types';
+import { z } from 'zod';
+
 
 import {
   addressSchema,

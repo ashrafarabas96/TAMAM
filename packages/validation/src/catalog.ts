@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import {
   DocumentType,
   DynamicFieldType,
@@ -8,6 +6,8 @@ import {
   PartnerRoleType,
   PricingMethod,
 } from '@tamam/shared-types';
+import { z } from 'zod';
+
 
 import {
   hexColorSchema,

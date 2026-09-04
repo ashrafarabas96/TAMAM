@@ -2,24 +2,6 @@ import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_partner/core/models/json.dart';
 import 'package:tamam_partner/core/models/money.dart';
 
-/// The three kinds of line a quote can carry (`quoteItemSchema`).
-enum QuoteItemKind {
-  labor('LABOR'),
-  parts('PARTS'),
-  fee('FEE');
-
-  const QuoteItemKind(this.value);
-
-  final String value;
-
-  static QuoteItemKind fromValue(String? value) {
-    for (final QuoteItemKind kind in QuoteItemKind.values) {
-      if (kind.value == value) return kind;
-    }
-    return QuoteItemKind.labor;
-  }
-}
-
 /// One row of a submitted quote (`QuoteItemDto`).
 class QuoteItem {
   const QuoteItem({
@@ -33,7 +15,7 @@ class QuoteItem {
 
   factory QuoteItem.fromJson(JsonMap json) => QuoteItem(
         id: readStringOr(json, 'id', ''),
-        kind: QuoteItemKind.fromValue(readString(json, 'kind')),
+        kind: QuoteItemKind.fromValue(readString(json, 'kind')) ?? QuoteItemKind.labor,
         description: readStringOr(json, 'description', ''),
         quantity: readDoubleOr(json, 'quantity', 1),
         unitPrice: readObject<Money>(json, 'unitPrice', Money.fromJson) ?? const Money.zero('ILS'),

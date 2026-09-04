@@ -1,6 +1,6 @@
+import { AccountStatus, CONFIG_DEFINITIONS, UserRole } from '@tamam/shared-types';
 import { z } from 'zod';
 
-import { AccountStatus, CONFIG_DEFINITIONS, UserRole } from '@tamam/shared-types';
 
 import { isoDateTimeSchema, pageRequestSchema, uuidSchema } from './common';
 

@@ -547,3 +547,236 @@ export type CurrencyCode = (typeof SUPPORTED_CURRENCIES)[number];
 export const DEFAULT_CURRENCY: CurrencyCode = 'ILS';
 /** Minor units per major unit (ILS agora=100, USD cent=100, JOD fils=1000). */
 export const CURRENCY_MINOR_UNITS: Record<CurrencyCode, number> = { ILS: 100, USD: 100, JOD: 1000 };
+
+/* ------------------------------------------------- promoted from inline unions */
+/**
+ * These five were written as inline string unions inside dto.ts. The values were
+ * right, but an inline union is invisible to the Dart generator, so both Flutter
+ * apps hand-copied the strings — the drift the parity spec exists to stop. They
+ * are named here and referenced from dto.ts.
+ */
+
+/** Mirrors the `quote_item_kind` enum in schema.prisma. */
+export const QuoteItemKind = {
+  LABOR: 'LABOR',
+  PARTS: 'PARTS',
+  FEE: 'FEE',
+} as const;
+export type QuoteItemKind = (typeof QuoteItemKind)[keyof typeof QuoteItemKind];
+
+/** Mirrors the `saved_place_kind` enum in schema.prisma. */
+export const SavedPlaceKind = {
+  HOME: 'HOME',
+  WORK: 'WORK',
+  CUSTOM: 'CUSTOM',
+} as const;
+export type SavedPlaceKind = (typeof SavedPlaceKind)[keyof typeof SavedPlaceKind];
+
+/** Mirrors the `package_size` enum in schema.prisma. */
+export const PackageSize = {
+  SMALL: 'SMALL',
+  MEDIUM: 'MEDIUM',
+  LARGE: 'LARGE',
+  XL: 'XL',
+} as const;
+export type PackageSize = (typeof PackageSize)[keyof typeof PackageSize];
+
+/** Mirrors the `review_direction` enum in schema.prisma. */
+export const ReviewDirection = {
+  CUSTOMER_TO_PARTNER: 'CUSTOMER_TO_PARTNER',
+  PARTNER_TO_CUSTOMER: 'PARTNER_TO_CUSTOMER',
+} as const;
+export type ReviewDirection = (typeof ReviewDirection)[keyof typeof ReviewDirection];
+
+/** Mirrors the `device_platform` enum in schema.prisma. Lowercase on purpose. */
+export const DevicePlatform = {
+  IOS: 'ios',
+  ANDROID: 'android',
+  WEB: 'web',
+  UNKNOWN: 'unknown',
+} as const;
+export type DevicePlatform = (typeof DevicePlatform)[keyof typeof DevicePlatform];
+
+/* ----------------------------------------------------------------- chalet */
+/**
+ * TAMAM Chalet books by the hour, so its vocabulary is about time rather than
+ * dispatch. Every enum below mirrors a `chalet_*` enum in schema.prisma; the
+ * parity spec in this package fails the build if the two ever drift.
+ */
+
+/** Mirrors the `chalet_status` enum in schema.prisma. */
+export const ChaletStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  SUSPENDED: 'SUSPENDED',
+  MAINTENANCE: 'MAINTENANCE',
+  INACTIVE: 'INACTIVE',
+} as const;
+export type ChaletStatus = (typeof ChaletStatus)[keyof typeof ChaletStatus];
+
+/** Mirrors the `chalet_approval_status` enum in schema.prisma. */
+export const ChaletApprovalStatus = {
+  DRAFT: 'DRAFT',
+  PENDING: 'PENDING',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+} as const;
+export type ChaletApprovalStatus = (typeof ChaletApprovalStatus)[keyof typeof ChaletApprovalStatus];
+
+/**
+ * Mirrors the `chalet_booking_status` enum in schema.prisma.
+ *
+ * DRAFT is a booking being assembled that holds nothing. From HELD onwards the
+ * slot is occupied — see CHALET_SLOT_HOLDING_STATUSES, which is the same list
+ * the database exclusion constraint uses.
+ */
+export const ChaletBookingStatus = {
+  DRAFT: 'DRAFT',
+  HELD: 'HELD',
+  AWAITING_PAYMENT: 'AWAITING_PAYMENT',
+  CONFIRMED: 'CONFIRMED',
+  CHECK_IN_READY: 'CHECK_IN_READY',
+  CHECKED_IN: 'CHECKED_IN',
+  IN_PROGRESS: 'IN_PROGRESS',
+  CHECKED_OUT: 'CHECKED_OUT',
+  CLEANING: 'CLEANING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
+  NO_SHOW: 'NO_SHOW',
+  DISPUTED: 'DISPUTED',
+} as const;
+export type ChaletBookingStatus = (typeof ChaletBookingStatus)[keyof typeof ChaletBookingStatus];
+
+/**
+ * Where a booking came from. OWNER_MANUAL is how an owner records a booking
+ * taken over the phone or through another site: it occupies the calendar
+ * exactly like a TAMAM booking, which is what keeps TAMAM the source of truth.
+ * Mirrors the `chalet_booking_source` enum in schema.prisma.
+ */
+export const ChaletBookingSource = {
+  TAMAM: 'TAMAM',
+  OWNER_MANUAL: 'OWNER_MANUAL',
+  ADMIN: 'ADMIN',
+} as const;
+export type ChaletBookingSource = (typeof ChaletBookingSource)[keyof typeof ChaletBookingSource];
+
+/** Mirrors the `chalet_block_kind` enum in schema.prisma. */
+export const ChaletBlockKind = {
+  OWNER_BLOCK: 'OWNER_BLOCK',
+  MAINTENANCE: 'MAINTENANCE',
+} as const;
+export type ChaletBlockKind = (typeof ChaletBlockKind)[keyof typeof ChaletBlockKind];
+
+/**
+ * How boldly Smart Pricing is allowed to move the hourly rate. Mirrors the
+ * `chalet_pricing_profile` enum in schema.prisma.
+ */
+export const ChaletPricingProfile = {
+  CONSERVATIVE: 'CONSERVATIVE',
+  BALANCED: 'BALANCED',
+  AGGRESSIVE_OCCUPANCY: 'AGGRESSIVE_OCCUPANCY',
+  CUSTOM: 'CUSTOM',
+} as const;
+export type ChaletPricingProfile = (typeof ChaletPricingProfile)[keyof typeof ChaletPricingProfile];
+
+/**
+ * OFF keeps the base rate. RECOMMEND_ONLY shows the owner a suggestion and
+ * changes nothing. AUTO applies it, still bounded by the chalet's price floor.
+ * Mirrors the `chalet_pricing_mode` enum in schema.prisma.
+ */
+export const ChaletPricingMode = {
+  OFF: 'OFF',
+  RECOMMEND_ONLY: 'RECOMMEND_ONLY',
+  AUTO: 'AUTO',
+} as const;
+export type ChaletPricingMode = (typeof ChaletPricingMode)[keyof typeof ChaletPricingMode];
+
+/** Mirrors the `chalet_rate_rule_kind` enum in schema.prisma. */
+export const ChaletRateRuleKind = {
+  TIME_OF_DAY: 'TIME_OF_DAY',
+  DAY_OF_WEEK: 'DAY_OF_WEEK',
+  SPECIAL_DATE: 'SPECIAL_DATE',
+} as const;
+export type ChaletRateRuleKind = (typeof ChaletRateRuleKind)[keyof typeof ChaletRateRuleKind];
+
+/** Mirrors the `chalet_offer_kind` enum in schema.prisma. */
+export const ChaletOfferKind = {
+  LAST_MINUTE: 'LAST_MINUTE',
+  GAP_FILLER: 'GAP_FILLER',
+  MORNING_SPECIAL: 'MORNING_SPECIAL',
+  EXTENSION: 'EXTENSION',
+  LOW_DEMAND: 'LOW_DEMAND',
+  DURATION_BUNDLE: 'DURATION_BUNDLE',
+} as const;
+export type ChaletOfferKind = (typeof ChaletOfferKind)[keyof typeof ChaletOfferKind];
+
+/** Mirrors the `chalet_deposit_type` enum in schema.prisma. */
+export const ChaletDepositType = {
+  NONE: 'NONE',
+  FIXED: 'FIXED',
+  PERCENTAGE: 'PERCENTAGE',
+} as const;
+export type ChaletDepositType = (typeof ChaletDepositType)[keyof typeof ChaletDepositType];
+
+/** Mirrors the `chalet_booking_event_type` enum in schema.prisma. */
+export const ChaletBookingEventType = {
+  CREATED: 'CREATED',
+  HELD: 'HELD',
+  HOLD_EXTENDED: 'HOLD_EXTENDED',
+  CONFIRMED: 'CONFIRMED',
+  PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
+  CHECK_IN: 'CHECK_IN',
+  EXTENSION_OFFERED: 'EXTENSION_OFFERED',
+  EXTENDED: 'EXTENDED',
+  OVERSTAY: 'OVERSTAY',
+  CHECK_OUT: 'CHECK_OUT',
+  CLEANING_STARTED: 'CLEANING_STARTED',
+  CLEANING_COMPLETED: 'CLEANING_COMPLETED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
+  REFUNDED: 'REFUNDED',
+  DISPUTED: 'DISPUTED',
+} as const;
+export type ChaletBookingEventType =
+  (typeof ChaletBookingEventType)[keyof typeof ChaletBookingEventType];
+
+/** Mirrors the `chalet_cleaning_status` enum in schema.prisma. */
+export const ChaletCleaningStatus = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  SKIPPED: 'SKIPPED',
+} as const;
+export type ChaletCleaningStatus = (typeof ChaletCleaningStatus)[keyof typeof ChaletCleaningStatus];
+
+/**
+ * The statuses that actually occupy the calendar. This list is duplicated in
+ * the `chalet_bookings_no_overlap` exclusion constraint (002_chalet.sql), and
+ * the availability engine filters by it; the parity spec keeps the two equal so
+ * a status added on one side cannot silently free or block a slot on the other.
+ */
+export const CHALET_SLOT_HOLDING_STATUSES = [
+  ChaletBookingStatus.HELD,
+  ChaletBookingStatus.AWAITING_PAYMENT,
+  ChaletBookingStatus.CONFIRMED,
+  ChaletBookingStatus.CHECK_IN_READY,
+  ChaletBookingStatus.CHECKED_IN,
+  ChaletBookingStatus.IN_PROGRESS,
+  ChaletBookingStatus.CHECKED_OUT,
+  ChaletBookingStatus.CLEANING,
+] as const;
+export type ChaletSlotHoldingStatus = (typeof CHALET_SLOT_HOLDING_STATUSES)[number];
+
+/** A booking in one of these statuses is over; it no longer blocks anything. */
+export const CHALET_TERMINAL_STATUSES = [
+  ChaletBookingStatus.COMPLETED,
+  ChaletBookingStatus.CANCELLED,
+  ChaletBookingStatus.EXPIRED,
+  ChaletBookingStatus.NO_SHOW,
+] as const;
+export type ChaletTerminalStatus = (typeof CHALET_TERMINAL_STATUSES)[number];

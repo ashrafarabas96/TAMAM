@@ -7,3 +7,4 @@ export * from './money';
 export * from './engagement';
 export * from './admin';
 export * from './customer';
+export * from './chalet';

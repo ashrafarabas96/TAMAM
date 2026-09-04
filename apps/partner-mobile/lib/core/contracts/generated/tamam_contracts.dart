@@ -991,6 +991,331 @@ enum MediaStatus {
   }
 }
 
+enum QuoteItemKind {
+  labor('LABOR'),
+  parts('PARTS'),
+  fee('FEE');
+
+  const QuoteItemKind(this.value);
+  final String value;
+
+  static QuoteItemKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in QuoteItemKind.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum SavedPlaceKind {
+  home('HOME'),
+  work('WORK'),
+  custom('CUSTOM');
+
+  const SavedPlaceKind(this.value);
+  final String value;
+
+  static SavedPlaceKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in SavedPlaceKind.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum PackageSize {
+  small('SMALL'),
+  medium('MEDIUM'),
+  large('LARGE'),
+  xl('XL');
+
+  const PackageSize(this.value);
+  final String value;
+
+  static PackageSize? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in PackageSize.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ReviewDirection {
+  customerToPartner('CUSTOMER_TO_PARTNER'),
+  partnerToCustomer('PARTNER_TO_CUSTOMER');
+
+  const ReviewDirection(this.value);
+  final String value;
+
+  static ReviewDirection? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ReviewDirection.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum DevicePlatform {
+  ios('ios'),
+  android('android'),
+  web('web'),
+  unknown('unknown');
+
+  const DevicePlatform(this.value);
+  final String value;
+
+  static DevicePlatform? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in DevicePlatform.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletStatus {
+  draft('DRAFT'),
+  pendingApproval('PENDING_APPROVAL'),
+  active('ACTIVE'),
+  paused('PAUSED'),
+  suspended('SUSPENDED'),
+  maintenance('MAINTENANCE'),
+  inactive('INACTIVE');
+
+  const ChaletStatus(this.value);
+  final String value;
+
+  static ChaletStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletApprovalStatus {
+  draft('DRAFT'),
+  pending('PENDING'),
+  underReview('UNDER_REVIEW'),
+  approved('APPROVED'),
+  rejected('REJECTED');
+
+  const ChaletApprovalStatus(this.value);
+  final String value;
+
+  static ChaletApprovalStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletApprovalStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletBookingStatus {
+  draft('DRAFT'),
+  held('HELD'),
+  awaitingPayment('AWAITING_PAYMENT'),
+  confirmed('CONFIRMED'),
+  checkInReady('CHECK_IN_READY'),
+  checkedIn('CHECKED_IN'),
+  inProgress('IN_PROGRESS'),
+  checkedOut('CHECKED_OUT'),
+  cleaning('CLEANING'),
+  completed('COMPLETED'),
+  cancelled('CANCELLED'),
+  expired('EXPIRED'),
+  noShow('NO_SHOW'),
+  disputed('DISPUTED');
+
+  const ChaletBookingStatus(this.value);
+  final String value;
+
+  static ChaletBookingStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletBookingStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletBookingSource {
+  tamam('TAMAM'),
+  ownerManual('OWNER_MANUAL'),
+  admin('ADMIN');
+
+  const ChaletBookingSource(this.value);
+  final String value;
+
+  static ChaletBookingSource? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletBookingSource.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletBlockKind {
+  ownerBlock('OWNER_BLOCK'),
+  maintenance('MAINTENANCE');
+
+  const ChaletBlockKind(this.value);
+  final String value;
+
+  static ChaletBlockKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletBlockKind.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletPricingProfile {
+  conservative('CONSERVATIVE'),
+  balanced('BALANCED'),
+  aggressiveOccupancy('AGGRESSIVE_OCCUPANCY'),
+  custom('CUSTOM');
+
+  const ChaletPricingProfile(this.value);
+  final String value;
+
+  static ChaletPricingProfile? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletPricingProfile.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletPricingMode {
+  off('OFF'),
+  recommendOnly('RECOMMEND_ONLY'),
+  auto('AUTO');
+
+  const ChaletPricingMode(this.value);
+  final String value;
+
+  static ChaletPricingMode? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletPricingMode.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletRateRuleKind {
+  timeOfDay('TIME_OF_DAY'),
+  dayOfWeek('DAY_OF_WEEK'),
+  specialDate('SPECIAL_DATE');
+
+  const ChaletRateRuleKind(this.value);
+  final String value;
+
+  static ChaletRateRuleKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletRateRuleKind.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletOfferKind {
+  lastMinute('LAST_MINUTE'),
+  gapFiller('GAP_FILLER'),
+  morningSpecial('MORNING_SPECIAL'),
+  extension('EXTENSION'),
+  lowDemand('LOW_DEMAND'),
+  durationBundle('DURATION_BUNDLE');
+
+  const ChaletOfferKind(this.value);
+  final String value;
+
+  static ChaletOfferKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletOfferKind.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletDepositType {
+  none('NONE'),
+  fixed('FIXED'),
+  percentage('PERCENTAGE');
+
+  const ChaletDepositType(this.value);
+  final String value;
+
+  static ChaletDepositType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletDepositType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletBookingEventType {
+  created('CREATED'),
+  held('HELD'),
+  holdExtended('HOLD_EXTENDED'),
+  confirmed('CONFIRMED'),
+  paymentReceived('PAYMENT_RECEIVED'),
+  checkIn('CHECK_IN'),
+  extensionOffered('EXTENSION_OFFERED'),
+  extended('EXTENDED'),
+  overstay('OVERSTAY'),
+  checkOut('CHECK_OUT'),
+  cleaningStarted('CLEANING_STARTED'),
+  cleaningCompleted('CLEANING_COMPLETED'),
+  completed('COMPLETED'),
+  cancelled('CANCELLED'),
+  expired('EXPIRED'),
+  refunded('REFUNDED'),
+  disputed('DISPUTED');
+
+  const ChaletBookingEventType(this.value);
+  final String value;
+
+  static ChaletBookingEventType? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletBookingEventType.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
+enum ChaletCleaningStatus {
+  pending('PENDING'),
+  inProgress('IN_PROGRESS'),
+  completed('COMPLETED'),
+  skipped('SKIPPED');
+
+  const ChaletCleaningStatus(this.value);
+  final String value;
+
+  static ChaletCleaningStatus? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in ChaletCleaningStatus.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 abstract final class ErrorCode {
   static const String validationFailed = 'VALIDATION_FAILED';
   static const String unauthenticated = 'UNAUTHENTICATED';

@@ -1,6 +1,6 @@
+import { SUPPORTED_CURRENCIES } from '@tamam/shared-types';
 import { z } from 'zod';
 
-import { SUPPORTED_CURRENCIES } from '@tamam/shared-types';
 
 /** E.164 phone; Palestine (+970) and Israel (+972) numbers are the launch region but any E.164 is accepted. */
 export const phoneSchema = z
