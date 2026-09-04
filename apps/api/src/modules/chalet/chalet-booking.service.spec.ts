@@ -38,6 +38,11 @@ function user(id: string, overrides: Partial<RequestUser> = {}): RequestUser {
   };
 }
 
+/**
+ * The row the fake stores. It carries every column the DTO mapper reads,
+ * including the chalet relation Prisma is asked to include — a fake that
+ * returns less than the real client would would let a mapping bug pass.
+ */
 interface BookingRow {
   id: string;
   bookingNumber: string;
@@ -45,13 +50,62 @@ interface BookingRow {
   customerId: string | null;
   startAt: Date;
   endAt: Date;
+  blockedUntil: Date;
+  bookingDurationMinutes: number;
+  cleaningDurationMinutes: number;
+  guestCount: number;
   status: ChaletBookingStatus;
+  source: string;
   holdExpiresAt: Date | null;
   totalAmountMinor: bigint;
+  currency: string;
+  pricingSnapshot: unknown;
+  paymentStatus: string | null;
+  guestName: string | null;
+  guestPhone: string | null;
+  cancellationReason: string | null;
+  overstayMinutes: number;
+  overstayFeeMinor: bigint;
+  createdAt: Date;
+  confirmedAt: Date | null;
+  checkedInAt: Date | null;
+  checkedOutAt: Date | null;
   version: number;
   cancelledBy?: string | null;
-  cancellationReason?: string | null;
-  chalet?: unknown;
+  chalet: { nameAr: string; nameEn: string };
+}
+
+/** Fills the columns a test does not care about, so every row is complete. */
+function row(overrides: Partial<BookingRow> & Pick<BookingRow, 'id' | 'chaletId'>): BookingRow {
+  return {
+    bookingNumber: `CH-${overrides.id}`,
+    customerId: null,
+    startAt: local('12:00'),
+    endAt: local('16:00'),
+    blockedUntil: local('17:30'),
+    bookingDurationMinutes: 240,
+    cleaningDurationMinutes: 90,
+    guestCount: 4,
+    status: ChaletBookingStatus.HELD,
+    source: 'TAMAM',
+    holdExpiresAt: null,
+    totalAmountMinor: 40_000n,
+    currency: 'ILS',
+    pricingSnapshot: { total: { amount: 40_000, currency: 'ILS' } },
+    paymentStatus: null,
+    guestName: null,
+    guestPhone: null,
+    cancellationReason: null,
+    overstayMinutes: 0,
+    overstayFeeMinor: 0n,
+    createdAt: local('09:00'),
+    confirmedAt: null,
+    checkedInAt: null,
+    checkedOutAt: null,
+    version: 0,
+    chalet: { nameAr: 'شاليه', nameEn: 'Chalet' },
+    ...overrides,
+  };
 }
 
 const chaletRow = {
@@ -101,20 +155,28 @@ function makeHarness(
 
   const createSpy = jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
     if (options.createThrows !== undefined) throw options.createThrows;
-    const row: BookingRow = {
+    const created = row({
       id: `bk-${bookings.length + 1}`,
       bookingNumber: data.bookingNumber as string,
       chaletId: data.chaletId as string,
       customerId: (data.customerId as string | null) ?? null,
       startAt: data.startAt as Date,
       endAt: data.endAt as Date,
+      blockedUntil: data.blockedUntil as Date,
+      bookingDurationMinutes: data.bookingDurationMinutes as number,
+      cleaningDurationMinutes: data.cleaningDurationMinutes as number,
+      guestCount: data.guestCount as number,
       status: data.status as ChaletBookingStatus,
+      source: (data.source as string | undefined) ?? 'TAMAM',
       holdExpiresAt: (data.holdExpiresAt as Date | undefined) ?? null,
       totalAmountMinor: data.totalAmountMinor as bigint,
-      version: 0,
-    };
-    bookings.push(row);
-    return row;
+      pricingSnapshot: data.pricingSnapshot,
+      guestName: (data.guestName as string | undefined) ?? null,
+      guestPhone: (data.guestPhone as string | undefined) ?? null,
+      confirmedAt: (data.confirmedAt as Date | undefined) ?? null,
+    });
+    bookings.push(created);
+    return created;
   });
 
   const tx = {
@@ -255,7 +317,8 @@ describe('ChaletBookingService.hold', () => {
     const booking = await service.hold({ user: user(CUSTOMER_ID) }, holdInput, now);
 
     expect(booking.status).toBe(ChaletBookingStatus.HELD);
-    expect(booking.holdExpiresAt).toEqual(new Date(now.getTime() + 7 * 60_000));
+    // The DTO carries instants as ISO strings, not Date objects.
+    expect(booking.holdExpiresAt).toBe(new Date(now.getTime() + 7 * 60_000).toISOString());
     expect(bookings).toHaveLength(1);
   });
 
@@ -333,36 +396,26 @@ describe('ChaletBookingService.hold', () => {
   });
 
   it('releases lapsed holds before checking availability', async () => {
-    const lapsed: BookingRow = {
+    const lapsed = row({
       id: 'old',
-      bookingNumber: 'CH-OLD',
       chaletId: CHALET_ID,
       customerId: OTHER_ID,
-      startAt: local('12:00'),
-      endAt: local('16:00'),
       status: ChaletBookingStatus.HELD,
       holdExpiresAt: local('08:55'),
-      totalAmountMinor: 40_000n,
-      version: 0,
-    };
+    });
     const { service, bookings } = makeHarness({ bookings: [lapsed] });
     await service.hold({ user: user(CUSTOMER_ID) }, holdInput, local('09:00'));
     expect(bookings[0]?.status).toBe(ChaletBookingStatus.EXPIRED);
   });
 
   it('leaves a hold that still has time on the clock alone', async () => {
-    const live: BookingRow = {
+    const live = row({
       id: 'live',
-      bookingNumber: 'CH-LIVE',
       chaletId: CHALET_ID,
       customerId: OTHER_ID,
-      startAt: local('12:00'),
-      endAt: local('16:00'),
       status: ChaletBookingStatus.HELD,
       holdExpiresAt: local('09:05'),
-      totalAmountMinor: 40_000n,
-      version: 0,
-    };
+    });
     const { service, bookings } = makeHarness({ bookings: [live] });
     await service.hold({ user: user(CUSTOMER_ID) }, holdInput, local('09:00'));
     expect(bookings[0]?.status).toBe(ChaletBookingStatus.HELD);
@@ -569,7 +622,7 @@ describe('ChaletBookingService.extend', () => {
       { additionalMinutes: 60 },
       local('15:00'),
     );
-    expect(result.booking.endAt).toEqual(local('17:00'));
+    expect(result.booking.endAt).toBe(local('17:00').toISOString());
     expect(result.extraAmountMinor).toBe(40_000n);
   });
 

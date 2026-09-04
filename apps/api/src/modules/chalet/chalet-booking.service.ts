@@ -4,6 +4,8 @@ import {
   ChaletBookingEventType,
   ChaletBookingSource,
   ChaletBookingStatus,
+  type ChaletBookingDto,
+  type ChaletPriceBreakdownDto,
   ErrorCode,
 } from '@tamam/shared-types';
 import type {
@@ -15,7 +17,7 @@ import type {
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
-import { percentOf } from '../../common/utils/money';
+import { percentOf, toMoney } from '../../common/utils/money';
 import { AppConfigService } from '../../config';
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
 
@@ -69,6 +71,47 @@ export function isOverlapRejection(error: unknown): boolean {
 
 interface BookingActor {
   user: RequestUser;
+}
+
+/** The booking row plus the chalet's names, which the DTO carries. */
+const withChalet = { chalet: { select: { nameAr: true, nameEn: true } } } as const;
+type BookingRowWithChalet = Prisma.ChaletBookingGetPayload<{ include: typeof withChalet }>;
+
+/**
+ * A stored snapshot is JSON, so it is checked rather than trusted before being
+ * handed out as a price. A booking written before the breakdown existed, or by
+ * an owner recording a phone call, has no usable snapshot.
+ */
+function isPriceBreakdown(value: Prisma.JsonValue): value is ChaletPriceBreakdownDto & Prisma.JsonObject {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    'total' in value &&
+    'effectiveHourlyRate' in value
+  );
+}
+
+/** What to show when there is no snapshot: the total, and nothing invented. */
+function fallbackBreakdown(
+  totalMinor: bigint,
+  currency: string,
+  durationMinutes: number,
+): ChaletPriceBreakdownDto {
+  const zero = toMoney(0, currency);
+  return {
+    baseHourlyRate: zero,
+    effectiveHourlyRate: zero,
+    durationMinutes,
+    subtotal: toMoney(totalMinor, currency),
+    adjustments: [],
+    discount: zero,
+    serviceFee: zero,
+    tax: zero,
+    deposit: zero,
+    total: toMoney(totalMinor, currency),
+    clampedToMinimum: false,
+  };
 }
 
 /**
@@ -217,6 +260,7 @@ export class ChaletBookingService {
 
       const booking = await this.write(() =>
         tx.chaletBooking.create({
+          include: withChalet,
           data: {
             bookingNumber: formatBookingNumber(seq, now),
             chaletId: chalet.id,
@@ -247,7 +291,7 @@ export class ChaletBookingService {
         toStatus: ChaletBookingStatus.HELD,
         data: { holdExpiresAt: holdExpiresAt.toISOString() },
       });
-      return booking;
+      return this.toDto(booking);
     });
   }
 
@@ -288,6 +332,7 @@ export class ChaletBookingService {
       this.assertTransition(booking.status, ChaletBookingStatus.CONFIRMED);
 
       const confirmed = await tx.chaletBooking.update({
+        include: withChalet,
         where: { id: booking.id },
         data: {
           status: ChaletBookingStatus.CONFIRMED,
@@ -301,7 +346,7 @@ export class ChaletBookingService {
         fromStatus: booking.status,
         toStatus: ChaletBookingStatus.CONFIRMED,
       });
-      return confirmed;
+      return this.toDto(confirmed);
     });
   }
 
@@ -346,6 +391,7 @@ export class ChaletBookingService {
       const refundMinor = percentOf(booking.totalAmountMinor, refundPercent);
 
       const cancelled = await tx.chaletBooking.update({
+        include: withChalet,
         where: { id: booking.id },
         data: {
           status: ChaletBookingStatus.CANCELLED,
@@ -362,7 +408,7 @@ export class ChaletBookingService {
         toStatus: ChaletBookingStatus.CANCELLED,
         data: { reason: input.reason, refundPercent, refundMinor: Number(refundMinor) },
       });
-      return { booking: cancelled, refundPercent, refundMinor };
+      return { booking: this.toDto(cancelled), refundPercent, refundMinor };
     });
   }
 
@@ -427,6 +473,7 @@ export class ChaletBookingService {
 
       const extended = await this.write(() =>
         tx.chaletBooking.update({
+          include: withChalet,
           where: { id: booking.id },
           data: {
             endAt: newEndAt,
@@ -445,7 +492,7 @@ export class ChaletBookingService {
           newEndAt: newEndAt.toISOString(),
         },
       });
-      return { booking: extended, extraAmountMinor: extraQuote.subtotalMinor };
+      return { booking: this.toDto(extended), extraAmountMinor: extraQuote.subtotalMinor };
     });
   }
 
@@ -497,6 +544,7 @@ export class ChaletBookingService {
 
       const booking = await this.write(() =>
         tx.chaletBooking.create({
+          include: withChalet,
           data: {
             bookingNumber: formatBookingNumber(seq, now),
             chaletId: chalet.id,
@@ -532,7 +580,7 @@ export class ChaletBookingService {
         toStatus: ChaletBookingStatus.CONFIRMED,
         data: { source: input.source },
       });
-      return booking;
+      return this.toDto(booking);
     });
   }
 
@@ -571,6 +619,7 @@ export class ChaletBookingService {
       }
 
       const checkedIn = await tx.chaletBooking.update({
+        include: withChalet,
         where: { id: booking.id },
         data: {
           status: ChaletBookingStatus.CHECKED_IN,
@@ -583,7 +632,7 @@ export class ChaletBookingService {
         fromStatus: booking.status,
         toStatus: ChaletBookingStatus.CHECKED_IN,
       });
-      return checkedIn;
+      return this.toDto(checkedIn);
     });
   }
 
@@ -619,6 +668,7 @@ export class ChaletBookingService {
       const { billedMinutes, feeMinor } = overstayCharge(minutesLate, hourlyRateMinor);
 
       const checkedOut = await tx.chaletBooking.update({
+        include: withChalet,
         where: { id: booking.id },
         data: {
           status: ChaletBookingStatus.CHECKED_OUT,
@@ -641,7 +691,11 @@ export class ChaletBookingService {
         fromStatus: booking.status,
         toStatus: ChaletBookingStatus.CHECKED_OUT,
       });
-      return { booking: checkedOut, overstayMinutes: billedMinutes, overstayFeeMinor: feeMinor };
+      return {
+        booking: this.toDto(checkedOut),
+        overstayMinutes: billedMinutes,
+        overstayFeeMinor: feeMinor,
+      };
     });
   }
 
@@ -672,6 +726,51 @@ export class ChaletBookingService {
       });
     });
     return lapsed.length;
+  }
+
+  /**
+   * The wire shape of a booking.
+   *
+   * The Prisma row is not it: the row carries the pricing snapshot, the
+   * optimistic-lock version, the applied offer and the individual price
+   * components, none of which a client needs and none of which should become
+   * an accidental contract. ChaletBookingDto is what is declared in
+   * shared-types, so it is what is sent.
+   */
+  private toDto(row: BookingRowWithChalet): ChaletBookingDto {
+    const snapshot = row.pricingSnapshot;
+    return {
+      id: row.id,
+      bookingNumber: row.bookingNumber,
+      chaletId: row.chaletId,
+      chaletNameAr: row.chalet.nameAr,
+      chaletNameEn: row.chalet.nameEn,
+      customerId: row.customerId,
+      startAt: row.startAt.toISOString(),
+      endAt: row.endAt.toISOString(),
+      blockedUntil: row.blockedUntil.toISOString(),
+      bookingDurationMinutes: row.bookingDurationMinutes,
+      cleaningDurationMinutes: row.cleaningDurationMinutes,
+      guestCount: row.guestCount,
+      status: row.status,
+      source: row.source,
+      holdExpiresAt: row.holdExpiresAt?.toISOString() ?? null,
+      // Written at hold time and immutable from confirmation, so it is the
+      // price the customer agreed to rather than a fresh quote.
+      price: isPriceBreakdown(snapshot)
+        ? snapshot
+        : fallbackBreakdown(row.totalAmountMinor, row.currency, row.bookingDurationMinutes),
+      paymentStatus: row.paymentStatus,
+      guestName: row.guestName,
+      guestPhone: row.guestPhone,
+      cancellationReason: row.cancellationReason,
+      overstayMinutes: row.overstayMinutes,
+      overstayFee: toMoney(row.overstayFeeMinor, row.currency),
+      createdAt: row.createdAt.toISOString(),
+      confirmedAt: row.confirmedAt?.toISOString() ?? null,
+      checkedInAt: row.checkedInAt?.toISOString() ?? null,
+      checkedOutAt: row.checkedOutAt?.toISOString() ?? null,
+    };
   }
 
   /* ------------------------------------------------------------- helpers */

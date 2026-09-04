@@ -91,3 +91,14 @@ Never hard-code user-facing text in services: use notification templates (AR/EN)
 ## 10. Forbidden (spec §200)
 
 `TODO`/`FIXME`/`HACK`/`TEMP` markers, mock data in production paths, hard-coded prices/permissions, `any`, unprotected admin routes, `console.log`, catching and ignoring errors, business logic in controllers.
+
+## The Prisma client is generated on install
+
+`apps/api` runs `prisma generate` as a `postinstall` script. Almost every file
+in `src/` imports a type from the generated client, so without it `build`,
+`typecheck`, `test` and the seed all fail with dozens of type errors that never
+mention the real cause — the reader is told `Property 'Decimal' does not exist
+on type 'typeof Prisma'` fifty times instead of "run generate".
+
+Wiring it to install rather than to each script means the order cannot be got
+wrong: `pnpm install` is enough, whatever a developer runs next.

@@ -29,14 +29,17 @@ describe('Chalet admin approval (§82)', () => {
     await api.close();
   });
 
-  const asAdmin = () => api.request().set('Authorization', `Bearer ${admin.accessToken}`);
+  /**
+   * Signs a request as the reviewer. Written as a wrapper rather than a
+   * pre-authenticated agent because supertest's agent does not carry headers
+   * onto the requests it makes.
+   */
+  const asAdmin = <T extends { set(field: string, value: string): T }>(request: T): T =>
+    request.set('Authorization', `Bearer ${admin.accessToken}`);
 
   it('lists chalets waiting for a decision', async () => {
-    const res = await api
-      .request()
-      .get(api.url('admin/chalets'))
+    const res = await asAdmin(api.request().get(api.url('admin/chalets')))
       .query({ approvalStatus: 'PENDING' })
-      .set('Authorization', `Bearer ${admin.accessToken}`)
       .expect(200);
 
     const found = res.body.items.find((c: { id: string }) => c.id === chaletId);
@@ -48,19 +51,13 @@ describe('Chalet admin approval (§82)', () => {
   });
 
   it('counts what is waiting, for the console badge', async () => {
-    const res = await api
-      .request()
-      .get(api.url('admin/chalets/pending-count'))
-      .set('Authorization', `Bearer ${admin.accessToken}`)
+    const res = await asAdmin(api.request().get(api.url('admin/chalets/pending-count')))
       .expect(200);
     expect(res.body.pending).toBeGreaterThanOrEqual(1);
   });
 
   it('serves one chalet in full for review', async () => {
-    const res = await api
-      .request()
-      .get(api.url(`admin/chalets/${chaletId}`))
-      .set('Authorization', `Bearer ${admin.accessToken}`)
+    const res = await asAdmin(api.request().get(api.url(`admin/chalets/${chaletId}`)))
       .expect(200);
 
     expect(res.body.id).toBe(chaletId);
@@ -82,19 +79,13 @@ describe('Chalet admin approval (§82)', () => {
   });
 
   it('refuses a rejection with no reason', async () => {
-    await api
-      .request()
-      .patch(api.url(`admin/chalets/${chaletId}/approval`))
-      .set('Authorization', `Bearer ${admin.accessToken}`)
+    await asAdmin(api.request().patch(api.url(`admin/chalets/${chaletId}/approval`)))
       .send({ approve: false })
       .expect(422);
   });
 
   it('rejects with a reason the owner can act on', async () => {
-    const res = await api
-      .request()
-      .patch(api.url(`admin/chalets/${chaletId}/approval`))
-      .set('Authorization', `Bearer ${admin.accessToken}`)
+    const res = await asAdmin(api.request().patch(api.url(`admin/chalets/${chaletId}/approval`)))
       .send({ approve: false, reason: 'الصور غير واضحة، أضف صورًا للمسبح والمدخل.' })
       .expect(200);
 
@@ -108,10 +99,7 @@ describe('Chalet admin approval (§82)', () => {
   });
 
   it('approving makes the chalet bookable in the same write', async () => {
-    const res = await api
-      .request()
-      .patch(api.url(`admin/chalets/${chaletId}/approval`))
-      .set('Authorization', `Bearer ${admin.accessToken}`)
+    const res = await asAdmin(api.request().patch(api.url(`admin/chalets/${chaletId}/approval`)))
       .send({ approve: true })
       .expect(200);
 
@@ -126,19 +114,13 @@ describe('Chalet admin approval (§82)', () => {
   });
 
   it('refuses to approve the same chalet twice', async () => {
-    await api
-      .request()
-      .patch(api.url(`admin/chalets/${chaletId}/approval`))
-      .set('Authorization', `Bearer ${admin.accessToken}`)
+    await asAdmin(api.request().patch(api.url(`admin/chalets/${chaletId}/approval`)))
       .send({ approve: true })
       .expect(409);
   });
 
   it('suspends a live chalet and takes it out of search', async () => {
-    await api
-      .request()
-      .patch(api.url(`admin/chalets/${chaletId}/suspension`))
-      .set('Authorization', `Bearer ${admin.accessToken}`)
+    await asAdmin(api.request().patch(api.url(`admin/chalets/${chaletId}/suspension`)))
       .send({ suspend: true, reason: 'شكوى من ضيف قيد المراجعة' })
       .expect(200);
 
@@ -147,10 +129,7 @@ describe('Chalet admin approval (§82)', () => {
   });
 
   it('puts it back', async () => {
-    const res = await api
-      .request()
-      .patch(api.url(`admin/chalets/${chaletId}/suspension`))
-      .set('Authorization', `Bearer ${admin.accessToken}`)
+    const res = await asAdmin(api.request().patch(api.url(`admin/chalets/${chaletId}/suspension`)))
       .send({ suspend: false, reason: 'انتهت المراجعة' })
       .expect(200);
     expect(res.body.status).toBe('ACTIVE');

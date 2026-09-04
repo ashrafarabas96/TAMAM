@@ -198,39 +198,56 @@ class ChaletBooking {
     required this.guestCount,
     required this.status,
     required this.total,
+    this.chaletName = '',
+    this.price,
     this.holdExpiresAt,
     this.cleaningDurationMinutes = 0,
+    this.blockedUntil,
   });
 
-  factory ChaletBooking.fromJson(JsonMap json) => ChaletBooking(
-        id: readStringOr(json, 'id', ''),
-        bookingNumber: readStringOr(json, 'bookingNumber', ''),
-        chaletId: readStringOr(json, 'chaletId', ''),
-        startAt: readDateTimeOr(json, 'startAt', DateTime.now()),
-        endAt: readDateTimeOr(json, 'endAt', DateTime.now()),
-        guestCount: readIntOr(json, 'guestCount', 1),
-        status: ChaletBookingStatus.fromValue(readString(json, 'status')) ??
-            ChaletBookingStatus.draft,
-        total: Money(
-          amount: readIntOr(json, 'totalAmountMinor', 0),
-          currency: readStringOr(json, 'currency', 'ILS'),
-        ),
-        holdExpiresAt: readDateTime(json, 'holdExpiresAt'),
-        cleaningDurationMinutes: readIntOr(json, 'cleaningDurationMinutes', 0),
-      );
+  factory ChaletBooking.fromJson(JsonMap json) {
+    // The API sends ChaletBookingDto: the total lives inside the price
+    // breakdown, not as a bare minor-unit column on the row.
+    final JsonMap? price = asJsonMap(json['price']);
+    return ChaletBooking(
+      id: readStringOr(json, 'id', ''),
+      bookingNumber: readStringOr(json, 'bookingNumber', ''),
+      chaletId: readStringOr(json, 'chaletId', ''),
+      chaletName: readStringOr(json, 'chaletNameAr', ''),
+      startAt: readDateTimeOr(json, 'startAt', DateTime.now()),
+      endAt: readDateTimeOr(json, 'endAt', DateTime.now()),
+      guestCount: readIntOr(json, 'guestCount', 1),
+      status:
+          ChaletBookingStatus.fromValue(readString(json, 'status')) ?? ChaletBookingStatus.draft,
+      total: price == null
+          ? const Money.zero('ILS')
+          : Money.fromJson(asJsonMap(price['total']) ?? const <String, Object?>{}),
+      price: price == null ? null : ChaletPrice.fromJson(price),
+      holdExpiresAt: readDateTime(json, 'holdExpiresAt'),
+      cleaningDurationMinutes: readIntOr(json, 'cleaningDurationMinutes', 0),
+      blockedUntil: readDateTime(json, 'blockedUntil'),
+    );
+  }
 
   final String id;
   final String bookingNumber;
   final String chaletId;
+  final String chaletName;
   final DateTime startAt;
   final DateTime endAt;
   final int guestCount;
   final ChaletBookingStatus status;
   final Money total;
 
+  /// The whole breakdown, frozen at the time of booking.
+  final ChaletPrice? price;
+
   /// Set only while the booking is held. The countdown the customer sees.
   final DateTime? holdExpiresAt;
   final int cleaningDurationMinutes;
+
+  /// When the slot is free again — the booking plus its cleaning.
+  final DateTime? blockedUntil;
 
   /// How long is left to pay. Negative once the hold has lapsed.
   Duration remainingHold(DateTime now) =>

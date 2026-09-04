@@ -110,8 +110,13 @@ describe('Chalet customer journey (§80)', () => {
     expect(held.status).toBe(ChaletBookingStatus.HELD);
     expect(held.bookingNumber).toMatch(/^CH-\d{4}-\d{6}$/);
     expect(held.holdExpiresAt).not.toBeNull();
-    // Money crosses the wire as a number, not a BigInt string.
-    expect(typeof held.totalAmountMinor).toBe('number');
+    // Money crosses the wire as a number inside the breakdown, not as a
+    // BigInt string and not as a bare column on the row.
+    expect(typeof held.price.total.amount).toBe('number');
+    expect(held.price.total.currency).toBe('ILS');
+    // The row's internal columns stay internal.
+    expect(held.pricingSnapshot).toBeUndefined();
+    expect(held.version).toBeUndefined();
     expect(confirmed.status).toBe(ChaletBookingStatus.CONFIRMED);
     expect(confirmed.holdExpiresAt).toBeNull();
   });

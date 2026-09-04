@@ -380,7 +380,7 @@ describe('Chalet acceptance', () => {
       await bookings.confirm(asUser(userId), held.id);
 
       const result = await bookings.extend(asUser(userId), held.id, { additionalMinutes: 60 });
-      expect(result.booking.endAt).toEqual(slot(14));
+      expect(result.booking.endAt).toBe(slot(14).toISOString());
       expect(result.extraAmountMinor).toBeGreaterThan(0n);
     });
 
@@ -580,7 +580,8 @@ describe('Chalet acceptance', () => {
         .set('Authorization', `Bearer ${customer.accessToken}`)
         .send({ chaletId, startAt: iso(slot(9)), endAt: iso(slot(13)), guestCount: 4 })
         .expect(201);
-      expect(held.body.totalAmountMinor).toBe(quoted);
+      // The booking carries the price it was quoted, inside the breakdown.
+      expect(held.body.price.total.amount).toBe(quoted);
 
       // 4. While they pay, nobody else can take the slot.
       await expect(book(slot(10), slot(12))).rejects.toMatchObject({ code: 'CONFLICT' });

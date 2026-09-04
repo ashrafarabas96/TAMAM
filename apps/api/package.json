@@ -2,8 +2,9 @@
   "name": "@tamam/api",
   "version": "1.0.0",
   "private": true,
-  "description": "TAMAM backend — NestJS modular monolith (source of truth for all business rules).",
+  "description": "TAMAM backend \u2014 NestJS modular monolith (source of truth for all business rules).",
   "scripts": {
+    "postinstall": "prisma generate",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "dev": "nest start --watch",

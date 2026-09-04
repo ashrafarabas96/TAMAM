@@ -161,23 +161,49 @@ void main() {
   group('ChaletBooking', () {
     test('reads a held booking and the time left on it', () {
       final DateTime expiry = DateTime.now().add(const Duration(minutes: 5));
+      // The shape the API actually sends: ChaletBookingDto, with the total
+      // inside the price breakdown rather than as a bare column.
       final ChaletBooking booking = ChaletBooking.fromJson(<String, Object?>{
         'id': 'b1',
         'bookingNumber': 'CH-2610-000007',
         'chaletId': 'c1',
+        'chaletNameAr': 'شاليه الريحان',
+        'chaletNameEn': 'Al Rayhan Chalet',
         'startAt': '2026-10-01T09:00:00.000Z',
         'endAt': '2026-10-01T13:00:00.000Z',
+        'blockedUntil': '2026-10-01T14:30:00.000Z',
         'guestCount': 4,
         'status': 'HELD',
-        'totalAmountMinor': 40000,
-        'currency': 'ILS',
+        'price': <String, Object?>{
+          'total': <String, Object?>{'amount': 40000, 'currency': 'ILS'},
+          'effectiveHourlyRate': <String, Object?>{'amount': 10000, 'currency': 'ILS'},
+          'baseHourlyRate': <String, Object?>{'amount': 10000, 'currency': 'ILS'},
+          'durationMinutes': 240,
+          'adjustments': <Object?>[],
+          'clampedToMinimum': false,
+        },
         'holdExpiresAt': expiry.toIso8601String(),
         'cleaningDurationMinutes': 90,
       });
 
       expect(booking.isHeld, isTrue);
       expect(booking.total.amount, 40000);
+      expect(booking.chaletName, 'شاليه الريحان');
+      expect(booking.price?.durationMinutes, 240);
+      // The cleaning window is on the booking, so the app can say when the
+      // slot is genuinely free again.
+      expect(booking.blockedUntil?.difference(booking.endAt).inMinutes, 90);
       expect(booking.remainingHold(DateTime.now()).inMinutes, closeTo(4, 1));
+    });
+
+    test('survives a booking with no price breakdown', () {
+      // An owner's phone booking has no TAMAM price to explain.
+      final ChaletBooking booking = ChaletBooking.fromJson(<String, Object?>{
+        'id': 'b1',
+        'status': 'CONFIRMED',
+      });
+      expect(booking.price, isNull);
+      expect(booking.total.amount, 0);
     });
 
     test('reports no time left once the hold has lapsed', () {
