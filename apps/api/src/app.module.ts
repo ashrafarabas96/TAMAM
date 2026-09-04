@@ -25,6 +25,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
+import { ChaletModule } from './modules/chalet/chalet.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { SystemConfigModule } from './modules/config/config.module';
 import { CustomersModule } from './modules/customers/customers.module';
@@ -120,6 +121,7 @@ import { ZonesModule } from './modules/zones/zones.module';
     UsersModule,
     MediaModule,
     CatalogModule,
+    ChaletModule,
     ZonesModule,
     VehiclesModule,
     PartnersModule,
