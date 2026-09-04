@@ -40,6 +40,8 @@ const statementQuerySchema = pageRequestSchema.extend({
 });
 type StatementQuery = z.infer<typeof statementQuerySchema>;
 
+const walletOwnerParamSchema = z.object({ ownerType: z.enum(['PARTNER', 'CUSTOMER']) });
+
 const earningsQuerySchema = z.object({
   period: z.enum(['today', 'week', 'month']).default('today'),
 });
@@ -151,6 +153,37 @@ export class WalletController {
     @RequestId() requestId: string,
   ) {
     return this.wallet.adjust(input, actor, requestId);
+  }
+
+  /**
+   * Commission history for one partner, the same figures the partner sees in their app.
+   * The console could show a balance but nothing behind it.
+   */
+  @Get('admin/partners/:id/earnings')
+  @RequirePermission(Permission.PARTNERS_READ)
+  partnerEarnings(
+    @Param('id', UuidPipe) id: string,
+    @ZodQuery(earningsQuerySchema) query: EarningsQuery,
+  ) {
+    return this.wallet.partnerEarnings(id, query.period as EarningsPeriod);
+  }
+
+  /**
+   * Resolves a wallet from its owner. Statements are keyed by walletId, which previously
+   * could only be discovered by scanning the ledger accounts list.
+   */
+  @Get('admin/wallets/by-owner/:ownerType/:ownerId')
+  @RequirePermission(Permission.LEDGER_READ)
+  walletByOwner(
+    @Param('ownerType') ownerType: string,
+    @Param('ownerId', UuidPipe) ownerId: string,
+  ) {
+    const parsed = walletOwnerParamSchema.safeParse({ ownerType });
+    if (!parsed.success)
+      throw AppException.validation([
+        { field: 'ownerType', message: 'ownerType must be PARTNER or CUSTOMER' },
+      ]);
+    return this.wallet.findByOwner(parsed.data.ownerType, ownerId);
   }
 
   @Get('admin/withdrawals')

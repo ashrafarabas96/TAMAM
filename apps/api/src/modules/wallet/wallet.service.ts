@@ -588,6 +588,19 @@ export class WalletService {
    * fare and immediately offset it with the cash they keep, so gross earnings are rebuilt as
    * `wallet movement + commission + cash retained`, which holds for every payment method.
    */
+  /**
+   * The wallet belonging to one owner. Statements are addressed by walletId, and the only
+   * way to obtain one from a user id was to page the ledger accounts list looking for a
+   * match — so the console could show a partner's balance but never their statement.
+   * Read-only: unlike getOrCreate this never creates a wallet as a side effect of looking.
+   */
+  async findByOwner(ownerType: WalletOwner, ownerId: string): Promise<WalletDto> {
+    const where = ownerType === 'PARTNER' ? { partnerId: ownerId } : { customerId: ownerId };
+    const wallet = await this.prisma.wallet.findUnique({ where });
+    if (!wallet) throw AppException.notFound(`${ownerType} wallet`, ownerId);
+    return this.toDto(wallet);
+  }
+
   async partnerEarnings(partnerId: string, period: EarningsPeriod): Promise<PartnerEarningsDto> {
     const profile = await this.prisma.partnerProfile.findUnique({
       where: { userId: partnerId },

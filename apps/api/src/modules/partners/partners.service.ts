@@ -19,8 +19,9 @@ import {
   type PartnerDocumentDto,
   type PartnerDto,
   Permission,
-  VerificationStatus,
   type VehicleDto,
+  VerificationStatus,
+  WithdrawalStatus,
 } from '@tamam/shared-types';
 import type {
   AdminUpdatePartnerInput,
@@ -569,6 +570,46 @@ export class PartnersService {
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
     });
     return rows.map((r) => this.toBankAccountDto(r));
+  }
+
+  /**
+   * Removes a payout account. A stale IBAN otherwise stayed on the profile for good, since
+   * adding a replacement never retired the old one.
+   *
+   * Refused while a withdrawal is still in flight against it — Withdrawal.bankAccountId is a
+   * hard foreign key, and a paid statement must keep pointing at the account it paid.
+   * The default flag moves to the newest surviving account so the partner is never left
+   * without one.
+   */
+  async deleteBankAccount(userId: string, accountId: string): Promise<void> {
+    const account = await this.prisma.partnerBankAccount.findFirst({
+      where: { id: accountId, partnerId: userId },
+    });
+    if (!account) throw AppException.notFound('Bank account', accountId);
+
+    const inFlight = await this.prisma.withdrawal.count({
+      where: {
+        bankAccountId: accountId,
+        status: { in: [WithdrawalStatus.REQUESTED, WithdrawalStatus.APPROVED] },
+      },
+    });
+    if (inFlight > 0)
+      throw AppException.conflict(
+        'This account has a withdrawal in progress and cannot be removed yet',
+      );
+    const settled = await this.prisma.withdrawal.count({ where: { bankAccountId: accountId } });
+    if (settled > 0) throw AppException.conflict('This account is referenced by past withdrawals');
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.partnerBankAccount.delete({ where: { id: accountId } });
+      if (!account.isDefault) return;
+      const next = await tx.partnerBankAccount.findFirst({
+        where: { partnerId: userId },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (next)
+        await tx.partnerBankAccount.update({ where: { id: next.id }, data: { isDefault: true } });
+    });
   }
 
   async addBankAccount(userId: string, input: AddBankAccountInput): Promise<PartnerBankAccountDto> {

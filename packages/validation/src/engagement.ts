@@ -159,6 +159,12 @@ export const upsertNotificationTemplateSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+/** Path key of one template — the same (event, channel) pair the upsert is keyed on. */
+export const notificationTemplateKeySchema = z.object({
+  event: z.nativeEnum(NotificationEvent),
+  channel: z.nativeEnum(NotificationChannel),
+});
+
 export const broadcastNotificationSchema = z.object({
   audiences: z.array(z.nativeEnum(BannerAudience)).min(1),
   zoneIds: z.array(uuidSchema).default([]),
@@ -286,6 +292,7 @@ export type CampaignStatusActionInput = z.infer<typeof campaignStatusActionSchem
 export type BannerFeedQueryInput = z.infer<typeof bannerFeedQuerySchema>;
 export type BannerEventBatchInput = z.infer<typeof bannerEventBatchSchema>;
 export type UpsertNotificationTemplateInput = z.infer<typeof upsertNotificationTemplateSchema>;
+export type NotificationTemplateKeyInput = z.infer<typeof notificationTemplateKeySchema>;
 export type BroadcastNotificationInput = z.infer<typeof broadcastNotificationSchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type CreateTicketInput = z.infer<typeof createTicketSchema>;

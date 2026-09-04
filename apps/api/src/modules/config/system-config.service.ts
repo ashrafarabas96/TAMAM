@@ -258,15 +258,37 @@ export class SystemConfigService implements OnModuleInit {
     return h % 100;
   }
 
+  /**
+   * Every flag the platform declares, not merely the ones a seed happened to write.
+   * FEATURE_FLAGS is the catalogue; a declared flag with no row yet is reported at its
+   * documented default so the console can list and toggle it instead of pretending it does
+   * not exist. A stored row that is no longer declared is still listed, so an obsolete flag
+   * is visible rather than silently ignored.
+   */
   async listFlags(): Promise<FeatureFlagDto[]> {
     const rows = await this.prisma.featureFlag.findMany({ orderBy: { key: 'asc' } });
-    return rows.map((r) => ({
-      key: r.key,
-      description: r.description,
-      enabled: r.enabled,
-      rollout: (r.rollout as FeatureFlagDto['rollout']) ?? null,
-      updatedAt: r.updatedAt.toISOString(),
-    }));
+    const byKey = new Map(rows.map((r) => [r.key, r] as const));
+    const declared = Object.values(FEATURE_FLAGS) as FeatureFlagKey[];
+    const keys = [...new Set([...declared, ...rows.map((r) => r.key)])].sort();
+    return keys.map((key) => {
+      const row = byKey.get(key);
+      if (row)
+        return {
+          key: row.key,
+          description: row.description,
+          enabled: row.enabled,
+          rollout: (row.rollout as FeatureFlagDto['rollout']) ?? null,
+          updatedAt: row.updatedAt.toISOString(),
+        };
+      const fallback = FEATURE_FLAG_DEFAULTS[key as FeatureFlagKey];
+      return {
+        key,
+        description: fallback?.description ?? '',
+        enabled: fallback?.enabled ?? false,
+        rollout: null,
+        updatedAt: new Date(0).toISOString(),
+      };
+    });
   }
 
   async updateFlag(
@@ -279,14 +301,23 @@ export class SystemConfigService implements OnModuleInit {
       throw AppException.notFound('Feature flag', key);
     const before = await this.prisma.featureFlag.findUnique({ where: { key } });
     const row = await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.featureFlag.update({
+      // Upsert, not update: a declared flag that no seed has written yet has no row, and
+      // toggling it must create one rather than fail with a record-not-found.
+      const updated = await tx.featureFlag.upsert({
         where: { key },
-        data: {
+        update: {
           enabled: input.enabled,
           rollout:
             input.rollout === undefined
               ? undefined
               : ((input.rollout ?? Prisma.JsonNull) as Prisma.InputJsonValue),
+          updatedById: actorId,
+        },
+        create: {
+          key,
+          description: FEATURE_FLAG_DEFAULTS[key as FeatureFlagKey]?.description ?? '',
+          enabled: input.enabled,
+          rollout: (input.rollout ?? Prisma.JsonNull) as Prisma.InputJsonValue,
           updatedById: actorId,
         },
       });

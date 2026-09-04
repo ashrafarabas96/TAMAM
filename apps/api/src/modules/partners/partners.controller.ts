@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '@tamam/shared-types';
 import {
@@ -213,6 +213,13 @@ export class PartnersController {
     @ZodBody(addBankAccountSchema) input: AddBankAccountBody,
   ) {
     return this.partners.addBankAccount(user.id, input);
+  }
+
+  @Delete('partners/me/bank-accounts/:id')
+  @HttpCode(204)
+  @RequireRole('PARTNER')
+  deleteBankAccount(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string) {
+    return this.partners.deleteBankAccount(user.id, id);
   }
 
   /* --------------------------------------------------------------- admin */

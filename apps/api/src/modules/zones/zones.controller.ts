@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '@tamam/shared-types';
 import {
@@ -87,6 +87,19 @@ export class ZonesController {
   }
 
   @ApiBearerAuth()
+  @ApiBearerAuth()
+  @Delete('admin/zones/rules/:ruleId')
+  @HttpCode(204)
+  @RequirePermission(Permission.ZONES_MANAGE)
+  @Audited({ action: 'zone.rule.delete', entity: 'zone_service_rule' })
+  deleteRule(
+    @Param('ruleId', UuidPipe) ruleId: string,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
+    return this.zones.deleteRule(ruleId, user.id, requestId);
+  }
+
   @Get('admin/zones/:id/rules')
   @RequirePermission(Permission.ZONES_READ)
   rules(@Param('id', UuidPipe) id: string) {

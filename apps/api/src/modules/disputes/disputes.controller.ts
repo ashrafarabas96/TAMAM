@@ -114,6 +114,25 @@ export class DisputesController {
     return this.disputes.addMessage(actor, id, input);
   }
 
+  /**
+   * Agents attach evidence too — a screenshot of a gateway trace, a photo the customer sent
+   * to support out of band. The service already recognises staff; only this route was
+   * missing, so an agent had to use the customer-facing one and the console had no
+   * permission-gated path to it at all.
+   */
+  @Post('admin/disputes/:id/evidence')
+  // Same gate as the agent message route beside it: an agent who can work a dispute
+  // can add to its evidence; deciding it is the separate DISPUTES_DECIDE permission.
+  @RequirePermission(Permission.DISPUTES_READ)
+  @Audited({ action: 'dispute.evidence', entity: 'dispute', entityIdFrom: 'id' })
+  agentEvidence(
+    @CurrentUser() actor: RequestUser,
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(addEvidenceSchema) body: AddEvidenceBody,
+  ) {
+    return this.disputes.addEvidence(actor, id, body.evidenceMediaIds);
+  }
+
   @Post('admin/disputes/:id/decision')
   @RequirePermission(Permission.DISPUTES_DECIDE)
   @Idempotent('disputes.decide')

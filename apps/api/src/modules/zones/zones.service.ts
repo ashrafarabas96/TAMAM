@@ -297,6 +297,31 @@ export class ZonesService {
     return rule;
   }
 
+  /**
+   * Removes one rule and the hour rows hanging off it. Without this the console could only
+   * ever add rules or flip `isEnabled`, so a rule created against the wrong service type
+   * stayed in the zone for good.
+   */
+  async deleteRule(ruleId: string, actorId: string, requestId: string | null): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const rule = await tx.zoneServiceRule.findUnique({ where: { id: ruleId } });
+      if (!rule) throw AppException.notFound('Zone service rule', ruleId);
+      await tx.zoneOperatingHours.deleteMany({ where: { ruleId } });
+      await tx.zoneServiceRule.delete({ where: { id: ruleId } });
+      await this.audit.record(
+        {
+          actorId,
+          action: 'zone.rule.delete',
+          entity: 'zone_service_rule',
+          entityId: ruleId,
+          oldValue: rule,
+          requestId,
+        },
+        tx,
+      );
+    });
+  }
+
   async listRules(zoneId: string) {
     return this.prisma.zoneServiceRule.findMany({
       where: { zoneId },

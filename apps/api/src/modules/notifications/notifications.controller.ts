@@ -1,13 +1,14 @@
-import { Controller, Get, HttpCode, Post, Put } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '@tamam/shared-types';
 import {
   type BroadcastNotificationInput,
-  type NotificationPreferencesInput,
-  type UpsertNotificationTemplateInput,
   broadcastNotificationSchema,
   notificationListSchema,
+  type NotificationPreferencesInput,
   notificationPreferencesSchema,
+  notificationTemplateKeySchema,
+  type UpsertNotificationTemplateInput,
   upsertNotificationTemplateSchema,
 } from '@tamam/validation';
 import { z } from 'zod';
@@ -20,6 +21,7 @@ import {
   ZodBody,
   ZodQuery,
 } from '../../common/decorators';
+import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 
@@ -120,6 +122,33 @@ export class NotificationsController {
     });
     await this.templates.invalidate(input.event, input.channel);
     return row;
+  }
+
+  /**
+   * A template is addressed by (event, channel), the same key the upsert uses. Deleting it
+   * restores the built-in copy for that pairing; without this route an override created by
+   * mistake could only be deactivated, never removed.
+   */
+  @Delete('admin/notification-templates/:event/:channel')
+  @HttpCode(204)
+  @RequirePermission(Permission.NOTIFICATION_TEMPLATES_MANAGE)
+  @Audited({ action: 'notification_template.delete', entity: 'notification_template' })
+  async deleteTemplate(
+    @Param('event') event: string,
+    @Param('channel') channel: string,
+  ): Promise<void> {
+    const parsed = notificationTemplateKeySchema.safeParse({ event, channel });
+    if (!parsed.success)
+      throw AppException.validation(
+        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
+      );
+    const key = { event: parsed.data.event, channel: parsed.data.channel };
+    const existing = await this.prisma.notificationTemplate.findUnique({
+      where: { event_channel: key },
+    });
+    if (!existing) throw AppException.notFound('Notification template', `${event}/${channel}`);
+    await this.prisma.notificationTemplate.delete({ where: { event_channel: key } });
+    await this.templates.invalidate(key.event, key.channel);
   }
 
   @Post('admin/notifications/broadcast')
