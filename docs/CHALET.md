@@ -225,10 +225,61 @@ slot ends up half a minute off its own grid.
 Durations are whole minutes. Opening hours are local `HH:mm` strings resolved
 through the chalet's timezone.
 
+## The three surfaces
+
+### Customer — `apps/customer-mobile`
+
+Browse, pick a day, a length and a time, see why the price is what it is, hold
+the slot, confirm. Arabic-first.
+
+The slot picker shows **exactly** the times the server said would work and not
+one more. Every rule that decides them — opening hours, the booking grid, other
+bookings, owner blocks, the cleaning buffer — lives on the server. Working any
+of it out on the phone would mean a second implementation, and the one that
+drifts is always the one the customer sees.
+
+Day, then length, then time, in that order: the day narrows what is free and
+the length decides which starts can hold it. Changing either clears the chosen
+time rather than keeping a start that no longer fits.
+
+The hold countdown takes its clock as a parameter — wall-clock in production,
+which is what makes a hold that lapsed while the app was backgrounded correct
+the moment it returns.
+
+### Owner — `apps/partner-mobile`
+
+Occupancy first because it is the question an owner has, the gaps next because
+that is what they can act on today, the switches last because they are a
+decision rather than a status.
+
+Every booking row says where it came from, so an owner can tell the phone
+bookings they typed in from the ones TAMAM brought them. The price floor is
+restated beside the automation switches, because it is what makes turning Smart
+Pricing on safe.
+
+There is no chalet-owner role. An owner manages their chalet because it is
+theirs, and every route checks ownership.
+
+### Admin — `apps/admin-web`
+
+The review queue at `/chalets`. Readiness is on the row — a chalet with no
+photos can be sent back without opening it.
+
+A rejection must say why. An owner told only "rejected" cannot fix anything and
+will either resubmit the same chalet or give up, so the reason is required by
+the schema and shown to them verbatim. Approving makes the chalet bookable in
+the same write, because an approved chalet that stays invisible is a bug the
+reviewer cannot see; and it clears the old rejection reason, or a fixed chalet
+would still be showing why it was once refused.
+
+Suspending a live chalet is a different decision from rejecting a new one, and
+deliberately leaves existing bookings alone: cancelling somebody's weekend
+because their host is under review is a separate call for a person to make.
+
+Both decisions are audited.
+
 ## Still to build
 
-- The Flutter booking journey (customer app) and owner dashboard, Arabic-first
-  RTL.
-- Admin approval screens for new chalets in `apps/admin-web`.
-- Chalet search by zone and map, which the schema and validation already
-  describe but no controller yet serves.
+Nothing on the chalet module itself. What is left is platform-wide and needs
+credentials or hardware rather than code — store builds, a live payment
+gateway, push delivery — and is listed in `docs/STATUS.md` §3.1.

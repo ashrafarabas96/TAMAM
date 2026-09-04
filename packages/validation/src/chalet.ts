@@ -1,4 +1,5 @@
 import {
+  ChaletApprovalStatus,
   ChaletBlockKind,
   ChaletBookingSource,
   ChaletBookingStatus,
@@ -6,6 +7,7 @@ import {
   ChaletOfferKind,
   ChaletPricingMode,
   ChaletPricingProfile,
+  ChaletStatus,
 } from '@tamam/shared-types';
 import { z } from 'zod';
 
@@ -321,6 +323,43 @@ export const chaletOfferQuerySchema = z.object({
 /** Every list endpoint reads its dates from the query string too. */
 export const chaletBookingListQuerySchema = chaletBookingListSchema;
 
+/* ------------------------------------------------------------------ admin */
+
+/**
+ * The admin's queue of chalets waiting on a decision, plus the ones already
+ * decided so a reviewer can find what they approved last week.
+ */
+export const chaletApprovalQuerySchema = z.object({
+  approvalStatus: z.nativeEnum(ChaletApprovalStatus).optional(),
+  status: z.nativeEnum(ChaletStatus).optional(),
+  q: z.string().trim().max(80).optional(),
+  cursor: z.string().max(500).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+/**
+ * Approving or rejecting one chalet.
+ *
+ * A rejection must say why. An owner told only "rejected" cannot fix anything,
+ * and will either resubmit the same chalet or give up — so the reason is
+ * required rather than optional, and it is shown to them.
+ */
+export const chaletApprovalDecisionSchema = z
+  .object({
+    approve: z.boolean(),
+    reason: z.string().trim().min(5).max(500).optional(),
+  })
+  .refine((d) => d.approve || (d.reason !== undefined && d.reason.length > 0), {
+    message: 'A rejection must say why, so the owner knows what to fix',
+    path: ['reason'],
+  });
+
+/** Suspending a live chalet, which is a different decision from rejecting a new one. */
+export const chaletSuspensionSchema = z.object({
+  suspend: z.boolean(),
+  reason: z.string().trim().min(5).max(500),
+});
+
 /* ----------------------------------------------------------------- types */
 
 export type BookingInstant = z.infer<typeof bookingInstantSchema>;
@@ -339,3 +378,6 @@ export type ChaletBookingListInput = z.infer<typeof chaletBookingListSchema>;
 export type CreateChaletBlockInput = z.infer<typeof createChaletBlockSchema>;
 export type ChaletRateRuleInput = z.infer<typeof chaletRateRuleSchema>;
 export type ChaletOfferQueryInput = z.infer<typeof chaletOfferQuerySchema>;
+export type ChaletApprovalQueryInput = z.infer<typeof chaletApprovalQuerySchema>;
+export type ChaletApprovalDecisionInput = z.infer<typeof chaletApprovalDecisionSchema>;
+export type ChaletSuspensionInput = z.infer<typeof chaletSuspensionSchema>;

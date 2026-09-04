@@ -30,18 +30,34 @@ function intl(
   });
 }
 
-/** `12/03/2026 14:05` in the platform timezone (Asia/Jerusalem by default). */
+/**
+ * `12/03/2026 14:05` in the platform timezone (Asia/Jerusalem by default).
+ *
+ * Composed from the formatter's parts rather than taking its string whole,
+ * because ICU decides for itself what goes between the date and the time — a
+ * space in some versions, a comma in others. Taking the string meant this
+ * function's documented format changed under a Node upgrade, and every table
+ * in the console changed with it.
+ */
 export function formatDateTime(value: DateInput, options: DateFormatOptions = {}): string {
   const date = toDate(value);
   if (!date) return '—';
-  return intl(options.locale ?? 'ar', options.timeZone ?? DEFAULT_TIMEZONE, {
+  const parts = intl(options.locale ?? 'ar', options.timeZone ?? DEFAULT_TIMEZONE, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).format(date);
+  }).formatToParts(date);
+
+  const value_ = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((part) => part.type === type)?.value ?? '';
+
+  return (
+    `${value_('day')}/${value_('month')}/${value_('year')} ` +
+    `${value_('hour')}:${value_('minute')}`
+  );
 }
 
 export function formatDate(value: DateInput, options: DateFormatOptions = {}): string {

@@ -47,3 +47,21 @@ describe('date formatting', () => {
     expect(timeZoneOffsetMinutes(new Date('2026-01-01T00:00:00Z'), TZ)).toBe(120);
   });
 });
+
+describe('formatDateTime is stable across ICU versions', () => {
+  it('always separates the date and the time with a single space', () => {
+    // ICU puts a comma there in some versions and a space in others. The
+    // console's tables depend on the compact form, so the function composes it
+    // from parts rather than taking whatever the runtime produces.
+    const formatted = formatDateTime('2026-07-01T09:30:00.000Z', { locale: 'en' });
+    expect(formatted).not.toContain(',');
+    expect(formatted.split(' ')).toHaveLength(2);
+  });
+
+  it('formats the same instant identically in both locales’ digits', () => {
+    // Latin numerals are forced for both locales, so a number is a number
+    // wherever it is read.
+    expect(formatDateTime('2026-07-01T09:30:00.000Z', { locale: 'ar' })).toContain('12:30');
+    expect(formatDateTime('2026-07-01T09:30:00.000Z', { locale: 'en' })).toContain('12:30');
+  });
+});

@@ -51,12 +51,11 @@ closed.
 
 | Part                                      | Status          | One-line assessment                                                                                                                                        |
 | ----------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api` — NestJS backend               | Verified        | 33 modules, 254 route decorators, 105 Prisma models. Compiles, lints, migrates, seeds; 632 unit and 63 e2e tests pass against PostgreSQL + PostGIS + Redis. |
-| TAMAM Chalet — API                        | Verified        | Hourly booking as its own domain. Double booking impossible by database constraint, proved with concurrent transactions. See `docs/CHALET.md`.              |
-| TAMAM Chalet — user interfaces            | Not Implemented | The Flutter booking journey, owner dashboard and admin approval screens are the remaining code on this project.                                             |
+| `apps/api` — NestJS backend               | Verified        | 33 modules, 105 Prisma models. Compiles, lints, migrates, seeds; 635 unit and 100 e2e tests pass against PostgreSQL + PostGIS + Redis.                      |
+| TAMAM Chalet                              | Verified        | Hourly booking as its own domain, with all three surfaces. Double booking impossible by database constraint, proved with concurrent transactions. See `docs/CHALET.md`. |
 | `apps/admin-web` — Next.js console        | Verified        | 27 permission-gated pages plus the staff account page; typecheck and production build pass.                                                                |
-| `apps/customer-mobile` — Flutter          | Verified        | `flutter analyze` reports 0 errors; 46 / 46 tests.                                                                                                         |
-| `apps/partner-mobile` — Flutter           | Verified        | `flutter analyze` reports 0 errors; 111 / 111 tests.                                                                                                       |
+| `apps/customer-mobile` — Flutter          | Verified        | `flutter analyze` reports 0 errors; 72 / 72 tests.                                                                                                         |
+| `apps/partner-mobile` — Flutter           | Verified        | `flutter analyze` reports 0 errors; 128 / 128 tests.                                                                                                       |
 | `packages/*` — shared contracts           | Verified        | one enum vocabulary, one state machine, one token file, one set of zod schemas, shared by all four apps.                                                   |
 | `docs/*`, `infrastructure/*`, `scripts/*` | Verified        | the bring-up script is now the procedure that was actually run.                                                                                            |
 | Compile / test / migrate / seed run       | Verified        | this is what session 2 did.                                                                                                                                |
@@ -343,5 +342,31 @@ exists. And the e2e suites, which share one database and one Redis, were running
 that had been luck rather than design, and a seventh suite pushed past the worker count and
 failed five tests on contention. They now run serially, and finish faster for it.
 
-The API is complete and covered end to end. The user interfaces are not started, and are named
-as the remaining work in `docs/STATUS.md` §3.1.
+All three surfaces are built and covered.
+
+**The customer app** picks a day, a length and a time, in that order, and shows exactly the
+start times the server said would work — every rule that decides them lives on the server,
+because a second implementation on the phone is one that will drift. The price sheet shows the
+whole arithmetic rather than a total to be trusted, including the line saying the owner's own
+minimum rate set the price. The hold shows its countdown, and disables Confirm once it lapses
+rather than promising a slot the server has already given away.
+
+**The owner dashboard** leads with occupancy because that is the question an owner has, then
+the gaps because that is what they can act on today. Cancellations get their own tile rather
+than being folded into a percentage where losing a quarter of your bookings is invisible, and
+the weekday chart marks the quietest day — "60% booked" tells an owner little, "your Sundays
+are always empty" tells them what to discount. Every booking row says whether it came through
+TAMAM or was typed in from a phone call.
+
+**The console** makes review cheap: readiness is on the row, so a chalet with no photos is sent
+back without opening it. A rejection must say why, because an owner told only "rejected" will
+resubmit the same chalet or give up. Approving makes the chalet bookable in the same write and
+clears the old reason; both decisions are audited.
+
+Two defects outside the module surfaced while building the interfaces, both fixed at the cause.
+The hold countdown read the wall clock inside a widget test's fake one and so could not be
+tested at all; it now takes its clock as a parameter, still wall-clock in production, which is
+what makes a hold that lapsed while the app was backgrounded correct the moment it returns. And
+the console's `formatDateTime` took `Intl`'s string whole, so its documented format changed
+under an ICU version bump and every table in the console changed with it — it now composes the
+result from parts.

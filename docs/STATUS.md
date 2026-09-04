@@ -12,12 +12,12 @@ _Last updated: 2026-09-04 (session 3 — TAMAM Chalet). **Everything compiles, m
 | Prisma migrate + PostGIS SQL                | ✅ applied — 105 application tables (9 of them chalet) plus PostGIS's own, 16 triggers, 2 exclusion constraints  |
 | `pnpm --filter @tamam/api seed`             | ✅ 63 configs, 17 flags, 47 permissions, 9 service types, 3 zones, demo users                                  |
 | `@tamam/api` typecheck / lint / format      | ✅ 0 errors (8 non-blocking import warnings)                                                                   |
-| `@tamam/api` unit tests                     | ✅ **632 / 632** across 33 suites                                                                              |
-| `@tamam/api` e2e (real DB + Redis)          | ✅ **63 / 63** across 9 suites — ride, delivery, home-service, dispatch race, payment idempotency, permissions, chalet race, chalet journey, chalet acceptance |
+| `@tamam/api` unit tests                     | ✅ **635 / 635** across 33 suites                                                                              |
+| `@tamam/api` e2e (real DB + Redis)          | ✅ **100 / 100** across 12 suites — ride, delivery, home-service, dispatch race, payment idempotency, permissions, and six chalet suites (race, journey, acceptance, search, owner, admin) |
 | `@tamam/validation`                         | ✅ 36 / 36                                                                                                     |
-| `@tamam/admin-web` typecheck + `next build` | ✅ passes                                                                                                      |
-| `customer-mobile` analyze / test            | ✅ 0 errors — 46 / 46                                                                                          |
-| `partner-mobile` analyze / test             | ✅ 0 errors — 111 / 111                                                                                        |
+| `@tamam/admin-web` typecheck + `next build` | ✅ passes — 43 / 43 unit tests                                                                                  |
+| `customer-mobile` analyze / test            | ✅ 0 errors — 72 / 72                                                                                          |
+| `partner-mobile` analyze / test             | ✅ 0 errors — 128 / 128                                                                                        |
 
 The API boots and serves real traffic: OTP request → verify → JWT → fare estimate → job
 creation → dispatch → accept → completion → ledger settlement all run end to end against
@@ -163,25 +163,15 @@ design and the reasoning behind each rule are in **`docs/CHALET.md`**; the short
 Verified against a live database: two concurrent holds on the same slot leave exactly one
 row, and the loser gets a typed `CONFLICT` rather than a stack trace.
 
-**API complete. UI not started** — the Flutter booking journey, the owner dashboard and the
-admin approval screens are the remaining work, listed in 3.1 below.
+**Complete, API and UI.** The customer booking journey (`customer-mobile`), the owner
+dashboard (`partner-mobile`) and the admin review queue (`admin-web` `/chalets`) are all
+built and covered.
 
 ## 3.1 What is genuinely left
 
-Nothing on the session-1 gap list remains, and the Chalet API is complete. Two kinds of work
-are left: Chalet's user interfaces, which need writing, and the platform items that need
-credentials or hardware this environment does not have.
-
-**Chalet UI — the real remaining code:**
-
-| Item | Notes |
-| --- | --- |
-| Customer booking journey (Flutter) | Search, day view, slot picker on the chalet's own grid, price breakdown, hold countdown, confirmation. Arabic-first RTL. |
-| Owner dashboard (Flutter) | Calendar, occupancy with the by-weekday and by-hour breakdowns, gap list, recording an external booking, the pricing switches. |
-| Admin approval screens (`apps/admin-web`) | Chalets arrive `PENDING_APPROVAL`; the API serves the transition, the console does not render it yet. |
-| Chalet search endpoint | `chaletSearchSchema` and the DTOs exist and are tested; no controller serves them yet. |
-
-**Everything else needs credentials or hardware, not more code:**
+Nothing on the session-1 gap list remains, and TAMAM Chalet is complete — API, customer app,
+owner dashboard and admin review queue. What is left needs credentials or hardware this
+environment does not have, not more code:
 
 | Item                                             | What it needs                                                                                                                                  |
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -27,6 +27,12 @@ export const queryKeys = {
     chat: (id: string) => ['jobs', 'chat', id] as const,
     sos: ['jobs', 'sos'] as const,
   },
+  chalets: {
+    all: ['chalets'] as const,
+    list: (filters: Filters) => ['chalets', 'list', filters] as const,
+    detail: (id: string) => ['chalets', 'detail', id] as const,
+    pendingCount: ['chalets', 'pending-count'] as const,
+  },
   customers: {
     all: ['customers'] as const,
     list: (filters: Filters) => ['customers', 'list', filters] as const,

@@ -11,7 +11,10 @@
 import type {
   AssignmentStatus,
   AvailabilityStatus,
+  ChaletApprovalStatus,
+  ChaletStatus,
   CommissionScope,
+  GeoPoint,
   DisputeStatus,
   JobDto,
   JobStatus,
@@ -614,3 +617,42 @@ export interface QueueCountsDto {
 }
 
 export type PartnerAvailability = AvailabilityStatus;
+
+/** A chalet as the review queue lists it. */
+export interface AdminChaletRow {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  city: string;
+  ownerId: string;
+  ownerName: string | null;
+  ownerPhone: string;
+  status: ChaletStatus;
+  approvalStatus: ChaletApprovalStatus;
+  rejectionReason: string | null;
+  maximumGuests: number;
+  baseHourlyRate: Money;
+  minimumHourlyRate: Money;
+  /** A reviewer's first question is whether there is enough here to review. */
+  amenityCount: number;
+  photoCount: number;
+  bookingCount: number;
+  createdAt: string;
+}
+
+export interface AdminChaletDetail extends AdminChaletRow {
+  descriptionAr: string | null;
+  descriptionEn: string | null;
+  addressLine: string;
+  location: GeoPoint;
+  minimumGuests: number | null;
+  scheduling: {
+    openingTime: string;
+    closingTime: string;
+    bookingIntervalMinutes: number;
+    minimumBookingDurationMinutes: number;
+    maximumBookingDurationMinutes: number;
+    defaultCleaningDurationMinutes: number;
+  };
+  amenities: Array<{ code: string; nameAr: string; nameEn: string }>;
+}

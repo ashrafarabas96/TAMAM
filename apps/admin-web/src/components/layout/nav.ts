@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   type LucideIcon,
   Map,
+  Home,
   MapPinned,
   Megaphone,
   Radar,
@@ -78,6 +79,12 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     items: [
       { href: '/services', labelKey: 'nav.services', icon: Boxes, permissions: [P.SERVICES_READ] },
       { href: '/zones', labelKey: 'nav.zones', icon: MapPinned, permissions: [P.ZONES_READ] },
+      {
+        href: '/chalets',
+        labelKey: 'nav.chalets',
+        icon: Home,
+        permissions: [P.CHALETS_READ],
+      },
       { href: '/pricing', labelKey: 'nav.pricing', icon: Coins, permissions: [P.PRICING_READ] },
     ],
   },
