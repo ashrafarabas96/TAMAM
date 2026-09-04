@@ -45,6 +45,11 @@ apps/*/*.jks
 apps/*/*.keystore
 apps/*/pubspec.lock.bak
 
+# Redis snapshots — redis-server writes dump.rdb into whatever directory it was
+# started from, which is the repo root when you follow scripts/setup.sh by hand.
+dump.rdb
+*.rdb
+
 # Prisma
 apps/api/prisma/*.db
 
