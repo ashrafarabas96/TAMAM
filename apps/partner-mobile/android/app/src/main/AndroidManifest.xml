@@ -48,7 +48,7 @@
         android:label="تمام شريك"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="false">
+        android:usesCleartextTraffic="${cleartextTraffic}">
 
         <activity
             android:name=".MainActivity"

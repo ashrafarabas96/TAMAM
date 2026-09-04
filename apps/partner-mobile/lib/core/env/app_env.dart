@@ -68,7 +68,17 @@ class AppEnv {
   bool get isProduction => environment == AppEnvironment.prod;
 
   /// Dev codes returned by the OTP endpoint are only ever shown off-production.
-  bool get showsDevOtpCode => !isProduction && !kReleaseMode;
+  ///
+  /// Release builds hide them, which is right for anything anyone installs from
+  /// a store. A build made for local testing passes
+  /// `--dart-define=TEST_MODE=true` to show them anyway, since there is no SMS
+  /// provider on a laptop -- and even then a production environment still says
+  /// no, so the two locks have to be picked together.
+  bool get showsDevOtpCode => !isProduction && (!kReleaseMode || testMode);
+
+  /// Public so a test can prove the define actually reaches the build. Getting
+  /// this wrong strands a tester on the OTP screen with no code and no SMS.
+  static const bool testMode = bool.fromEnvironment('TEST_MODE');
 
   static AppEnvironment _parseEnvironment(String raw) {
     switch (raw.toLowerCase()) {

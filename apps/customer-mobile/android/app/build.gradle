@@ -51,6 +51,13 @@ android {
         targetSdk = 34
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+
+        // Plain HTTP is off in every build that does not ask for it. A local
+        // test build aimed at an API on the same Wi-Fi sets
+        // TAMAM_ALLOW_CLEARTEXT=true in its environment; a normal build, a CI
+        // build and a store build all leave it false.
+        manifestPlaceholders["cleartextTraffic"] =
+            System.getenv("TAMAM_ALLOW_CLEARTEXT") == "true" ? "true" : "false"
         resourceConfigurations += ["ar", "en"]
     }
 
