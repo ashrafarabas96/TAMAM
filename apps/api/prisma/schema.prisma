@@ -608,6 +608,8 @@ model User {
   @@index([accountStatus])
   @@index([createdAt])
   @@map("users")
+  ownedChalets   Chalet[]        @relation("ChaletOwner")
+  chaletBookings ChaletBooking[] @relation("ChaletCustomer")
 }
 
 model AdminRole {
@@ -1254,6 +1256,7 @@ model ServiceZone {
 
   @@index([isActive])
   @@map("service_zones")
+  chalets Chalet[]
 }
 
 model ZoneOperatingHours {
@@ -2437,6 +2440,7 @@ model MediaAsset {
   @@index([uploaderId, createdAt(sort: Desc)])
   @@index([status, expiresAt])
   @@map("media_assets")
+  chaletMedia ChaletMedia[]
 }
 
 // ------------------------------------------------- promotional banners
@@ -2705,4 +2709,462 @@ model Counter {
   value BigInt @default(0)
 
   @@map("counters")
+}
+
+// =====================================================================
+// TAMAM Chalet — hourly chalet booking.
+//
+// Deliberately its own aggregate rather than a JobType: a booking has no
+// partner travelling to it, it is a unit reserved for a window of time.
+// What it *does* reuse is every shared service — users, payments, wallet,
+// ledger, notifications, media, ratings, disputes, audit, analytics.
+//
+// The whole correctness story rests on one invariant, enforced by the
+// database and not by application code:
+//
+//     a booking occupies [startAt, endAt + cleaningDurationMinutes)
+//
+// `blockedUntil` stores the right edge (maintained by trigger), and a
+// btree_gist EXCLUDE constraint makes two overlapping live bookings on the
+// same chalet impossible — see prisma/sql/002_chalet.sql.
+// =====================================================================
+
+enum ChaletStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  PAUSED
+  SUSPENDED
+  MAINTENANCE
+  INACTIVE
+
+  @@map("chalet_status")
+}
+
+enum ChaletApprovalStatus {
+  DRAFT
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+
+  @@map("chalet_approval_status")
+}
+
+enum ChaletBookingStatus {
+  DRAFT
+  HELD
+  AWAITING_PAYMENT
+  CONFIRMED
+  CHECK_IN_READY
+  CHECKED_IN
+  IN_PROGRESS
+  CHECKED_OUT
+  CLEANING
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  NO_SHOW
+  DISPUTED
+
+  @@map("chalet_booking_status")
+}
+
+enum ChaletBookingSource {
+  TAMAM
+  OWNER_MANUAL
+  ADMIN
+
+  @@map("chalet_booking_source")
+}
+
+enum ChaletBlockKind {
+  OWNER_BLOCK
+  MAINTENANCE
+
+  @@map("chalet_block_kind")
+}
+
+enum ChaletPricingProfile {
+  CONSERVATIVE
+  BALANCED
+  AGGRESSIVE_OCCUPANCY
+  CUSTOM
+
+  @@map("chalet_pricing_profile")
+}
+
+/// RECOMMEND_ONLY shows the owner a suggested price; AUTO applies it.
+enum ChaletPricingMode {
+  OFF
+  RECOMMEND_ONLY
+  AUTO
+
+  @@map("chalet_pricing_mode")
+}
+
+enum ChaletRateRuleKind {
+  TIME_OF_DAY
+  DAY_OF_WEEK
+  SPECIAL_DATE
+
+  @@map("chalet_rate_rule_kind")
+}
+
+enum ChaletOfferKind {
+  LAST_MINUTE
+  GAP_FILLER
+  MORNING_SPECIAL
+  EXTENSION
+  LOW_DEMAND
+  DURATION_BUNDLE
+
+  @@map("chalet_offer_kind")
+}
+
+enum ChaletDepositType {
+  NONE
+  FIXED
+  PERCENTAGE
+
+  @@map("chalet_deposit_type")
+}
+
+enum ChaletBookingEventType {
+  CREATED
+  HELD
+  HOLD_EXTENDED
+  CONFIRMED
+  PAYMENT_RECEIVED
+  CHECK_IN
+  EXTENSION_OFFERED
+  EXTENDED
+  OVERSTAY
+  CHECK_OUT
+  CLEANING_STARTED
+  CLEANING_COMPLETED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+  DISPUTED
+
+  @@map("chalet_booking_event_type")
+}
+
+enum ChaletCleaningStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+
+  @@map("chalet_cleaning_status")
+}
+
+model Chalet {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId        String   @map("owner_id") @db.Uuid
+  nameAr         String   @map("name_ar") @db.VarChar(120)
+  nameEn         String   @map("name_en") @db.VarChar(120)
+  descriptionAr  String?  @map("description_ar") @db.VarChar(3000)
+  descriptionEn  String?  @map("description_en") @db.VarChar(3000)
+
+  addressLine    String   @map("address_line") @db.VarChar(300)
+  city           String   @db.VarChar(80)
+  lat            Decimal  @db.Decimal(9, 6)
+  lng            Decimal  @db.Decimal(9, 6)
+  /// Maintained by trg_sync_chalet_location from lat/lng, like every other point in the schema.
+  location       Unsupported("geography(Point, 4326)")?
+  serviceZoneId  String   @map("service_zone_id") @db.Uuid
+
+  maximumGuests  Int      @map("maximum_guests")
+  minimumGuests  Int?     @map("minimum_guests")
+
+  /// Local wall-clock, "HH:mm" in the zone's timezone. closingTime may be <= openingTime
+  /// for a chalet that trades past midnight.
+  openingTime    String   @map("opening_time") @db.VarChar(5)
+  closingTime    String   @map("closing_time") @db.VarChar(5)
+
+  minimumBookingDurationMinutes Int @map("minimum_booking_duration_minutes")
+  maximumBookingDurationMinutes Int @map("maximum_booking_duration_minutes")
+  /// Grid the customer may pick start/end on. 15 lets 10:00, 10:15, 10:30 …
+  bookingIntervalMinutes        Int @default(15) @map("booking_interval_minutes")
+
+  defaultCleaningDurationMinutes Int @default(90) @map("default_cleaning_duration_minutes")
+
+  baseHourlyRateMinor    BigInt  @map("base_hourly_rate_minor")
+  minimumHourlyRateMinor BigInt  @map("minimum_hourly_rate_minor")
+  maximumHourlyRateMinor BigInt? @map("maximum_hourly_rate_minor")
+  currency               String  @default("ILS") @db.VarChar(3)
+
+  depositType        ChaletDepositType @default(NONE) @map("deposit_type")
+  depositAmountMinor BigInt?           @map("deposit_amount_minor")
+  depositPercent     Int?              @map("deposit_percent")
+
+  /// Minutes a slot is reserved while the customer pays.
+  holdDurationMinutes Int @default(7) @map("hold_duration_minutes")
+
+  status         ChaletStatus         @default(DRAFT)
+  approvalStatus ChaletApprovalStatus @default(DRAFT) @map("approval_status")
+  rejectionReason String?             @map("rejection_reason") @db.VarChar(500)
+
+  instantBookingEnabled     Boolean @default(true) @map("instant_booking_enabled")
+  smartPricingEnabled       Boolean @default(false) @map("smart_pricing_enabled")
+  gapFillerEnabled          Boolean @default(false) @map("gap_filler_enabled")
+  lastMinutePricingEnabled  Boolean @default(false) @map("last_minute_pricing_enabled")
+  autoExtensionOffersEnabled Boolean @default(false) @map("auto_extension_offers_enabled")
+
+  pricingProfile     ChaletPricingProfile @default(BALANCED) @map("pricing_profile")
+  pricingMode        ChaletPricingMode    @default(OFF) @map("pricing_mode")
+  /// Only read when pricingProfile is CUSTOM; the other profiles carry their own cap.
+  maxAutoDiscountPercent Int?             @map("max_auto_discount_percent")
+  /// Operational target, never a guarantee — used to bias discounting, not to promise occupancy.
+  targetOccupancyPercent Int              @default(80) @map("target_occupancy_percent")
+
+  rating       Decimal @default(0) @db.Decimal(3, 2)
+  ratingCount  Int     @default(0) @map("rating_count")
+
+  cancellationPolicy Json? @map("cancellation_policy")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  owner       User                @relation("ChaletOwner", fields: [ownerId], references: [id])
+  serviceZone ServiceZone         @relation(fields: [serviceZoneId], references: [id])
+  bookings    ChaletBooking[]
+  blocks      ChaletBlock[]
+  rateRules   ChaletRateRule[]
+  offers      ChaletOffer[]
+  amenities   ChaletAmenity[]
+  media       ChaletMedia[]
+
+  @@index([ownerId])
+  @@index([serviceZoneId])
+  @@index([status, approvalStatus])
+  @@map("chalets")
+}
+
+model ChaletAmenity {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chaletId String @map("chalet_id") @db.Uuid
+  code     String @db.VarChar(40)
+  nameAr   String @map("name_ar") @db.VarChar(80)
+  nameEn   String @map("name_en") @db.VarChar(80)
+
+  chalet Chalet @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+
+  @@unique([chaletId, code])
+  @@index([code])
+  @@map("chalet_amenities")
+}
+
+model ChaletMedia {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chaletId  String   @map("chalet_id") @db.Uuid
+  mediaId   String   @map("media_id") @db.Uuid
+  sortOrder Int      @default(0) @map("sort_order")
+  isCover   Boolean  @default(false) @map("is_cover")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  chalet Chalet     @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+  media  MediaAsset @relation(fields: [mediaId], references: [id])
+
+  @@unique([chaletId, mediaId])
+  @@index([chaletId, sortOrder])
+  @@map("chalet_media")
+}
+
+model ChaletBooking {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingNumber String  @unique @map("booking_number") @db.VarChar(20)
+  chaletId      String  @map("chalet_id") @db.Uuid
+  /// Null for an external booking the owner typed in; those still occupy the calendar.
+  customerId    String? @map("customer_id") @db.Uuid
+
+  startAt DateTime @map("start_at") @db.Timestamptz(6)
+  endAt   DateTime @map("end_at") @db.Timestamptz(6)
+  /// endAt + cleaningDurationMinutes. Maintained by trg_sync_chalet_booking_block and used
+  /// by the EXCLUDE constraint, so the cleaning window is part of what the slot occupies.
+  blockedUntil DateTime @map("blocked_until") @db.Timestamptz(6)
+
+  bookingDurationMinutes  Int @map("booking_duration_minutes")
+  cleaningDurationMinutes Int @map("cleaning_duration_minutes")
+
+  guestCount Int @map("guest_count")
+
+  basePriceMinor      BigInt @map("base_price_minor")
+  discountAmountMinor BigInt @default(0) @map("discount_amount_minor")
+  serviceFeeMinor     BigInt @default(0) @map("service_fee_minor")
+  taxAmountMinor      BigInt @default(0) @map("tax_amount_minor")
+  totalAmountMinor    BigInt @map("total_amount_minor")
+  depositAmountMinor  BigInt @default(0) @map("deposit_amount_minor")
+  currency            String @default("ILS") @db.VarChar(3)
+
+  /// Frozen copy of every rule that produced the price. A later owner price change
+  /// must never alter what a confirmed booking costs.
+  pricingSnapshot Json  @map("pricing_snapshot")
+  appliedOfferId  String? @map("applied_offer_id") @db.Uuid
+
+  status ChaletBookingStatus @default(DRAFT)
+  source ChaletBookingSource @default(TAMAM)
+
+  /// While HELD, no one else can take the window; the queue expires it at this instant.
+  holdExpiresAt DateTime? @map("hold_expires_at") @db.Timestamptz(6)
+
+  paymentStatus PaymentStatus? @map("payment_status")
+  paymentId     String?        @map("payment_id") @db.Uuid
+
+  cancellationReason String? @map("cancellation_reason") @db.VarChar(500)
+  cancelledBy        String? @map("cancelled_by") @db.Uuid
+  externalNote       String? @map("external_note") @db.VarChar(500)
+  guestName          String? @map("guest_name") @db.VarChar(120)
+  guestPhone         String? @map("guest_phone") @db.VarChar(20)
+
+  overstayMinutes Int @default(0) @map("overstay_minutes")
+  overstayFeeMinor BigInt @default(0) @map("overstay_fee_minor")
+
+  /// Optimistic guard on top of the row lock, mirroring how jobs are transitioned.
+  version Int @default(0)
+
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  confirmedAt DateTime? @map("confirmed_at") @db.Timestamptz(6)
+  checkedInAt DateTime? @map("checked_in_at") @db.Timestamptz(6)
+  checkedOutAt DateTime? @map("checked_out_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  cancelledAt DateTime? @map("cancelled_at") @db.Timestamptz(6)
+
+  chalet   Chalet              @relation(fields: [chaletId], references: [id])
+  customer User?               @relation("ChaletCustomer", fields: [customerId], references: [id])
+  events   ChaletBookingEvent[]
+  cleaning ChaletCleaningTask?
+
+  @@index([chaletId, startAt])
+  @@index([chaletId, status, startAt])
+  @@index([customerId, startAt])
+  @@index([status, holdExpiresAt])
+  @@index([status, endAt])
+  @@map("chalet_bookings")
+}
+
+model ChaletBookingEvent {
+  id        String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId String                 @map("booking_id") @db.Uuid
+  type      ChaletBookingEventType
+  actorId   String?                @map("actor_id") @db.Uuid
+  fromStatus ChaletBookingStatus?  @map("from_status")
+  toStatus   ChaletBookingStatus?  @map("to_status")
+  data      Json?
+  createdAt DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  booking ChaletBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, createdAt])
+  @@map("chalet_booking_events")
+}
+
+/// Owner blocks and maintenance share one table so a single EXCLUDE constraint keeps them
+/// from overlapping each other, and one query answers "is this window blocked?".
+model ChaletBlock {
+  id       String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chaletId String          @map("chalet_id") @db.Uuid
+  kind     ChaletBlockKind
+  startAt  DateTime        @map("start_at") @db.Timestamptz(6)
+  endAt    DateTime        @map("end_at") @db.Timestamptz(6)
+  reason   String?         @db.VarChar(300)
+  createdById String?      @map("created_by_id") @db.Uuid
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  chalet Chalet @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+
+  @@index([chaletId, startAt])
+  @@map("chalet_blocks")
+}
+
+model ChaletRateRule {
+  id       String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chaletId String             @map("chalet_id") @db.Uuid
+  kind     ChaletRateRuleKind
+  label    String             @db.VarChar(80)
+
+  /// TIME_OF_DAY: local "HH:mm" window. Wrapping past midnight is allowed.
+  startTime String? @map("start_time") @db.VarChar(5)
+  endTime   String? @map("end_time") @db.VarChar(5)
+  /// DAY_OF_WEEK: 0 = Sunday.
+  dayOfWeek Int?    @map("day_of_week")
+  /// SPECIAL_DATE: inclusive local date range.
+  startDate DateTime? @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date
+
+  /// Either a multiplier on the base rate or an absolute hourly rate; exactly one is set.
+  multiplier      Decimal? @db.Decimal(5, 3)
+  hourlyRateMinor BigInt?  @map("hourly_rate_minor")
+
+  priority Int     @default(0)
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  chalet Chalet @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+
+  @@index([chaletId, kind, isActive])
+  @@map("chalet_rate_rules")
+}
+
+model ChaletOffer {
+  id       String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chaletId String          @map("chalet_id") @db.Uuid
+  kind     ChaletOfferKind
+  titleAr  String          @map("title_ar") @db.VarChar(120)
+  titleEn  String          @map("title_en") @db.VarChar(120)
+
+  /// The window the offer sells.
+  slotStartAt DateTime @map("slot_start_at") @db.Timestamptz(6)
+  slotEndAt   DateTime @map("slot_end_at") @db.Timestamptz(6)
+
+  discountPercent Int    @map("discount_percent")
+  hourlyRateMinor BigInt @map("hourly_rate_minor")
+
+  /// When the offer may be booked, which is not the same as the slot it sells.
+  startsAt  DateTime @map("starts_at") @db.Timestamptz(6)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+
+  isActive     Boolean   @default(true) @map("is_active")
+  deactivatedAt DateTime? @map("deactivated_at") @db.Timestamptz(6)
+  deactivationReason String? @map("deactivation_reason") @db.VarChar(120)
+  generatedBy  String    @default("system") @map("generated_by") @db.VarChar(20)
+
+  impressions Int @default(0)
+  bookings    Int @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  chalet Chalet @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+
+  @@index([chaletId, isActive, slotStartAt])
+  @@index([isActive, expiresAt])
+  @@map("chalet_offers")
+}
+
+/// Present from V1 so the cleaning workflow has somewhere to live before a
+/// cleaning-staff app exists; assigneeId stays null until then.
+model ChaletCleaningTask {
+  id         String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId  String               @unique @map("booking_id") @db.Uuid
+  chaletId   String               @map("chalet_id") @db.Uuid
+  status     ChaletCleaningStatus @default(PENDING)
+  scheduledStartAt DateTime       @map("scheduled_start_at") @db.Timestamptz(6)
+  scheduledEndAt   DateTime       @map("scheduled_end_at") @db.Timestamptz(6)
+  startedAt  DateTime?            @map("started_at") @db.Timestamptz(6)
+  completedAt DateTime?           @map("completed_at") @db.Timestamptz(6)
+  assigneeId String?              @map("assignee_id") @db.Uuid
+  notes      String?              @db.VarChar(500)
+  createdAt  DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  booking ChaletBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([chaletId, scheduledStartAt])
+  @@index([status, scheduledEndAt])
+  @@map("chalet_cleaning_tasks")
 }
