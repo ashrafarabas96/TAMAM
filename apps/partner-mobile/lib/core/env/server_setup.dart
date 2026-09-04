@@ -31,8 +31,11 @@ String normaliseServerInput(String raw) {
   }
   Uri? uri = Uri.tryParse(value);
   if (uri == null || uri.host.isEmpty) return value;
-  if (!uri.hasPort) uri = uri.replace(port: 3000);
-  return '${uri.scheme}://${uri.host}:${uri.port}/api/v1';
+  // Only an address with no port of its own gets 3000, and only over http --
+  // someone who pastes an https URL means its default port, not the dev one.
+  if (!uri.hasPort && uri.scheme == 'http') uri = uri.replace(port: 3000);
+  final String authority = uri.hasPort ? '${uri.host}:${uri.port}' : uri.host;
+  return '${uri.scheme}://$authority/api/v1';
 }
 
 /// True when `<origin>/health/live` answers 200 within a few seconds.

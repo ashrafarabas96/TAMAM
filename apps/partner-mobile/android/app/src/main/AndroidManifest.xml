@@ -103,12 +103,16 @@
             android:foregroundServiceType="location"
             android:exported="false"
             android:stopWithTask="false"
-            tools:replace="android:foregroundServiceType,android:stopWithTask" />
+            tools:replace="android:foregroundServiceType,android:stopWithTask,android:exported" />
 
+        <!-- The plugin ships this receiver exported; a boot hook that any app can
+             trigger is not something this app wants, so it is overridden rather
+             than merged. -->
         <receiver
             android:name="id.flutter.flutter_background_service.BootReceiver"
             android:enabled="true"
-            android:exported="false">
+            android:exported="false"
+            tools:replace="android:exported">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
