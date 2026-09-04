@@ -242,6 +242,25 @@ export class MediaService {
     return this.urls.signedUrl({ bucket: media.bucket, objectKey, isPublic: media.isPublic });
   }
 
+  /**
+   * Status of one asset. Processing is asynchronous and campaign creation rejects anything
+   * that is not READY, so the console needs to poll rather than blindly retry the upload.
+   * Same visibility rule as a signed-URL read: the uploader, a super admin, or staff whose
+   * permission covers that purpose.
+   */
+  async getStatus(user: RequestUser, mediaId: string) {
+    const media = await this.prisma.mediaAsset.findUnique({ where: { id: mediaId } });
+    if (!media) throw AppException.notFound('Media', mediaId);
+    const allowed =
+      media.isPublic ||
+      media.uploaderId === user.id ||
+      user.isSuperAdmin ||
+      (await this.canStaffView(user, media.purpose as MediaPurpose));
+    // 404 rather than 403: an id the caller may not see should not be confirmed to exist.
+    if (!allowed) throw AppException.notFound('Media', mediaId);
+    return this.toDto(media);
+  }
+
   private async canStaffView(user: RequestUser, purpose: MediaPurpose): Promise<boolean> {
     const map: Partial<Record<MediaPurpose, Permission>> = {
       PARTNER_DOCUMENT: 'partners.review_documents' as Permission,

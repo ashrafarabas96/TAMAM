@@ -707,6 +707,8 @@ export class CampaignsService {
         ...this.feed.toBannerDto(toCandidateBanner(b), row.id, ANONYMOUS_VIEWER_ID, tokenExp),
         isActive: b.isActive,
         sortOrder: b.sortOrder,
+        // The ids the update payload speaks; the signed URLs beside them are for preview only.
+        imageMediaId: { ar: b.imageArMediaId, en: b.imageEnMediaId },
       })),
       stats,
       createdBy: row.createdById,

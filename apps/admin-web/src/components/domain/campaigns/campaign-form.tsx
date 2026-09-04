@@ -98,9 +98,10 @@ function toFormValues(campaign: CampaignDto | null): UpsertCampaignInput {
     banners: campaign.banners.map((b) => ({
       id: b.id,
       placement: b.placement,
-      // The API returns signed image URLs, not media ids — creatives must be re-uploaded on edit.
+      // The admin DTO carries the media ids beside the signed preview URLs, so editing a
+      // campaign keeps its artwork instead of demanding both creatives again.
       creative: {
-        imageMediaId: { ar: '', en: '' },
+        imageMediaId: b.imageMediaId,
         theme: b.creative.theme,
         headline: b.creative.headline,
         subheadline: b.creative.subheadline,

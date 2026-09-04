@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Permission } from '@tamam/shared-types';
+import { Permission, type UserDto } from '@tamam/shared-types';
 import {
   type AccountStatusActionInput,
   type CustomerListFilterInput,
@@ -38,8 +38,11 @@ export class UsersController {
 
   @Get('me')
   @AllowRestricted()
-  me(@CurrentUser() user: RequestUser) {
-    return this.users.findById(user.id);
+  async me(@CurrentUser() user: RequestUser): Promise<UserDto> {
+    // The principal's permissions are resolved from the live role bundles on every request,
+    // so echoing them here is both free and exactly what the guards will enforce. Without
+    // it a client has to re-derive the set from role names and drifts when a role is edited.
+    return { ...(await this.users.findById(user.id)), permissions: user.permissions };
   }
 
   @Patch('me')

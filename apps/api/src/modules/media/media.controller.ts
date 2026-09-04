@@ -32,6 +32,12 @@ export class MediaController {
     return this.media.confirmUpload(user, id);
   }
 
+  @Get(':id')
+  @AllowRestricted()
+  status(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string) {
+    return this.media.getStatus(user, id);
+  }
+
   @Get(':key/view')
   @AllowRestricted()
   async view(@CurrentUser() user: RequestUser, @Param('key') key: string, @Res() res: Response) {

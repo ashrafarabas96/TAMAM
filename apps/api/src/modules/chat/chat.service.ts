@@ -210,7 +210,7 @@ export class ChatService {
     limit: number,
   ): Promise<Page<ChatMessageDto>> {
     const job = await this.loadJob(jobId);
-    await this.assertChatAllowed(user, job);
+    await this.assertChatAllowed(user, job, 'read');
     const chat = await this.chatForJob(jobId);
     const cursor = decodeCursor(cursorRaw);
     const rows = await this.prisma.message.findMany({
@@ -230,7 +230,7 @@ export class ChatService {
    */
   async send(user: RequestUser, jobId: string, input: SendMessageInput): Promise<ChatMessageDto> {
     const job = await this.loadJob(jobId);
-    await this.assertChatAllowed(user, job);
+    await this.assertChatAllowed(user, job, 'write');
 
     const chat = await this.chatForJob(jobId);
     if (chat.closedAt) throw AppException.conflict('This chat is closed', ErrorCode.CONFLICT);
@@ -337,7 +337,7 @@ export class ChatService {
     upToMessageId: string,
   ): Promise<ChatReadReceipt> {
     const job = await this.loadJob(jobId);
-    await this.assertChatAllowed(user, job);
+    await this.assertChatAllowed(user, job, 'read');
     const chat = await this.chatForJob(jobId);
 
     const upTo = await this.prisma.message.findFirst({
@@ -391,7 +391,7 @@ export class ChatService {
     messageIds: string[],
   ): Promise<ChatDeliveryReceipt> {
     const job = await this.loadJob(jobId);
-    await this.assertChatAllowed(user, job);
+    await this.assertChatAllowed(user, job, 'read');
     const chat = await this.chatForJob(jobId);
 
     const deliveredAt = new Date();
@@ -434,14 +434,15 @@ export class ChatService {
    * Feature flag + object-level authorization in one place. Staff bypass the flag so support can
    * still read and answer a conversation while chat is being rolled out zone by zone.
    */
-  async assertChatAllowed(user: RequestUser, job: JobLike): Promise<void> {
+  async assertChatAllowed(user: RequestUser, job: JobLike, mode: 'read' | 'write'): Promise<void> {
     if (!JobPolicy.isStaff(user))
       await this.systemConfig.assertEnabled(FEATURE_FLAGS.CHAT, {
         userId: user.id,
         zoneId: job.zoneId,
       });
-    if (!JobPolicy.canChat(user, job))
-      throw AppException.forbidden('You cannot access the chat of this job');
+    const allowed =
+      mode === 'read' ? JobPolicy.canReadChat(user, job) : JobPolicy.canChat(user, job);
+    if (!allowed) throw AppException.forbidden('You cannot access the chat of this job');
   }
 
   private async chatForJob(jobId: string): Promise<ChatSummary> {

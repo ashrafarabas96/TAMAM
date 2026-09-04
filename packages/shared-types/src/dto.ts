@@ -35,6 +35,7 @@ import type {
   VerificationStatus,
 } from './enums';
 import type { Address, GeoPoint, LocalizedText, Money } from './api';
+import type { Permission } from './permissions';
 
 /* ------------------------------------------------------------------ auth */
 export interface RequestOtpResponse {
@@ -81,6 +82,13 @@ export interface UserDto {
   language: Language;
   currency: string;
   roles: UserRole[];
+  /**
+   * Effective permissions of the authenticated principal, resolved server-side from the
+   * current role bundles. Sent by `GET /me` only — a list route describes other users, not
+   * the caller. Clients must prefer this over deriving permissions from `roles`, which
+   * drifts the moment a role is edited.
+   */
+  permissions?: Permission[];
   accountStatus: AccountStatus;
   createdAt: string;
   customer?: CustomerProfileDto;
@@ -642,6 +650,12 @@ export interface CampaignTargetingDto {
   rolloutPercent: number;
 }
 
+/** The two media ids behind a localised creative. */
+export interface LocalizedIds {
+  ar: string;
+  en: string;
+}
+
 export interface CampaignDto {
   id: string;
   name: string;
@@ -651,7 +665,12 @@ export interface CampaignDto {
   endsAt: string | null;
   targeting: CampaignTargetingDto;
   frequencyCapPerDay: number | null;
-  banners: Array<BannerDto & { isActive: boolean; sortOrder: number }>;
+  /**
+   * Admin view of the banners. `imageMediaId` is the id the update payload expects; without
+   * it an edit could only round-trip the signed `creative.imageUrl` and every save would
+   * force re-uploading both language creatives. Never sent to the mobile feed.
+   */
+  banners: Array<BannerDto & { isActive: boolean; sortOrder: number; imageMediaId: LocalizedIds }>;
   stats: CampaignStatsDto;
   createdBy: string;
   createdAt: string;

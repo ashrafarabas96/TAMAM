@@ -116,7 +116,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.handle(socket, WsEvent.SUBSCRIBE_JOB, async (user) => {
       const { jobId } = parseOrThrow(jobRoomSchema, payload);
       const job = await this.chat.loadJob(jobId);
-      await this.chat.assertChatAllowed(user, job);
+      // Subscribing only receives messages; sending goes through chatSend, which asks for
+      // write access of its own.
+      await this.chat.assertChatAllowed(user, job, 'read');
       await socket.join(jobRoom(jobId));
       return { jobId };
     });
