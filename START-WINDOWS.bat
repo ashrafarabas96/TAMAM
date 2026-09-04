@@ -26,6 +26,9 @@ if errorlevel 1 (
   echo       Install it from:  https://www.docker.com/products/docker-desktop
   echo       Then restart your computer and double-click this file again.
   echo.
+  echo       Not sure what went wrong? Double-click CHECK-DOCKER.bat -
+  echo       it tests every requirement and tells you which one failed.
+  echo.
   pause
   exit /b 1
 )
@@ -37,6 +40,20 @@ if errorlevel 1 (
   echo.
   echo       Open Docker Desktop from the Start menu, wait until it says
   echo       "Engine running", then double-click this file again.
+  echo.
+  echo       If it never says that, double-click CHECK-DOCKER.bat -
+  echo       it tests every requirement and tells you which one failed.
+  echo.
+  pause
+  exit /b 1
+)
+
+docker compose version >nul 2>&1
+if errorlevel 1 (
+  echo   [X] Your Docker Desktop is too old - it has no "docker compose".
+  echo.
+  echo       Update it from the Docker Desktop menu, or reinstall from:
+  echo       https://www.docker.com/products/docker-desktop
   echo.
   pause
   exit /b 1
@@ -54,6 +71,9 @@ if errorlevel 1 (
   echo.
   echo   [X] Something went wrong while starting.
   echo       Copy the messages above and send them for help.
+  echo.
+  echo       CHECK-DOCKER.bat writes the same information to a file
+  echo       called docker-report.txt, which is easier to send.
   echo.
   pause
   exit /b 1

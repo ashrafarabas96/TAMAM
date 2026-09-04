@@ -1,0 +1,8 @@
+# Windows batch launchers are stored with CRLF and must never be normalised:
+# cmd.exe mis-parses labels and goto in LF-only .bat files, and the ZIP GitHub
+# serves contains the blob bytes verbatim.
+*.bat -text
+*.cmd -text
+
+# Shell scripts are the mirror image: LF, always.
+*.sh text eol=lf
