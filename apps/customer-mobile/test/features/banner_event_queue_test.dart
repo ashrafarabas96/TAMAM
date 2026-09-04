@@ -62,6 +62,22 @@ Future<PrefsStore> _prefs([Map<String, Object> initial = const <String, Object>{
   return PrefsStore(await SharedPreferences.getInstance());
 }
 
+/// Waits for an asynchronous outcome instead of sleeping a fixed amount.
+///
+/// The flush this file exercises is asynchronous, and a flat 50ms wait passes
+/// on an idle machine while failing on a busy one -- a red build that says
+/// nothing about the code. Polling for the outcome removes the race without
+/// slowing the test down.
+Future<void> _waitUntil(
+  bool Function() done, {
+  Duration timeout = const Duration(seconds: 5),
+}) async {
+  final DateTime deadline = DateTime.now().add(timeout);
+  while (!done() && DateTime.now().isBefore(deadline)) {
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -110,7 +126,9 @@ void main() {
           placement: BannerPlacement.homeHero,
         );
       }
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      // The queue is only settled once it has both sent the batch and
+      // cleared it -- waiting on the send alone still races the clear.
+      await _waitUntil(() => adapter.eventCount >= 3 && queue.pendingCount == 0);
 
       expect(adapter.eventCount, 3);
       expect(queue.pendingCount, 0);
