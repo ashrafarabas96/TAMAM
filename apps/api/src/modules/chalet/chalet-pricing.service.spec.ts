@@ -127,15 +127,14 @@ describe('ChaletPricingService.occupancyPercent', () => {
 
 describe('ChaletPricingService.quote', () => {
   it('quotes the base rate on a chalet at its occupancy target', async () => {
-    const service = makeService();
-    // An empty calendar is far below the 80% target, so pull the target down
-    // to meet it and isolate the base rate.
+    // An empty calendar sits far below the default 80% target, so the target is
+    // pulled down to meet it and isolate the base rate from demand.
     const onTarget = makeService({ chalet: { ...pricingRow, targetOccupancyPercent: 0 } });
     const quote = await onTarget.quote(CHALET_ID, slot, { now: local('08:00') });
     expect(quote.effectiveHourlyRateMinor).toBe(10_000n);
     expect(quote.subtotalMinor).toBe(40_000n);
     expect(quote.currency).toBe('ILS');
-    expect(service).toBeDefined();
+    expect(quote.adjustments).toEqual([]);
   });
 
   it('discounts an empty week', async () => {

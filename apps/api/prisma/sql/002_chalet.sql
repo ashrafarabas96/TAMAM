@@ -170,10 +170,28 @@ CREATE TRIGGER trg_chalet_pricing_snapshot_immutable
   FOR EACH ROW EXECUTE FUNCTION tamam_chalet_pricing_snapshot_immutable();
 
 -- --------------------------------------------------- booking events append-only
--- Same rule the job and audit logs already follow: the trail is written, never edited.
+-- Same rule the ledger and audit logs already follow: the trail is written,
+-- never edited.
+--
+-- With one difference. Those tables have no deletable parent; this one hangs off
+-- chalet_bookings with ON DELETE CASCADE. A blanket DELETE ban would make that
+-- cascade impossible to fire, so a chalet could never be deleted and neither
+-- could a booking — the constraint and the foreign key would contradict each
+-- other, and the foreign key would lose silently at runtime.
+--
+-- So the rule is stated as what it actually means: an event may not be edited,
+-- and may not be removed from a booking that still exists. A cascade deletes the
+-- parent first, so by the time this fires for one the booking is already gone
+-- and the trail goes with it — which is not a rewrite of history, since the
+-- history's subject no longer exists.
 CREATE OR REPLACE FUNCTION tamam_chalet_booking_events_append_only() RETURNS trigger AS $$
 BEGIN
-  RAISE EXCEPTION 'chalet_booking_events is append-only';
+  IF TG_OP = 'DELETE'
+     AND NOT EXISTS (SELECT 1 FROM chalet_bookings WHERE id = OLD.booking_id) THEN
+    RETURN OLD;
+  END IF;
+  RAISE EXCEPTION 'chalet_booking_events is append-only (% not allowed)', TG_OP
+    USING ERRCODE = 'integrity_constraint_violation';
 END;
 $$ LANGUAGE plpgsql;
 

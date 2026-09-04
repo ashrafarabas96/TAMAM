@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { ChaletAvailabilityService } from './chalet-availability.service';
+import { ChaletBookingService } from './chalet-booking.service';
 import { ChaletPricingService } from './chalet-pricing.service';
 
 /**
@@ -13,7 +14,7 @@ import { ChaletPricingService } from './chalet-pricing.service';
  * zones, audit — but keeps its own domain.
  */
 @Module({
-  providers: [ChaletAvailabilityService, ChaletPricingService],
-  exports: [ChaletAvailabilityService, ChaletPricingService],
+  providers: [ChaletAvailabilityService, ChaletPricingService, ChaletBookingService],
+  exports: [ChaletAvailabilityService, ChaletPricingService, ChaletBookingService],
 })
 export class ChaletModule {}
