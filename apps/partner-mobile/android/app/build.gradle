@@ -24,7 +24,11 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "app.tamam.partner"
-    compileSdk = 34
+    // AndroidX pulled in by the plugins (navigationevent, activity, core) now
+    // requires callers to compile against 36. Compiling against a newer SDK
+    // does not change runtime behaviour -- targetSdk below decides that -- so
+    // this moves on its own.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
