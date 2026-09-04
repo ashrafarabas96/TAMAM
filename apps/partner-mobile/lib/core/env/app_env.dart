@@ -19,12 +19,19 @@ class AppEnv {
   });
 
   /// Reads the `--dart-define` values once at startup.
-  factory AppEnv.fromDefines() {
+  /// [apiBaseUrlOverride] wins over the compile-time default. A build installed
+  /// on a real phone cannot know the address of the machine running the API, so
+  /// it is chosen on the device instead (see `server_setup.dart`).
+  factory AppEnv.fromDefines({String? apiBaseUrlOverride}) {
     const String rawEnv = String.fromEnvironment('ENV', defaultValue: 'dev');
-    const String apiBaseUrl = String.fromEnvironment(
+    const String compiledApiBaseUrl = String.fromEnvironment(
       'API_BASE_URL',
       defaultValue: 'http://10.0.2.2:3000/api/v1',
     );
+    final String apiBaseUrl =
+        (apiBaseUrlOverride != null && apiBaseUrlOverride.isNotEmpty)
+            ? apiBaseUrlOverride
+            : compiledApiBaseUrl;
     const String socketBaseUrl = String.fromEnvironment('SOCKET_BASE_URL');
     const String tiles = String.fromEnvironment(
       'MAP_TILE_URL',

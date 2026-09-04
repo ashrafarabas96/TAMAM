@@ -8,6 +8,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tamam_partner/app.dart';
 import 'package:tamam_partner/core/env/app_env.dart';
+import 'package:tamam_partner/core/env/server_setup.dart';
 import 'package:tamam_partner/core/providers/core_providers.dart';
 import 'package:tamam_partner/core/storage/prefs_store.dart';
 import 'package:tamam_partner/features/location/data/foreground_service.dart';
@@ -37,7 +38,34 @@ Future<void> main() async {
   await initializeDateFormatting('en');
 
   final SharedPreferences preferences = await SharedPreferences.getInstance();
-  final AppEnv env = AppEnv.fromDefines();
+
+  // A build with no API address compiled in is a local test build: it is meant
+  // to reach a machine on the same network, whose address changes with every
+  // Wi-Fi, so it is asked for on the device instead. Release builds always pass
+  // --dart-define=API_BASE_URL and never see this screen.
+  const bool hasCompiledApi = bool.hasEnvironment('API_BASE_URL');
+  if (!hasCompiledApi) {
+    final String? server = await resolveServerBaseUrl(preferences);
+    if (server == null) {
+      runApp(
+        ServerSetupApp(
+          prefs: preferences,
+          previous: preferences.getString(kServerBaseUrlKey),
+          onReady: (String url) => unawaited(_launch(preferences, url)),
+        ),
+      );
+      return;
+    }
+    await _launch(preferences, server);
+    return;
+  }
+
+  await _launch(preferences, null);
+}
+
+/// Builds the environment and starts the real app.
+Future<void> _launch(SharedPreferences preferences, String? apiBaseUrl) async {
+  final AppEnv env = AppEnv.fromDefines(apiBaseUrlOverride: apiBaseUrl);
 
   // The Android foreground service must be configured before it can be
   // started; configuration is idempotent and does not start anything.

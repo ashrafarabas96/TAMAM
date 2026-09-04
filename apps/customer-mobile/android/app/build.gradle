@@ -41,7 +41,7 @@ android {
     defaultConfig {
         applicationId = "app.tamam.customer"
         // 23 is the floor for flutter_secure_storage's encrypted preferences.
-        minSdk = 23
+        minSdkVersion = flutter.minSdkVersion
         targetSdk = 34
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
