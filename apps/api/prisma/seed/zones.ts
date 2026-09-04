@@ -45,9 +45,10 @@ const ZONES: ZoneSeed[] = [
   { code: 'HEBRON', nameAr: 'الخليل', nameEn: 'Hebron', city: 'Hebron', lat: 31.5326, lng: 35.0998, radiiKm: [5.8, 6.4, 6.0, 5.3, 4.7, 4.3, 4.8, 5.5, 6.2, 6.5, 5.9, 5.1] },
 ];
 
-/** 06:00 → 23:59 every day. `closesAt` is exclusive, so 23:59 is the last servable minute. */
+/** 06:00 → midnight every day. `closesAt` is exclusive and '00:00' is the next midnight,
+ * so the zone stays open through 23:59 rather than closing a minute early. */
 const OPENS_AT = '06:00';
-const CLOSES_AT = '23:59';
+const CLOSES_AT = '00:00';
 
 export async function seedZones(ctx: SeedContext): Promise<ZoneSeedResult> {
   const { prisma, summary, currency, timezone } = ctx;

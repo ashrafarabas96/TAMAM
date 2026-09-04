@@ -20,12 +20,17 @@ import type {
   PaymentMethod,
   PromoType,
   RefundStatus,
+  RestrictionKind,
   RestrictionTargetType,
   RiskSignal,
   SupportTicketDto,
   UserDto,
   WithdrawalStatus,
 } from '@tamam/shared-types';
+
+/* These four moved into @tamam/shared-types (they were maintained twice); re-exported so
+   the console's existing imports keep resolving from this module. */
+export type { DailyKpiDto, RefundDto, RestrictionKind, RiskSignalDto, WalletIntegrityDto } from '@tamam/shared-types';
 
 /* ------------------------------------------------ admin/admin-overview.service.ts */
 export interface AdminOverviewDto {
@@ -364,13 +369,6 @@ export interface LedgerTransactionDto {
   createdAt: string;
   entries: Array<{ id: string; accountId: string; accountCode: string; direction: LedgerEntryDirection; amount: Money; balanceAfter: Money }>;
 }
-export interface WalletIntegrityDto {
-  walletId: string;
-  currency: string;
-  cachedBalance: Money;
-  recomputedBalance: Money;
-  matches: boolean;
-}
 export interface CommissionPolicyDto {
   id: string;
   scope: CommissionScope;
@@ -388,20 +386,6 @@ export interface CommissionPolicyDto {
 }
 
 /* --------------------------------------------------------- payments/payments.service.ts */
-export interface RefundDto {
-  id: string;
-  paymentId: string;
-  jobId: string;
-  disputeId: string | null;
-  status: RefundStatus;
-  amount: Money;
-  reason: string;
-  issuedById: string;
-  providerRef: string | null;
-  failureReason: string | null;
-  processedAt: string | null;
-  createdAt: string;
-}
 
 /* ------------------------------------------------------------- wallet/wallet.service.ts */
 export interface WithdrawalDto {
@@ -482,18 +466,6 @@ export interface UserReportDto {
 }
 
 /* ------------------------------------------------------------------ risk/risk.service.ts */
-export type RestrictionKind = 'BLOCK_JOBS' | 'BLOCK_PROMOS' | 'BLOCK_WALLET' | 'BLOCK_LOGIN' | 'REQUIRE_REVIEW';
-export interface RiskSignalDto {
-  id: string;
-  userId: string;
-  signal: RiskSignal;
-  score: number;
-  details: Record<string, unknown> | null;
-  jobId: string | null;
-  reviewedAt: string | null;
-  reviewedById: string | null;
-  createdAt: string;
-}
 export interface RestrictionDto {
   id: string;
   targetType: RestrictionTargetType;
@@ -540,22 +512,6 @@ export interface PermissionCatalogEntry {
 }
 
 /* ------------------------------------------------------------ analytics/analytics.service.ts */
-export interface DailyKpiDto {
-  date: string;
-  zoneId: string | null;
-  jobsCreated: number;
-  jobsCompleted: number;
-  jobsCancelled: number;
-  gmv: Money;
-  platformRevenue: Money;
-  avgDispatchSeconds: number | null;
-  avgPickupEtaSeconds: number | null;
-  activeCustomers: number;
-  repeatCustomers: number;
-  activePartners: number;
-  partnerUtilization: number | null;
-  computedAt: string;
-}
 export interface ReportRow {
   key: string;
   jobs: number;

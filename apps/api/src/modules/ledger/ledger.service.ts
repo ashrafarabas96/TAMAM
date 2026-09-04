@@ -11,6 +11,7 @@ import {
   type Money,
   type Page,
   PaymentMethod,
+  type WalletIntegrityDto,
   WalletOwnerType,
 } from '@tamam/shared-types';
 import { PinoLogger } from 'nestjs-pino';
@@ -23,6 +24,10 @@ import { WalletService } from '../wallet/wallet.service';
 
 import { CommissionService } from './commission.service';
 import { assertBalanced, assertSupportedCurrency, platformAccountCode, settlementEntries, walletAccountCode } from './domain/ledger.rules';
+
+// Declared in @tamam/shared-types so the console and the mobile apps read the same
+// shape; re-exported for the modules that already import it from this service.
+export type { WalletIntegrityDto } from '@tamam/shared-types';
 
 export const LedgerEvents = { JOB_SETTLED: 'ledger.job_settled' } as const;
 
@@ -91,13 +96,6 @@ export interface LedgerTransactionDto {
   entries: Array<{ id: string; accountId: string; accountCode: string; direction: LedgerEntryDirection; amount: Money; balanceAfter: Money }>;
 }
 
-export interface WalletIntegrityDto {
-  walletId: string;
-  currency: string;
-  cachedBalance: Money;
-  recomputedBalance: Money;
-  matches: boolean;
-}
 
 export interface LedgerTransactionFilter {
   jobId?: string;

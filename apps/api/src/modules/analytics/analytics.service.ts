@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { ACTIVE_JOB_STATUSES, CONFIG_KEYS, JobStatus, type Money, type OpsDashboardDto, Permission, V1_JOB_TYPES } from '@tamam/shared-types';
+import {
+  ACTIVE_JOB_STATUSES,
+  CONFIG_KEYS,
+  type DailyKpiDto,
+  JobStatus,
+  type Money,
+  type OpsDashboardDto,
+  Permission,
+  V1_JOB_TYPES,
+} from '@tamam/shared-types';
 import type { ReportQueryInput } from '@tamam/validation';
 import { Workbook } from 'exceljs';
 
@@ -11,6 +20,10 @@ import { AppConfigService } from '../../config';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { SystemConfigService } from '../config/system-config.service';
+
+// Declared in @tamam/shared-types so the console and the mobile apps read the same
+// shape; re-exported for the modules that already import it from this service.
+export type { DailyKpiDto } from '@tamam/shared-types';
 
 /* -------------------------------------------------------------- contracts */
 
@@ -46,22 +59,6 @@ export interface TrackResult {
   rejected: number;
 }
 
-export interface DailyKpiDto {
-  date: string;
-  zoneId: string | null;
-  jobsCreated: number;
-  jobsCompleted: number;
-  jobsCancelled: number;
-  gmv: Money;
-  platformRevenue: Money;
-  avgDispatchSeconds: number | null;
-  avgPickupEtaSeconds: number | null;
-  activeCustomers: number;
-  repeatCustomers: number;
-  activePartners: number;
-  partnerUtilization: number | null;
-  computedAt: string;
-}
 
 export interface ReportRow {
   key: string;

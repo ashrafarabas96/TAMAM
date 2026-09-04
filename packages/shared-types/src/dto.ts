@@ -25,6 +25,8 @@ import type {
   PricingMethod,
   QuoteKind,
   QuoteStatus,
+  RefundStatus,
+  RiskSignal,
   SchedulingMode,
   TicketCategory,
   TicketPriority,
@@ -746,5 +748,84 @@ export interface AuditLogDto {
   ip: string | null;
   deviceSessionId: string | null;
   requestId: string | null;
+  createdAt: string;
+}
+
+/* ------------------------------------------------------ operational DTOs */
+/* Declared here rather than beside the services that build them, so the console and the
+   apps read one definition instead of a hand-copied duplicate. */
+
+export interface RefundDto {
+  id: string;
+  paymentId: string;
+  jobId: string;
+  disputeId: string | null;
+  status: RefundStatus;
+  amount: Money;
+  reason: string;
+  issuedById: string;
+  providerRef: string | null;
+  failureReason: string | null;
+  processedAt: string | null;
+  createdAt: string;
+}
+
+export interface DailyKpiDto {
+  date: string;
+  zoneId: string | null;
+  jobsCreated: number;
+  jobsCompleted: number;
+  jobsCancelled: number;
+  gmv: Money;
+  platformRevenue: Money;
+  avgDispatchSeconds: number | null;
+  avgPickupEtaSeconds: number | null;
+  activeCustomers: number;
+  repeatCustomers: number;
+  activePartners: number;
+  partnerUtilization: number | null;
+  computedAt: string;
+}
+
+export interface PartnerAvailabilityDto {
+  partnerId: string;
+  status: AvailabilityStatus;
+  activeRoles: PartnerRoleType[];
+  activeVehicleId: string | null;
+  currentJobId: string | null;
+  lastHeartbeatAt: string | null;
+  lastLocationAt: string | null;
+  lastLocation: GeoPoint | null;
+  onlineSince: string | null;
+  /** Interval the app should use for the next heartbeat (seconds). */
+  heartbeatIntervalSeconds: number;
+}
+
+export interface HeartbeatResultDto {
+  status: AvailabilityStatus;
+  currentJobId: string | null;
+  /** False when no location was sent; a rejected sample raises an error instead. */
+  locationAccepted: boolean;
+  heartbeatIntervalSeconds: number;
+  serverTime: string;
+}
+
+export interface WalletIntegrityDto {
+  walletId: string;
+  currency: string;
+  cachedBalance: Money;
+  recomputedBalance: Money;
+  matches: boolean;
+}
+
+export interface RiskSignalDto {
+  id: string;
+  userId: string;
+  signal: RiskSignal;
+  score: number;
+  details: Record<string, unknown> | null;
+  jobId: string | null;
+  reviewedAt: string | null;
+  reviewedById: string | null;
   createdAt: string;
 }

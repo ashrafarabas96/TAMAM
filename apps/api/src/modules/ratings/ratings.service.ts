@@ -137,7 +137,7 @@ export class RatingsService {
   /** What this viewer gave and what they received on one job. */
   async getForJob(user: RequestUser, jobId: string): Promise<JobRatingsDto> {
     const job = await this.loadJob(jobId);
-    if (!JobPolicy.canView(user, job)) throw AppException.forbidden();
+    if (!JobPolicy.canView(user, job)) throw AppException.notFound('Job', jobId); // 404, not 403: don't leak existence (spec §88)
 
     // Staff see the job from the customer's side; full rater identities live on the admin route.
     const givenDirection = JobPolicy.isAssignedPartner(user, job) && !JobPolicy.isCustomer(user, job)

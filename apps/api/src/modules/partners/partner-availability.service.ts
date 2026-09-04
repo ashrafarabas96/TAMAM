@@ -7,6 +7,8 @@ import {
   type DocumentType,
   ErrorCode,
   type GeoPoint,
+  type HeartbeatResultDto,
+  type PartnerAvailabilityDto,
   type PartnerRoleType,
   VerificationStatus,
 } from '@tamam/shared-types';
@@ -17,29 +19,12 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { SystemConfigService } from '../config/system-config.service';
 import { VEHICLE_REQUIRED_ROLES } from '../vehicles/vehicles.service';
 
-/** Current availability as the apps and the dispatcher see it. */
-export interface PartnerAvailabilityDto {
-  partnerId: string;
-  status: AvailabilityStatus;
-  activeRoles: PartnerRoleType[];
-  activeVehicleId: string | null;
-  currentJobId: string | null;
-  lastHeartbeatAt: string | null;
-  lastLocationAt: string | null;
-  lastLocation: GeoPoint | null;
-  onlineSince: string | null;
-  /** Interval the app should use for the next heartbeat (seconds). */
-  heartbeatIntervalSeconds: number;
-}
+// Declared in @tamam/shared-types so the console and the mobile apps read the same
+// shape; re-exported for the modules that already import it from this service.
+export type { PartnerAvailabilityDto, HeartbeatResultDto } from '@tamam/shared-types';
 
-export interface HeartbeatResultDto {
-  status: AvailabilityStatus;
-  currentJobId: string | null;
-  /** False when no location was sent; a rejected sample raises an error instead. */
-  locationAccepted: boolean;
-  heartbeatIntervalSeconds: number;
-  serverTime: string;
-}
+/** Current availability as the apps and the dispatcher see it. */
+
 
 const partnerInclude = {
   roles: true,

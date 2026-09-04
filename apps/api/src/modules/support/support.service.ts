@@ -242,7 +242,7 @@ export class SupportService {
    */
   async report(user: RequestUser, input: ReportInput): Promise<ReportResultDto> {
     const job = await this.loadJob(input.jobId);
-    if (!JobPolicy.canView(user, job)) throw AppException.forbidden();
+    if (!JobPolicy.canView(user, job)) throw AppException.notFound('Job', input.jobId); // 404, not 403: don't leak existence (spec §88)
 
     const isCustomer = JobPolicy.isCustomer(user, job);
     const isPartner = JobPolicy.isAssignedPartner(user, job);

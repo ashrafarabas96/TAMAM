@@ -119,6 +119,12 @@ export const geoJsonPolygonSchema = z.object({
   coordinates: z.array(ringSchema).min(1).max(10),
 });
 
+/**
+ * `closesAt` is exclusive. A window that runs to the end of the day is written
+ * `closesAt: '00:00'` — next midnight — which reads as an overnight window whose closing
+ * minute happens to be midnight, so the last servable minute is 23:59. Writing `'23:59'`
+ * instead silently drops that final minute.
+ */
 export const operatingHoursSchema = z
   .object({
     dayOfWeek: z.number().int().min(0).max(6),

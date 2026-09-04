@@ -421,6 +421,16 @@ export type RiskSignal = (typeof RiskSignal)[keyof typeof RiskSignal];
 export const RestrictionTargetType = { USER: 'USER', PARTNER: 'PARTNER', DEVICE: 'DEVICE' } as const;
 export type RestrictionTargetType = (typeof RestrictionTargetType)[keyof typeof RestrictionTargetType];
 
+/** Mirrors the `restriction_kind` enum in schema.prisma. */
+export const RestrictionKind = {
+  BLOCK_JOBS: 'BLOCK_JOBS',
+  BLOCK_PROMOS: 'BLOCK_PROMOS',
+  BLOCK_WALLET: 'BLOCK_WALLET',
+  BLOCK_LOGIN: 'BLOCK_LOGIN',
+  REQUIRE_REVIEW: 'REQUIRE_REVIEW',
+} as const;
+export type RestrictionKind = (typeof RestrictionKind)[keyof typeof RestrictionKind];
+
 /* ------------------------------------------------------------------ media */
 export const MediaKind = { IMAGE: 'IMAGE', VIDEO: 'VIDEO', AUDIO: 'AUDIO', DOCUMENT: 'DOCUMENT' } as const;
 export type MediaKind = (typeof MediaKind)[keyof typeof MediaKind];

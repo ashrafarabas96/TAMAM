@@ -15,6 +15,7 @@ import {
   type PaymentDto,
   PaymentMethod,
   PaymentStatus,
+  type RefundDto,
   RefundStatus,
   WalletOwnerType,
 } from '@tamam/shared-types';
@@ -37,6 +38,10 @@ import { MetricsService } from '../metrics/metrics.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { WalletService } from '../wallet/wallet.service';
 
+// Declared in @tamam/shared-types so the console and the mobile apps read the same
+// shape; re-exported for the modules that already import it from this service.
+export type { RefundDto } from '@tamam/shared-types';
+
 /** Everything `createForJob` needs — a Prisma `Job` row satisfies it structurally. */
 export interface JobChargeSource {
   id: string;
@@ -52,20 +57,6 @@ export interface CaptureResult {
   actionUrl: string | null;
 }
 
-export interface RefundDto {
-  id: string;
-  paymentId: string;
-  jobId: string;
-  disputeId: string | null;
-  status: RefundStatus;
-  amount: Money;
-  reason: string;
-  issuedById: string;
-  providerRef: string | null;
-  failureReason: string | null;
-  processedAt: string | null;
-  createdAt: string;
-}
 
 export interface PaymentListFilter {
   jobId?: string;
@@ -394,7 +385,7 @@ export class PaymentsService {
   async getForJob(jobId: string, user: RequestUser): Promise<PaymentDto> {
     const job = await this.prisma.job.findUnique({ where: { id: jobId }, select: { id: true, customerId: true, partnerId: true, status: true, zoneId: true } });
     if (!job) throw AppException.notFound('Job', jobId);
-    if (!JobPolicy.canView(user, job)) throw AppException.forbidden();
+    if (!JobPolicy.canView(user, job)) throw AppException.notFound('Job', jobId); // 404, not 403: don't leak existence (spec §88)
     const payment = await this.prisma.payment.findFirst({ where: { jobId }, orderBy: { createdAt: 'desc' } });
     if (!payment) throw AppException.notFound('Payment for job', jobId);
     return this.toDto(payment);

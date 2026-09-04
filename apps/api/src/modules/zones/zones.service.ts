@@ -87,7 +87,9 @@ export class ZonesService {
     return today.some((h) => {
       if (h.isClosed) return false;
       if (h.opensAt <= h.closesAt) return hhmm >= h.opensAt && hhmm < h.closesAt;
-      return hhmm >= h.opensAt || hhmm < h.closesAt; // overnight window e.g. 20:00-02:00
+      // Overnight window, e.g. 20:00-02:00. closesAt '00:00' lands here too and means
+      // "until midnight": nothing is < '00:00', so the day ends at 23:59 inclusive.
+      return hhmm >= h.opensAt || hhmm < h.closesAt;
     });
   }
 

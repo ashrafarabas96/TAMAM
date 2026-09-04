@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Prisma, type RestrictionKind } from '@prisma/client';
-import { CONFIG_KEYS, ErrorCode, type Page, RestrictionTargetType, RiskSignal } from '@tamam/shared-types';
+import {
+  CONFIG_KEYS,
+  ErrorCode,
+  type Page,
+  RestrictionTargetType,
+  RiskSignal,
+  type RiskSignalDto,
+} from '@tamam/shared-types';
 import type { UpsertRestrictionInput } from '@tamam/validation';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -15,19 +22,12 @@ import { SystemConfigService } from '../config/system-config.service';
 
 import { type RiskCounters, type RiskFinding, type RiskThresholds, emptyCounters, evaluateRiskRules } from './domain/risk.rules';
 
+// Declared in @tamam/shared-types so the console and the mobile apps read the same
+// shape; re-exported for the modules that already import it from this service.
+export type { RiskSignalDto } from '@tamam/shared-types';
+
 /* ------------------------------------------------------------- contracts */
 
-export interface RiskSignalDto {
-  id: string;
-  userId: string;
-  signal: RiskSignal;
-  score: number;
-  details: Record<string, unknown> | null;
-  jobId: string | null;
-  reviewedAt: string | null;
-  reviewedById: string | null;
-  createdAt: string;
-}
 
 export interface RestrictionDto {
   id: string;
