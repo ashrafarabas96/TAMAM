@@ -910,6 +910,25 @@ enum RestrictionTargetType {
   }
 }
 
+enum RestrictionKind {
+  blockJobs('BLOCK_JOBS'),
+  blockPromos('BLOCK_PROMOS'),
+  blockWallet('BLOCK_WALLET'),
+  blockLogin('BLOCK_LOGIN'),
+  requireReview('REQUIRE_REVIEW');
+
+  const RestrictionKind(this.value);
+  final String value;
+
+  static RestrictionKind? fromValue(String? value) {
+    if (value == null) return null;
+    for (final e in RestrictionKind.values) {
+      if (e.value == value) return e;
+    }
+    return null;
+  }
+}
+
 enum MediaKind {
   image('IMAGE'),
   video('VIDEO'),

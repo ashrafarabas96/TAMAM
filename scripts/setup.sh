@@ -76,6 +76,26 @@ PY
   ok "created apps/api/.env with freshly generated secrets"
 fi
 
+step "Preparing apps/admin-web/.env.local"
+ADMIN_ENV="$ROOT/apps/admin-web/.env.local"
+if [ -f "$ADMIN_ENV" ]; then
+  ok ".env.local already exists — left untouched"
+else
+  cp "$ROOT/apps/admin-web/.env.example" "$ADMIN_ENV"
+  # serverEnv.sessionSecret throws below 32 characters, so the console cannot start without it.
+  ADMIN_SESSION_SECRET="$(openssl rand -base64 48 | tr -d '\n')"
+  python3 - "$ADMIN_ENV" "$ADMIN_SESSION_SECRET" <<'ADMINPY'
+import sys
+path, secret = sys.argv[1:3]
+with open(path, encoding='utf-8') as fh:
+    lines = fh.readlines()
+with open(path, 'w', encoding='utf-8') as fh:
+    for line in lines:
+        fh.write(f'SESSION_SECRET={secret}\n' if line.startswith('SESSION_SECRET=') else line)
+ADMINPY
+  ok "created apps/admin-web/.env.local with a generated SESSION_SECRET"
+fi
+
 # --------------------------------------------------------------- datastores
 if [ "${SKIP_DOCKER:-0}" != "1" ]; then
   step "Starting datastores (postgis, redis, minio)"
@@ -117,7 +137,9 @@ ok "dart contracts generated"
 step "Preparing the database"
 bash scripts/db/create-init-migration.sh
 pnpm --filter @tamam/api prisma:generate
-pnpm --filter @tamam/api prisma:migrate:dev
+# `migrate deploy`, never `migrate dev`: dev is an authoring command that prompts on drift
+# and offers to drop the database. With no terminal attached it simply hangs forever.
+pnpm --filter @tamam/api prisma:migrate:deploy
 ok "schema applied"
 
 step "Seeding development data"
@@ -131,6 +153,8 @@ printf "\n${GREEN}${BOLD}TAMAM is ready.${NC}\n"
 cat <<'NEXT'
 
   Start the API          pnpm --filter @tamam/api dev        → http://localhost:3000
+  Start the console      pnpm --filter @tamam/admin-web dev  → http://localhost:3001
+  Both at once           pnpm dev
   OpenAPI (non-prod)     http://localhost:3000/docs
   MinIO console          http://localhost:9001  (tamam / tamam-secret)
   Admin login            admin@tamam.app / TamamAdmin#2026  (must be changed on first login)

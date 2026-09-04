@@ -130,7 +130,16 @@ services:
     container_name: tamam-admin
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:3000
+      # The browser reaches the API on the published host port; the Next server reaches it by
+      # service name inside the compose network. Both must include the /api/v1 prefix — the
+      # console appends route paths to this value verbatim.
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3000/api/v1
+      NEXT_PUBLIC_WS_BASE_URL: http://localhost:3000
+      API_INTERNAL_BASE_URL: http://api:3000/api/v1
+      # Encrypts the admin session cookie; the console refuses to start below 32 characters.
+      # Override it for anything but a local stack: `SESSION_SECRET=... docker compose up`.
+      SESSION_SECRET: ${SESSION_SECRET:-local-development-session-secret-change-me-32+}
+      SESSION_COOKIE_SECURE: 'false'
       PORT: '3001'
       HOSTNAME: '0.0.0.0'
     ports:
