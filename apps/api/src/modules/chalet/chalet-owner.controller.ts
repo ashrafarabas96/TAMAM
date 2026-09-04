@@ -1,10 +1,14 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { ChaletOccupancyDto } from '@tamam/shared-types';
 import {
+  type ChaletAutomationInput,
   type ChaletAvailabilityQuery,
+  type ChaletBookingListInput,
   type ExternalChaletBookingInput,
+  chaletAutomationSchema,
   chaletAvailabilityQuerySchema,
+  chaletBookingListSchema,
   externalChaletBookingSchema,
 } from '@tamam/validation';
 
@@ -34,6 +38,46 @@ export class ChaletOwnerController {
     private readonly offers: ChaletOffersService,
     private readonly occupancy: ChaletOccupancyService,
   ) {}
+
+  /**
+   * The chalets this owner has. Everything else on this controller needs one,
+   * so without it the dashboard has no way in.
+   */
+  @Get()
+  @AllowRestricted()
+  myChalets(@CurrentUser() user: RequestUser) {
+    return this.occupancy.listForOwner(user.id);
+  }
+
+  /** The bookings on one chalet, newest first. */
+  @Get(':id/bookings')
+  @AllowRestricted()
+  async listBookings(
+    @CurrentUser() user: RequestUser,
+    @Param('id', UuidPipe) chaletId: string,
+    @ZodQuery(chaletBookingListSchema) query: ChaletBookingListInput,
+  ) {
+    await this.occupancy.assertOwner(user, chaletId);
+    return this.occupancy.listBookings(chaletId, query);
+  }
+
+  /**
+   * The switches an owner flips from the dashboard.
+   *
+   * Deliberately separate from editing the chalet: turning Smart Pricing on is
+   * a decision about how the chalet is sold, and an owner should be able to
+   * make it without opening a form that could also change their address.
+   */
+  @Patch(':id/automation')
+  @AllowRestricted()
+  async setAutomation(
+    @CurrentUser() user: RequestUser,
+    @Param('id', UuidPipe) chaletId: string,
+    @ZodBody(chaletAutomationSchema) input: ChaletAutomationInput,
+  ) {
+    await this.occupancy.assertOwner(user, chaletId);
+    return this.occupancy.setAutomation(chaletId, input);
+  }
 
   /** The owner's own calendar for a day: what is booked, blocked and free. */
   @Get(':id/calendar')

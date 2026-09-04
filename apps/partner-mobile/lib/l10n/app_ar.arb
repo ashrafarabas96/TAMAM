@@ -875,5 +875,72 @@
         "type": "String"
       }
     }
-  }
+  },
+  "chaletOwnerTitle": "شاليهاتي",
+  "chaletOwnerEmpty": "لا توجد شاليهات",
+  "chaletOwnerEmptyBody": "الشاليهات التي تديرها ستظهر هنا.",
+  "chaletOwnerPending": "بانتظار الموافقة",
+  "chaletOwnerRejected": "مرفوض",
+  "chaletOwnerLive": "متاح للحجز",
+  "chaletOwnerPaused": "متوقف",
+  "chaletOccupancy": "نسبة الإشغال",
+  "chaletOccupancyValue": "{percent}%",
+  "@chaletOccupancyValue": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletRevenue": "الإيراد",
+  "chaletBookingsCount": "الحجوزات",
+  "chaletCancelledCount": "الإلغاءات",
+  "chaletAverageRate": "متوسط سعر الساعة",
+  "chaletQuietestDay": "أهدأ يوم: {day}",
+  "@chaletQuietestDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletByWeekday": "الإشغال حسب اليوم",
+  "chaletByHour": "الإشغال حسب الساعة",
+  "chaletGapsTitle": "فجوات بين الحجوزات",
+  "chaletGapsEmpty": "لا توجد فجوات اليوم",
+  "chaletGapsBody": "الفجوات هي ساعات فارغة محصورة بين حجزين — يصعب بيعها بالسعر الكامل.",
+  "chaletGapDuration": "{minutes} دقيقة فارغة",
+  "@chaletGapDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletBookingsTitle": "الحجوزات",
+  "chaletBookingsEmpty": "لا توجد حجوزات بعد",
+  "chaletSourceTamam": "عبر تمام",
+  "chaletSourceManual": "سجّلته بنفسك",
+  "chaletAddExternal": "تسجيل حجز هاتفي",
+  "chaletAddExternalBody": "الحجز الذي تستقبله بالهاتف يحجز الوقت تمامًا مثل حجز تمام، فيبقى تقويم تمام هو المرجع الوحيد.",
+  "chaletGuestName": "اسم الضيف",
+  "chaletGuestPhone": "هاتف الضيف",
+  "chaletAutomationTitle": "إعدادات البيع",
+  "chaletSmartPricing": "التسعير الذكي",
+  "chaletSmartPricingBody": "يعدّل السعر حسب إشغال تقويمك، ولا ينزل أبدًا تحت الحد الأدنى الذي حددته.",
+  "chaletGapFiller": "عروض الفجوات",
+  "chaletGapFillerBody": "يعرض الساعات المحصورة بين حجزين بسعر مخفّض.",
+  "chaletLastMinute": "عروض اللحظة الأخيرة",
+  "chaletLastMinuteBody": "يخفّض سعر الساعات القريبة التي ما زالت فارغة.",
+  "chaletInstantBookingSetting": "الحجز الفوري",
+  "chaletInstantBookingBody": "يتيح للضيف تأكيد الحجز دون انتظار موافقتك.",
+  "chaletFloorNotice": "الحد الأدنى الذي حددته: {rate}",
+  "@chaletFloorNotice": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletSave": "حفظ"
 }

@@ -18,6 +18,8 @@ import 'package:tamam_partner/features/auth/presentation/otp_screen.dart';
 import 'package:tamam_partner/features/auth/presentation/phone_screen.dart';
 import 'package:tamam_partner/features/auth/presentation/splash_screen.dart';
 import 'package:tamam_partner/features/chat/presentation/chat_screen.dart';
+import 'package:tamam_partner/features/chalet/presentation/owner_chalet_dashboard.dart';
+import 'package:tamam_partner/features/chalet/presentation/owner_chalets_screen.dart';
 import 'package:tamam_partner/features/documents/presentation/documents_screen.dart';
 import 'package:tamam_partner/features/earnings/presentation/earnings_screen.dart';
 import 'package:tamam_partner/features/earnings/presentation/statement_screen.dart';
@@ -137,6 +139,19 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         path: Routes.notifications,
         parentNavigatorKey: rootNavigatorKey,
         builder: (_, __) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: Routes.ownerChalets,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, __) => const OwnerChaletsScreen(),
+        routes: <RouteBase>[
+          GoRoute(
+            path: ':id',
+            parentNavigatorKey: rootNavigatorKey,
+            builder: (BuildContext _, GoRouterState state) =>
+                OwnerChaletDashboard(chaletId: state.pathParameters['id'] ?? ''),
+          ),
+        ],
       ),
       GoRoute(
         path: Routes.documents,

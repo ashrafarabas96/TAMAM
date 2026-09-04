@@ -185,4 +185,149 @@ export class ChaletOccupancyService {
       })),
     };
   }
+
+  /**
+   * The chalets this owner has, in whatever state — including the ones still
+   * waiting for approval, because "where is my chalet?" is exactly the question
+   * an owner asks the day after they submit one.
+   */
+  async listForOwner(ownerId: string) {
+    const rows = await this.prisma.chalet.findMany({
+      where: { ownerId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        nameAr: true,
+        nameEn: true,
+        city: true,
+        status: true,
+        approvalStatus: true,
+        rejectionReason: true,
+        maximumGuests: true,
+        baseHourlyRateMinor: true,
+        minimumHourlyRateMinor: true,
+        currency: true,
+        smartPricingEnabled: true,
+        gapFillerEnabled: true,
+        lastMinutePricingEnabled: true,
+        autoExtensionOffersEnabled: true,
+        instantBookingEnabled: true,
+        rating: true,
+        ratingCount: true,
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      nameAr: row.nameAr,
+      nameEn: row.nameEn,
+      city: row.city,
+      status: row.status,
+      approvalStatus: row.approvalStatus,
+      rejectionReason: row.rejectionReason,
+      maximumGuests: row.maximumGuests,
+      baseHourlyRate: toMoney(row.baseHourlyRateMinor, row.currency),
+      minimumHourlyRate: toMoney(row.minimumHourlyRateMinor, row.currency),
+      smartPricingEnabled: row.smartPricingEnabled,
+      gapFillerEnabled: row.gapFillerEnabled,
+      lastMinutePricingEnabled: row.lastMinutePricingEnabled,
+      autoExtensionOffersEnabled: row.autoExtensionOffersEnabled,
+      instantBookingEnabled: row.instantBookingEnabled,
+      rating: Number(row.rating),
+      ratingCount: row.ratingCount,
+    }));
+  }
+
+  /**
+   * The bookings on one chalet. An owner wants to see the phone bookings they
+   * typed in alongside the ones TAMAM took, so the source is on every row.
+   */
+  async listBookings(
+    chaletId: string,
+    filter: { status?: string; fromDate?: string; toDate?: string; limit: number },
+  ) {
+    const rows = await this.prisma.chaletBooking.findMany({
+      where: {
+        chaletId,
+        ...(filter.status === undefined ? {} : { status: filter.status as ChaletBookingStatus }),
+        ...(filter.fromDate === undefined ? {} : { startAt: { gte: new Date(filter.fromDate) } }),
+        ...(filter.toDate === undefined ? {} : { endAt: { lte: new Date(filter.toDate) } }),
+      },
+      orderBy: { startAt: 'desc' },
+      take: filter.limit,
+      select: {
+        id: true,
+        bookingNumber: true,
+        startAt: true,
+        endAt: true,
+        blockedUntil: true,
+        guestCount: true,
+        status: true,
+        source: true,
+        totalAmountMinor: true,
+        currency: true,
+        guestName: true,
+        guestPhone: true,
+        cleaningDurationMinutes: true,
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      bookingNumber: row.bookingNumber,
+      startAt: row.startAt.toISOString(),
+      endAt: row.endAt.toISOString(),
+      blockedUntil: row.blockedUntil.toISOString(),
+      guestCount: row.guestCount,
+      status: row.status,
+      source: row.source,
+      total: toMoney(row.totalAmountMinor, row.currency),
+      guestName: row.guestName,
+      guestPhone: row.guestPhone,
+      cleaningDurationMinutes: row.cleaningDurationMinutes,
+    }));
+  }
+
+  /** Flip the automation switches. Only the fields sent are changed. */
+  async setAutomation(
+    chaletId: string,
+    input: {
+      smartPricingEnabled?: boolean;
+      gapFillerEnabled?: boolean;
+      lastMinutePricingEnabled?: boolean;
+      autoExtensionOffersEnabled?: boolean;
+      instantBookingEnabled?: boolean;
+    },
+  ) {
+    const updated = await this.prisma.chalet.update({
+      where: { id: chaletId },
+      data: {
+        ...(input.smartPricingEnabled === undefined
+          ? {}
+          : { smartPricingEnabled: input.smartPricingEnabled }),
+        ...(input.gapFillerEnabled === undefined
+          ? {}
+          : { gapFillerEnabled: input.gapFillerEnabled }),
+        ...(input.lastMinutePricingEnabled === undefined
+          ? {}
+          : { lastMinutePricingEnabled: input.lastMinutePricingEnabled }),
+        ...(input.autoExtensionOffersEnabled === undefined
+          ? {}
+          : { autoExtensionOffersEnabled: input.autoExtensionOffersEnabled }),
+        ...(input.instantBookingEnabled === undefined
+          ? {}
+          : { instantBookingEnabled: input.instantBookingEnabled }),
+      },
+      select: {
+        id: true,
+        smartPricingEnabled: true,
+        gapFillerEnabled: true,
+        lastMinutePricingEnabled: true,
+        autoExtensionOffersEnabled: true,
+        instantBookingEnabled: true,
+      },
+    });
+    return updated;
+  }
+
 }

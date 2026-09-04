@@ -1979,4 +1979,135 @@ class AppLocalizationsEn extends AppLocalizations {
   String bannerPromoCopied(String code) {
     return 'Code $code copied.';
   }
+
+  @override
+  String get chaletOwnerTitle => 'My chalets';
+
+  @override
+  String get chaletOwnerEmpty => 'No chalets';
+
+  @override
+  String get chaletOwnerEmptyBody => 'Chalets you manage will appear here.';
+
+  @override
+  String get chaletOwnerPending => 'Awaiting approval';
+
+  @override
+  String get chaletOwnerRejected => 'Rejected';
+
+  @override
+  String get chaletOwnerLive => 'Bookable';
+
+  @override
+  String get chaletOwnerPaused => 'Paused';
+
+  @override
+  String get chaletOccupancy => 'Occupancy';
+
+  @override
+  String chaletOccupancyValue(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get chaletRevenue => 'Revenue';
+
+  @override
+  String get chaletBookingsCount => 'Bookings';
+
+  @override
+  String get chaletCancelledCount => 'Cancellations';
+
+  @override
+  String get chaletAverageRate => 'Average hourly rate';
+
+  @override
+  String chaletQuietestDay(String day) {
+    return 'Quietest day: $day';
+  }
+
+  @override
+  String get chaletByWeekday => 'Occupancy by day';
+
+  @override
+  String get chaletByHour => 'Occupancy by hour';
+
+  @override
+  String get chaletGapsTitle => 'Gaps between bookings';
+
+  @override
+  String get chaletGapsEmpty => 'No gaps today';
+
+  @override
+  String get chaletGapsBody =>
+      'A gap is empty time boxed in between two bookings — hard to sell at the full rate.';
+
+  @override
+  String chaletGapDuration(int minutes) {
+    return '$minutes minutes empty';
+  }
+
+  @override
+  String get chaletBookingsTitle => 'Bookings';
+
+  @override
+  String get chaletBookingsEmpty => 'No bookings yet';
+
+  @override
+  String get chaletSourceTamam => 'Through TAMAM';
+
+  @override
+  String get chaletSourceManual => 'You recorded it';
+
+  @override
+  String get chaletAddExternal => 'Record a phone booking';
+
+  @override
+  String get chaletAddExternalBody =>
+      'A booking you take by phone occupies the calendar exactly like a TAMAM one, so this stays the only calendar you keep.';
+
+  @override
+  String get chaletGuestName => 'Guest name';
+
+  @override
+  String get chaletGuestPhone => 'Guest phone';
+
+  @override
+  String get chaletAutomationTitle => 'How it sells';
+
+  @override
+  String get chaletSmartPricing => 'Smart Pricing';
+
+  @override
+  String get chaletSmartPricingBody =>
+      'Moves the rate with how full your calendar is. Never below the minimum you set.';
+
+  @override
+  String get chaletGapFiller => 'Gap offers';
+
+  @override
+  String get chaletGapFillerBody =>
+      'Offers the hours boxed in between two bookings at a reduced rate.';
+
+  @override
+  String get chaletLastMinute => 'Last-minute offers';
+
+  @override
+  String get chaletLastMinuteBody =>
+      'Discounts hours that start soon and are still empty.';
+
+  @override
+  String get chaletInstantBookingSetting => 'Instant booking';
+
+  @override
+  String get chaletInstantBookingBody =>
+      'Lets a guest confirm without waiting for you.';
+
+  @override
+  String chaletFloorNotice(String rate) {
+    return 'Your minimum rate: $rate';
+  }
+
+  @override
+  String get chaletSave => 'Save';
 }

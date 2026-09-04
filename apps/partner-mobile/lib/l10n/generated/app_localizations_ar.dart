@@ -1943,4 +1943,135 @@ class AppLocalizationsAr extends AppLocalizations {
   String bannerPromoCopied(String code) {
     return 'تم نسخ الكود $code.';
   }
+
+  @override
+  String get chaletOwnerTitle => 'شاليهاتي';
+
+  @override
+  String get chaletOwnerEmpty => 'لا توجد شاليهات';
+
+  @override
+  String get chaletOwnerEmptyBody => 'الشاليهات التي تديرها ستظهر هنا.';
+
+  @override
+  String get chaletOwnerPending => 'بانتظار الموافقة';
+
+  @override
+  String get chaletOwnerRejected => 'مرفوض';
+
+  @override
+  String get chaletOwnerLive => 'متاح للحجز';
+
+  @override
+  String get chaletOwnerPaused => 'متوقف';
+
+  @override
+  String get chaletOccupancy => 'نسبة الإشغال';
+
+  @override
+  String chaletOccupancyValue(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get chaletRevenue => 'الإيراد';
+
+  @override
+  String get chaletBookingsCount => 'الحجوزات';
+
+  @override
+  String get chaletCancelledCount => 'الإلغاءات';
+
+  @override
+  String get chaletAverageRate => 'متوسط سعر الساعة';
+
+  @override
+  String chaletQuietestDay(String day) {
+    return 'أهدأ يوم: $day';
+  }
+
+  @override
+  String get chaletByWeekday => 'الإشغال حسب اليوم';
+
+  @override
+  String get chaletByHour => 'الإشغال حسب الساعة';
+
+  @override
+  String get chaletGapsTitle => 'فجوات بين الحجوزات';
+
+  @override
+  String get chaletGapsEmpty => 'لا توجد فجوات اليوم';
+
+  @override
+  String get chaletGapsBody =>
+      'الفجوات هي ساعات فارغة محصورة بين حجزين — يصعب بيعها بالسعر الكامل.';
+
+  @override
+  String chaletGapDuration(int minutes) {
+    return '$minutes دقيقة فارغة';
+  }
+
+  @override
+  String get chaletBookingsTitle => 'الحجوزات';
+
+  @override
+  String get chaletBookingsEmpty => 'لا توجد حجوزات بعد';
+
+  @override
+  String get chaletSourceTamam => 'عبر تمام';
+
+  @override
+  String get chaletSourceManual => 'سجّلته بنفسك';
+
+  @override
+  String get chaletAddExternal => 'تسجيل حجز هاتفي';
+
+  @override
+  String get chaletAddExternalBody =>
+      'الحجز الذي تستقبله بالهاتف يحجز الوقت تمامًا مثل حجز تمام، فيبقى تقويم تمام هو المرجع الوحيد.';
+
+  @override
+  String get chaletGuestName => 'اسم الضيف';
+
+  @override
+  String get chaletGuestPhone => 'هاتف الضيف';
+
+  @override
+  String get chaletAutomationTitle => 'إعدادات البيع';
+
+  @override
+  String get chaletSmartPricing => 'التسعير الذكي';
+
+  @override
+  String get chaletSmartPricingBody =>
+      'يعدّل السعر حسب إشغال تقويمك، ولا ينزل أبدًا تحت الحد الأدنى الذي حددته.';
+
+  @override
+  String get chaletGapFiller => 'عروض الفجوات';
+
+  @override
+  String get chaletGapFillerBody =>
+      'يعرض الساعات المحصورة بين حجزين بسعر مخفّض.';
+
+  @override
+  String get chaletLastMinute => 'عروض اللحظة الأخيرة';
+
+  @override
+  String get chaletLastMinuteBody =>
+      'يخفّض سعر الساعات القريبة التي ما زالت فارغة.';
+
+  @override
+  String get chaletInstantBookingSetting => 'الحجز الفوري';
+
+  @override
+  String get chaletInstantBookingBody =>
+      'يتيح للضيف تأكيد الحجز دون انتظار موافقتك.';
+
+  @override
+  String chaletFloorNotice(String rate) {
+    return 'الحد الأدنى الذي حددته: $rate';
+  }
+
+  @override
+  String get chaletSave => 'حفظ';
 }

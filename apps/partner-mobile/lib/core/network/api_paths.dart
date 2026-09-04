@@ -8,6 +8,16 @@ abstract final class ApiPaths {
   static const String refresh = '/auth/refresh';
   static const String logout = '/auth/logout';
 
+  // chalet — the owner's side. There is no chalet-owner role: an owner manages
+  // their chalet because it is theirs, so every route below checks ownership.
+  static const String ownerChalets = '/owner/chalets';
+  static String ownerChaletCalendar(String id) => '/owner/chalets/$id/calendar';
+  static String ownerChaletOccupancy(String id) => '/owner/chalets/$id/occupancy';
+  static String ownerChaletGaps(String id) => '/owner/chalets/$id/gaps';
+  static String ownerChaletBookings(String id) => '/owner/chalets/$id/bookings';
+  static String ownerChaletExternalBooking(String id) => '/owner/chalets/$id/bookings/external';
+  static String ownerChaletAutomation(String id) => '/owner/chalets/$id/automation';
+
   // profile
   static const String me = '/me';
   static const String pushToken = '/me/push-token';

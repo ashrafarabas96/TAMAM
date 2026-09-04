@@ -875,5 +875,72 @@
         "type": "String"
       }
     }
-  }
+  },
+  "chaletOwnerTitle": "My chalets",
+  "chaletOwnerEmpty": "No chalets",
+  "chaletOwnerEmptyBody": "Chalets you manage will appear here.",
+  "chaletOwnerPending": "Awaiting approval",
+  "chaletOwnerRejected": "Rejected",
+  "chaletOwnerLive": "Bookable",
+  "chaletOwnerPaused": "Paused",
+  "chaletOccupancy": "Occupancy",
+  "chaletOccupancyValue": "{percent}%",
+  "@chaletOccupancyValue": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletRevenue": "Revenue",
+  "chaletBookingsCount": "Bookings",
+  "chaletCancelledCount": "Cancellations",
+  "chaletAverageRate": "Average hourly rate",
+  "chaletQuietestDay": "Quietest day: {day}",
+  "@chaletQuietestDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletByWeekday": "Occupancy by day",
+  "chaletByHour": "Occupancy by hour",
+  "chaletGapsTitle": "Gaps between bookings",
+  "chaletGapsEmpty": "No gaps today",
+  "chaletGapsBody": "A gap is empty time boxed in between two bookings — hard to sell at the full rate.",
+  "chaletGapDuration": "{minutes} minutes empty",
+  "@chaletGapDuration": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletBookingsTitle": "Bookings",
+  "chaletBookingsEmpty": "No bookings yet",
+  "chaletSourceTamam": "Through TAMAM",
+  "chaletSourceManual": "You recorded it",
+  "chaletAddExternal": "Record a phone booking",
+  "chaletAddExternalBody": "A booking you take by phone occupies the calendar exactly like a TAMAM one, so this stays the only calendar you keep.",
+  "chaletGuestName": "Guest name",
+  "chaletGuestPhone": "Guest phone",
+  "chaletAutomationTitle": "How it sells",
+  "chaletSmartPricing": "Smart Pricing",
+  "chaletSmartPricingBody": "Moves the rate with how full your calendar is. Never below the minimum you set.",
+  "chaletGapFiller": "Gap offers",
+  "chaletGapFillerBody": "Offers the hours boxed in between two bookings at a reduced rate.",
+  "chaletLastMinute": "Last-minute offers",
+  "chaletLastMinuteBody": "Discounts hours that start soon and are still empty.",
+  "chaletInstantBookingSetting": "Instant booking",
+  "chaletInstantBookingBody": "Lets a guest confirm without waiting for you.",
+  "chaletFloorNotice": "Your minimum rate: {rate}",
+  "@chaletFloorNotice": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletSave": "Save"
 }

@@ -3589,6 +3589,240 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تم نسخ الكود {code}.'**
   String bannerPromoCopied(String code);
+
+  /// No description provided for @chaletOwnerTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'شاليهاتي'**
+  String get chaletOwnerTitle;
+
+  /// No description provided for @chaletOwnerEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد شاليهات'**
+  String get chaletOwnerEmpty;
+
+  /// No description provided for @chaletOwnerEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشاليهات التي تديرها ستظهر هنا.'**
+  String get chaletOwnerEmptyBody;
+
+  /// No description provided for @chaletOwnerPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار الموافقة'**
+  String get chaletOwnerPending;
+
+  /// No description provided for @chaletOwnerRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get chaletOwnerRejected;
+
+  /// No description provided for @chaletOwnerLive.
+  ///
+  /// In ar, this message translates to:
+  /// **'متاح للحجز'**
+  String get chaletOwnerLive;
+
+  /// No description provided for @chaletOwnerPaused.
+  ///
+  /// In ar, this message translates to:
+  /// **'متوقف'**
+  String get chaletOwnerPaused;
+
+  /// No description provided for @chaletOccupancy.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة الإشغال'**
+  String get chaletOccupancy;
+
+  /// No description provided for @chaletOccupancyValue.
+  ///
+  /// In ar, this message translates to:
+  /// **'{percent}%'**
+  String chaletOccupancyValue(int percent);
+
+  /// No description provided for @chaletRevenue.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيراد'**
+  String get chaletRevenue;
+
+  /// No description provided for @chaletBookingsCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجوزات'**
+  String get chaletBookingsCount;
+
+  /// No description provided for @chaletCancelledCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإلغاءات'**
+  String get chaletCancelledCount;
+
+  /// No description provided for @chaletAverageRate.
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط سعر الساعة'**
+  String get chaletAverageRate;
+
+  /// No description provided for @chaletQuietestDay.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهدأ يوم: {day}'**
+  String chaletQuietestDay(String day);
+
+  /// No description provided for @chaletByWeekday.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشغال حسب اليوم'**
+  String get chaletByWeekday;
+
+  /// No description provided for @chaletByHour.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشغال حسب الساعة'**
+  String get chaletByHour;
+
+  /// No description provided for @chaletGapsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'فجوات بين الحجوزات'**
+  String get chaletGapsTitle;
+
+  /// No description provided for @chaletGapsEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد فجوات اليوم'**
+  String get chaletGapsEmpty;
+
+  /// No description provided for @chaletGapsBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفجوات هي ساعات فارغة محصورة بين حجزين — يصعب بيعها بالسعر الكامل.'**
+  String get chaletGapsBody;
+
+  /// No description provided for @chaletGapDuration.
+  ///
+  /// In ar, this message translates to:
+  /// **'{minutes} دقيقة فارغة'**
+  String chaletGapDuration(int minutes);
+
+  /// No description provided for @chaletBookingsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجوزات'**
+  String get chaletBookingsTitle;
+
+  /// No description provided for @chaletBookingsEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد حجوزات بعد'**
+  String get chaletBookingsEmpty;
+
+  /// No description provided for @chaletSourceTamam.
+  ///
+  /// In ar, this message translates to:
+  /// **'عبر تمام'**
+  String get chaletSourceTamam;
+
+  /// No description provided for @chaletSourceManual.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجّلته بنفسك'**
+  String get chaletSourceManual;
+
+  /// No description provided for @chaletAddExternal.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل حجز هاتفي'**
+  String get chaletAddExternal;
+
+  /// No description provided for @chaletAddExternalBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز الذي تستقبله بالهاتف يحجز الوقت تمامًا مثل حجز تمام، فيبقى تقويم تمام هو المرجع الوحيد.'**
+  String get chaletAddExternalBody;
+
+  /// No description provided for @chaletGuestName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم الضيف'**
+  String get chaletGuestName;
+
+  /// No description provided for @chaletGuestPhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'هاتف الضيف'**
+  String get chaletGuestPhone;
+
+  /// No description provided for @chaletAutomationTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعدادات البيع'**
+  String get chaletAutomationTitle;
+
+  /// No description provided for @chaletSmartPricing.
+  ///
+  /// In ar, this message translates to:
+  /// **'التسعير الذكي'**
+  String get chaletSmartPricing;
+
+  /// No description provided for @chaletSmartPricingBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'يعدّل السعر حسب إشغال تقويمك، ولا ينزل أبدًا تحت الحد الأدنى الذي حددته.'**
+  String get chaletSmartPricingBody;
+
+  /// No description provided for @chaletGapFiller.
+  ///
+  /// In ar, this message translates to:
+  /// **'عروض الفجوات'**
+  String get chaletGapFiller;
+
+  /// No description provided for @chaletGapFillerBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'يعرض الساعات المحصورة بين حجزين بسعر مخفّض.'**
+  String get chaletGapFillerBody;
+
+  /// No description provided for @chaletLastMinute.
+  ///
+  /// In ar, this message translates to:
+  /// **'عروض اللحظة الأخيرة'**
+  String get chaletLastMinute;
+
+  /// No description provided for @chaletLastMinuteBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'يخفّض سعر الساعات القريبة التي ما زالت فارغة.'**
+  String get chaletLastMinuteBody;
+
+  /// No description provided for @chaletInstantBookingSetting.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز الفوري'**
+  String get chaletInstantBookingSetting;
+
+  /// No description provided for @chaletInstantBookingBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'يتيح للضيف تأكيد الحجز دون انتظار موافقتك.'**
+  String get chaletInstantBookingBody;
+
+  /// No description provided for @chaletFloorNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى الذي حددته: {rate}'**
+  String chaletFloorNotice(String rate);
+
+  /// No description provided for @chaletSave.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ'**
+  String get chaletSave;
 }
 
 class _AppLocalizationsDelegate

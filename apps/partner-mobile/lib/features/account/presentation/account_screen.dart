@@ -89,6 +89,11 @@ class AccountScreen extends ConsumerWidget {
                   title: l10n.accountGroupWork,
                   tiles: <_Tile>[
                     _Tile(icon: Icons.tune_rounded, label: l10n.workPreferencesTitle, route: Routes.workPreferences),
+                    _Tile(
+                      icon: Icons.holiday_village_outlined,
+                      label: l10n.chaletOwnerTitle,
+                      route: Routes.ownerChalets,
+                    ),
                     _Tile(icon: Icons.description_outlined, label: l10n.documentsTitle, route: Routes.documents),
                     _Tile(icon: Icons.directions_car_outlined, label: l10n.vehiclesTitle, route: Routes.vehicles),
                   ],

@@ -17,6 +17,9 @@ abstract final class Routes {
   static const String account = '/account';
 
   static const String notifications = '/notifications';
+  static const String ownerChalets = '/chalets';
+  static String ownerChalet(String id) => '/chalets/$id';
+
   static const String documents = '/documents';
   static const String vehicles = '/vehicles';
   static const String vehicleNew = '/vehicles/new';
