@@ -30,9 +30,9 @@ export const isoDate = (d: Date): string => d.toISOString().slice(0, 10);
  * same cron tick produce exactly one queued job — BullMQ rejects duplicate ids.
  *
  * Cadence:
- *  - every minute  : heartbeat sweep, campaign scheduler
- *  - every 10 min  : OTP retention, expired-session cleanup
- *  - hourly        : banner stats rollup (today), tracking retention
+ *  - every minute  : heartbeat sweep, campaign scheduler, chalet hold expiry
+ *  - every 10 min  : OTP retention, expired-session cleanup, chalet offer retirement
+ *  - hourly        : banner stats rollup (today), tracking retention, chalet offer generation
  *  - daily 02:00Z  : daily KPIs (yesterday), retention sweep, document expiry
  */
 @Injectable()
@@ -48,6 +48,9 @@ export class MaintenanceScheduler {
     await Promise.all([
       this.enqueue(MAINTENANCE_JOBS.HEARTBEAT_SWEEP, stamp),
       this.enqueue(MAINTENANCE_JOBS.CAMPAIGN_SCHEDULER, stamp),
+      // A chalet hold lasts seven minutes, so anything slower than a minute
+      // would leave an abandoned checkout holding a slot for most of its life.
+      this.enqueue(MAINTENANCE_JOBS.CHALET_EXPIRE_HOLDS, stamp),
     ]);
   }
 
@@ -57,6 +60,9 @@ export class MaintenanceScheduler {
     await Promise.all([
       this.enqueue(MAINTENANCE_JOBS.EXPIRE_OTPS, stamp),
       this.enqueue(MAINTENANCE_JOBS.SESSION_CLEANUP, stamp),
+      // An offer for a slot somebody has since taken is worse than no offer,
+      // so stale ones are retired far more often than new ones are made.
+      this.enqueue(MAINTENANCE_JOBS.CHALET_RETIRE_OFFERS, stamp),
     ]);
   }
 
@@ -67,6 +73,7 @@ export class MaintenanceScheduler {
     await Promise.all([
       this.enqueue(MAINTENANCE_JOBS.BANNER_STATS_ROLLUP, stamp, { date: today }),
       this.enqueue(MAINTENANCE_JOBS.TRACKING_RETENTION, stamp),
+      this.enqueue(MAINTENANCE_JOBS.CHALET_GENERATE_OFFERS, stamp),
     ]);
   }
 

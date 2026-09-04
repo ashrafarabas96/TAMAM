@@ -65,6 +65,13 @@ export const Permission = {
   // notifications
   NOTIFICATIONS_BROADCAST: 'notifications.broadcast',
   NOTIFICATION_TEMPLATES_MANAGE: 'notification_templates.manage',
+  // chalets. An owner manages their own chalet through ownership, not a
+  // permission — these are for staff acting on somebody else's.
+  CHALETS_READ: 'chalets.read',
+  CHALETS_APPROVE: 'chalets.approve',
+  CHALETS_MANAGE: 'chalets.manage',
+  CHALET_BOOKINGS_READ: 'chalet_bookings.read',
+  CHALET_BOOKINGS_CANCEL: 'chalet_bookings.cancel',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 
@@ -122,6 +129,11 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> =
     P.RISK_MANAGE,
     P.NOTIFICATIONS_BROADCAST,
     P.NOTIFICATION_TEMPLATES_MANAGE,
+    P.CHALETS_READ,
+    P.CHALETS_APPROVE,
+    P.CHALETS_MANAGE,
+    P.CHALET_BOOKINGS_READ,
+    P.CHALET_BOOKINGS_CANCEL,
   ],
   [UserRole.OPERATIONS_MANAGER]: [
     P.CUSTOMERS_READ,
@@ -146,6 +158,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> =
     P.ANALYTICS_READ,
     P.AUDIT_READ,
     P.RISK_READ,
+    P.CHALETS_READ,
+    P.CHALETS_MANAGE,
+    P.CHALET_BOOKINGS_READ,
+    P.CHALET_BOOKINGS_CANCEL,
   ],
   [UserRole.DISPATCHER]: [
     P.PARTNERS_READ,
@@ -169,6 +185,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> =
     P.DISPUTES_READ,
     P.SERVICES_READ,
     P.ZONES_READ,
+    // Support answers "where is my booking?" but never changes one; cancelling
+    // a chalet booking moves money, so it stays with operations.
+    P.CHALETS_READ,
+    P.CHALET_BOOKINGS_READ,
   ],
   [UserRole.FINANCE]: [
     P.PAYMENTS_READ,

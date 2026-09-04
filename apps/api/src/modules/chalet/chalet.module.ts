@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 
 import { ChaletAvailabilityService } from './chalet-availability.service';
 import { ChaletBookingService } from './chalet-booking.service';
+import { ChaletOccupancyService } from './chalet-occupancy.service';
+import { ChaletOffersService } from './chalet-offers.service';
+import { ChaletOwnerController } from './chalet-owner.controller';
 import { ChaletPricingService } from './chalet-pricing.service';
+import { ChaletController } from './chalet.controller';
 
 /**
  * TAMAM Chalet — hourly chalet booking (spec §1–§85).
@@ -14,7 +18,20 @@ import { ChaletPricingService } from './chalet-pricing.service';
  * zones, audit — but keeps its own domain.
  */
 @Module({
-  providers: [ChaletAvailabilityService, ChaletPricingService, ChaletBookingService],
-  exports: [ChaletAvailabilityService, ChaletPricingService, ChaletBookingService],
+  controllers: [ChaletController, ChaletOwnerController],
+  providers: [
+    ChaletAvailabilityService,
+    ChaletPricingService,
+    ChaletBookingService,
+    ChaletOffersService,
+    ChaletOccupancyService,
+  ],
+  exports: [
+    ChaletAvailabilityService,
+    ChaletPricingService,
+    ChaletBookingService,
+    ChaletOffersService,
+    ChaletOccupancyService,
+  ],
 })
 export class ChaletModule {}

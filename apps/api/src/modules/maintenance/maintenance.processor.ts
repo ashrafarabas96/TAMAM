@@ -9,6 +9,8 @@ import { AnalyticsService } from '../analytics/analytics.service';
 import { SessionService } from '../auth/session.service';
 import { BannerAttributionService } from '../campaigns/banner-attribution.service';
 import { CampaignsService } from '../campaigns/campaigns.service';
+import { ChaletBookingService } from '../chalet/chalet-booking.service';
+import { ChaletOffersService } from '../chalet/chalet-offers.service';
 import { SystemConfigService } from '../config/system-config.service';
 import { PartnerAvailabilityService } from '../partners/partner-availability.service';
 import { TrackingService } from '../tracking/tracking.service';
@@ -44,6 +46,8 @@ export class MaintenanceProcessor extends WorkerHost {
     private readonly analytics: AnalyticsService,
     private readonly sessions: SessionService,
     private readonly documents: DocumentExpiryService,
+    private readonly chaletBookings: ChaletBookingService,
+    private readonly chaletOffers: ChaletOffersService,
     private readonly logger: PinoLogger,
   ) {
     super();
@@ -102,6 +106,15 @@ export class MaintenanceProcessor extends WorkerHost {
 
       case MAINTENANCE_JOBS.EXPIRE_DOCUMENTS:
         return { ...(await this.documents.run()) };
+
+      case MAINTENANCE_JOBS.CHALET_EXPIRE_HOLDS:
+        return { expiredChaletHolds: await this.chaletBookings.expireHolds() };
+
+      case MAINTENANCE_JOBS.CHALET_RETIRE_OFFERS:
+        return { retiredChaletOffers: await this.chaletOffers.retireStaleOffers() };
+
+      case MAINTENANCE_JOBS.CHALET_GENERATE_OFFERS:
+        return { createdChaletOffers: await this.chaletOffers.generateForAll() };
 
       default:
         // An unknown name means the queue and this switch drifted apart — fail loudly.

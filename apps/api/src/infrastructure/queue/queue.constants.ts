@@ -41,4 +41,9 @@ export const MAINTENANCE_JOBS = {
   CAMPAIGN_SCHEDULER: 'campaign-scheduler',
   SESSION_CLEANUP: 'session-cleanup',
   NOTIFICATION_RETENTION: 'notification-retention',
+  // Chalet. Hold expiry runs every minute because seven minutes is the whole
+  // window; the offer sweeps are cheap and run alongside it.
+  CHALET_EXPIRE_HOLDS: 'chalet-expire-holds',
+  CHALET_RETIRE_OFFERS: 'chalet-retire-offers',
+  CHALET_GENERATE_OFFERS: 'chalet-generate-offers',
 } as const;
