@@ -25,7 +25,17 @@ export const envSchema = z
     JWT_REFRESH_SECRET: z.string().min(32),
     JWT_ISSUER: z.string().default('tamam'),
     OTP_PEPPER: z.string().min(32),
-    ENCRYPTION_KEY: z.string().min(40), // base64 of 32 bytes = 44 chars
+    // AES-256-GCM needs exactly 32 bytes. Checking the character count alone
+    // let a 35-byte key through, and it only failed later inside seeding.
+    ENCRYPTION_KEY: z
+      .string()
+      .refine((v) => {
+        try {
+          return Buffer.from(v, 'base64').length === 32;
+        } catch {
+          return false;
+        }
+      }, 'ENCRYPTION_KEY must be base64 of exactly 32 bytes'),
     CORS_ORIGINS: z.string().default('http://localhost:3001'),
     ADMIN_WEB_URL: z.string().url().default('http://localhost:3001'),
 

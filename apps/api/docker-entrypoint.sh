@@ -21,7 +21,17 @@ fi
 # they cannot sign in to.
 if [ "${SEED_ON_START:-false}" = "true" ]; then
   echo "[entrypoint] seeding reference data…"
-  node_modules/.bin/ts-node -r tsconfig-paths/register prisma/seed.ts
+  # Failing here is correct -- an unseeded database has no admin to sign in as.
+  # But the container then restarts, and the real error scrolls away in a loop,
+  # so say plainly what happened before exiting.
+  if ! node_modules/.bin/ts-node -r tsconfig-paths/register prisma/seed.ts; then
+    echo "======================================================================" >&2
+    echo "[entrypoint] SEEDING FAILED. The error is printed just above." >&2
+    echo "[entrypoint] The API will not start, and this container will keep" >&2
+    echo "[entrypoint] restarting until the cause is fixed." >&2
+    echo "======================================================================" >&2
+    exit 1
+  fi
   echo "[entrypoint] seed complete"
 fi
 

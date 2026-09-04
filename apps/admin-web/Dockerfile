@@ -27,6 +27,10 @@ FROM base AS build
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/admin-web/node_modules ./apps/admin-web/node_modules
+# The shared packages are compiled here, so they need the dependencies the deps
+# stage installed for them. Without this line tsc reports "Cannot find module
+# 'zod'" and the build dies before Next.js is ever reached.
+COPY --from=deps /app/packages ./packages
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY packages ./packages
 COPY apps/admin-web ./apps/admin-web

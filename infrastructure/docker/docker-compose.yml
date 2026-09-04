@@ -128,8 +128,12 @@ services:
       # ---------------------------------------------------------------
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-local-development-access-secret-not-for-real-use}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-local-development-refresh-secret-not-for-real-use}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-bG9jYWwtZGV2ZWxvcG1lbnQta2V5LTMyLWJ5dGVzLXh4eHg=}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-dGFtYW0tbG9jYWwtZGV2LWtleS0zMi1ieXRlcy14eHg=}
+      OTP_PEPPER: ${OTP_PEPPER:-local-development-otp-pepper-not-for-real-use}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-TamamAdmin#2026}
+      # These match the buckets minio-init creates above.
+      S3_BUCKET_PRIVATE: tamam-private
+      S3_BUCKET_PUBLIC: tamam-public
     ports:
       - '3000:3000'
     depends_on:
