@@ -16,6 +16,7 @@ title TAMAM - Docker check
 set "REPORT=%~dp0docker-report.txt"
 set "PROBLEM="
 set "SYSINFO=%TEMP%\tamam-systeminfo.txt"
+set "WSLOUT=%TEMP%\tamam-wsl.txt"
 
 > "%REPORT%" echo TAMAM Docker report - %DATE% %TIME%
 call :say ""
@@ -91,7 +92,7 @@ call :say "  [5/6] Is virtualization enabled in the BIOS?"
 findstr /C:"Virtualization Enabled In Firmware" /C:"A hypervisor has been detected" "%SYSINFO%" >>"%REPORT%" 2>&1
 findstr /C:"A hypervisor has been detected" "%SYSINFO%" >nul 2>&1
 if not errorlevel 1 (
-  call :say "        Yes - a hypervisor is already running."
+  call :say "        A hypervisor is running - but see the WSL check below."
 ) else (
   findstr /C:"Virtualization Enabled In Firmware: Yes" "%SYSINFO%" >nul 2>&1
   if not errorlevel 1 (
@@ -108,20 +109,37 @@ if not errorlevel 1 (
 )
 
 REM --- 5. WSL 2 -------------------------------------------------------
+REM wsl.exe prints UTF-16, which findstr cannot search and which lands in the
+REM report as one letter per two bytes. PowerShell re-encodes it to plain text
+REM so both this script and a human can read what WSL actually said.
 call :say ""
-call :say "  [6/6] Is WSL 2 installed?"
+call :say "  [6/6] Is WSL 2 working?"
 >>"%REPORT%" echo.
 >>"%REPORT%" echo --- wsl ---
 where wsl >nul 2>&1
 if errorlevel 1 (
   call :say "        NO - WSL is missing. Docker Desktop needs it."
   if not "!PROBLEM!"=="NO_VIRTUALIZATION" set "PROBLEM=NO_WSL"
-) else (
-  wsl --status >>"%REPORT%" 2>&1
-  wsl --list --verbose >>"%REPORT%" 2>&1
-  wsl --status 2>nul | find /I "2" >nul
-  call :say "        WSL is present - details are in docker-report.txt."
+  goto :verdict
 )
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$e=[Console]::OutputEncoding; [Console]::OutputEncoding=[Text.Encoding]::Unicode; $o=(& wsl.exe --status 2>&1 | Out-String) + (& wsl.exe --list --verbose 2>&1 | Out-String); [Console]::OutputEncoding=$e; $o" > "%WSLOUT%" 2>&1
+if not exist "%WSLOUT%" wsl --status > "%WSLOUT%" 2>&1
+type "%WSLOUT%" >>"%REPORT%" 2>&1
+
+findstr /I /C:"virtualization is not enabled" "%WSLOUT%" >nul 2>&1
+if not errorlevel 1 (
+  call :say "        NO - WSL says virtualization is not enabled."
+  call :say "        This is the real cause. It blocks the Docker engine."
+  set "PROBLEM=WSL_NO_VIRT"
+  goto :verdict
+)
+findstr /I /C:"has no installed distributions" "%WSLOUT%" >nul 2>&1
+if not errorlevel 1 (
+  call :say "        WSL runs but has no Linux installed."
+  set "PROBLEM=WSL_NO_DISTRO"
+  goto :verdict
+)
+call :say "        WSL looks fine - details are in docker-report.txt."
 
 :verdict
 call :say ""
@@ -164,13 +182,13 @@ if "%PROBLEM%"=="ENGINE_STUCK" (
   call :say "  Docker Desktop is open but the engine never started."
   call :say ""
   call :say "  Do these in order, testing after each one:"
-  call :say "  1. Right-click the whale icon near the clock -> Quit"
-  call :say "     Docker Desktop. Then open it again and wait 3 minutes."
+  call :say "  1. Right-click the whale icon near the clock, then"
+  call :say "     choose Quit Docker Desktop. Open it again, wait 3 minutes."
   call :say "  2. Open PowerShell as Administrator and run:"
   call :say "        wsl --update"
   call :say "        wsl --shutdown"
   call :say "     then open Docker Desktop again."
-  call :say "  3. Docker Desktop -> gear icon -> Troubleshoot ->"
+  call :say "  3. In Docker Desktop: gear icon, then Troubleshoot, then"
   call :say "     'Reset to factory defaults'."
   call :say "  4. Restart the computer."
   goto :done
@@ -191,11 +209,40 @@ if "%PROBLEM%"=="NO_VIRTUALIZATION" (
   goto :done
 )
 
+if "%PROBLEM%"=="WSL_NO_VIRT" (
+  call :say "  WSL 2 cannot start because virtualization is off."
+  call :say "  Docker Desktop runs inside WSL 2, so nothing works until"
+  call :say "  this is fixed. Do all four steps, in this order:"
+  call :say ""
+  call :say "  1. Press the Windows key, type: PowerShell"
+  call :say "     Right-click it and choose 'Run as administrator'."
+  call :say "  2. Run this line and let it finish:"
+  call :say "        wsl.exe --install --no-distribution"
+  call :say "  3. RESTART the computer."
+  call :say "  4. Open Docker Desktop and wait for 'Engine running'."
+  call :say ""
+  call :say "  If step 2 reports the same error again, the switch is off"
+  call :say "  in the BIOS. Restart, press F10 while it boots on an HP,"
+  call :say "  find Virtualization Technology or SVM Mode under Advanced,"
+  call :say "  set it to Enabled, save and exit."
+  goto :done
+)
+
+if "%PROBLEM%"=="WSL_NO_DISTRO" (
+  call :say "  WSL 2 works but has no Linux installed."
+  call :say ""
+  call :say "  1. Open PowerShell as administrator."
+  call :say "  2. Run:  wsl --install -d Ubuntu"
+  call :say "  3. RESTART the computer."
+  call :say "  4. Open Docker Desktop and wait for 'Engine running'."
+  goto :done
+)
+
 if "%PROBLEM%"=="NO_WSL" (
   call :say "  WSL 2 is missing. Docker Desktop is built on top of it."
   call :say ""
   call :say "  1. Press the Windows key, type: PowerShell"
-  call :say "  2. Right-click it -> 'Run as administrator'."
+  call :say "  2. Right-click it and choose 'Run as administrator'."
   call :say "  3. Type this and press Enter:"
   call :say "        wsl --install"
   call :say "  4. RESTART the computer."
@@ -208,6 +255,7 @@ call :say "  Send docker-report.txt for help."
 
 :done
 del "%SYSINFO%" >nul 2>&1
+del "%WSLOUT%" >nul 2>&1
 call :say ""
 call :say "  A full report was saved to:"
 call :say "    %REPORT%"
@@ -217,6 +265,12 @@ pause >nul
 exit /b 0
 
 :say
-if "%~1"=="" (echo.) else (echo %~1)
-if "%~1"=="" (>>"%REPORT%" echo.) else (>>"%REPORT%" echo %~1)
+set "LINE=%~1"
+if not defined LINE (
+  echo.
+  >>"%REPORT%" echo.
+  goto :eof
+)
+echo !LINE!
+>>"%REPORT%" echo !LINE!
 goto :eof
