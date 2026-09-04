@@ -2,19 +2,19 @@
 
 > **Read this first when resuming work.** It is the exact state of the repository, what is verified, what is written-but-unverified, and the next commands to run.
 
-_Last updated: 2026-09-04 (end of session 2 — network available). **Everything now compiles, migrates, seeds, lints and passes its tests.** The gap list from session 1 (A1–A12, B1–B3, C1–C6) is closed. See `FINAL_IMPLEMENTATION_REPORT.md` for the per-area status and what remains genuinely out of scope._
+_Last updated: 2026-09-04 (session 3 — TAMAM Chalet). **Everything compiles, migrates, seeds, lints and passes its tests.** The gap list from session 1 (A1–A12, B1–B3, C1–C6) is closed, and the Chalet module's API is complete and covered end to end; see `docs/CHALET.md`. `FINAL_IMPLEMENTATION_REPORT.md` has the per-area status of the original platform._
 
 ## Where the project stands
 
 | Check                                       | Result                                                                                                         |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `pnpm install` + workspace build            | ✅ passes (`pnpm-lock.yaml` now exists)                                                                        |
-| Prisma migrate + PostGIS SQL                | ✅ applied — 100 tables, 22 triggers                                                                           |
+| Prisma migrate + PostGIS SQL                | ✅ applied — 105 application tables (9 of them chalet) plus PostGIS's own, 16 triggers, 2 exclusion constraints  |
 | `pnpm --filter @tamam/api seed`             | ✅ 63 configs, 17 flags, 47 permissions, 9 service types, 3 zones, demo users                                  |
 | `@tamam/api` typecheck / lint / format      | ✅ 0 errors (8 non-blocking import warnings)                                                                   |
-| `@tamam/api` unit tests                     | ✅ **309 / 309** across 22 suites                                                                              |
-| `@tamam/api` e2e (real DB + Redis)          | ✅ **11 / 11** across 6 suites — ride, delivery, home-service, dispatch race, payment idempotency, permissions |
-| `@tamam/validation`                         | ✅ 10 / 10                                                                                                     |
+| `@tamam/api` unit tests                     | ✅ **632 / 632** across 33 suites                                                                              |
+| `@tamam/api` e2e (real DB + Redis)          | ✅ **63 / 63** across 9 suites — ride, delivery, home-service, dispatch race, payment idempotency, permissions, chalet race, chalet journey, chalet acceptance |
+| `@tamam/validation`                         | ✅ 36 / 36                                                                                                     |
 | `@tamam/admin-web` typecheck + `next build` | ✅ passes                                                                                                      |
 | `customer-mobile` analyze / test            | ✅ 0 errors — 46 / 46                                                                                          |
 | `partner-mobile` analyze / test             | ✅ 0 errors — 111 / 111                                                                                        |
@@ -145,10 +145,43 @@ Two things worth knowing:
 - **MinIO/S3 is not required** for the suites above. Media upload _intents_ are signed without
   contacting the store; only an actual upload needs one running (`infrastructure/docker`).
 
+## 3.05 TAMAM Chalet (session 3)
+
+Hourly chalet booking, added as its own domain rather than another job type. The full
+design and the reasoning behind each rule are in **`docs/CHALET.md`**; the short version:
+
+| Guarantee | Where it is enforced |
+| --- | --- |
+| The same slot cannot be sold twice | `btree_gist` EXCLUDE constraint in `prisma/sql/002_chalet.sql` — not application code |
+| Cleaning time is part of what a booking occupies | `blocked_until` derived by a database trigger, never trusted from the caller |
+| A hold protects checkout for 7 minutes | Released on every write that touches the chalet, plus a sweep every minute |
+| The price never goes below the owner's floor | Applied last and unconditionally; 200 combinations tested |
+| A confirmed price is history | Immutability trigger on `pricing_snapshot` |
+| The TAMAM calendar is the only calendar | Owner-recorded external bookings occupy it under the same constraint |
+| Rule-based pricing is never called AI | A test reads the module's source and fails the build if it is |
+
+Verified against a live database: two concurrent holds on the same slot leave exactly one
+row, and the loser gets a typed `CONFLICT` rather than a stack trace.
+
+**API complete. UI not started** — the Flutter booking journey, the owner dashboard and the
+admin approval screens are the remaining work, listed in 3.1 below.
+
 ## 3.1 What is genuinely left
 
-Nothing on the session-1 gap list remains. What is left needs credentials or hardware this
-environment does not have, not more code:
+Nothing on the session-1 gap list remains, and the Chalet API is complete. Two kinds of work
+are left: Chalet's user interfaces, which need writing, and the platform items that need
+credentials or hardware this environment does not have.
+
+**Chalet UI — the real remaining code:**
+
+| Item | Notes |
+| --- | --- |
+| Customer booking journey (Flutter) | Search, day view, slot picker on the chalet's own grid, price breakdown, hold countdown, confirmation. Arabic-first RTL. |
+| Owner dashboard (Flutter) | Calendar, occupancy with the by-weekday and by-hour breakdowns, gap list, recording an external booking, the pricing switches. |
+| Admin approval screens (`apps/admin-web`) | Chalets arrive `PENDING_APPROVAL`; the API serves the transition, the console does not render it yet. |
+| Chalet search endpoint | `chaletSearchSchema` and the DTOs exist and are tested; no controller serves them yet. |
+
+**Everything else needs credentials or hardware, not more code:**
 
 | Item                                             | What it needs                                                                                                                                  |
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -169,3 +202,8 @@ environment does not have, not more code:
 | `flutter_map` (OSM/MapLibre tiles) behind `MapView`          | No API key needed to run; Google Maps adapter can be swapped in one file                                                             |
 | Banners = admin-managed campaigns (no third-party ad SDK)    | User decision; full control over creative quality, targeting and analytics                                                           |
 | Launch region Palestine, ILS, Arabic-first                   | User decision; multi-currency supported by design                                                                                    |
+| Chalet double-booking prevented by a DB exclusion constraint | Application code cannot win a race against itself. Two customers confirming in the same millisecond both pass the availability check; the second INSERT is rejected by PostgreSQL |
+| Chalet cleaning buffer stored in `blocked_until`, trigger-derived | Makes "a booking occupies its window plus its cleaning" a property of the data rather than a rule every code path must remember |
+| Chalet is its own module, not a `JobType`                    | A booking is a window of time on one property; nothing about dispatch, assignment, offers or tracking applies to it                   |
+| Smart Pricing is rule-based and named as such                | Spec's "no fake AI" rule. An owner told "the AI decided" cannot argue with the number; one told "your week is 30 % booked against your 80 % target" can |
+| E2E suites run with `maxWorkers: 1`                          | They share one database and one Redis. Parallelism was a correctness hazard masked by worker count — and serial is faster here anyway (117 s vs 133 s) |

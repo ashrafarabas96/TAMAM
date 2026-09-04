@@ -7,6 +7,7 @@ import {
   EXTENDABLE,
   canTransition,
   isExternal,
+  overstayCharge,
   refundPercentFor,
 } from './booking-state';
 
@@ -115,5 +116,51 @@ describe('isExternal', () => {
     expect(isExternal('OWNER_MANUAL')).toBe(true);
     expect(isExternal('ADMIN')).toBe(true);
     expect(isExternal('TAMAM')).toBe(false);
+  });
+});
+
+describe('overstayCharge', () => {
+  const hourly = 10_000n; // 100.00 an hour
+
+  it('charges nothing inside the grace period', () => {
+    expect(overstayCharge(10, hourly)).toEqual({ billedMinutes: 0, feeMinor: 0n });
+    expect(overstayCharge(15, hourly)).toEqual({ billedMinutes: 0, feeMinor: 0n });
+  });
+
+  it('charges nothing for a guest who left on time or early', () => {
+    expect(overstayCharge(0, hourly).feeMinor).toBe(0n);
+  });
+
+  it('bills in whole blocks once the grace runs out', () => {
+    // 20 minutes late rounds up to one 30-minute block.
+    expect(overstayCharge(20, hourly).billedMinutes).toBe(30);
+    expect(overstayCharge(31, hourly).billedMinutes).toBe(60);
+  });
+
+  it('charges the premium rate, not the ordinary one', () => {
+    // Half an hour at 150% of 100.00 an hour is 75.00.
+    expect(overstayCharge(20, hourly).feeMinor).toBe(7_500n);
+  });
+
+  it('scales with how late the guest is', () => {
+    const short = overstayCharge(20, hourly).feeMinor;
+    const long = overstayCharge(90, hourly).feeMinor;
+    expect(long).toBeGreaterThan(short);
+  });
+
+  it('bills the whole overrun once grace is exceeded, not just the excess', () => {
+    // 16 minutes late is one 30-minute block, the same as 30 minutes late.
+    // Billing only the minute past grace would make a long overstay cost
+    // barely more than a brief one, and the chalet was occupied for all of it.
+    expect(overstayCharge(16, hourly).billedMinutes).toBe(30);
+    expect(overstayCharge(30, hourly).billedMinutes).toBe(30);
+    expect(overstayCharge(31, hourly).billedMinutes).toBe(60);
+  });
+
+  it('follows a chalet’s own gentler policy', () => {
+    const gentle = { graceMinutes: 60, surchargeMultiplier: 1, billingBlockMinutes: 60 };
+    expect(overstayCharge(45, hourly, gentle).feeMinor).toBe(0n);
+    // 70 minutes late is two whole-hour blocks at the ordinary rate.
+    expect(overstayCharge(70, hourly, gentle).feeMinor).toBe(20_000n);
   });
 });

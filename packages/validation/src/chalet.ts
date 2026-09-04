@@ -52,8 +52,23 @@ export const timeWindowSchema = z
 
 export const chaletGuestCountSchema = z.number().int().min(1).max(500);
 
+/** The same, for query strings. See queryDurationMinutesSchema. */
+export const queryGuestCountSchema = z.coerce.number().int().min(1).max(500);
+
 /** Durations are stored in minutes everywhere; 7 days is the hard ceiling. */
 export const durationMinutesSchema = z.number().int().min(1).max(60 * 24 * 7);
+
+/**
+ * The same duration arriving as a query parameter, where every value is a
+ * string. Without the coercion the field silently cannot be supplied at all:
+ * `?durationMinutes=240` fails validation and the caller gets a 422 for sending
+ * exactly what the route documents.
+ */
+export const queryDurationMinutesSchema = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(60 * 24 * 7);
 
 /* ------------------------------------------------------------- the chalet */
 
@@ -170,8 +185,8 @@ export const chaletAutomationSchema = z.object({
  */
 export const chaletAvailabilityQuerySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD'),
-  durationMinutes: durationMinutesSchema.optional(),
-  guestCount: chaletGuestCountSchema.optional(),
+  durationMinutes: queryDurationMinutesSchema.optional(),
+  guestCount: queryGuestCountSchema.optional(),
 });
 
 /** "Is exactly this window free?" — the check the customer's Confirm button needs. */
@@ -182,8 +197,8 @@ export const chaletSearchSchema = z.object({
   city: z.string().trim().max(80).optional(),
   startAt: bookingInstantSchema.optional(),
   endAt: bookingInstantSchema.optional(),
-  guestCount: chaletGuestCountSchema.optional(),
-  maxHourlyRateMinor: moneyAmountSchema.optional(),
+  guestCount: queryGuestCountSchema.optional(),
+  maxHourlyRateMinor: z.coerce.number().int().min(0).optional(),
   amenities: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
   cursor: z.string().max(500).optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
@@ -302,6 +317,9 @@ export const chaletOfferQuerySchema = z.object({
   kind: z.nativeEnum(ChaletOfferKind).optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
+
+/** Every list endpoint reads its dates from the query string too. */
+export const chaletBookingListQuerySchema = chaletBookingListSchema;
 
 /* ----------------------------------------------------------------- types */
 

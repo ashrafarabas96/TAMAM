@@ -24,10 +24,12 @@ import { ChaletPricingService } from './chalet-pricing.service';
 import { minutesBetween, plusMinutes } from './domain/availability';
 import {
   CANCELLABLE_BY_CUSTOMER,
+  CHECK_IN_WINDOW_MINUTES,
   type CancellationPolicy,
   DEFAULT_CANCELLATION_POLICY,
   EXTENDABLE,
   canTransition,
+  overstayCharge,
   refundPercentFor,
 } from './domain/booking-state';
 
@@ -531,6 +533,115 @@ export class ChaletBookingService {
         data: { source: input.source },
       });
       return booking;
+    });
+  }
+
+  /**
+   * The guest has arrived.
+   *
+   * Check-in is what starts the clock on the property being occupied rather
+   * than merely booked, and it is refused before the window opens: a guest who
+   * checks in an hour early would otherwise shift their whole booking forward
+   * into a slot the calendar never reserved for them.
+   */
+  async checkIn(actor: BookingActor, bookingId: string, now = new Date()) {
+    return this.prisma.$transaction(async (tx) => {
+      const booking = await tx.chaletBooking.findUnique({
+        where: { id: bookingId },
+        include: { chalet: { select: { ownerId: true } } },
+      });
+      if (booking === null) throw AppException.notFound('Booking', bookingId);
+      if (booking.customerId !== actor.user.id && booking.chalet.ownerId !== actor.user.id) {
+        throw AppException.forbidden('This booking belongs to someone else');
+      }
+      this.assertTransition(booking.status, ChaletBookingStatus.CHECKED_IN);
+
+      const opensAt = plusMinutes(booking.startAt, -CHECK_IN_WINDOW_MINUTES);
+      if (now < opensAt) {
+        throw AppException.conflict(
+          `Check-in opens ${CHECK_IN_WINDOW_MINUTES} minutes before the booking starts`,
+          ErrorCode.INVALID_STATE_TRANSITION,
+        );
+      }
+      if (now >= booking.endAt) {
+        throw AppException.conflict(
+          'This booking has already ended',
+          ErrorCode.INVALID_STATE_TRANSITION,
+        );
+      }
+
+      const checkedIn = await tx.chaletBooking.update({
+        where: { id: booking.id },
+        data: {
+          status: ChaletBookingStatus.CHECKED_IN,
+          checkedInAt: now,
+          version: { increment: 1 },
+        },
+      });
+      await this.recordEvent(tx, booking.id, ChaletBookingEventType.CHECK_IN, {
+        actorId: actor.user.id,
+        fromStatus: booking.status,
+        toStatus: ChaletBookingStatus.CHECKED_IN,
+      });
+      return checkedIn;
+    });
+  }
+
+  /**
+   * The guest has left, and whether they left late.
+   *
+   * Overstay is charged rather than forbidden — the alternative is an argument
+   * at the gate — but at a premium, because the real cost is not the extra hour.
+   * It is the next booking arriving to a chalet still occupied and not yet
+   * cleaned. Fifteen minutes of grace means nobody is billed for being slow
+   * packing the car.
+   *
+   * The overstay fee is added to the total; it does not touch the pricing
+   * snapshot, which records what was agreed before the stay and stays true.
+   */
+  async checkOut(actor: BookingActor, bookingId: string, now = new Date()) {
+    return this.prisma.$transaction(async (tx) => {
+      const booking = await tx.chaletBooking.findUnique({
+        where: { id: bookingId },
+        include: { chalet: { select: { ownerId: true } } },
+      });
+      if (booking === null) throw AppException.notFound('Booking', bookingId);
+      if (booking.customerId !== actor.user.id && booking.chalet.ownerId !== actor.user.id) {
+        throw AppException.forbidden('This booking belongs to someone else');
+      }
+      this.assertTransition(booking.status, ChaletBookingStatus.CHECKED_OUT);
+
+      const minutesLate = Math.max(0, minutesBetween(booking.endAt, now));
+      const hourlyRateMinor =
+        booking.bookingDurationMinutes === 0
+          ? 0n
+          : (booking.totalAmountMinor * 60n) / BigInt(booking.bookingDurationMinutes);
+      const { billedMinutes, feeMinor } = overstayCharge(minutesLate, hourlyRateMinor);
+
+      const checkedOut = await tx.chaletBooking.update({
+        where: { id: booking.id },
+        data: {
+          status: ChaletBookingStatus.CHECKED_OUT,
+          checkedOutAt: now,
+          overstayMinutes: billedMinutes,
+          overstayFeeMinor: feeMinor,
+          totalAmountMinor: booking.totalAmountMinor + feeMinor,
+          version: { increment: 1 },
+        },
+      });
+
+      if (billedMinutes > 0) {
+        await this.recordEvent(tx, booking.id, ChaletBookingEventType.OVERSTAY, {
+          actorId: actor.user.id,
+          data: { minutesLate, billedMinutes, feeMinor: Number(feeMinor) },
+        });
+      }
+      await this.recordEvent(tx, booking.id, ChaletBookingEventType.CHECK_OUT, {
+        actorId: actor.user.id,
+        fromStatus: booking.status,
+        toStatus: ChaletBookingStatus.CHECKED_OUT,
+      });
+      return { booking: checkedOut, overstayMinutes: billedMinutes, overstayFeeMinor: feeMinor };
     });
   }
 

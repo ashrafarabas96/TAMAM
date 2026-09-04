@@ -51,7 +51,9 @@ closed.
 
 | Part                                      | Status          | One-line assessment                                                                                                                                        |
 | ----------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api` — NestJS backend               | Verified        | 32 modules, 254 route decorators, 96 Prisma models. Compiles, lints, migrates, seeds; 309 unit and 11 e2e tests pass against PostgreSQL + PostGIS + Redis. |
+| `apps/api` — NestJS backend               | Verified        | 33 modules, 254 route decorators, 105 Prisma models. Compiles, lints, migrates, seeds; 632 unit and 63 e2e tests pass against PostgreSQL + PostGIS + Redis. |
+| TAMAM Chalet — API                        | Verified        | Hourly booking as its own domain. Double booking impossible by database constraint, proved with concurrent transactions. See `docs/CHALET.md`.              |
+| TAMAM Chalet — user interfaces            | Not Implemented | The Flutter booking journey, owner dashboard and admin approval screens are the remaining code on this project.                                             |
 | `apps/admin-web` — Next.js console        | Verified        | 27 permission-gated pages plus the staff account page; typecheck and production build pass.                                                                |
 | `apps/customer-mobile` — Flutter          | Verified        | `flutter analyze` reports 0 errors; 46 / 46 tests.                                                                                                         |
 | `apps/partner-mobile` — Flutter           | Verified        | `flutter analyze` reports 0 errors; 111 / 111 tests.                                                                                                       |
@@ -300,4 +302,46 @@ disabled every validated route, a sentinel value the database rejected, a logger
 the wrong class in 37 files — were exactly the class of problem that no amount of re-reading
 finds, and each was fixed at its cause rather than worked around.
 
-What remains is named in §7.4 and needs credentials or an SDK, not more code.
+What remains of the original platform is named in §7.4 and needs credentials or an SDK, not
+more code.
+
+## 9. TAMAM Chalet (session 3)
+
+Hourly chalet booking was added as a separate domain — `ChaletModule`, nine tables, five
+services and two controllers — reusing the platform's payments, notifications, media, zones
+and audit and sharing nothing else. A chalet booking is a window of time on one property;
+nothing about dispatch, assignment, offers or live tracking applies to it, so making it a
+`JobType` would have meant carrying a lifecycle it does not have.
+
+The design and the reasoning behind each rule are in `docs/CHALET.md`. Three things are worth
+repeating here because they are what the module is for:
+
+**Double booking is impossible, not unlikely.** A `btree_gist` exclusion constraint over
+`(chalet_id, tstzrange(start_at, blocked_until))` decides it, and application code does not
+try to. Two customers confirming in the same millisecond both pass the availability check —
+that check is advisory by design — and the second `INSERT` is rejected. Proved with two
+concurrent transactions against a live database: exactly one row survives, and the loser
+receives a typed `CONFLICT`, not a stack trace.
+
+**Cleaning time is a property of the data.** A booking occupies `[startAt, endAt + cleaning)`,
+and `blocked_until` is derived by a database trigger rather than trusted from the caller, so
+no code path can write a booking that quietly forgets its buffer. Booked 12:00–16:00 with
+ninety minutes of cleaning: 16:00 refused, 17:15 refused, 17:30 accepted.
+
+**The owner's floor is absolute.** Smart Pricing applies the owner's own rules and measures
+their own calendar; `minimumHourlyRate` is applied last and unconditionally. A test walks four
+pricing profiles across five occupancy levels, five lead times, both gap states and a 50 %
+offer on top — 200 combinations, never once below the floor. And the spec's "no fake AI" rule
+is enforced by a test that reads the module's own source and fails the build if a user-facing
+string claims intelligence the rules cannot back up.
+
+Two defects in existing code surfaced while building it, both fixed at the cause. The
+append-only trigger on the booking event trail made `ON DELETE CASCADE` impossible to fire, so
+the foreign key beside it was a promise the database would always break; the rule now says
+what it means — an event may not be edited, and may not be removed from a booking that still
+exists. And the e2e suites, which share one database and one Redis, were running in parallel:
+that had been luck rather than design, and a seventh suite pushed past the worker count and
+failed five tests on contention. They now run serially, and finish faster for it.
+
+The API is complete and covered end to end. The user interfaces are not started, and are named
+as the remaining work in `docs/STATUS.md` §3.1.

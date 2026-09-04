@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   bookingInstantSchema,
+  chaletAvailabilityQuerySchema,
+  chaletSearchSchema,
   chaletPricingSchema,
   chaletRateRuleSchema,
   chaletSchedulingSchema,
@@ -161,5 +163,55 @@ describe('chaletRateRuleSchema', () => {
       adjustmentPercent: -95,
     });
     expect(r.success).toBe(false);
+  });
+});
+
+describe('query schemas accept what a query string actually contains', () => {
+  it('coerces a numeric duration arriving as a string', () => {
+    // Every query parameter is a string. Without coercion `?durationMinutes=240`
+    // fails validation and the caller gets a 422 for sending exactly what the
+    // route documents.
+    const parsed = chaletAvailabilityQuerySchema.parse({
+      date: '2026-10-01',
+      durationMinutes: '240',
+    });
+    expect(parsed.durationMinutes).toBe(240);
+  });
+
+  it('coerces a guest count arriving as a string', () => {
+    expect(
+      chaletAvailabilityQuerySchema.parse({ date: '2026-10-01', guestCount: '6' }).guestCount,
+    ).toBe(6);
+  });
+
+  it('still rejects something that is not a number at all', () => {
+    expect(
+      chaletAvailabilityQuerySchema.safeParse({ date: '2026-10-01', durationMinutes: 'four hours' })
+        .success,
+    ).toBe(false);
+  });
+
+  it('still rejects a duration outside the bounds', () => {
+    expect(
+      chaletAvailabilityQuerySchema.safeParse({ date: '2026-10-01', durationMinutes: '0' }).success,
+    ).toBe(false);
+  });
+
+  it('leaves the body schema strict, where JSON carries real numbers', () => {
+    // A JSON body that sends "6" as a string is a client bug, not a query string.
+    expect(
+      holdChaletBookingSchema.safeParse({
+        chaletId: '11111111-1111-1111-1111-111111111111',
+        startAt: '2026-10-01T12:00:00+03:00',
+        endAt: '2026-10-01T16:00:00+03:00',
+        guestCount: '6',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('coerces the search filters that arrive the same way', () => {
+    const parsed = chaletSearchSchema.parse({ guestCount: '4', maxHourlyRateMinor: '12000' });
+    expect(parsed.guestCount).toBe(4);
+    expect(parsed.maxHourlyRateMinor).toBe(12_000);
   });
 });

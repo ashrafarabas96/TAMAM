@@ -102,3 +102,64 @@ export function refundPercentFor(
  * moment it is written.
  */
 export const isExternal = (source: ChaletBookingSource): boolean => source !== 'TAMAM';
+
+/* ------------------------------------------------------------- overstay */
+
+/**
+ * A guest still on the property after their window closed.
+ *
+ * Overstay is charged rather than forbidden, because the alternative is a
+ * confrontation at the gate — but it is charged at a premium, because the real
+ * cost is not the extra hour, it is the next booking arriving to a chalet that
+ * is still occupied and not yet cleaned.
+ */
+export interface OverstayPolicy {
+  /** Minutes of grace before anything is charged. */
+  graceMinutes: number;
+  /** Applied to the booking's own hourly rate. */
+  surchargeMultiplier: number;
+  /** Overstay is billed in whole blocks of this many minutes. */
+  billingBlockMinutes: number;
+}
+
+export const DEFAULT_OVERSTAY_POLICY: OverstayPolicy = {
+  graceMinutes: 15,
+  surchargeMultiplier: 1.5,
+  billingBlockMinutes: 30,
+};
+
+/**
+ * What an overstay costs.
+ *
+ * Grace is forgiveness for a small overrun, not a discount on a large one:
+ * inside it nothing is charged, and past it the *whole* overrun is billed, not
+ * just the part beyond the grace. That is deliberate. The chalet really was
+ * occupied for all of it, and the next guest is kept waiting by all of it —
+ * billing only the excess would make a two-hour overstay cost barely more than
+ * a sixteen-minute one.
+ *
+ * The consequence is a cliff at the grace boundary, which is the point: it is
+ * what makes the grace a courtesy rather than an entitlement.
+ */
+export function overstayCharge(
+  minutesLate: number,
+  hourlyRateMinor: bigint,
+  policy: OverstayPolicy = DEFAULT_OVERSTAY_POLICY,
+): { billedMinutes: number; feeMinor: bigint } {
+  if (minutesLate <= policy.graceMinutes) return { billedMinutes: 0, feeMinor: 0n };
+
+  const blocks = Math.ceil(minutesLate / policy.billingBlockMinutes);
+  const billedMinutes = blocks * policy.billingBlockMinutes;
+  const perMinute = (hourlyRateMinor * BigInt(Math.round(policy.surchargeMultiplier * 100))) / 100n;
+  const feeMinor = (perMinute * BigInt(billedMinutes) + 30n) / 60n;
+  return { billedMinutes, feeMinor };
+}
+
+/**
+ * How early a guest may check in.
+ *
+ * Not before the previous booking's cleaning is done, which the calendar
+ * already guarantees — this is only about the guest's own window, so they
+ * cannot arrive an hour early and start the clock late.
+ */
+export const CHECK_IN_WINDOW_MINUTES = 30;

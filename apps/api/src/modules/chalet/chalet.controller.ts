@@ -125,6 +125,20 @@ export class ChaletController {
     return this.bookings.cancel({ user }, bookingId, input);
   }
 
+  /** The guest has arrived. Refused before the check-in window opens. */
+  @Post('bookings/:id/check-in')
+  @AllowRestricted()
+  checkIn(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) bookingId: string) {
+    return this.bookings.checkIn({ user }, bookingId);
+  }
+
+  /** The guest has left. Returns any overstay charged. */
+  @Post('bookings/:id/check-out')
+  @AllowRestricted()
+  checkOut(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) bookingId: string) {
+    return this.bookings.checkOut({ user }, bookingId);
+  }
+
   /** Add time to a booking already under way, if the extra time is free. */
   @Post('bookings/:id/extend')
   @RequireRole(UserRole.CUSTOMER)
