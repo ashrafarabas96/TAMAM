@@ -15,5 +15,15 @@ else
   echo "[entrypoint] RUN_MIGRATIONS is not 'true' — skipping migrations"
 fi
 
+# A database with no service types, zones or admin account is a database
+# nobody can log into. Seeding is idempotent — it upserts — so leaving this on
+# costs a few seconds per restart and saves a first-time user from a console
+# they cannot sign in to.
+if [ "${SEED_ON_START:-false}" = "true" ]; then
+  echo "[entrypoint] seeding reference data…"
+  node_modules/.bin/ts-node -r tsconfig-paths/register prisma/seed.ts
+  echo "[entrypoint] seed complete"
+fi
+
 echo "[entrypoint] starting: $*"
 exec "$@"

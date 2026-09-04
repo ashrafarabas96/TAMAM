@@ -9,6 +9,7 @@ import { PrismaClient } from '@prisma/client';
 import { AppConfigService } from '../src/config';
 import { seedCampaign } from './seed/campaigns';
 import { seedCatalog } from './seed/catalog';
+import { seedChalets } from './seed/chalets';
 import { type SeedContext, SeedSummary, log } from './seed/context';
 import { seedPlatform } from './seed/platform';
 import { writeSeedAssets } from './seed/png';
@@ -70,6 +71,9 @@ async function main(): Promise<void> {
 
     log('· users (staff, demo customer, demo partners)');
     const users = await seedUsers(ctx, catalog, zones);
+
+    log('· chalets (one live, one awaiting approval)');
+    await seedChalets(ctx, zones, users);
 
     log('· placeholder creatives');
     const assets = writeSeedAssets(assetsDir);

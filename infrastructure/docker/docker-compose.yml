@@ -1,10 +1,16 @@
 # =====================================================================
-# TAMAM — local development stack.
-#   docker compose -f infrastructure/docker/docker-compose.yml up -d db redis minio
+# TAMAM — the whole platform, locally, in one command:
+#
 #   docker compose -f infrastructure/docker/docker-compose.yml up -d --build
 #
-# `db`, `redis` and `minio` are all `scripts/setup.sh` needs; the `api` and
-# `admin-web` services are for running the whole platform in containers.
+# That builds and starts everything, applies the migrations and seeds the
+# reference data, so the admin console at http://localhost:3001 is ready to
+# sign in to. Nothing has to be run first.
+#
+# To start only the datastores (what scripts/setup.sh needs when running the
+# API from source instead):
+#
+#   docker compose -f infrastructure/docker/docker-compose.yml up -d db redis minio
 # =====================================================================
 name: tamam
 
@@ -99,8 +105,31 @@ services:
       REDIS_URL: redis://redis:6379/0
       S3_ENDPOINT: http://minio:9000
       S3_PUBLIC_BASE_URL: http://localhost:9000/tamam-public
+      S3_ACCESS_KEY: tamam
+      S3_SECRET_KEY: tamam-secret
       RUN_MIGRATIONS: 'true'
+      # Brings the stack up populated: service types, zones, an admin account.
+      # The seed upserts, so restarting does not duplicate anything.
+      SEED_ON_START: 'true'
       PORT: '3000'
+      NODE_ENV: development
+      # ---------------------------------------------------------------
+      # LOCAL-ONLY SECRETS.
+      #
+      # These exist so `docker compose up` works on a fresh clone with no
+      # preparation: the API refuses to start without them, and requiring a
+      # setup script first meant the documented one-command start was not one
+      # command. They are development values and are meant to be visible.
+      #
+      # Anything reachable from outside your own machine MUST override them —
+      # see docs/DEPLOYMENT.md. `apps/api/.env`, loaded above, wins over
+      # everything here, so scripts/setup.sh still takes precedence when it
+      # has run.
+      # ---------------------------------------------------------------
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-local-development-access-secret-not-for-real-use}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-local-development-refresh-secret-not-for-real-use}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-bG9jYWwtZGV2ZWxvcG1lbnQta2V5LTMyLWJ5dGVzLXh4eHg=}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-TamamAdmin#2026}
     ports:
       - '3000:3000'
     depends_on:
