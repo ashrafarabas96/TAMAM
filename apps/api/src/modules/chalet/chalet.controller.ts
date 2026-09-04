@@ -5,9 +5,11 @@ import {
   type CancelChaletBookingInput,
   type ChaletAvailabilityQuery,
   type ExtendChaletBookingInput,
+  type ChaletSearchInput,
   type HoldChaletBookingInput,
   cancelChaletBookingSchema,
   chaletAvailabilityQuerySchema,
+  chaletSearchSchema,
   chaletSlotCheckSchema,
   extendChaletBookingSchema,
   holdChaletBookingSchema,
@@ -29,6 +31,7 @@ import { ChaletAvailabilityService } from './chalet-availability.service';
 import { ChaletBookingService } from './chalet-booking.service';
 import { ChaletOffersService } from './chalet-offers.service';
 import { ChaletPricingService } from './chalet-pricing.service';
+import { ChaletSearchService } from './chalet-search.service';
 
 type SlotCheckQuery = z.infer<typeof chaletSlotCheckSchema>;
 
@@ -48,7 +51,26 @@ export class ChaletController {
     private readonly pricing: ChaletPricingService,
     private readonly offers: ChaletOffersService,
     private readonly bookings: ChaletBookingService,
+    private readonly search: ChaletSearchService,
   ) {}
+
+  /**
+   * Find a chalet. Zone, city, capacity and price are answered from the row;
+   * a start and end narrow the results to what is genuinely free then, cleaning
+   * buffers included.
+   */
+  @Get()
+  @Public()
+  find(@ZodQuery(chaletSearchSchema) query: ChaletSearchInput) {
+    return this.search.search(query);
+  }
+
+  /** One chalet in full: amenities, photos, opening hours, list price. */
+  @Get(':id')
+  @Public()
+  detail(@Param('id', UuidPipe) chaletId: string) {
+    return this.search.detail(chaletId);
+  }
 
   /** The free windows and workable start times on one day, cleaning already subtracted. */
   @Get(':id/availability')

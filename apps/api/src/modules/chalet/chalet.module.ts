@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 
+import { MediaModule } from '../media/media.module';
+
 import { ChaletAvailabilityService } from './chalet-availability.service';
 import { ChaletBookingService } from './chalet-booking.service';
 import { ChaletOccupancyService } from './chalet-occupancy.service';
 import { ChaletOffersService } from './chalet-offers.service';
 import { ChaletOwnerController } from './chalet-owner.controller';
 import { ChaletPricingService } from './chalet-pricing.service';
+import { ChaletSearchService } from './chalet-search.service';
 import { ChaletController } from './chalet.controller';
 
 /**
@@ -18,6 +21,9 @@ import { ChaletController } from './chalet.controller';
  * zones, audit — but keeps its own domain.
  */
 @Module({
+  // MediaModule is not global; the search results need MediaUrlService to turn a
+  // stored object key into a cover photo URL.
+  imports: [MediaModule],
   controllers: [ChaletController, ChaletOwnerController],
   providers: [
     ChaletAvailabilityService,
@@ -25,6 +31,7 @@ import { ChaletController } from './chalet.controller';
     ChaletBookingService,
     ChaletOffersService,
     ChaletOccupancyService,
+    ChaletSearchService,
   ],
   exports: [
     ChaletAvailabilityService,
@@ -32,6 +39,7 @@ import { ChaletController } from './chalet.controller';
     ChaletBookingService,
     ChaletOffersService,
     ChaletOccupancyService,
+    ChaletSearchService,
   ],
 })
 export class ChaletModule {}
