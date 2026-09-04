@@ -21,6 +21,11 @@ abstract final class ApiPaths {
   static const String onboardingDocuments = '/partners/onboarding/documents';
   static const String onboardingVehicle = '/partners/onboarding/vehicle';
   static const String onboardingZones = '/partners/onboarding/zones';
+
+  /// `PATCH` — what an already-approved partner may change themselves: the zones
+  /// they work and the categories and skills they offer. The onboarding routes above
+  /// are closed once a file is approved.
+  static const String serviceProfile = '/partners/me/service-profile';
   static const String onboardingSubmit = '/partners/onboarding/submit';
 
   // partner self

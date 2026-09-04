@@ -2,6 +2,11 @@
  * Response shapes of admin routes that are declared inside the API modules (not in
  * `@tamam/shared-types`). Every interface mirrors the service that produces it — see the file
  * referenced in each comment. Keep them in sync when the API changes.
+ *
+ * Numbers are plain `number`, never `number | string`: a global interceptor
+ * (`SerializeInterceptor`) renders every BigInt and Prisma Decimal as a JSON number before the
+ * response leaves the API, on mapped DTOs and raw rows alike. That contract is covered by
+ * `serialize.interceptor.spec.ts`.
  */
 import type {
   AssignmentStatus,
@@ -203,7 +208,7 @@ export interface JobAssignmentRow {
   partnerId: string;
   wave: number;
   status: AssignmentStatus;
-  score: number | string;
+  score: number;
   distanceMeters: number;
   etaSeconds: number;
   estimatedEarningsMinor: number;
@@ -222,8 +227,8 @@ export interface SosAlertRow {
   id: string;
   jobId: string;
   userId: string;
-  lat: number | string;
-  lng: number | string;
+  lat: number;
+  lng: number;
   note: string | null;
   acknowledgedById: string | null;
   acknowledgedAt: string | null;
@@ -287,7 +292,7 @@ export interface SurgeOverrideRow {
   id: string;
   zoneId: string;
   jobType: JobType;
-  multiplier: number | string;
+  multiplier: number;
   startsAt: string;
   endsAt: string;
   reason: string;
@@ -416,7 +421,7 @@ export interface CommissionPolicyDto {
   partnerId: string | null;
   campaignCode: string | null;
   percent: number;
-  fixedMinor: number | string;
+  fixedMinor: number;
   priority: number;
   validFrom: string;
   validTo: string | null;

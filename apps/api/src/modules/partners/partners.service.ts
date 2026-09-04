@@ -35,6 +35,7 @@ import type {
   PartnerOnboardingSkillsInput,
   PartnerVehicleInput,
   PartnerZonesInput,
+  UpdateServiceProfileInput,
   ReviewDocumentInput,
 } from '@tamam/validation';
 
@@ -328,6 +329,122 @@ export class PartnersService {
           onboardingStep: Math.max(partner.onboardingStep, PARTNER_ONBOARDING_STEPS.SKILLS),
         },
       });
+    });
+    return this.getProfile(userId);
+  }
+
+  /**
+   * Self-service edits for an approved partner: the zones they work and the categories and
+   * skills they offer. The onboarding routes refuse anything past review — "changed by
+   * support, not in the app" — which is right for identity, documents and vehicles but left
+   * an approved partner unable to stop serving a zone or to drop a skill.
+   *
+   * Registered roles are deliberately not editable here: taking on a new role needs review.
+   * Which of the granted roles a partner works right now is a per-shift choice and already
+   * lives on `PUT /partners/me/availability`.
+   */
+  async updateServiceProfile(
+    userId: string,
+    input: UpdateServiceProfileInput,
+    requestId: string | null,
+  ): Promise<PartnerDto> {
+    const partner = await this.requirePartner(userId);
+    if (partner.verificationStatus !== VerificationStatus.APPROVED)
+      throw AppException.conflict(
+        'Only an approved partner edits their service profile; finish onboarding first',
+      );
+
+    const zoneIds = input.zoneIds ? [...new Set(input.zoneIds)] : undefined;
+    const categoryIds = input.categoryIds ? [...new Set(input.categoryIds)] : undefined;
+    const skills = input.skills
+      ? [...new Set(input.skills.map((v) => v.trim()).filter(Boolean))]
+      : undefined;
+
+    if (zoneIds) {
+      const zones = await this.prisma.serviceZone.findMany({
+        where: { id: { in: zoneIds }, isActive: true },
+        select: { id: true },
+      });
+      const found = new Set(zones.map((z) => z.id));
+      const unknown = zoneIds.filter((id) => !found.has(id));
+      if (unknown.length)
+        throw AppException.validation(
+          unknown.map((id) => ({ field: 'zoneIds', message: `unknown or inactive zone ${id}` })),
+        );
+    }
+
+    if (categoryIds?.length) {
+      const categories = await this.prisma.serviceCategory.findMany({
+        where: { id: { in: categoryIds }, isActive: true },
+        select: { id: true, requiredPartnerRole: true, nameEn: true },
+      });
+      const found = new Set(categories.map((c) => c.id));
+      const unknown = categoryIds.filter((id) => !found.has(id));
+      if (unknown.length)
+        throw AppException.validation(
+          unknown.map((id) => ({
+            field: 'categoryIds',
+            message: `unknown or inactive category ${id}`,
+          })),
+        );
+      // A partner can only offer what their granted roles cover — the same rule onboarding
+      // applies, so this route cannot be used to widen what they are approved for.
+      const roles = partner.roles.filter((r) => r.isActive).map((r) => r.role);
+      const mismatched = categories.filter((c) => !roles.includes(c.requiredPartnerRole));
+      if (mismatched.length)
+        throw AppException.validation(
+          mismatched.map((c) => ({
+            field: 'categoryIds',
+            message: `${c.nameEn} requires the ${c.requiredPartnerRole} role`,
+          })),
+        );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      if (zoneIds) {
+        await tx.partnerZone.deleteMany({
+          where: { partnerId: userId, zoneId: { notIn: zoneIds } },
+        });
+        for (const zoneId of zoneIds)
+          await tx.partnerZone.upsert({
+            where: { partnerId_zoneId: { partnerId: userId, zoneId } },
+            update: {},
+            create: { partnerId: userId, zoneId },
+          });
+      }
+      if (categoryIds) {
+        await tx.partnerCategory.deleteMany({
+          where: { partnerId: userId, categoryId: { notIn: categoryIds } },
+        });
+        for (const categoryId of categoryIds)
+          await tx.partnerCategory.upsert({
+            where: { partnerId_categoryId: { partnerId: userId, categoryId } },
+            update: {},
+            create: { partnerId: userId, categoryId },
+          });
+      }
+      if (skills) {
+        await tx.partnerSkill.deleteMany({
+          where: { partnerId: userId, skill: { notIn: skills } },
+        });
+        for (const skill of skills)
+          await tx.partnerSkill.upsert({
+            where: { partnerId_skill: { partnerId: userId, skill } },
+            update: {},
+            create: { partnerId: userId, skill },
+          });
+      }
+      await this.audit.record(
+        {
+          actorId: userId,
+          action: 'partner.service_profile.update',
+          entity: 'partner_profile',
+          entityId: userId,
+          newValue: { zoneIds, categoryIds, skills },
+          requestId,
+        },
+        tx,
+      );
     });
     return this.getProfile(userId);
   }

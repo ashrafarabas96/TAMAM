@@ -53,7 +53,11 @@ class _WorkPreferencesScreenState extends ConsumerState<WorkPreferencesScreen> {
     if (zones == null || zones.isEmpty) return;
     setState(() => _busy = true);
     try {
-      await ref.read(onboardingRepositoryProvider).saveZones(zones.toList(growable: false));
+      // The onboarding route refuses an approved file; this screen is only ever reached
+      // after approval, so it edits the service profile instead.
+      await ref
+          .read(onboardingRepositoryProvider)
+          .updateServiceProfile(zoneIds: zones.toList(growable: false));
       ref.invalidate(partnerProfileProvider);
       if (mounted) AppFeedback.showMessage(context, context.l10n.workPreferencesSaved, icon: Icons.check_rounded);
     } on AppFailure catch (failure) {
@@ -68,7 +72,9 @@ class _WorkPreferencesScreenState extends ConsumerState<WorkPreferencesScreen> {
     if (categories == null || categories.isEmpty) return;
     setState(() => _busy = true);
     try {
-      await ref.read(onboardingRepositoryProvider).saveSkills(categoryIds: categories.toList(growable: false));
+      await ref
+          .read(onboardingRepositoryProvider)
+          .updateServiceProfile(categoryIds: categories.toList(growable: false));
       ref.invalidate(partnerProfileProvider);
       if (mounted) AppFeedback.showMessage(context, context.l10n.workPreferencesSaved, icon: Icons.check_rounded);
     } on AppFailure catch (failure) {

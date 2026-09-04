@@ -3,31 +3,33 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '@tamam/shared-types';
 import {
   type AdminUpdatePartnerInput,
-  type HeartbeatInput,
-  type PartnerDecisionInput,
-  type PartnerDocumentUploadInput,
-  type PartnerOnboardingPersonalInput,
-  type PartnerOnboardingRolesInput,
-  type PartnerOnboardingSkillsInput,
-  type PartnerVehicleInput,
-  type PartnerZonesInput,
-  type ReviewDocumentInput,
-  type SetAvailabilityInput,
   adminUpdatePartnerSchema,
+  type HeartbeatInput,
   heartbeatSchema,
   jobListFilterSchema,
   pageRequestSchema,
+  type PartnerDecisionInput,
   partnerDecisionSchema,
+  type PartnerDocumentUploadInput,
   partnerDocumentUploadSchema,
   partnerListFilterSchema,
+  type PartnerOnboardingPersonalInput,
   partnerOnboardingPersonalSchema,
+  type PartnerOnboardingRolesInput,
   partnerOnboardingRolesSchema,
+  type PartnerOnboardingSkillsInput,
   partnerOnboardingSkillsSchema,
   partnerSubmitForReviewSchema,
+  type PartnerVehicleInput,
   partnerVehicleSchema,
+  type PartnerZonesInput,
   partnerZonesSchema,
+  type ReviewDocumentInput,
   reviewDocumentSchema,
+  type SetAvailabilityInput,
   setAvailabilitySchema,
+  type UpdateServiceProfileInput,
+  updateServiceProfileSchema,
 } from '@tamam/validation';
 import { z } from 'zod';
 
@@ -213,6 +215,21 @@ export class PartnersController {
     @ZodBody(addBankAccountSchema) input: AddBankAccountBody,
   ) {
     return this.partners.addBankAccount(user.id, input);
+  }
+
+  /**
+   * Self-service edits for an approved partner. The onboarding routes are closed once a file
+   * is approved, which is right for identity and documents but left a working partner unable
+   * to change the zones they serve or the skills they offer.
+   */
+  @Patch('partners/me/service-profile')
+  @RequireRole('PARTNER')
+  updateServiceProfile(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(updateServiceProfileSchema) input: UpdateServiceProfileInput,
+    @RequestId() requestId: string,
+  ) {
+    return this.partners.updateServiceProfile(user.id, input, requestId);
   }
 
   @Delete('partners/me/bank-accounts/:id')

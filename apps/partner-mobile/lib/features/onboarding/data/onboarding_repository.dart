@@ -98,6 +98,24 @@ class OnboardingRepository {
         await _api.postObject(ApiPaths.onboardingZones, body: <String, Object?>{'zoneIds': zoneIds}),
       );
 
+  /// `PATCH /partners/me/service-profile` — the approved-partner counterpart of the
+  /// onboarding zone and skill steps, which refuse a file that has already been reviewed.
+  Future<PartnerProfile> updateServiceProfile({
+    List<String>? zoneIds,
+    List<String>? categoryIds,
+    List<String>? skills,
+  }) async =>
+      PartnerProfile.fromJson(
+        await _api.patchObject(
+          ApiPaths.serviceProfile,
+          body: <String, Object?>{
+            if (zoneIds != null) 'zoneIds': zoneIds,
+            if (categoryIds != null) 'categoryIds': categoryIds,
+            if (skills != null) 'skills': skills,
+          },
+        ),
+      );
+
   /// `POST /partners/onboarding/submit` — hands the file to the review team.
   Future<PartnerProfile> submit({required String acceptedTermsVersion}) async => PartnerProfile.fromJson(
         await _api.postObject(

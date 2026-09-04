@@ -56,6 +56,23 @@ export const partnerZonesSchema = z.object({
   zoneIds: z.array(uuidSchema).min(1).max(20),
 });
 
+/**
+ * What an already-approved partner may change about themselves: where they work and, for
+ * home service, which categories they offer. Identity, documents and vehicles stay with
+ * support. Every field is optional so a client can send only what it is editing, and at
+ * least one must be present.
+ */
+export const updateServiceProfileSchema = z
+  .object({
+    zoneIds: z.array(uuidSchema).min(1).max(20).optional(),
+    categoryIds: z.array(uuidSchema).max(30).optional(),
+    skills: z.array(z.string().trim().min(2).max(40)).max(30).optional(),
+  })
+  .refine(
+    (v) => v.zoneIds !== undefined || v.categoryIds !== undefined || v.skills !== undefined,
+    'send at least one of zoneIds, categoryIds or skills',
+  );
+
 export const partnerSubmitForReviewSchema = z.object({
   acceptedTermsVersion: z.string().trim().min(1).max(20),
 });
@@ -129,3 +146,4 @@ export type ReviewDocumentInput = z.infer<typeof reviewDocumentSchema>;
 export type PartnerDecisionInput = z.infer<typeof partnerDecisionSchema>;
 export type AdminUpdatePartnerInput = z.infer<typeof adminUpdatePartnerSchema>;
 export type PartnerListFilterInput = z.infer<typeof partnerListFilterSchema>;
+export type UpdateServiceProfileInput = z.infer<typeof updateServiceProfileSchema>;
