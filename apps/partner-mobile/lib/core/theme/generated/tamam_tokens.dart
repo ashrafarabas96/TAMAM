@@ -8,41 +8,41 @@ import '../../contracts/generated/tamam_contracts.dart';
 
 /// Brand palette (purple + yellow) — Getir-inspired identity.
 abstract final class TamamBrand {
-  static const Color purple50 = Color(0xFFF1EEFB);
-  static const Color purple100 = Color(0xFFE3DDF7);
-  static const Color purple200 = Color(0xFFC7BBEF);
-  static const Color purple300 = Color(0xFFA996E4);
-  static const Color purple400 = Color(0xFF8A6FD8);
-  static const Color purple500 = Color(0xFF5D3EBC);
-  static const Color purple600 = Color(0xFF4E33A3);
-  static const Color purple700 = Color(0xFF3E2887);
-  static const Color purple800 = Color(0xFF2F1E68);
-  static const Color purple900 = Color(0xFF21154A);
-  static const Color yellow50 = Color(0xFFFFFBE5);
-  static const Color yellow100 = Color(0xFFFFF6BF);
-  static const Color yellow200 = Color(0xFFFFEE85);
-  static const Color yellow300 = Color(0xFFFFE54D);
-  static const Color yellow400 = Color(0xFFFFDC1A);
-  static const Color yellow500 = Color(0xFFFFD300);
-  static const Color yellow600 = Color(0xFFE6BE00);
-  static const Color yellow700 = Color(0xFFC7A400);
-  static const Color yellow800 = Color(0xFF9E8200);
-  static const Color yellow900 = Color(0xFF6E5B00);
+  static const Color purple50 = Color(0xFFF2ECFF);
+  static const Color purple100 = Color(0xFFE4D9FE);
+  static const Color purple200 = Color(0xFFC9B4FD);
+  static const Color purple300 = Color(0xFFA98CFA);
+  static const Color purple400 = Color(0xFF8560F8);
+  static const Color purple500 = Color(0xFF5B32F6);
+  static const Color purple600 = Color(0xFF4C27EA);
+  static const Color purple700 = Color(0xFF3D1ECF);
+  static const Color purple800 = Color(0xFF2E169C);
+  static const Color purple900 = Color(0xFF1B0F5E);
+  static const Color yellow50 = Color(0xFFFFF8E1);
+  static const Color yellow100 = Color(0xFFFFECB3);
+  static const Color yellow200 = Color(0xFFFFE082);
+  static const Color yellow300 = Color(0xFFFFD54F);
+  static const Color yellow400 = Color(0xFFFFCA28);
+  static const Color yellow500 = Color(0xFFFFC107);
+  static const Color yellow600 = Color(0xFFFFB300);
+  static const Color yellow700 = Color(0xFFFFA000);
+  static const Color yellow800 = Color(0xFFFF8F00);
+  static const Color yellow900 = Color(0xFFFF6F00);
 }
 
 abstract final class TamamNeutral {
   static const Color n0 = Color(0xFFFFFFFF);
-  static const Color n50 = Color(0xFFF7F7FA);
-  static const Color n100 = Color(0xFFF1F1F5);
-  static const Color n200 = Color(0xFFE4E4EC);
-  static const Color n300 = Color(0xFFD1D1DC);
-  static const Color n400 = Color(0xFFA8A8B8);
-  static const Color n500 = Color(0xFF7A7A8C);
-  static const Color n600 = Color(0xFF5C5C6E);
-  static const Color n700 = Color(0xFF41414F);
-  static const Color n800 = Color(0xFF2B2B36);
-  static const Color n900 = Color(0xFF191922);
-  static const Color n1000 = Color(0xFF0F0F15);
+  static const Color n50 = Color(0xFFF6F6FB);
+  static const Color n100 = Color(0xFFEFEFF7);
+  static const Color n200 = Color(0xFFE2E1F0);
+  static const Color n300 = Color(0xFFCDCBE2);
+  static const Color n400 = Color(0xFFA29FC0);
+  static const Color n500 = Color(0xFF77739B);
+  static const Color n600 = Color(0xFF585378);
+  static const Color n700 = Color(0xFF3F3A5C);
+  static const Color n800 = Color(0xFF2A2542);
+  static const Color n900 = Color(0xFF1B1240);
+  static const Color n1000 = Color(0xFF100A28);
 }
 
 abstract final class TamamSemantic {
@@ -61,9 +61,10 @@ abstract final class TamamSemantic {
 }
 
 abstract final class TamamServiceColors {
-  static const Color ride = Color(0xFF5D3EBC);
-  static const Color delivery = Color(0xFFF97316);
-  static const Color homeService = Color(0xFF0EA5E9);
+  static const Color ride = Color(0xFF5B32F6);
+  static const Color delivery = Color(0xFF3D1ECF);
+  static const Color homeService = Color(0xFFFFC107);
+  static const Color chalet = Color(0xFF8560F8);
   static const Color urgent = Color(0xFFE11D48);
 }
 
@@ -120,54 +121,54 @@ class TamamColorScheme {
   final Color mapDestination;
 
   static const TamamColorScheme light = TamamColorScheme(
-    background: Color(0xFFF5F4FA),
+    background: Color(0xFFF6F6FB),
     surface: Color(0xFFFFFFFF),
-    surfaceAlt: Color(0xFFF7F7FA),
-    surfaceBrand: Color(0xFF5D3EBC),
-    surfaceBrandSoft: Color(0xFFF1EEFB),
-    border: Color(0xFFE4E4EC),
-    borderStrong: Color(0xFFD1D1DC),
-    textPrimary: Color(0xFF191922),
-    textSecondary: Color(0xFF5C5C6E),
-    textTertiary: Color(0xFFA8A8B8),
+    surfaceAlt: Color(0xFFF2ECFF),
+    surfaceBrand: Color(0xFF5B32F6),
+    surfaceBrandSoft: Color(0xFFF2ECFF),
+    border: Color(0xFFE2E1F0),
+    borderStrong: Color(0xFFCDCBE2),
+    textPrimary: Color(0xFF1B1240),
+    textSecondary: Color(0xFF585378),
+    textTertiary: Color(0xFFA29FC0),
     textOnBrand: Color(0xFFFFFFFF),
-    textOnAccent: Color(0xFF3E2887),
-    primary: Color(0xFF5D3EBC),
-    primaryHover: Color(0xFF4E33A3),
-    primaryPressed: Color(0xFF3E2887),
-    accent: Color(0xFFFFD300),
-    accentHover: Color(0xFFE6BE00),
-    accentPressed: Color(0xFFC7A400),
-    overlay: Color(0x99191922),
-    skeleton: Color(0xFFECECF2),
-    mapRoute: Color(0xFF5D3EBC),
+    textOnAccent: Color(0xFF1B1240),
+    primary: Color(0xFF5B32F6),
+    primaryHover: Color(0xFF4C27EA),
+    primaryPressed: Color(0xFF3D1ECF),
+    accent: Color(0xFFFFC107),
+    accentHover: Color(0xFFFFB300),
+    accentPressed: Color(0xFFFFA000),
+    overlay: Color(0x991B1240),
+    skeleton: Color(0xFFEFEFF7),
+    mapRoute: Color(0xFF5B32F6),
     mapPickup: Color(0xFF1FA463),
     mapDestination: Color(0xFFE11D48),
   );
 
   static const TamamColorScheme dark = TamamColorScheme(
-    background: Color(0xFF12101C),
-    surface: Color(0xFF1C1928),
-    surfaceAlt: Color(0xFF241F35),
-    surfaceBrand: Color(0xFF4E33A3),
-    surfaceBrandSoft: Color(0xFF2A2142),
-    border: Color(0xFF2E2942),
-    borderStrong: Color(0xFF3B3554),
-    textPrimary: Color(0xFFF4F2FA),
-    textSecondary: Color(0xFFB9B4CC),
-    textTertiary: Color(0xFF7E7894),
+    background: Color(0xFF100A28),
+    surface: Color(0xFF1B1240),
+    surfaceAlt: Color(0xFF2A2542),
+    surfaceBrand: Color(0xFF5B32F6),
+    surfaceBrandSoft: Color(0xFF2E169C),
+    border: Color(0xFF2A2542),
+    borderStrong: Color(0xFF3F3A5C),
+    textPrimary: Color(0xFFF6F6FB),
+    textSecondary: Color(0xFFA29FC0),
+    textTertiary: Color(0xFF77739B),
     textOnBrand: Color(0xFFFFFFFF),
-    textOnAccent: Color(0xFF21154A),
-    primary: Color(0xFF8A6FD8),
-    primaryHover: Color(0xFFA996E4),
-    primaryPressed: Color(0xFF5D3EBC),
-    accent: Color(0xFFFFD300),
-    accentHover: Color(0xFFFFE54D),
-    accentPressed: Color(0xFFE6BE00),
-    overlay: Color(0xB3000000),
-    skeleton: Color(0xFF2A2540),
-    mapRoute: Color(0xFFA996E4),
-    mapPickup: Color(0xFF34D399),
+    textOnAccent: Color(0xFF1B1240),
+    primary: Color(0xFFA98CFA),
+    primaryHover: Color(0xFFC9B4FD),
+    primaryPressed: Color(0xFF8560F8),
+    accent: Color(0xFFFFCA28),
+    accentHover: Color(0xFFFFD54F),
+    accentPressed: Color(0xFFFFC107),
+    overlay: Color(0xCC100A28),
+    skeleton: Color(0xFF2A2542),
+    mapRoute: Color(0xFFA98CFA),
+    mapPickup: Color(0xFF4ED08D),
     mapDestination: Color(0xFFFB7185),
   );
 }
