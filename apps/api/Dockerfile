@@ -23,6 +23,11 @@ COPY packages/config/package.json packages/config/
 COPY packages/shared-types/package.json packages/shared-types/
 COPY packages/validation/package.json packages/validation/
 COPY packages/ui-tokens/package.json packages/ui-tokens/
+# The API's postinstall runs `prisma generate`, so the schema is an input to
+# the install step, not just to the build. Without it pnpm install exits 1 with
+# "schema.prisma: file not found". Editing the schema busts this layer, which is
+# the honest cost of keeping the generated client in step with it.
+COPY apps/api/prisma apps/api/prisma
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile
 
