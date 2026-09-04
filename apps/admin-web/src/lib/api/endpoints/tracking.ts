@@ -4,5 +4,8 @@ import type { LiveMapQueryInput } from '@tamam/validation';
 import { api } from '@/lib/api';
 
 export const trackingApi = {
-  liveMap: (query: Partial<LiveMapQueryInput>) => api.get<{ partners: LiveMapPartnerDto[]; jobs: LiveMapJobDto[] }>('/admin/live-map', { ...query }),
+  liveMap: (query: Partial<LiveMapQueryInput>) =>
+    api.get<{ partners: LiveMapPartnerDto[]; jobs: LiveMapJobDto[] }>('/admin/live-map', {
+      ...query,
+    }),
 };

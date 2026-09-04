@@ -16,8 +16,18 @@ describe('Ride end-to-end (§125)', () => {
   let economyVehicleTypeId: string;
   let activeVehicleId: string;
 
-  const pickup = { lat: RAMALLAH.lat, lng: RAMALLAH.lng, formatted: 'رام الله — دوار المنارة', city: 'Ramallah' };
-  const destination = { lat: RAMALLAH.lat + 0.012, lng: RAMALLAH.lng + 0.014, formatted: 'البيرة — شارع القدس', city: 'Al-Bireh' };
+  const pickup = {
+    lat: RAMALLAH.lat,
+    lng: RAMALLAH.lng,
+    formatted: 'رام الله — دوار المنارة',
+    city: 'Ramallah',
+  };
+  const destination = {
+    lat: RAMALLAH.lat + 0.012,
+    lng: RAMALLAH.lng + 0.014,
+    formatted: 'البيرة — شارع القدس',
+    city: 'Al-Bireh',
+  };
 
   beforeAll(async () => {
     api = await TestApp.boot();
@@ -27,7 +37,9 @@ describe('Ride end-to-end (§125)', () => {
 
     const economy = await api.prisma.vehicleType.findUniqueOrThrow({ where: { code: 'ECONOMY' } });
     economyVehicleTypeId = economy.id;
-    const vehicle = await api.prisma.vehicle.findFirstOrThrow({ where: { partnerId: partner.userId, vehicleTypeId: economyVehicleTypeId } });
+    const vehicle = await api.prisma.vehicle.findFirstOrThrow({
+      where: { partnerId: partner.userId, vehicleTypeId: economyVehicleTypeId },
+    });
     activeVehicleId = vehicle.id;
   }, 180_000);
 
@@ -36,7 +48,11 @@ describe('Ride end-to-end (§125)', () => {
   });
 
   const getJob = async (auth: AuthContext, jobId: string): Promise<JobDto> => {
-    const res = await api.request().get(api.url(`jobs/${jobId}`)).set(auth.headers).expect(200);
+    const res = await api
+      .request()
+      .get(api.url(`jobs/${jobId}`))
+      .set(auth.headers)
+      .expect(200);
     return res.body as JobDto;
   };
 
@@ -83,7 +99,12 @@ describe('Ride end-to-end (§125)', () => {
       .request()
       .put(api.url('partners/me/availability'))
       .set(partner.headers)
-      .send({ status: 'ONLINE', activeRoles: ['DRIVER'], activeVehicleId, location: sampleAt(RAMALLAH.lat + 0.001, RAMALLAH.lng + 0.001) })
+      .send({
+        status: 'ONLINE',
+        activeRoles: ['DRIVER'],
+        activeVehicleId,
+        location: sampleAt(RAMALLAH.lat + 0.001, RAMALLAH.lng + 0.001),
+      })
       .expect(200);
 
     /* ------------------------------------------- dispatch offers the job */
@@ -101,7 +122,11 @@ describe('Ride end-to-end (§125)', () => {
       .request()
       .post(api.url('partners/me/offers/respond'))
       .set(partner.headers)
-      .send({ assignmentId: offer.assignmentId, accept: true, location: sampleAt(RAMALLAH.lat + 0.001, RAMALLAH.lng + 0.001) })
+      .send({
+        assignmentId: offer.assignmentId,
+        accept: true,
+        location: sampleAt(RAMALLAH.lat + 0.001, RAMALLAH.lng + 0.001),
+      })
       .expect(200);
     expect((accepted.body as JobDto).status).toBe('ASSIGNED');
 
@@ -128,7 +153,10 @@ describe('Ride end-to-end (§125)', () => {
       .request()
       .post(api.url(`jobs/${jobId}/arrive`))
       .set(partner.headers)
-      .send({ version: (enRoute.body as JobDto).version, location: sampleAt(pickup.lat, pickup.lng) })
+      .send({
+        version: (enRoute.body as JobDto).version,
+        location: sampleAt(pickup.lat, pickup.lng),
+      })
       .expect(200);
     expect((arrived.body as JobDto).status).toBe('PARTNER_ARRIVED');
 
@@ -157,7 +185,11 @@ describe('Ride end-to-end (§125)', () => {
         .request()
         .post(api.url(`jobs/${jobId}/start`))
         .set(partner.headers)
-        .send({ version: (arrived.body as JobDto).version, tripPin, location: sampleAt(pickup.lat, pickup.lng) })
+        .send({
+          version: (arrived.body as JobDto).version,
+          tripPin,
+          location: sampleAt(pickup.lat, pickup.lng),
+        })
         .expect(200)
     ).body as JobDto;
     expect(started.status).toBe('IN_PROGRESS');
@@ -176,7 +208,10 @@ describe('Ride end-to-end (§125)', () => {
     /* ------------------------------------------------- payment + receipt */
     const payment = await waitFor(
       async () => {
-        const res = await api.request().get(api.url(`jobs/${jobId}/payment`)).set(customer.headers);
+        const res = await api
+          .request()
+          .get(api.url(`jobs/${jobId}/payment`))
+          .set(customer.headers);
         const body = res.body as PaymentDto;
         return body.status === 'CAPTURED' ? body : null;
       },
@@ -193,7 +228,10 @@ describe('Ride end-to-end (§125)', () => {
     // The double-entry ledger must balance for this job.
     const entries = await api.prisma.ledgerEntry.findMany({ where: { transaction: { jobId } } });
     expect(entries.length).toBeGreaterThan(0);
-    const balance = entries.reduce((sum, e) => sum + (e.direction === 'DEBIT' ? e.amountMinor : -e.amountMinor), 0n);
+    const balance = entries.reduce(
+      (sum, e) => sum + (e.direction === 'DEBIT' ? e.amountMinor : -e.amountMinor),
+      0n,
+    );
     expect(balance).toBe(0n);
 
     /* -------------------------------------------------------- two-way rating */
@@ -215,9 +253,13 @@ describe('Ride end-to-end (§125)', () => {
 
     const reviews = await api.prisma.review.findMany({ where: { jobId } });
     expect(reviews).toHaveLength(2);
-    expect(new Set(reviews.map((r) => r.direction))).toEqual(new Set(['CUSTOMER_TO_PARTNER', 'PARTNER_TO_CUSTOMER']));
+    expect(new Set(reviews.map((r) => r.direction))).toEqual(
+      new Set(['CUSTOMER_TO_PARTNER', 'PARTNER_TO_CUSTOMER']),
+    );
 
-    const partnerProfile = await api.prisma.partnerProfile.findUniqueOrThrow({ where: { userId: partner.userId } });
+    const partnerProfile = await api.prisma.partnerProfile.findUniqueOrThrow({
+      where: { userId: partner.userId },
+    });
     expect(partnerProfile.completedJobs).toBe(1);
     expect(partnerProfile.ratingCount).toBe(1);
   }, 180_000);

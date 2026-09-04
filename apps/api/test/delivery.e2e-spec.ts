@@ -16,8 +16,18 @@ describe('Delivery end-to-end (§126)', () => {
   let activeVehicleId: string;
   let packageCategoryId: string;
 
-  const pickup = { lat: RAMALLAH.lat + 0.002, lng: RAMALLAH.lng - 0.001, formatted: 'رام الله — المصيون', city: 'Ramallah' };
-  const destination = { lat: RAMALLAH.lat - 0.01, lng: RAMALLAH.lng + 0.009, formatted: 'رام الله — بيتونيا', city: 'Ramallah' };
+  const pickup = {
+    lat: RAMALLAH.lat + 0.002,
+    lng: RAMALLAH.lng - 0.001,
+    formatted: 'رام الله — المصيون',
+    city: 'Ramallah',
+  };
+  const destination = {
+    lat: RAMALLAH.lat - 0.01,
+    lng: RAMALLAH.lng + 0.009,
+    formatted: 'رام الله — بيتونيا',
+    city: 'Ramallah',
+  };
 
   beforeAll(async () => {
     api = await TestApp.boot();
@@ -25,10 +35,16 @@ describe('Delivery end-to-end (§126)', () => {
     customer = await api.loginCustomer(SEED.customerPhone);
     courier = await api.loginPartner(SEED.courierPhone, 'e2e-courier-device');
 
-    const motorbike = await api.prisma.vehicleType.findUniqueOrThrow({ where: { code: 'MOTORBIKE' } });
+    const motorbike = await api.prisma.vehicleType.findUniqueOrThrow({
+      where: { code: 'MOTORBIKE' },
+    });
     motorbikeTypeId = motorbike.id;
-    activeVehicleId = (await api.prisma.vehicle.findFirstOrThrow({ where: { partnerId: courier.userId } })).id;
-    packageCategoryId = (await api.prisma.packageCategory.findUniqueOrThrow({ where: { code: 'SMALL' } })).id;
+    activeVehicleId = (
+      await api.prisma.vehicle.findFirstOrThrow({ where: { partnerId: courier.userId } })
+    ).id;
+    packageCategoryId = (
+      await api.prisma.packageCategory.findUniqueOrThrow({ where: { code: 'SMALL' } })
+    ).id;
   }, 180_000);
 
   afterAll(async () => {
@@ -36,7 +52,11 @@ describe('Delivery end-to-end (§126)', () => {
   });
 
   const getJob = async (auth: AuthContext, jobId: string): Promise<JobDto> => {
-    const res = await api.request().get(api.url(`jobs/${jobId}`)).set(auth.headers).expect(200);
+    const res = await api
+      .request()
+      .get(api.url(`jobs/${jobId}`))
+      .set(auth.headers)
+      .expect(200);
     return res.body as JobDto;
   };
 
@@ -46,7 +66,14 @@ describe('Delivery end-to-end (§126)', () => {
         .request()
         .post(api.url('estimates/delivery'))
         .set(customer.headers)
-        .send({ pickup, destination, packageCategoryId, approximateSize: 'SMALL', approximateWeightKg: 2, urgency: 'STANDARD' })
+        .send({
+          pickup,
+          destination,
+          packageCategoryId,
+          approximateSize: 'SMALL',
+          approximateWeightKg: 2,
+          urgency: 'STANDARD',
+        })
         .expect(201)
     ).body as FareEstimateDto;
     expect(estimate.options.some((o) => o.vehicleTypeId === motorbikeTypeId)).toBe(true);
@@ -89,7 +116,12 @@ describe('Delivery end-to-end (§126)', () => {
       .request()
       .put(api.url('partners/me/availability'))
       .set(courier.headers)
-      .send({ status: 'ONLINE', activeRoles: ['COURIER'], activeVehicleId, location: sampleAt(pickup.lat + 0.001, pickup.lng) })
+      .send({
+        status: 'ONLINE',
+        activeRoles: ['COURIER'],
+        activeVehicleId,
+        location: sampleAt(pickup.lat + 0.001, pickup.lng),
+      })
       .expect(200);
 
     const offer = await waitFor(
@@ -105,7 +137,11 @@ describe('Delivery end-to-end (§126)', () => {
       .request()
       .post(api.url('partners/me/offers/respond'))
       .set(courier.headers)
-      .send({ assignmentId: offer.assignmentId, accept: true, location: sampleAt(pickup.lat + 0.001, pickup.lng) })
+      .send({
+        assignmentId: offer.assignmentId,
+        accept: true,
+        location: sampleAt(pickup.lat + 0.001, pickup.lng),
+      })
       .expect(200);
 
     // The courier must never see the codes on their own view of the job.
@@ -114,7 +150,12 @@ describe('Delivery end-to-end (§126)', () => {
     expect(courierView.deliveryOtp).toBeUndefined();
 
     const enRoute = (
-      await api.request().post(api.url(`jobs/${jobId}/en-route`)).set(courier.headers).send({ version: courierView.version }).expect(200)
+      await api
+        .request()
+        .post(api.url(`jobs/${jobId}/en-route`))
+        .set(courier.headers)
+        .send({ version: courierView.version })
+        .expect(200)
     ).body as JobDto;
 
     const arrived = (
@@ -157,7 +198,10 @@ describe('Delivery end-to-end (§126)', () => {
       .send({
         version: started.version,
         location: sampleAt(destination.lat, destination.lng),
-        proofOfDelivery: { deliveryOtp: deliveryOtp === '0000' ? '1111' : '0000', receiverName: 'ليان يوسف' },
+        proofOfDelivery: {
+          deliveryOtp: deliveryOtp === '0000' ? '1111' : '0000',
+          receiverName: 'ليان يوسف',
+        },
       })
       .expect(400);
     expect((badDelivery.body as { code: string }).code).toBe('DELIVERY_OTP_INVALID');

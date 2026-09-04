@@ -15,7 +15,10 @@ export class RedisIoAdapter extends IoAdapter {
   async connect(redisUrl: string): Promise<void> {
     const pub = new Redis(redisUrl);
     const sub = pub.duplicate();
-    await Promise.all([new Promise((r) => pub.once('ready', r)), new Promise((r) => sub.once('ready', r))]);
+    await Promise.all([
+      new Promise((r) => pub.once('ready', r)),
+      new Promise((r) => sub.once('ready', r)),
+    ]);
     this.adapterConstructor = createAdapter(pub, sub);
   }
 

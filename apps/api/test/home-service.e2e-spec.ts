@@ -20,7 +20,12 @@ describe('Home service end-to-end (§127)', () => {
   let admin: AuthContext;
   let categoryId: string;
 
-  const location = { lat: RAMALLAH.lat + 0.004, lng: RAMALLAH.lng + 0.003, formatted: 'رام الله — حي الطيرة، عمارة 12', city: 'Ramallah' };
+  const location = {
+    lat: RAMALLAH.lat + 0.004,
+    lng: RAMALLAH.lng + 0.003,
+    formatted: 'رام الله — حي الطيرة، عمارة 12',
+    city: 'Ramallah',
+  };
 
   beforeAll(async () => {
     api = await TestApp.boot();
@@ -28,7 +33,9 @@ describe('Home service end-to-end (§127)', () => {
     customer = await api.loginCustomer(SEED.customerPhone);
     technician = await api.loginPartner(SEED.technicianPhone, 'e2e-technician-device');
     admin = await api.loginAdmin();
-    categoryId = (await api.prisma.serviceCategory.findUniqueOrThrow({ where: { slug: 'plumbing' } })).id;
+    categoryId = (
+      await api.prisma.serviceCategory.findUniqueOrThrow({ where: { slug: 'plumbing' } })
+    ).id;
   }, 180_000);
 
   afterAll(async () => {
@@ -36,7 +43,11 @@ describe('Home service end-to-end (§127)', () => {
   });
 
   const getJob = async (auth: AuthContext, jobId: string): Promise<JobDto> => {
-    const res = await api.request().get(api.url(`jobs/${jobId}`)).set(auth.headers).expect(200);
+    const res = await api
+      .request()
+      .get(api.url(`jobs/${jobId}`))
+      .set(auth.headers)
+      .expect(200);
     return res.body as JobDto;
   };
 
@@ -83,7 +94,11 @@ describe('Home service end-to-end (§127)', () => {
       .request()
       .put(api.url('partners/me/availability'))
       .set(technician.headers)
-      .send({ status: 'ONLINE', activeRoles: ['TECHNICIAN'], location: sampleAt(location.lat + 0.002, location.lng) })
+      .send({
+        status: 'ONLINE',
+        activeRoles: ['TECHNICIAN'],
+        location: sampleAt(location.lat + 0.002, location.lng),
+      })
       .expect(200);
 
     const offer = await waitFor(
@@ -103,7 +118,14 @@ describe('Home service end-to-end (§127)', () => {
 
     /* --------------------------------------------------- arrive and inspect */
     let job = await getJob(technician, jobId);
-    const enRoute = (await api.request().post(api.url(`jobs/${jobId}/en-route`)).set(technician.headers).send({ version: job.version }).expect(200)).body as JobDto;
+    const enRoute = (
+      await api
+        .request()
+        .post(api.url(`jobs/${jobId}/en-route`))
+        .set(technician.headers)
+        .send({ version: job.version })
+        .expect(200)
+    ).body as JobDto;
     const arrived = (
       await api
         .request()
@@ -114,7 +136,12 @@ describe('Home service end-to-end (§127)', () => {
     ).body as JobDto;
     expect(arrived.status).toBe('PARTNER_ARRIVED');
 
-    await api.request().post(api.url(`jobs/${jobId}/start`)).set(technician.headers).send({ version: arrived.version }).expect(200);
+    await api
+      .request()
+      .post(api.url(`jobs/${jobId}/start`))
+      .set(technician.headers)
+      .send({ version: arrived.version })
+      .expect(200);
 
     // start() moves to INSPECTION_STARTED and the system immediately asks for a quote.
     job = await waitFor(
@@ -125,8 +152,16 @@ describe('Home service end-to-end (§127)', () => {
       { timeoutMs: 15_000, label: 'QUOTE_REQUIRED after inspection' },
     );
 
-    const timeline = (await api.request().get(api.url(`jobs/${jobId}/timeline`)).set(technician.headers).expect(200)).body as Array<{ toStatus: string }>;
-    expect(timeline.map((e) => e.toStatus)).toEqual(expect.arrayContaining(['INSPECTION_STARTED', 'QUOTE_REQUIRED']));
+    const timeline = (
+      await api
+        .request()
+        .get(api.url(`jobs/${jobId}/timeline`))
+        .set(technician.headers)
+        .expect(200)
+    ).body as Array<{ toStatus: string }>;
+    expect(timeline.map((e) => e.toStatus)).toEqual(
+      expect.arrayContaining(['INSPECTION_STARTED', 'QUOTE_REQUIRED']),
+    );
 
     /* ------------------------------------------------------------- quoting */
     const quote = (
@@ -175,17 +210,34 @@ describe('Home service end-to-end (§127)', () => {
     /* --------------------------------------------------------------- work */
     job = await getJob(technician, jobId);
     expect(job.status).toBe('QUOTE_APPROVED');
-    const workStarted = (await api.request().post(api.url(`jobs/${jobId}/work/start`)).set(technician.headers).send({ version: job.version }).expect(200)).body as JobDto;
+    const workStarted = (
+      await api
+        .request()
+        .post(api.url(`jobs/${jobId}/work/start`))
+        .set(technician.headers)
+        .send({ version: job.version })
+        .expect(200)
+    ).body as JobDto;
     expect(workStarted.status).toBe('WORK_STARTED');
 
     const workCompleted = (
-      await api.request().post(api.url(`jobs/${jobId}/work/complete`)).set(technician.headers).send({ version: workStarted.version }).expect(200)
+      await api
+        .request()
+        .post(api.url(`jobs/${jobId}/work/complete`))
+        .set(technician.headers)
+        .send({ version: workStarted.version })
+        .expect(200)
     ).body as JobDto;
     expect(workCompleted.status).toBe('WORK_COMPLETED');
 
     /* -------------------------------------------------- customer confirms */
     const confirmed = (
-      await api.request().post(api.url(`jobs/${jobId}/confirm-work`)).set(customer.headers).send({ version: workCompleted.version }).expect(200)
+      await api
+        .request()
+        .post(api.url(`jobs/${jobId}/confirm-work`))
+        .set(customer.headers)
+        .send({ version: workCompleted.version })
+        .expect(200)
     ).body as JobDto;
     expect(confirmed.status).toBe('COMPLETED');
     // The approved quote — not the inspection estimate — is the final price.
@@ -194,8 +246,13 @@ describe('Home service end-to-end (§127)', () => {
     /* --------------------------------------------------- money is balanced */
     const payment = await waitFor(
       async () => {
-        const res = await api.request().get(api.url(`jobs/${jobId}/payment`)).set(customer.headers);
-        return (res.body as { status: string }).status === 'CAPTURED' ? (res.body as { amount: { amount: number } }) : null;
+        const res = await api
+          .request()
+          .get(api.url(`jobs/${jobId}/payment`))
+          .set(customer.headers);
+        return (res.body as { status: string }).status === 'CAPTURED'
+          ? (res.body as { amount: { amount: number } })
+          : null;
       },
       { timeoutMs: 20_000, label: 'home-service payment capture' },
     );
@@ -203,12 +260,23 @@ describe('Home service end-to-end (§127)', () => {
 
     const entries = await api.prisma.ledgerEntry.findMany({ where: { transaction: { jobId } } });
     expect(entries.length).toBeGreaterThan(0);
-    const net = entries.reduce((sum, e) => sum + (e.direction === 'DEBIT' ? e.amountMinor : -e.amountMinor), 0n);
+    const net = entries.reduce(
+      (sum, e) => sum + (e.direction === 'DEBIT' ? e.amountMinor : -e.amountMinor),
+      0n,
+    );
     expect(net).toBe(0n);
 
     // The finance endpoint recomputes the wallet from the entries and must agree with the cache.
-    const partnerWallet = await api.prisma.wallet.findFirstOrThrow({ where: { partnerId: technician.userId } });
-    const verify = (await api.request().post(api.url(`admin/ledger/wallets/${partnerWallet.id}/verify`)).set(admin.headers).expect(201)).body as {
+    const partnerWallet = await api.prisma.wallet.findFirstOrThrow({
+      where: { partnerId: technician.userId },
+    });
+    const verify = (
+      await api
+        .request()
+        .post(api.url(`admin/ledger/wallets/${partnerWallet.id}/verify`))
+        .set(admin.headers)
+        .expect(201)
+    ).body as {
       matches: boolean;
       cachedBalance: { amount: number };
       recomputedBalance: { amount: number };
@@ -219,8 +287,12 @@ describe('Home service end-to-end (§127)', () => {
     // CASH job: the technician kept the 200 ILS, so their wallet carries the 15 % commission owed.
     expect(verify.cachedBalance.amount).toBe(-3000);
 
-    const revenueAccount = await api.prisma.ledgerAccount.findUniqueOrThrow({ where: { code: 'PLATFORM_REVENUE:ILS' } });
-    const revenue = entries.filter((e) => e.accountId === revenueAccount.id).reduce((sum, e) => sum + (e.direction === 'CREDIT' ? e.amountMinor : -e.amountMinor), 0n);
+    const revenueAccount = await api.prisma.ledgerAccount.findUniqueOrThrow({
+      where: { code: 'PLATFORM_REVENUE:ILS' },
+    });
+    const revenue = entries
+      .filter((e) => e.accountId === revenueAccount.id)
+      .reduce((sum, e) => sum + (e.direction === 'CREDIT' ? e.amountMinor : -e.amountMinor), 0n);
     expect(revenue).toBe(3000n);
   }, 240_000);
 });

@@ -1,6 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { CommissionScope, JobType, PromoType } from '@tamam/shared-types';
-import type { DeliveryPricingRule, HomeServicePricingRule, RidePricingRule } from '@tamam/validation';
+import type {
+  DeliveryPricingRule,
+  HomeServicePricingRule,
+  RidePricingRule,
+} from '@tamam/validation';
 
 import { type SeedContext, shekels } from './context';
 import type { CatalogSeedResult } from './catalog';
@@ -73,11 +77,41 @@ interface RuleSeed {
 }
 
 const RULES: RuleSeed[] = [
-  { jobType: JobType.RIDE, name: 'Ride — standard (all zones)', vehicleTypeCode: null, priority: 0, rule: RIDE_ECONOMY },
-  { jobType: JobType.RIDE, name: 'Ride — family (×1.25)', vehicleTypeCode: 'FAMILY', priority: 10, rule: RIDE_FAMILY },
-  { jobType: JobType.RIDE, name: 'Ride — premium (×1.6)', vehicleTypeCode: 'PREMIUM', priority: 10, rule: RIDE_PREMIUM },
-  { jobType: JobType.DELIVERY, name: 'Delivery — standard (all zones)', vehicleTypeCode: null, priority: 0, rule: DELIVERY_RULE },
-  { jobType: JobType.HOME_SERVICE, name: 'Home service — inspection & quote', vehicleTypeCode: null, priority: 0, rule: HOME_SERVICE_RULE },
+  {
+    jobType: JobType.RIDE,
+    name: 'Ride — standard (all zones)',
+    vehicleTypeCode: null,
+    priority: 0,
+    rule: RIDE_ECONOMY,
+  },
+  {
+    jobType: JobType.RIDE,
+    name: 'Ride — family (×1.25)',
+    vehicleTypeCode: 'FAMILY',
+    priority: 10,
+    rule: RIDE_FAMILY,
+  },
+  {
+    jobType: JobType.RIDE,
+    name: 'Ride — premium (×1.6)',
+    vehicleTypeCode: 'PREMIUM',
+    priority: 10,
+    rule: RIDE_PREMIUM,
+  },
+  {
+    jobType: JobType.DELIVERY,
+    name: 'Delivery — standard (all zones)',
+    vehicleTypeCode: null,
+    priority: 0,
+    rule: DELIVERY_RULE,
+  },
+  {
+    jobType: JobType.HOME_SERVICE,
+    name: 'Home service — inspection & quote',
+    vehicleTypeCode: null,
+    priority: 0,
+    rule: HOME_SERVICE_RULE,
+  },
 ];
 
 export async function seedPricing(ctx: SeedContext, catalog: CatalogSeedResult): Promise<void> {
@@ -85,8 +119,11 @@ export async function seedPricing(ctx: SeedContext, catalog: CatalogSeedResult):
   const now = new Date();
 
   for (const seed of RULES) {
-    const vehicleTypeId = seed.vehicleTypeCode ? (catalog.vehicleTypeIds.get(seed.vehicleTypeCode) ?? null) : null;
-    if (seed.vehicleTypeCode && !vehicleTypeId) throw new Error(`vehicle type ${seed.vehicleTypeCode} is missing — seed the catalogue first`);
+    const vehicleTypeId = seed.vehicleTypeCode
+      ? (catalog.vehicleTypeIds.get(seed.vehicleTypeCode) ?? null)
+      : null;
+    if (seed.vehicleTypeCode && !vehicleTypeId)
+      throw new Error(`vehicle type ${seed.vehicleTypeCode} is missing — seed the catalogue first`);
     const data = {
       jobType: seed.jobType,
       zoneId: null,
@@ -101,16 +138,35 @@ export async function seedPricing(ctx: SeedContext, catalog: CatalogSeedResult):
       isActive: true,
     };
     // pricing_rules has no natural unique key — the scope tuple identifies a seeded rule.
-    const existing = await prisma.pricingRule.findFirst({ where: { jobType: seed.jobType, zoneId: null, vehicleTypeId, categoryId: null } });
+    const existing = await prisma.pricingRule.findFirst({
+      where: { jobType: seed.jobType, zoneId: null, vehicleTypeId, categoryId: null },
+    });
     if (existing) await prisma.pricingRule.update({ where: { id: existing.id }, data });
     else await prisma.pricingRule.create({ data });
   }
   summary.set('pricing rules', RULES.length);
 
   /* ------------------------------------------------------------ commission */
-  const commission = await prisma.commissionPolicy.findFirst({ where: { scope: CommissionScope.GLOBAL, jobType: null, categoryId: null, zoneId: null, partnerId: null } });
-  const commissionData = { scope: CommissionScope.GLOBAL, percent: new Prisma.Decimal(15), fixedMinor: 0n, priority: 0, validFrom: now, validTo: null, isActive: true };
-  if (commission) await prisma.commissionPolicy.update({ where: { id: commission.id }, data: commissionData });
+  const commission = await prisma.commissionPolicy.findFirst({
+    where: {
+      scope: CommissionScope.GLOBAL,
+      jobType: null,
+      categoryId: null,
+      zoneId: null,
+      partnerId: null,
+    },
+  });
+  const commissionData = {
+    scope: CommissionScope.GLOBAL,
+    percent: new Prisma.Decimal(15),
+    fixedMinor: 0n,
+    priority: 0,
+    validFrom: now,
+    validTo: null,
+    isActive: true,
+  };
+  if (commission)
+    await prisma.commissionPolicy.update({ where: { id: commission.id }, data: commissionData });
   else await prisma.commissionPolicy.create({ data: commissionData });
   summary.note('commission: GLOBAL 15 %');
 
@@ -128,8 +184,14 @@ export async function seedPricing(ctx: SeedContext, catalog: CatalogSeedResult):
     customerNoShowFeeMinor: 0n,
     isActive: true,
   };
-  const cancellation = await prisma.cancellationPolicy.findFirst({ where: { jobType: null, zoneId: null } });
-  if (cancellation) await prisma.cancellationPolicy.update({ where: { id: cancellation.id }, data: cancellationData });
+  const cancellation = await prisma.cancellationPolicy.findFirst({
+    where: { jobType: null, zoneId: null },
+  });
+  if (cancellation)
+    await prisma.cancellationPolicy.update({
+      where: { id: cancellation.id },
+      data: cancellationData,
+    });
   else await prisma.cancellationPolicy.create({ data: cancellationData });
   summary.note('cancellation: 120 s grace, 5 ILS before arrival, 10 ILS after arrival');
 
@@ -145,7 +207,8 @@ export async function seedPricing(ctx: SeedContext, catalog: CatalogSeedResult):
     isActive: true,
   };
   const referral = await prisma.referralProgram.findFirst({ where: { isActive: true } });
-  if (referral) await prisma.referralProgram.update({ where: { id: referral.id }, data: referralData });
+  if (referral)
+    await prisma.referralProgram.update({ where: { id: referral.id }, data: referralData });
   else await prisma.referralProgram.create({ data: referralData });
   summary.note('referral: 10 ILS inviter + 10 ILS invitee on the first completed job');
 
@@ -166,6 +229,10 @@ export async function seedPricing(ctx: SeedContext, catalog: CatalogSeedResult):
     paymentMethods: [],
     isActive: true,
   };
-  await prisma.promoCode.upsert({ where: { code: 'WELCOME10' }, update: promoData, create: { code: 'WELCOME10', ...promoData } });
+  await prisma.promoCode.upsert({
+    where: { code: 'WELCOME10' },
+    update: promoData,
+    create: { code: 'WELCOME10', ...promoData },
+  });
   summary.note('promo WELCOME10: 10 % up to 15 ILS, first order only');
 }

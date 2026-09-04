@@ -5,7 +5,10 @@ import { HealthCheck, HealthCheckService, type HealthIndicatorResult } from '@ne
 import { Public } from '../../common/decorators';
 import { AppConfigService } from '../../config';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
-import { STORAGE_PROVIDER, type StorageProvider } from '../../infrastructure/providers/storage/storage.provider';
+import {
+  STORAGE_PROVIDER,
+  type StorageProvider,
+} from '../../infrastructure/providers/storage/storage.provider';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { MetricsService } from '../metrics/metrics.service';
 
@@ -37,8 +40,12 @@ export class HealthController {
         await this.prisma.$queryRaw`SELECT 1`;
         return { database: { status: 'up' } };
       },
-      async (): Promise<HealthIndicatorResult> => ({ redis: { status: (await this.redis.ping()) ? 'up' : 'down' } }),
-      async (): Promise<HealthIndicatorResult> => ({ storage: { status: (await this.storage.healthCheck()) ? 'up' : 'down' } }),
+      async (): Promise<HealthIndicatorResult> => ({
+        redis: { status: (await this.redis.ping()) ? 'up' : 'down' },
+      }),
+      async (): Promise<HealthIndicatorResult> => ({
+        storage: { status: (await this.storage.healthCheck()) ? 'up' : 'down' },
+      }),
     ]);
   }
 

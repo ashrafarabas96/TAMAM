@@ -6,13 +6,13 @@ What is tested, how to run it, and what each suite actually proves.
 
 ## 1. Layers
 
-| Layer | Location | Runner | Needs |
-| --- | --- | --- | --- |
-| Schema validation | `packages/validation/**/*.test.ts` | vitest | nothing |
-| Domain + service units | `apps/api/src/**/*.spec.ts` | jest (`jest.config.cjs`) | nothing — Prisma is mocked |
-| Integration / E2E | `apps/api/test/*.e2e-spec.ts` | jest (`test/jest-e2e.config.cjs`) | Postgres+PostGIS, Redis |
-| Load | `scripts/load-test/k6-tracking.js` | k6 | a running API |
-| Flutter | `apps/*-mobile/test` | `flutter test` | Flutter SDK |
+| Layer                  | Location                           | Runner                            | Needs                      |
+| ---------------------- | ---------------------------------- | --------------------------------- | -------------------------- |
+| Schema validation      | `packages/validation/**/*.test.ts` | vitest                            | nothing                    |
+| Domain + service units | `apps/api/src/**/*.spec.ts`        | jest (`jest.config.cjs`)          | nothing — Prisma is mocked |
+| Integration / E2E      | `apps/api/test/*.e2e-spec.ts`      | jest (`test/jest-e2e.config.cjs`) | Postgres+PostGIS, Redis    |
+| Load                   | `scripts/load-test/k6-tracking.js` | k6                                | a running API              |
+| Flutter                | `apps/*-mobile/test`               | `flutter test`                    | Flutter SDK                |
 
 ## 2. Running them
 
@@ -48,14 +48,14 @@ starts from the seeded world with no jobs, payments or ledger rows.
 
 `apps/api/test/helpers/app.ts`
 
-* `TestApp.boot()` — builds the real `AppModule` (same guards, interceptors, queues and workers as
+- `TestApp.boot()` — builds the real `AppModule` (same guards, interceptors, queues and workers as
   production), applies migrations and the seed, and returns the harness.
-* `request()` — supertest against the live HTTP server; `url('jobs')` prefixes `/api/v1`.
-* `loginCustomer(phone)` / `loginPartner(phone)` — a real OTP round-trip. The console SMS provider
+- `request()` — supertest against the live HTTP server; `url('jobs')` prefixes `/api/v1`.
+- `loginCustomer(phone)` / `loginPartner(phone)` — a real OTP round-trip. The console SMS provider
   returns the code as `devCode`, so the suite exercises `POST /auth/otp/request` and
   `/auth/otp/verify` rather than minting tokens behind the app's back.
-* `loginAdmin(email, password)` — the real `POST /auth/admin/login`.
-* `truncateOperationalTables()` — TRUNCATE (not DELETE: the ledger, audit log and job events are
+- `loginAdmin(email, password)` — the real `POST /auth/admin/login`.
+- `truncateOperationalTables()` — TRUNCATE (not DELETE: the ledger, audit log and job events are
   append-only by trigger), restores a clean `partner_availability` row per partner, resets cached
   profile counters and drops the Redis rate-limit windows.
 
@@ -88,14 +88,14 @@ technician cannot approve their own quote, that the **approved quote** becomes t
 verification endpoint agrees with the cached wallet, and platform revenue is exactly the seeded
 15 % commission.
 
-### `dispatch-race.e2e-spec.ts` — spec §128 · *the important one*
+### `dispatch-race.e2e-spec.ts` — spec §128 · _the important one_
 
 Two eligible drivers are offered the same ride and both accept **in the same tick**
 (`Promise.all`). The test asserts:
 
-* exactly one `200` and one `409`, with the loser carrying `JOB_ALREADY_ASSIGNED` or `OFFER_EXPIRED`;
-* exactly **one** `ACCEPTED` row in `job_assignments` for that job;
-* the job's `partner_id` is the winner, no offer is left `OFFERED`, and only the winner is `BUSY`.
+- exactly one `200` and one `409`, with the loser carrying `JOB_ALREADY_ASSIGNED` or `OFFER_EXPIRED`;
+- exactly **one** `ACCEPTED` row in `job_assignments` for that job;
+- the job's `partner_id` is the winner, no offer is left `OFFERED`, and only the winner is `BUSY`.
 
 That is the observable contract of three independent guards (spec §22): a Redis lock on
 `job:<id>`, `SELECT … FOR UPDATE` on the job row inside the transaction, and the partial unique
@@ -108,7 +108,7 @@ simultaneous accept, which is the failure mode that costs a platform its drivers
 Money is never applied twice: calling `captureForJob` again books no second settlement, receipt or
 payment row; a refund replayed with the same `Idempotency-Key` returns the first response with
 `Idempotent-Replayed: true` and creates no second refund or ledger transaction (and reusing the
-key with a *different* body is `IDEMPOTENCY_KEY_REUSED`); a provider webhook delivered twice with
+key with a _different_ body is `IDEMPOTENCY_KEY_REUSED`); a provider webhook delivered twice with
 the same event id is stored once, processed once, and the second delivery answers
 `{ received: true, duplicate: true }`. A wrongly signed webhook is rejected with `403`.
 
@@ -116,7 +116,7 @@ the same event id is stored once, processed once, and the second delivery answer
 
 Object-level authorization. Customer B gets **404** — not 403 — on customer A's job, its timeline
 and its payment, and never sees it in a list. An unrelated partner also gets 404. A SUPPORT agent,
-who legitimately *can* read every job, gets **403** when trying to drive its state machine or issue
+who legitimately _can_ read every job, gets **403** when trying to drive its state machine or issue
 a refund, and cannot reach staff management or maintenance. Unauthenticated admin routes are 401,
 and an authenticated customer hitting an admin route is 403.
 
@@ -127,18 +127,18 @@ and an authenticated customer hitting an admin route is 403.
 
 ## 4. Unit specs worth knowing about
 
-| Spec | What it pins down |
-| --- | --- |
-| `jobs/domain/job-state-machine.spec.ts` | only legal transitions, per actor |
-| `pricing/domain/fare-calculator.spec.ts` | integer money maths, no float drift |
-| `ledger/domain/ledger.rules.spec.ts` | every settlement plan balances |
-| `dispatch/domain/candidate-scoring.spec.ts` | scoring weights and ordering |
-| `promotions/domain/promo.rules.spec.ts` | promo eligibility and caps |
-| `campaigns/domain/banner-targeting.spec.ts` | audience/zone/rollout targeting |
-| `admin/admin-search.service.spec.ts` | a group is queried **only** with its permission; plates are normalised; every group is capped at 10 rows |
-| `admin/domain/dispatch-problems.spec.ts` | the console's "needs attention" classifier |
-| `maintenance/domain/document-expiry.spec.ts` | the 14-day warning window, once-only warnings, idempotent expiry |
-| `maintenance/document-expiry.service.spec.ts` | the claim-then-notify order, claim release on failure, forced OFFLINE only for *required* documents |
+| Spec                                          | What it pins down                                                                                        |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `jobs/domain/job-state-machine.spec.ts`       | only legal transitions, per actor                                                                        |
+| `pricing/domain/fare-calculator.spec.ts`      | integer money maths, no float drift                                                                      |
+| `ledger/domain/ledger.rules.spec.ts`          | every settlement plan balances                                                                           |
+| `dispatch/domain/candidate-scoring.spec.ts`   | scoring weights and ordering                                                                             |
+| `promotions/domain/promo.rules.spec.ts`       | promo eligibility and caps                                                                               |
+| `campaigns/domain/banner-targeting.spec.ts`   | audience/zone/rollout targeting                                                                          |
+| `admin/admin-search.service.spec.ts`          | a group is queried **only** with its permission; plates are normalised; every group is capped at 10 rows |
+| `admin/domain/dispatch-problems.spec.ts`      | the console's "needs attention" classifier                                                               |
+| `maintenance/domain/document-expiry.spec.ts`  | the 14-day warning window, once-only warnings, idempotent expiry                                         |
+| `maintenance/document-expiry.service.spec.ts` | the claim-then-notify order, claim release on failure, forced OFFLINE only for _required_ documents      |
 
 ## 5. Load testing
 
@@ -160,11 +160,11 @@ k6 run -e API_WS=ws://localhost:3000 -e TOKENS_FILE=tokens.json \
 
 Thresholds the script enforces (it exits non-zero when they are breached):
 
-| Threshold | Why |
-| --- | --- |
+| Threshold                                             | Why                                                                                                          |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `tamam_ingest_latency_ms p(95) < 500`, `p(99) < 1500` | a location must be acknowledged well inside one 4 s send interval, otherwise the app queues and the map lags |
-| `tamam_ws_connect_success rate > 0.99` | handshake failures mean the proxy or the token path is broken under load |
-| `tamam_samples_rejected count < 10` | systematic rejection means stale/inaccurate sample validation is misconfigured |
+| `tamam_ws_connect_success rate > 0.99`                | handshake failures mean the proxy or the token path is broken under load                                     |
+| `tamam_samples_rejected count < 10`                   | systematic rejection means stale/inaccurate sample validation is misconfigured                               |
 
 Watch on the server side while it runs: `tamam_ws_connections{namespace="tracking"}`,
 `tamam_location_updates_total{result="rejected"}`, `tamam_queue_oldest_waiting_seconds`, and the

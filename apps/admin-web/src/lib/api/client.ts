@@ -38,10 +38,26 @@ export interface ApiClientConfig {
 
 export interface ApiClient {
   request<T>(path: string, options?: ApiRequestOptions): Promise<T>;
-  get<T>(path: string, query?: QueryParams, options?: Omit<ApiRequestOptions, 'method' | 'query' | 'body'>): Promise<T>;
-  post<T>(path: string, body?: unknown, options?: Omit<ApiRequestOptions, 'method' | 'body'>): Promise<T>;
-  put<T>(path: string, body?: unknown, options?: Omit<ApiRequestOptions, 'method' | 'body'>): Promise<T>;
-  patch<T>(path: string, body?: unknown, options?: Omit<ApiRequestOptions, 'method' | 'body'>): Promise<T>;
+  get<T>(
+    path: string,
+    query?: QueryParams,
+    options?: Omit<ApiRequestOptions, 'method' | 'query' | 'body'>,
+  ): Promise<T>;
+  post<T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<ApiRequestOptions, 'method' | 'body'>,
+  ): Promise<T>;
+  put<T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<ApiRequestOptions, 'method' | 'body'>,
+  ): Promise<T>;
+  patch<T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<ApiRequestOptions, 'method' | 'body'>,
+  ): Promise<T>;
   delete<T>(path: string, options?: Omit<ApiRequestOptions, 'method'>): Promise<T>;
   raw(path: string, options?: ApiRequestOptions): Promise<Response>;
 }
@@ -52,7 +68,8 @@ export function buildQueryString(query: QueryParams | undefined): string {
   for (const [key, value] of Object.entries(query)) {
     if (value === undefined || value === null || value === '') continue;
     if (Array.isArray(value)) {
-      for (const item of value) if (item !== undefined && item !== null && item !== '') params.append(key, String(item));
+      for (const item of value)
+        if (item !== undefined && item !== null && item !== '') params.append(key, String(item));
     } else {
       params.set(key, String(value));
     }
@@ -69,10 +86,15 @@ export function buildQueryString(query: QueryParams | undefined): string {
 function narrowDetails(value: unknown): ApiErrorShape['details'] {
   if (Array.isArray(value)) {
     const isFieldError = (v: unknown): v is { field: string; message: string } =>
-      typeof v === 'object' && v !== null && typeof (v as { field?: unknown }).field === 'string' && typeof (v as { message?: unknown }).message === 'string';
+      typeof v === 'object' &&
+      v !== null &&
+      typeof (v as { field?: unknown }).field === 'string' &&
+      typeof (v as { message?: unknown }).message === 'string';
     return value.every(isFieldError) ? value : undefined;
   }
-  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : undefined;
+  return typeof value === 'object' && value !== null
+    ? (value as Record<string, unknown>)
+    : undefined;
 }
 
 async function parseErrorBody(response: Response): Promise<Partial<ApiErrorShape> | null> {
@@ -81,7 +103,12 @@ async function parseErrorBody(response: Response): Promise<Partial<ApiErrorShape
     if (!text) return null;
     const parsed: unknown = JSON.parse(text);
     if (typeof parsed !== 'object' || parsed === null) return null;
-    const body = parsed as { code?: unknown; message?: unknown; details?: unknown; requestId?: unknown };
+    const body = parsed as {
+      code?: unknown;
+      message?: unknown;
+      details?: unknown;
+      requestId?: unknown;
+    };
     const details = narrowDetails(body.details);
     return {
       ...(typeof body.code === 'string' ? { code: body.code } : {}),
@@ -115,7 +142,12 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     return refreshInFlight;
   };
 
-  const send = async (path: string, options: ApiRequestOptions, token: string | null, requestId: string): Promise<Response> => {
+  const send = async (
+    path: string,
+    options: ApiRequestOptions,
+    token: string | null,
+    requestId: string,
+  ): Promise<Response> => {
     const headers: Record<string, string> = {
       Accept: 'application/json',
       [ApiHeaders.REQUEST_ID]: requestId,
@@ -134,7 +166,14 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       return await fetchImpl(`${config.baseUrl}${path}${buildQueryString(options.query)}`, init);
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') throw error;
-      throw new ApiError(0, { code: 'NETWORK_ERROR', message: error instanceof Error ? error.message : 'Network error' }, requestId);
+      throw new ApiError(
+        0,
+        {
+          code: 'NETWORK_ERROR',
+          message: error instanceof Error ? error.message : 'Network error',
+        },
+        requestId,
+      );
     }
   };
 
@@ -151,7 +190,8 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       response = await send(path, options, fresh, requestId);
       if (response.status === 401) config.onUnauthenticated?.();
     }
-    if (!response.ok) throw new ApiError(response.status, await parseErrorBody(response), requestId);
+    if (!response.ok)
+      throw new ApiError(response.status, await parseErrorBody(response), requestId);
     return response;
   };
 

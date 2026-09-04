@@ -7,25 +7,25 @@ How to get the platform from a git checkout to a running production system. Day-
 
 ## 1. What you need
 
-| Component | Requirement | Notes |
-| --- | --- | --- |
-| PostgreSQL | **16+ with PostGIS 3.4**, `pgcrypto`, `pg_trgm` | Managed instance recommended. The API refuses to start without the extensions. |
-| Redis | 7+, `maxmemory-policy noeviction` | Holds queues (BullMQ), rate limits, caches, the Socket.IO adapter. Evicting keys would drop queued jobs. |
-| Object storage | S3-compatible, two buckets | `tamam-private` (no public access) and `tamam-public` (read-only download policy). |
-| Node | 22 LTS | Only needed if you run outside containers. |
-| Routing | OSRM instance (or a Google Maps key) | The public OSRM demo server is not a production dependency — self-host it. |
-| SMS | A real provider | `SMS_PROVIDER=console` is **rejected** in production by `env.schema.ts`. |
-| TLS | Handled by Caddy in `docker-compose.prod.yml` | Or terminate upstream and point Caddy at it. |
+| Component      | Requirement                                     | Notes                                                                                                    |
+| -------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| PostgreSQL     | **16+ with PostGIS 3.4**, `pgcrypto`, `pg_trgm` | Managed instance recommended. The API refuses to start without the extensions.                           |
+| Redis          | 7+, `maxmemory-policy noeviction`               | Holds queues (BullMQ), rate limits, caches, the Socket.IO adapter. Evicting keys would drop queued jobs. |
+| Object storage | S3-compatible, two buckets                      | `tamam-private` (no public access) and `tamam-public` (read-only download policy).                       |
+| Node           | 22 LTS                                          | Only needed if you run outside containers.                                                               |
+| Routing        | OSRM instance (or a Google Maps key)            | The public OSRM demo server is not a production dependency — self-host it.                               |
+| SMS            | A real provider                                 | `SMS_PROVIDER=console` is **rejected** in production by `env.schema.ts`.                                 |
+| TLS            | Handled by Caddy in `docker-compose.prod.yml`   | Or terminate upstream and point Caddy at it.                                                             |
 
 ## 2. Configuration
 
 Every value is validated by `apps/api/src/config/env.schema.ts` at boot; the process exits rather
 than starting with an invalid or placeholder configuration. Production additionally refuses:
 
-* `change-me…` / `test-…` values for `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `OTP_PEPPER`, `ENCRYPTION_KEY`
-* `SMS_PROVIDER=console`, `PAYMENT_GATEWAY_PROVIDER=mock`
-* `LOG_LEVEL=debug|trace`
-* a non-HTTPS `API_BASE_URL`
+- `change-me…` / `test-…` values for `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `OTP_PEPPER`, `ENCRYPTION_KEY`
+- `SMS_PROVIDER=console`, `PAYMENT_GATEWAY_PROVIDER=mock`
+- `LOG_LEVEL=debug|trace`
+- a non-HTTPS `API_BASE_URL`
 
 Generate the secrets once and store them in your secret manager:
 
@@ -103,12 +103,12 @@ connections for the four Socket.IO namespaces, and blocks `/metrics` from the pu
 
 ### Scaling out
 
-* The API is stateless; scale it horizontally. Socket.IO uses the Redis adapter, so a client may
+- The API is stateless; scale it horizontally. Socket.IO uses the Redis adapter, so a client may
   connect to any replica.
-* BullMQ workers run **in-process**. Every replica processes queue jobs — that is intended and
+- BullMQ workers run **in-process**. Every replica processes queue jobs — that is intended and
   safe: handlers are idempotent and the maintenance scheduler deduplicates by `jobId`
   (`<name>-<yyyymmddHHMM>`), so N replicas firing the same cron minute enqueue one job.
-* Only one replica should carry `RUN_MIGRATIONS=true`.
+- Only one replica should carry `RUN_MIGRATIONS=true`.
 
 ### Zero-downtime rollout
 
@@ -128,9 +128,9 @@ curl -fsS -o /dev/null -w '%{http_code}\n' https://$DOMAIN/metrics   # must be 4
 
 Then, signed in as a SUPER_ADMIN:
 
-* `GET /api/v1/admin/overview` — live counters render.
-* `GET /api/v1/admin/maintenance/queues` — `failed` is 0 on every queue.
-* `GET /api/v1/admin/config` — configuration matches the release notes.
+- `GET /api/v1/admin/overview` — live counters render.
+- `GET /api/v1/admin/maintenance/queues` — `failed` is 0 on every queue.
+- `GET /api/v1/admin/config` — configuration matches the release notes.
 
 ## 7. Rollback
 

@@ -25,20 +25,32 @@ export class TokenService {
     private readonly sysConfig: SystemConfigService,
   ) {}
 
-  async signAccessToken(userId: string, sessionId: string, deviceId: string, roles: UserRole[]): Promise<{ token: string; expiresIn: number }> {
+  async signAccessToken(
+    userId: string,
+    sessionId: string,
+    deviceId: string,
+    roles: UserRole[],
+  ): Promise<{ token: string; expiresIn: number }> {
     const expiresIn = await this.sysConfig.getNumber(CONFIG_KEYS.AUTH_ACCESS_TTL_S);
-    const token = jwt.sign({ sub: userId, sid: sessionId, did: deviceId, roles }, this.config.env.JWT_ACCESS_SECRET, {
-      algorithm: 'HS256',
-      expiresIn,
-      issuer: this.config.env.JWT_ISSUER,
-      jwtid: randomUUID(),
-    });
+    const token = jwt.sign(
+      { sub: userId, sid: sessionId, did: deviceId, roles },
+      this.config.env.JWT_ACCESS_SECRET,
+      {
+        algorithm: 'HS256',
+        expiresIn,
+        issuer: this.config.env.JWT_ISSUER,
+        jwtid: randomUUID(),
+      },
+    );
     return { token, expiresIn };
   }
 
   verifyAccessToken(token: string): AccessTokenClaims | null {
     try {
-      return jwt.verify(token, this.config.env.JWT_ACCESS_SECRET, { algorithms: ['HS256'], issuer: this.config.env.JWT_ISSUER }) as AccessTokenClaims;
+      return jwt.verify(token, this.config.env.JWT_ACCESS_SECRET, {
+        algorithms: ['HS256'],
+        issuer: this.config.env.JWT_ISSUER,
+      }) as AccessTokenClaims;
     } catch {
       return null;
     }
@@ -46,12 +58,20 @@ export class TokenService {
 
   /** Marks a session as revoked in Redis so access tokens die immediately (not at expiry). */
   async markSessionRevoked(sessionId: string, ttlSeconds: number): Promise<void> {
-    await this.redis.client.set(`${SESSION_REVOKED_PREFIX}${sessionId}`, '1', 'EX', Math.max(60, ttlSeconds));
+    await this.redis.client.set(
+      `${SESSION_REVOKED_PREFIX}${sessionId}`,
+      '1',
+      'EX',
+      Math.max(60, ttlSeconds),
+    );
     await this.redis.del(`principal:${sessionId}`);
   }
 
   async invalidatePrincipalCache(userId: string): Promise<void> {
-    const sessions = await this.prisma.userSession.findMany({ where: { userId, revokedAt: null }, select: { id: true } });
+    const sessions = await this.prisma.userSession.findMany({
+      where: { userId, revokedAt: null },
+      select: { id: true },
+    });
     if (sessions.length) await this.redis.del(...sessions.map((s) => `principal:${s.id}`));
   }
 
@@ -66,7 +86,15 @@ export class TokenService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: claims.sub },
-      include: { roles: true, customer: { select: { userId: true } }, partner: { select: { userId: true } }, sessions: { where: { id: claims.sid }, select: { id: true, deviceId: true, revokedAt: true, expiresAt: true } } },
+      include: {
+        roles: true,
+        customer: { select: { userId: true } },
+        partner: { select: { userId: true } },
+        sessions: {
+          where: { id: claims.sid },
+          select: { id: true, deviceId: true, revokedAt: true, expiresAt: true },
+        },
+      },
     });
     if (!user) return null;
     const session = user.sessions[0];

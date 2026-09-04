@@ -92,10 +92,42 @@ export interface GeneratedAsset {
 
 /** The placeholder creatives the seed references. `scripts/seed-assets.sh` uploads them. */
 export const SEED_ASSET_SPECS = [
-  { relativePath: 'banners/home-hero-ar.png', objectKey: 'seed/banners/home-hero-ar.png', bucket: 'public' as const, width: 1200, height: 600, background: TAMAM_PURPLE, accent: TAMAM_YELLOW },
-  { relativePath: 'banners/home-hero-en.png', objectKey: 'seed/banners/home-hero-en.png', bucket: 'public' as const, width: 1200, height: 600, background: TAMAM_PURPLE, accent: TAMAM_YELLOW },
-  { relativePath: 'banners/home-inline.png', objectKey: 'seed/banners/home-inline.png', bucket: 'public' as const, width: 1000, height: 320, background: TAMAM_YELLOW, accent: TAMAM_PURPLE },
-  { relativePath: 'documents/placeholder.png', objectKey: 'seed/documents/placeholder.png', bucket: 'private' as const, width: 800, height: 1000, background: TAMAM_GREY, accent: TAMAM_PURPLE },
+  {
+    relativePath: 'banners/home-hero-ar.png',
+    objectKey: 'seed/banners/home-hero-ar.png',
+    bucket: 'public' as const,
+    width: 1200,
+    height: 600,
+    background: TAMAM_PURPLE,
+    accent: TAMAM_YELLOW,
+  },
+  {
+    relativePath: 'banners/home-hero-en.png',
+    objectKey: 'seed/banners/home-hero-en.png',
+    bucket: 'public' as const,
+    width: 1200,
+    height: 600,
+    background: TAMAM_PURPLE,
+    accent: TAMAM_YELLOW,
+  },
+  {
+    relativePath: 'banners/home-inline.png',
+    objectKey: 'seed/banners/home-inline.png',
+    bucket: 'public' as const,
+    width: 1000,
+    height: 320,
+    background: TAMAM_YELLOW,
+    accent: TAMAM_PURPLE,
+  },
+  {
+    relativePath: 'documents/placeholder.png',
+    objectKey: 'seed/documents/placeholder.png',
+    bucket: 'private' as const,
+    width: 800,
+    height: 1000,
+    background: TAMAM_GREY,
+    accent: TAMAM_PURPLE,
+  },
 ];
 
 /** Writes every placeholder into `dir` (created if missing) and returns their metadata. */
@@ -105,6 +137,13 @@ export function writeSeedAssets(dir: string): GeneratedAsset[] {
     const target = join(dir, spec.relativePath);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, png);
-    return { relativePath: spec.relativePath, objectKey: spec.objectKey, bucket: spec.bucket, width: spec.width, height: spec.height, bytes: png.length };
+    return {
+      relativePath: spec.relativePath,
+      objectKey: spec.objectKey,
+      bucket: spec.bucket,
+      width: spec.width,
+      height: spec.height,
+      bytes: png.length,
+    };
   });
 }

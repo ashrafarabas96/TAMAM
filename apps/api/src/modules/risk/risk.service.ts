@@ -20,14 +20,19 @@ import { RedisService } from '../../infrastructure/redis/redis.service';
 import { AuditService } from '../audit/audit.service';
 import { SystemConfigService } from '../config/system-config.service';
 
-import { type RiskCounters, type RiskFinding, type RiskThresholds, emptyCounters, evaluateRiskRules } from './domain/risk.rules';
+import {
+  type RiskCounters,
+  type RiskFinding,
+  type RiskThresholds,
+  emptyCounters,
+  evaluateRiskRules,
+} from './domain/risk.rules';
 
 // Declared in @tamam/shared-types so the console and the mobile apps read the same
 // shape; re-exported for the modules that already import it from this service.
 export type { RiskSignalDto } from '@tamam/shared-types';
 
 /* ------------------------------------------------------------- contracts */
-
 
 export interface RestrictionDto {
   id: string;
@@ -89,7 +94,8 @@ interface ImpossibleMovementEventLike {
 }
 
 const RESTRICTION_CACHE_S = 60;
-const restrictionKey = (targetType: RestrictionTargetType, targetId: string): string => `risk:restr:${targetType}:${targetId}`;
+const restrictionKey = (targetType: RestrictionTargetType, targetId: string): string =>
+  `risk:restr:${targetType}:${targetId}`;
 
 interface CountRow {
   count: number;
@@ -118,7 +124,13 @@ export class RiskService {
    * Records one risk signal. Idempotent per (user, signal, UTC day): a user who cancels ten jobs
    * produces one signal to review, not ten.
    */
-  async recordSignal(userId: string, signal: RiskSignal, score: number, details?: Record<string, unknown> | null, jobId?: string | null): Promise<RiskSignalDto> {
+  async recordSignal(
+    userId: string,
+    signal: RiskSignal,
+    score: number,
+    details?: Record<string, unknown> | null,
+    jobId?: string | null,
+  ): Promise<RiskSignalDto> {
     const dayStart = utcDayStart(new Date());
     const existing = await this.prisma.riskSignalEvent.findFirst({
       where: { userId, signal, createdAt: { gte: dayStart } },
@@ -183,7 +195,10 @@ export class RiskService {
     const existing = await this.prisma.riskSignalEvent.findUnique({ where: { id } });
     if (!existing) throw AppException.notFound('Risk signal', id);
     if (existing.reviewedAt) return toSignalDto(existing);
-    const updated = await this.prisma.riskSignalEvent.update({ where: { id }, data: { reviewedAt: new Date(), reviewedById: actor.id } });
+    const updated = await this.prisma.riskSignalEvent.update({
+      where: { id },
+      data: { reviewedAt: new Date(), reviewedById: actor.id },
+    });
     return toSignalDto(updated);
   }
 
@@ -194,8 +209,11 @@ export class RiskService {
     const now = new Date();
     // The keyset cursor and the "active only" filter both need an OR clause, so they are ANDed
     // together instead of spread into the same object (where the second OR would win).
-    const and: Prisma.RestrictionWhereInput[] = [cursorWhere(cursor) as Prisma.RestrictionWhereInput];
-    if (filter.activeOnly) and.push({ liftedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] });
+    const and: Prisma.RestrictionWhereInput[] = [
+      cursorWhere(cursor) as Prisma.RestrictionWhereInput,
+    ];
+    if (filter.activeOnly)
+      and.push({ liftedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] });
 
     const rows = await this.prisma.restriction.findMany({
       where: {
@@ -210,7 +228,11 @@ export class RiskService {
     return buildPage(rows, filter.limit, (r) => toRestrictionDto(r, now));
   }
 
-  async create(input: UpsertRestrictionInput, actor: RequestUser, requestId: string | null): Promise<RestrictionDto> {
+  async create(
+    input: UpsertRestrictionInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<RestrictionDto> {
     const row = await this.prisma.$transaction(async (tx) => {
       const created = await tx.restriction.create({
         data: {
@@ -228,7 +250,12 @@ export class RiskService {
           action: 'risk.restriction.create',
           entity: 'restriction',
           entityId: created.id,
-          newValue: { targetType: input.targetType, targetId: input.targetId, kind: input.kind, expiresAt: input.expiresAt ?? null },
+          newValue: {
+            targetType: input.targetType,
+            targetId: input.targetId,
+            kind: input.kind,
+            expiresAt: input.expiresAt ?? null,
+          },
           reason: input.reason,
           requestId,
         },
@@ -241,20 +268,32 @@ export class RiskService {
     return toRestrictionDto(row, new Date());
   }
 
-  async lift(id: string, reason: string, actor: RequestUser, requestId: string | null): Promise<RestrictionDto> {
+  async lift(
+    id: string,
+    reason: string,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<RestrictionDto> {
     const existing = await this.prisma.restriction.findUnique({ where: { id } });
     if (!existing) throw AppException.notFound('Restriction', id);
     if (existing.liftedAt) throw AppException.conflict('This restriction has already been lifted');
 
     const row = await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.restriction.update({ where: { id }, data: { liftedAt: new Date(), liftedById: actor.id, liftReason: reason } });
+      const updated = await tx.restriction.update({
+        where: { id },
+        data: { liftedAt: new Date(), liftedById: actor.id, liftReason: reason },
+      });
       await this.audit.record(
         {
           actorId: actor.id,
           action: 'risk.restriction.lift',
           entity: 'restriction',
           entityId: id,
-          oldValue: { kind: existing.kind, targetType: existing.targetType, targetId: existing.targetId },
+          oldValue: {
+            kind: existing.kind,
+            targetType: existing.targetType,
+            targetId: existing.targetId,
+          },
           newValue: { liftedAt: updated.liftedAt?.toISOString() ?? null },
           reason,
           requestId,
@@ -271,23 +310,47 @@ export class RiskService {
   /* ------------------------------------------------------------- guards */
 
   async assertCanCreateJob(userId: string, deviceId?: string | null): Promise<void> {
-    await this.assertNotRestricted('BLOCK_JOBS', userId, deviceId, 'Your account is restricted from booking new jobs. Contact support.');
+    await this.assertNotRestricted(
+      'BLOCK_JOBS',
+      userId,
+      deviceId,
+      'Your account is restricted from booking new jobs. Contact support.',
+    );
   }
 
   async assertCanUsePromo(userId: string, deviceId?: string | null): Promise<void> {
-    await this.assertNotRestricted('BLOCK_PROMOS', userId, deviceId, 'Your account is restricted from using promo codes. Contact support.');
+    await this.assertNotRestricted(
+      'BLOCK_PROMOS',
+      userId,
+      deviceId,
+      'Your account is restricted from using promo codes. Contact support.',
+    );
   }
 
   async assertCanUseWallet(userId: string, deviceId?: string | null): Promise<void> {
-    await this.assertNotRestricted('BLOCK_WALLET', userId, deviceId, 'Your wallet is restricted. Contact support.');
+    await this.assertNotRestricted(
+      'BLOCK_WALLET',
+      userId,
+      deviceId,
+      'Your wallet is restricted. Contact support.',
+    );
   }
 
   async assertCanLogin(userId: string, deviceId?: string | null): Promise<void> {
-    await this.assertNotRestricted('BLOCK_LOGIN', userId, deviceId, 'Sign-in is blocked for this account. Contact support.');
+    await this.assertNotRestricted(
+      'BLOCK_LOGIN',
+      userId,
+      deviceId,
+      'Sign-in is blocked for this account. Contact support.',
+    );
   }
 
   /** True when an active restriction of that kind covers the user or their device. */
-  async hasRestriction(kind: RestrictionKind, userId: string | null, deviceId?: string | null): Promise<boolean> {
+  async hasRestriction(
+    kind: RestrictionKind,
+    userId: string | null,
+    deviceId?: string | null,
+  ): Promise<boolean> {
     const targets: Array<[RestrictionTargetType, string]> = [];
     if (userId) {
       targets.push([RestrictionTargetType.USER, userId]);
@@ -302,21 +365,34 @@ export class RiskService {
     return false;
   }
 
-  private async assertNotRestricted(kind: RestrictionKind, userId: string, deviceId: string | null | undefined, message: string): Promise<void> {
+  private async assertNotRestricted(
+    kind: RestrictionKind,
+    userId: string,
+    deviceId: string | null | undefined,
+    message: string,
+  ): Promise<void> {
     if (await this.hasRestriction(kind, userId, deviceId)) {
       throw AppException.forbidden(message, ErrorCode.ACCOUNT_RESTRICTED);
     }
   }
 
   /** Active restriction kinds for one target, cached for 60 s (invalidated on create/lift). */
-  private async activeKinds(targetType: RestrictionTargetType, targetId: string): Promise<RestrictionKind[]> {
+  private async activeKinds(
+    targetType: RestrictionTargetType,
+    targetId: string,
+  ): Promise<RestrictionKind[]> {
     const key = restrictionKey(targetType, targetId);
     const cached = await this.redis.getJson<RestrictionKind[]>(key);
     if (cached) return cached;
 
     const now = new Date();
     const rows = await this.prisma.restriction.findMany({
-      where: { targetType, targetId, liftedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+      where: {
+        targetType,
+        targetId,
+        liftedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+      },
       select: { kind: true },
     });
     const kinds = [...new Set(rows.map((r) => r.kind))];
@@ -344,7 +420,14 @@ export class RiskService {
   @OnEvent('payment.failed')
   async onPaymentFailed(event: PaymentFailedEventLike): Promise<void> {
     await this.safely('payment.failed', async () => {
-      const customerId = event.customerId ?? (await this.prisma.job.findUnique({ where: { id: event.jobId }, select: { customerId: true } }))?.customerId;
+      const customerId =
+        event.customerId ??
+        (
+          await this.prisma.job.findUnique({
+            where: { id: event.jobId },
+            select: { customerId: true },
+          })
+        )?.customerId;
       if (customerId) await this.evaluateUser(customerId);
     });
   }
@@ -363,9 +446,18 @@ export class RiskService {
       const userId = event.userId ?? event.partnerId;
       if (!userId) return;
       const thresholds = await this.thresholds();
-      const findings = evaluateRiskRules({ ...emptyCounters(), maxObservedSpeedKmh: event.speedKmh }, thresholds);
+      const findings = evaluateRiskRules(
+        { ...emptyCounters(), maxObservedSpeedKmh: event.speedKmh },
+        thresholds,
+      );
       for (const finding of findings) {
-        await this.recordSignal(userId, finding.signal, finding.score, finding.details, event.jobId ?? null);
+        await this.recordSignal(
+          userId,
+          finding.signal,
+          finding.score,
+          finding.details,
+          event.jobId ?? null,
+        );
       }
     });
   }
@@ -382,18 +474,34 @@ export class RiskService {
   /* ------------------------------------------------------------ counters */
 
   private async thresholds(): Promise<RiskThresholds> {
-    const [maxCancellationsPerDay, maxFailedPaymentsPerDay, maxPromoRedemptionsPerDay, maxSpeedKmh] = await Promise.all([
+    const [
+      maxCancellationsPerDay,
+      maxFailedPaymentsPerDay,
+      maxPromoRedemptionsPerDay,
+      maxSpeedKmh,
+    ] = await Promise.all([
       this.systemConfig.getNumber(CONFIG_KEYS.RISK_MAX_CANCELLATIONS_PER_DAY),
       this.systemConfig.getNumber(CONFIG_KEYS.RISK_MAX_FAILED_PAYMENTS_PER_DAY),
       this.systemConfig.getNumber(CONFIG_KEYS.RISK_MAX_PROMO_REDEMPTIONS_PER_DAY),
       this.systemConfig.getNumber(CONFIG_KEYS.TRACKING_MAX_SPEED_KMH),
     ]);
-    return { maxCancellationsPerDay, maxFailedPaymentsPerDay, maxPromoRedemptionsPerDay, maxSpeedKmh };
+    return {
+      maxCancellationsPerDay,
+      maxFailedPaymentsPerDay,
+      maxPromoRedemptionsPerDay,
+      maxSpeedKmh,
+    };
   }
 
   async countersFor(userId: string): Promise<RiskCounters> {
     const dayStart = utcDayStart(new Date());
-    const [cancellationsToday, failedPaymentsToday, promoRedemptionsToday, accountsOnDevice, referralsFromSameDevice] = await Promise.all([
+    const [
+      cancellationsToday,
+      failedPaymentsToday,
+      promoRedemptionsToday,
+      accountsOnDevice,
+      referralsFromSameDevice,
+    ] = await Promise.all([
       this.prisma.job.count({
         where: {
           cancelledAt: { gte: dayStart },
@@ -403,8 +511,12 @@ export class RiskService {
           ],
         },
       }),
-      this.prisma.payment.count({ where: { customerId: userId, status: 'FAILED', updatedAt: { gte: dayStart } } }),
-      this.prisma.promoRedemption.count({ where: { customerId: userId, releasedAt: null, createdAt: { gte: dayStart } } }),
+      this.prisma.payment.count({
+        where: { customerId: userId, status: 'FAILED', updatedAt: { gte: dayStart } },
+      }),
+      this.prisma.promoRedemption.count({
+        where: { customerId: userId, releasedAt: null, createdAt: { gte: dayStart } },
+      }),
       this.scalarCount(Prisma.sql`
         SELECT COALESCE(MAX(cnt), 0)::int AS count FROM (
           SELECT s.device_id, COUNT(DISTINCT s.user_id) AS cnt
@@ -441,7 +553,8 @@ export class RiskService {
 
 /* --------------------------------------------------------------- helpers */
 
-const utcDayStart = (d: Date): Date => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+const utcDayStart = (d: Date): Date =>
+  new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 
 function toSignalDto(row: {
   id: string;
@@ -494,7 +607,8 @@ function toRestrictionDto(
     liftedAt: row.liftedAt ? row.liftedAt.toISOString() : null,
     liftedById: row.liftedById,
     liftReason: row.liftReason,
-    isActive: row.liftedAt === null && (row.expiresAt === null || row.expiresAt.getTime() > now.getTime()),
+    isActive:
+      row.liftedAt === null && (row.expiresAt === null || row.expiresAt.getTime() > now.getTime()),
     createdAt: row.createdAt.toISOString(),
   };
 }

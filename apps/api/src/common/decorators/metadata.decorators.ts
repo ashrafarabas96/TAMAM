@@ -7,11 +7,13 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
 export const PERMISSIONS_KEY = 'tamam:permissions';
 /** Require ALL listed permissions. SUPER_ADMIN passes implicitly. */
-export const RequirePermission = (...permissions: Permission[]) => SetMetadata(PERMISSIONS_KEY, permissions);
+export const RequirePermission = (...permissions: Permission[]) =>
+  SetMetadata(PERMISSIONS_KEY, permissions);
 
 export const ANY_PERMISSION_KEY = 'tamam:any-permission';
 /** Require at least ONE of the listed permissions. */
-export const RequireAnyPermission = (...permissions: Permission[]) => SetMetadata(ANY_PERMISSION_KEY, permissions);
+export const RequireAnyPermission = (...permissions: Permission[]) =>
+  SetMetadata(ANY_PERMISSION_KEY, permissions);
 
 export const ROLES_KEY = 'tamam:roles';
 /** Coarse role gate (CUSTOMER / PARTNER endpoints). Fine-grained checks stay in policies. */

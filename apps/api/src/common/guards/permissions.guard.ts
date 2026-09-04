@@ -13,9 +13,18 @@ export class PermissionsGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const required = this.reflector.getAllAndOverride<Permission[] | undefined>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
-    const anyOf = this.reflector.getAllAndOverride<Permission[] | undefined>(ANY_PERMISSION_KEY, [context.getHandler(), context.getClass()]);
-    const roles = this.reflector.getAllAndOverride<string[] | undefined>(ROLES_KEY, [context.getHandler(), context.getClass()]);
+    const required = this.reflector.getAllAndOverride<Permission[] | undefined>(PERMISSIONS_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    const anyOf = this.reflector.getAllAndOverride<Permission[] | undefined>(ANY_PERMISSION_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    const roles = this.reflector.getAllAndOverride<string[] | undefined>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     if (!required?.length && !anyOf?.length && !roles?.length) return true;
 
     const req = context.switchToHttp().getRequest<Request & { user?: RequestUser }>();
@@ -23,7 +32,10 @@ export class PermissionsGuard implements CanActivate {
     if (!user) throw AppException.unauthenticated();
     if (user.isSuperAdmin) return true;
 
-    if (roles?.length && !roles.some((r) => user.roles.includes(r as RequestUser['roles'][number]))) {
+    if (
+      roles?.length &&
+      !roles.some((r) => user.roles.includes(r as RequestUser['roles'][number]))
+    ) {
       throw AppException.forbidden();
     }
     if (required?.length) {

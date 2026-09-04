@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { adminLogin, apiLogout, clearSessionCookie, payloadFromTokens, readSessionCookie, writeSessionCookie } from '@/lib/auth/server-session';
+import {
+  adminLogin,
+  apiLogout,
+  clearSessionCookie,
+  payloadFromTokens,
+  readSessionCookie,
+  writeSessionCookie,
+} from '@/lib/auth/server-session';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,7 +28,15 @@ export async function POST(request: Request): Promise<Response> {
   const json: unknown = await request.json().catch(() => null);
   const parsed = loginBodySchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ code: 'VALIDATION_FAILED', message: 'Invalid login payload', details: parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })), requestId: 'admin-web' }, { status: 400 });
+    return NextResponse.json(
+      {
+        code: 'VALIDATION_FAILED',
+        message: 'Invalid login payload',
+        details: parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
+        requestId: 'admin-web',
+      },
+      { status: 400 },
+    );
   }
   const forwardedFor = request.headers.get('x-forwarded-for');
   const result = await adminLogin({
@@ -33,12 +48,20 @@ export async function POST(request: Request): Promise<Response> {
     userAgent: request.headers.get('user-agent'),
   });
   if (!result.ok) {
-    const body = result.error.body ?? { code: 'INTERNAL_ERROR', message: 'Login failed', requestId: 'admin-web' };
+    const body = result.error.body ?? {
+      code: 'INTERNAL_ERROR',
+      message: 'Login failed',
+      requestId: 'admin-web',
+    };
     return NextResponse.json(body, { status: result.error.status });
   }
   const session = payloadFromTokens(result.data.tokens, result.data.user.id, parsed.data.deviceId);
   await writeSessionCookie(session);
-  return NextResponse.json({ user: result.data.user, accessToken: session.accessToken, expiresAt: session.accessExpiresAt });
+  return NextResponse.json({
+    user: result.data.user,
+    accessToken: session.accessToken,
+    expiresAt: session.accessExpiresAt,
+  });
 }
 
 /** DELETE /api/session — revokes the API session and clears the cookie. */

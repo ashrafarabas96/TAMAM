@@ -27,7 +27,11 @@ describe('Permissions and object-level access (§130)', () => {
     await api.truncateOperationalTables();
 
     await createCustomerFixture(api, { phone: otherCustomerPhone, fullName: 'ريم قاسم' });
-    const otherDriver = await createDriverFixture(api, { phone: otherDriverPhone, fullName: 'باسل حمد', plate: '9990002' });
+    const otherDriver = await createDriverFixture(api, {
+      phone: otherDriverPhone,
+      fullName: 'باسل حمد',
+      plate: '9990002',
+    });
 
     customerA = await api.loginCustomer(SEED.customerPhone);
     customerB = await api.loginCustomer(otherCustomerPhone, 'e2e-customer-b');
@@ -36,9 +40,14 @@ describe('Permissions and object-level access (§130)', () => {
     support = await api.loginAdmin(SEED.supportEmail, SEED.adminPassword, 'e2e-support-device');
 
     const economy = await api.prisma.vehicleType.findUniqueOrThrow({ where: { code: 'ECONOMY' } });
-    const vehicle = await api.prisma.vehicle.findFirstOrThrow({ where: { partnerId: partnerA.userId, vehicleTypeId: economy.id } });
+    const vehicle = await api.prisma.vehicle.findFirstOrThrow({
+      where: { partnerId: partnerA.userId, vehicleTypeId: economy.id },
+    });
     // Job belongs to customer A and is served by partner A.
-    ride = await runCashRide(api, customerA, partnerA, { vehicleTypeId: economy.id, activeVehicleId: vehicle.id });
+    ride = await runCashRide(api, customerA, partnerA, {
+      vehicleTypeId: economy.id,
+      activeVehicleId: vehicle.id,
+    });
     expect(otherDriver.userId).toBe(partnerB.userId);
   }, 240_000);
 
@@ -47,7 +56,11 @@ describe('Permissions and object-level access (§130)', () => {
   });
 
   it('hides another customer’s job behind a 404', async () => {
-    await api.request().get(api.url(`jobs/${ride.jobId}`)).set(customerA.headers).expect(200);
+    await api
+      .request()
+      .get(api.url(`jobs/${ride.jobId}`))
+      .set(customerA.headers)
+      .expect(200);
 
     await api
       .request()
@@ -57,7 +70,11 @@ describe('Permissions and object-level access (§130)', () => {
       .expect((res) => expect((res.body as { code: string }).code).toBe('NOT_FOUND'));
 
     // The same rule applies to the job-scoped reads that go through JobsService.getForUser.
-    await api.request().get(api.url(`jobs/${ride.jobId}/timeline`)).set(customerB.headers).expect(404);
+    await api
+      .request()
+      .get(api.url(`jobs/${ride.jobId}/timeline`))
+      .set(customerB.headers)
+      .expect(404);
 
     // `GET jobs/:id/payment` is object-checked too, but PaymentsService.getForJob answers 403
     // instead of 404 for a foreign job. Access is still denied; the status code is inconsistent
@@ -71,7 +88,8 @@ describe('Permissions and object-level access (§130)', () => {
       });
 
     // Customer B's list never contains customer A's job.
-    const list = (await api.request().get(api.url('jobs')).set(customerB.headers).expect(200)).body as { items: Array<{ id: string }> };
+    const list = (await api.request().get(api.url('jobs')).set(customerB.headers).expect(200))
+      .body as { items: Array<{ id: string }> };
     expect(list.items.some((j) => j.id === ride.jobId)).toBe(false);
   });
 
@@ -86,7 +104,11 @@ describe('Permissions and object-level access (§130)', () => {
 
     // A support agent CAN read every job (JOBS_READ_ALL) but may not drive its state machine:
     // the partner-only route answers 403 because the caller is visible but not permitted.
-    await api.request().get(api.url(`admin/jobs/${ride.jobId}`)).set(support.headers).expect(200);
+    await api
+      .request()
+      .get(api.url(`admin/jobs/${ride.jobId}`))
+      .set(support.headers)
+      .expect(200);
     await api
       .request()
       .post(api.url(`jobs/${ride.jobId}/en-route`))
@@ -102,14 +124,23 @@ describe('Permissions and object-level access (§130)', () => {
       .post(api.url('admin/refunds'))
       .set(support.headers)
       .set('Idempotency-Key', 'e2e-support-refund-attempt')
-      .send({ paymentId: ride.paymentId, amountMinor: 100, reason: 'Support should not be able to do this' })
+      .send({
+        paymentId: ride.paymentId,
+        amountMinor: 100,
+        reason: 'Support should not be able to do this',
+      })
       .expect(403);
 
     expect(await api.prisma.refund.count({ where: { paymentId: ride.paymentId } })).toBe(0);
 
     // Nor may support manage staff accounts or platform configuration.
     await api.request().get(api.url('admin/staff')).set(support.headers).expect(403);
-    await api.request().post(api.url('admin/maintenance/run/heartbeat-sweep')).set(support.headers).send({ reason: 'trying anyway' }).expect(403);
+    await api
+      .request()
+      .post(api.url('admin/maintenance/run/heartbeat-sweep'))
+      .set(support.headers)
+      .send({ reason: 'trying anyway' })
+      .expect(403);
   });
 
   it('rejects unauthenticated and customer access to admin routes', async () => {
@@ -127,6 +158,10 @@ describe('Permissions and object-level access (§130)', () => {
     await api.request().get(api.url('admin/search?q=TM-')).set(customerA.headers).expect(403);
 
     // A garbage bearer token is rejected as unauthenticated, never as 500.
-    await api.request().get(api.url('admin/jobs')).set({ Authorization: 'Bearer not-a-real-token' }).expect(401);
+    await api
+      .request()
+      .get(api.url('admin/jobs'))
+      .set({ Authorization: 'Bearer not-a-real-token' })
+      .expect(401);
   });
 });

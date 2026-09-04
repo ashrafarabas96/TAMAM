@@ -1,6 +1,12 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Prisma } from '@prisma/client';
-import { ErrorCode, type LedgerAccountType, LedgerEntryDirection, LedgerTransactionType, PaymentMethod } from '@tamam/shared-types';
+import {
+  ErrorCode,
+  type LedgerAccountType,
+  LedgerEntryDirection,
+  LedgerTransactionType,
+  PaymentMethod,
+} from '@tamam/shared-types';
 import type { PinoLogger } from 'nestjs-pino';
 
 import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
@@ -37,24 +43,48 @@ interface WalletRow {
   balanceMinor: bigint;
 }
 
-function buildHarness(options: { job?: Record<string, unknown>; existingTransaction?: Record<string, unknown> } = {}) {
+function buildHarness(
+  options: { job?: Record<string, unknown>; existingTransaction?: Record<string, unknown> } = {},
+) {
   const accounts = new Map<string, AccountRow>();
   const wallets = new Map<string, WalletRow>([
-    [PARTNER_WALLET, { id: PARTNER_WALLET, ownerType: 'PARTNER', currency: 'ILS', balanceMinor: 0n }],
+    [
+      PARTNER_WALLET,
+      { id: PARTNER_WALLET, ownerType: 'PARTNER', currency: 'ILS', balanceMinor: 0n },
+    ],
   ]);
   const entries: EntryRow[] = [];
   const transactions = new Map<string, Record<string, unknown>>();
-  if (options.existingTransaction) transactions.set(String(options.existingTransaction.idempotencyKey), options.existingTransaction);
+  if (options.existingTransaction)
+    transactions.set(
+      String(options.existingTransaction.idempotencyKey),
+      options.existingTransaction,
+    );
 
-  const createAccount = jest.fn(async ({ data }: { data: { code: string; currency: string; type: LedgerAccountType; walletId: string | null } }) => {
-    const row: AccountRow = { id: `acc-${accounts.size + 1}`, code: data.code, currency: data.currency, type: data.type, walletId: data.walletId ?? null };
-    accounts.set(row.code, row);
-    return row;
-  });
+  const createAccount = jest.fn(
+    async ({
+      data,
+    }: {
+      data: { code: string; currency: string; type: LedgerAccountType; walletId: string | null };
+    }) => {
+      const row: AccountRow = {
+        id: `acc-${accounts.size + 1}`,
+        code: data.code,
+        currency: data.currency,
+        type: data.type,
+        walletId: data.walletId ?? null,
+      };
+      accounts.set(row.code, row);
+      return row;
+    },
+  );
 
   const tx = {
     ledgerTransaction: {
-      findUnique: jest.fn(async ({ where }: { where: { idempotencyKey: string } }) => transactions.get(where.idempotencyKey) ?? null),
+      findUnique: jest.fn(
+        async ({ where }: { where: { idempotencyKey: string } }) =>
+          transactions.get(where.idempotencyKey) ?? null,
+      ),
       create: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
         const row = { id: 'tx-1', entries: [], ...data };
         transactions.set(String(data.idempotencyKey), row);
@@ -76,12 +106,16 @@ function buildHarness(options: { job?: Record<string, unknown>; existingTransact
       create: createAccount,
     },
     wallet: {
-      findUnique: jest.fn(async ({ where }: { where: { id: string } }) => wallets.get(where.id) ?? null),
-      update: jest.fn(async ({ where, data }: { where: { id: string }; data: { balanceMinor: bigint } }) => {
-        const wallet = wallets.get(where.id);
-        if (wallet) wallet.balanceMinor = data.balanceMinor;
-        return wallet;
-      }),
+      findUnique: jest.fn(
+        async ({ where }: { where: { id: string } }) => wallets.get(where.id) ?? null,
+      ),
+      update: jest.fn(
+        async ({ where, data }: { where: { id: string }; data: { balanceMinor: bigint } }) => {
+          const wallet = wallets.get(where.id);
+          if (wallet) wallet.balanceMinor = data.balanceMinor;
+          return wallet;
+        },
+      ),
     },
     job: { findUnique: jest.fn(async () => options.job ?? null) },
     cancellationPolicy: { findMany: jest.fn(async () => []) },
@@ -96,19 +130,36 @@ function buildHarness(options: { job?: Record<string, unknown>; existingTransact
     withLedgerWrite: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
   } as unknown as PrismaService;
 
-  const commission = { resolve: jest.fn(async () => ({ percent: 10, fixedMinor: 0n, policyId: null })) } as unknown as CommissionService;
+  const commission = {
+    resolve: jest.fn(async () => ({ percent: 10, fixedMinor: 0n, policyId: null })),
+  } as unknown as CommissionService;
   const walletService = {
-    getOrCreate: jest.fn(async (_ownerType: string, ownerId: string) => wallets.get(ownerId === PARTNER_ID ? PARTNER_WALLET : PARTNER_WALLET)),
+    getOrCreate: jest.fn(async (_ownerType: string, ownerId: string) =>
+      wallets.get(ownerId === PARTNER_ID ? PARTNER_WALLET : PARTNER_WALLET),
+    ),
   } as unknown as WalletService;
   const events = new EventEmitter2();
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as PinoLogger;
+  const logger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  } as unknown as PinoLogger;
 
   const service = new LedgerService(prisma, commission, walletService, events, logger);
   return { service, tx, prisma, accounts, wallets, entries, events };
 }
 
 const netFor = (entries: EntryRow[], accountId: string): bigint =>
-  entries.reduce((sum, e) => (e.accountId !== accountId ? sum : e.direction === LedgerEntryDirection.CREDIT ? sum + e.amountMinor : sum - e.amountMinor), 0n);
+  entries.reduce(
+    (sum, e) =>
+      e.accountId !== accountId
+        ? sum
+        : e.direction === LedgerEntryDirection.CREDIT
+          ? sum + e.amountMinor
+          : sum - e.amountMinor,
+    0n,
+  );
 
 describe('LedgerService.post', () => {
   it('writes balanced entries with running balances and refreshes the wallet cache', async () => {
@@ -118,7 +169,11 @@ describe('LedgerService.post', () => {
       type: LedgerTransactionType.BONUS,
       currency: 'ILS',
       entries: [
-        { accountCode: 'PLATFORM_PAYABLES:ILS', direction: LedgerEntryDirection.DEBIT, amountMinor: 500n },
+        {
+          accountCode: 'PLATFORM_PAYABLES:ILS',
+          direction: LedgerEntryDirection.DEBIT,
+          amountMinor: 500n,
+        },
         { walletId: PARTNER_WALLET, direction: LedgerEntryDirection.CREDIT, amountMinor: 500n },
       ],
       description: 'Loyalty bonus',
@@ -131,18 +186,27 @@ describe('LedgerService.post', () => {
     expect(walletAccount).toBeDefined();
     expect(netFor(entries, walletAccount?.id ?? '')).toBe(500n);
     expect(entries.every((e) => e.transactionId === 'tx-1')).toBe(true);
-    expect(tx.wallet.update).toHaveBeenCalledWith({ where: { id: PARTNER_WALLET }, data: { balanceMinor: 500n } });
+    expect(tx.wallet.update).toHaveBeenCalledWith({
+      where: { id: PARTNER_WALLET },
+      data: { balanceMinor: 500n },
+    });
     expect(wallets.get(PARTNER_WALLET)?.balanceMinor).toBe(500n);
   });
 
   it('is idempotent: an existing idempotency key returns the stored transaction untouched', async () => {
-    const { service, tx } = buildHarness({ existingTransaction: { id: 'tx-existing', idempotencyKey: 'bonus:1', entries: [] } });
+    const { service, tx } = buildHarness({
+      existingTransaction: { id: 'tx-existing', idempotencyKey: 'bonus:1', entries: [] },
+    });
 
     const result = await service.post({
       type: LedgerTransactionType.BONUS,
       currency: 'ILS',
       entries: [
-        { accountCode: 'PLATFORM_PAYABLES:ILS', direction: LedgerEntryDirection.DEBIT, amountMinor: 500n },
+        {
+          accountCode: 'PLATFORM_PAYABLES:ILS',
+          direction: LedgerEntryDirection.DEBIT,
+          amountMinor: 500n,
+        },
         { walletId: PARTNER_WALLET, direction: LedgerEntryDirection.CREDIT, amountMinor: 500n },
       ],
       description: 'Loyalty bonus',
@@ -162,7 +226,11 @@ describe('LedgerService.post', () => {
         type: LedgerTransactionType.BONUS,
         currency: 'ILS',
         entries: [
-          { accountCode: 'PLATFORM_PAYABLES:ILS', direction: LedgerEntryDirection.DEBIT, amountMinor: 500n },
+          {
+            accountCode: 'PLATFORM_PAYABLES:ILS',
+            direction: LedgerEntryDirection.DEBIT,
+            amountMinor: 500n,
+          },
           { walletId: PARTNER_WALLET, direction: LedgerEntryDirection.CREDIT, amountMinor: 400n },
         ],
         description: 'Broken bonus',
@@ -182,7 +250,11 @@ describe('LedgerService.post', () => {
         type: LedgerTransactionType.BONUS,
         currency: 'ILS',
         entries: [
-          { accountCode: 'NOT_AN_ACCOUNT:ILS', direction: LedgerEntryDirection.DEBIT, amountMinor: 500n },
+          {
+            accountCode: 'NOT_AN_ACCOUNT:ILS',
+            direction: LedgerEntryDirection.DEBIT,
+            amountMinor: 500n,
+          },
           { walletId: PARTNER_WALLET, direction: LedgerEntryDirection.CREDIT, amountMinor: 500n },
         ],
         description: 'Broken bonus',
@@ -221,7 +293,8 @@ describe('LedgerService.settleJob', () => {
     const result = await service.settleJob(JOB_ID);
 
     expect(result).not.toBeNull();
-    const created = tx.ledgerTransaction.create.mock.calls[0]?.[0] as { data: { idempotencyKey: string; type: string; jobId: string } } | undefined;
+    const created = tx.ledgerTransaction.create.mock.calls[0]?.[0] as
+      { data: { idempotencyKey: string; type: string; jobId: string } } | undefined;
     expect(created?.data.idempotencyKey).toBe(`settle:${JOB_ID}`);
     expect(created?.data.type).toBe(LedgerTransactionType.JOB_CHARGE);
 
@@ -248,7 +321,13 @@ describe('LedgerService.settleJob', () => {
 
   it('does nothing for a job with no money to move', async () => {
     const { service, tx } = buildHarness({
-      job: { ...cashJob, finalTotalMinor: 0n, estimatedTotalMinor: 0n, promoDiscountMinor: 0n, cancellationFeeMinor: 0n },
+      job: {
+        ...cashJob,
+        finalTotalMinor: 0n,
+        estimatedTotalMinor: 0n,
+        promoDiscountMinor: 0n,
+        cancellationFeeMinor: 0n,
+      },
     });
 
     await expect(service.settleJob(JOB_ID)).resolves.toBeNull();
@@ -256,7 +335,9 @@ describe('LedgerService.settleJob', () => {
   });
 
   it('falls back to the commission policy when the job has no pricing snapshot', async () => {
-    const { service, accounts, entries } = buildHarness({ job: { ...cashJob, pricingSnapshot: null } });
+    const { service, accounts, entries } = buildHarness({
+      job: { ...cashJob, pricingSnapshot: null },
+    });
 
     await service.settleJob(JOB_ID);
 

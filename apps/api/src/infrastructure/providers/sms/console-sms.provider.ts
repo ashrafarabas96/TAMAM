@@ -13,7 +13,10 @@ export class ConsoleSmsProvider implements SmsProvider {
   constructor(private readonly logger: PinoLogger) {}
 
   async send(message: SmsMessage): Promise<SmsResult> {
-    this.logger.info({ to: message.to, category: message.category, body: message.body }, '[DEV SMS]');
+    this.logger.info(
+      { to: message.to, category: message.category, body: message.body },
+      '[DEV SMS]',
+    );
     return { providerRef: `console-${Date.now()}`, accepted: true };
   }
 }

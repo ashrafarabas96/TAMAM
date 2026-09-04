@@ -12,7 +12,9 @@ import { AppException } from '../errors/app.exception';
 function parseOrThrow<S extends ZodTypeAny>(schema: S, value: unknown): output<S> {
   const result = schema.safeParse(value);
   if (!result.success) {
-    throw AppException.validation(result.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })));
+    throw AppException.validation(
+      result.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
+    );
   }
   return result.data;
 }
@@ -42,12 +44,15 @@ const zodQueryDecorator = readFrom((req) => req.query);
 const zodParamsDecorator = readFrom((req) => req.params);
 
 /** `@ZodBody(schema) body: Input` — validates and strips unknown keys. */
-export const ZodBody = <S extends ZodTypeAny>(schema: S): ParameterDecorator => zodBodyDecorator({ schema });
+export const ZodBody = <S extends ZodTypeAny>(schema: S): ParameterDecorator =>
+  zodBodyDecorator({ schema });
 
 /** `@ZodQuery(schema) query: Input` — coerces from query string. */
-export const ZodQuery = <S extends ZodTypeAny>(schema: S): ParameterDecorator => zodQueryDecorator({ schema });
+export const ZodQuery = <S extends ZodTypeAny>(schema: S): ParameterDecorator =>
+  zodQueryDecorator({ schema });
 
 /** `@ZodParams(schema) params: Input` */
-export const ZodParams = <S extends ZodTypeAny>(schema: S): ParameterDecorator => zodParamsDecorator({ schema });
+export const ZodParams = <S extends ZodTypeAny>(schema: S): ParameterDecorator =>
+  zodParamsDecorator({ schema });
 
 export { parseOrThrow };

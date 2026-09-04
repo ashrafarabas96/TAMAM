@@ -26,9 +26,20 @@ import { DispatcherService } from './dispatcher.service';
  * AuditService, SystemConfigService, MetricsService, PrismaService.
  */
 @Module({
-  imports: [forwardRef(() => JobsModule), forwardRef(() => DispatchModule), SupportModule, DisputesModule],
+  imports: [
+    forwardRef(() => JobsModule),
+    forwardRef(() => DispatchModule),
+    SupportModule,
+    DisputesModule,
+  ],
   controllers: [AdminController],
-  providers: [AdminUsersService, AdminSearchService, DispatcherService, AdminOverviewService, AdminGateway],
+  providers: [
+    AdminUsersService,
+    AdminSearchService,
+    DispatcherService,
+    AdminOverviewService,
+    AdminGateway,
+  ],
   exports: [AdminUsersService, AdminSearchService, DispatcherService],
 })
 export class AdminModule {}

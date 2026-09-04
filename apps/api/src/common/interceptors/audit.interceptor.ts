@@ -1,4 +1,9 @@
-import { type CallHandler, type ExecutionContext, Injectable, type NestInterceptor } from '@nestjs/common';
+import {
+  type CallHandler,
+  type ExecutionContext,
+  Injectable,
+  type NestInterceptor,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { type Observable, tap } from 'rxjs';
@@ -19,7 +24,10 @@ export class AuditInterceptor implements NestInterceptor {
     const meta = this.reflector.get<AuditMeta | undefined>(AUDIT_KEY, context.getHandler());
     if (!meta) return next.handle();
     const req = context.switchToHttp().getRequest<Request & { user?: RequestUser; id?: string }>();
-    const entityId = meta.entityIdFrom ? (req.params[meta.entityIdFrom] ?? (req.body as Record<string, unknown> | undefined)?.[meta.entityIdFrom]) : undefined;
+    const entityId = meta.entityIdFrom
+      ? (req.params[meta.entityIdFrom] ??
+        (req.body as Record<string, unknown> | undefined)?.[meta.entityIdFrom])
+      : undefined;
     const body = (req.body ?? {}) as Record<string, unknown>;
     return next.handle().pipe(
       tap((result) => {
@@ -28,7 +36,10 @@ export class AuditInterceptor implements NestInterceptor {
           actorRole: req.user?.roles.join(',') ?? null,
           action: meta.action,
           entity: meta.entity,
-          entityId: typeof entityId === 'string' ? entityId : ((result as { id?: string } | undefined)?.id ?? null),
+          entityId:
+            typeof entityId === 'string'
+              ? entityId
+              : ((result as { id?: string } | undefined)?.id ?? null),
           newValue: AuditService.redact(body),
           reason: typeof body.reason === 'string' ? body.reason : null,
           ip: req.ip ?? null,

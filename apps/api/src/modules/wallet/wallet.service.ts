@@ -17,7 +17,12 @@ import {
   WalletOwnerType,
   WithdrawalStatus,
 } from '@tamam/shared-types';
-import type { TopUpWalletInput, WalletAdjustmentInput, WithdrawalDecisionInput, WithdrawalRequestInput } from '@tamam/validation';
+import type {
+  TopUpWalletInput,
+  WalletAdjustmentInput,
+  WithdrawalDecisionInput,
+  WithdrawalRequestInput,
+} from '@tamam/validation';
 import { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
@@ -26,7 +31,10 @@ import { buildPage, cursorWhere, decodeCursor } from '../../common/utils/cursor'
 import { toMoney } from '../../common/utils/money';
 import { startOfUtcDay } from '../../common/utils/time';
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
-import { PAYMENT_GATEWAY, type PaymentGatewayProvider } from '../../infrastructure/providers/payment-gateway/payment-gateway.provider';
+import {
+  PAYMENT_GATEWAY,
+  type PaymentGatewayProvider,
+} from '../../infrastructure/providers/payment-gateway/payment-gateway.provider';
 import { AuditService } from '../audit/audit.service';
 import { SystemConfigService } from '../config/system-config.service';
 import { platformAccountCode } from '../ledger/domain/ledger.rules';
@@ -68,11 +76,14 @@ export interface WithdrawalFilter {
 
 export type EarningsPeriod = 'today' | 'week' | 'month';
 
-const withdrawalInclude = { bankAccount: { select: { bankName: true, ibanLast4: true } } } satisfies Prisma.WithdrawalInclude;
+const withdrawalInclude = {
+  bankAccount: { select: { bankName: true, ibanLast4: true } },
+} satisfies Prisma.WithdrawalInclude;
 type WithdrawalRow = Prisma.WithdrawalGetPayload<{ include: typeof withdrawalInclude }>;
 
 /** Short, stable suffix so idempotency keys stay inside the column width. */
-const digest = (value: string): string => createHash('sha256').update(value).digest('hex').slice(0, 32);
+const digest = (value: string): string =>
+  createHash('sha256').update(value).digest('hex').slice(0, 32);
 
 /**
  * Wallets for customers and partners (spec §55, §144). Balances are **never** written here —
@@ -94,13 +105,21 @@ export class WalletService {
   /* -------------------------------------------------------------- lifecycle */
 
   /** Idempotent wallet lookup/creation; also materialises the matching ledger account. */
-  async getOrCreate(ownerType: WalletOwner, ownerId: string, currency: string, tx?: Tx): Promise<Wallet> {
+  async getOrCreate(
+    ownerType: WalletOwner,
+    ownerId: string,
+    currency: string,
+    tx?: Tx,
+  ): Promise<Wallet> {
     const client = tx ?? this.prisma;
     const where = ownerType === 'PARTNER' ? { partnerId: ownerId } : { customerId: ownerId };
     const existing = await client.wallet.findUnique({ where });
     if (existing) {
       if (existing.currency !== currency) {
-        throw AppException.conflict(`Wallet ${existing.id} holds ${existing.currency}; ${currency} was requested`, ErrorCode.VALIDATION_FAILED);
+        throw AppException.conflict(
+          `Wallet ${existing.id} holds ${existing.currency}; ${currency} was requested`,
+          ErrorCode.VALIDATION_FAILED,
+        );
       }
       await this.ensureAccount(existing, tx);
       return existing;
@@ -108,9 +127,19 @@ export class WalletService {
 
     const profileExists =
       ownerType === 'PARTNER'
-        ? await client.partnerProfile.findUnique({ where: { userId: ownerId }, select: { userId: true } })
-        : await client.customerProfile.findUnique({ where: { userId: ownerId }, select: { userId: true } });
-    if (!profileExists) throw AppException.notFound(ownerType === 'PARTNER' ? 'Partner profile' : 'Customer profile', ownerId);
+        ? await client.partnerProfile.findUnique({
+            where: { userId: ownerId },
+            select: { userId: true },
+          })
+        : await client.customerProfile.findUnique({
+            where: { userId: ownerId },
+            select: { userId: true },
+          });
+    if (!profileExists)
+      throw AppException.notFound(
+        ownerType === 'PARTNER' ? 'Partner profile' : 'Customer profile',
+        ownerId,
+      );
 
     try {
       const created = await client.wallet.create({
@@ -136,7 +165,10 @@ export class WalletService {
   }
 
   private async ensureAccount(wallet: Wallet, tx?: Tx): Promise<void> {
-    const type = wallet.ownerType === WalletOwnerType.PARTNER ? LedgerAccountType.PARTNER_WALLET : LedgerAccountType.CUSTOMER_WALLET;
+    const type =
+      wallet.ownerType === WalletOwnerType.PARTNER
+        ? LedgerAccountType.PARTNER_WALLET
+        : LedgerAccountType.CUSTOMER_WALLET;
     await this.ledger.getOrCreateAccount(type, wallet.currency, wallet.id, tx);
   }
 
@@ -146,9 +178,14 @@ export class WalletService {
    */
   async resolveOwnWallet(user: RequestUser, ownerType?: WalletOwner): Promise<Wallet> {
     const owner: WalletOwner = ownerType ?? (user.partnerId ? 'PARTNER' : 'CUSTOMER');
-    if (owner === 'PARTNER' && !user.partnerId) throw AppException.notFound('Partner profile', user.id);
-    if (owner === 'CUSTOMER' && !user.customerId) throw AppException.notFound('Customer profile', user.id);
-    const row = await this.prisma.user.findUnique({ where: { id: user.id }, select: { currency: true } });
+    if (owner === 'PARTNER' && !user.partnerId)
+      throw AppException.notFound('Partner profile', user.id);
+    if (owner === 'CUSTOMER' && !user.customerId)
+      throw AppException.notFound('Customer profile', user.id);
+    const row = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      select: { currency: true },
+    });
     if (!row) throw AppException.notFound('User', user.id);
     return this.getOrCreate(owner, user.id, row.currency);
   }
@@ -157,7 +194,12 @@ export class WalletService {
     return this.toDto(await this.resolveOwnWallet(user, ownerType));
   }
 
-  async statement(user: RequestUser, cursor: string | undefined, limit: number, ownerType?: WalletOwner): Promise<Page<LedgerEntryDto>> {
+  async statement(
+    user: RequestUser,
+    cursor: string | undefined,
+    limit: number,
+    ownerType?: WalletOwner,
+  ): Promise<Page<LedgerEntryDto>> {
     const wallet = await this.resolveOwnWallet(user, ownerType);
     return this.ledger.statement(wallet.id, cursor, limit);
   }
@@ -169,21 +211,40 @@ export class WalletService {
    * top-ups are not tied to a job, so they carry no `payments` row (that table is job-scoped) —
    * the provider reference lives on the ledger transaction instead.
    */
-  async topUp(user: RequestUser, input: TopUpWalletInput, idempotencyKey: string, ownerType?: WalletOwner): Promise<WalletTopUpResultDto> {
-    if (input.method !== 'BANK') await this.config.assertEnabled(FEATURE_FLAGS.CARD_PAYMENTS, { userId: user.id });
+  async topUp(
+    user: RequestUser,
+    input: TopUpWalletInput,
+    idempotencyKey: string,
+    ownerType?: WalletOwner,
+  ): Promise<WalletTopUpResultDto> {
+    if (input.method !== 'BANK')
+      await this.config.assertEnabled(FEATURE_FLAGS.CARD_PAYMENTS, { userId: user.id });
     const wallet = await this.resolveOwnWallet(user, ownerType);
     if (wallet.isFrozen) throw AppException.conflict('This wallet is frozen', ErrorCode.FORBIDDEN);
     if (input.amount.currency !== wallet.currency) {
-      throw AppException.validation([{ field: 'amount.currency', message: `wallet holds ${wallet.currency}` }]);
+      throw AppException.validation([
+        { field: 'amount.currency', message: `wallet holds ${wallet.currency}` },
+      ]);
     }
     const amountMinor = BigInt(input.amount.amount);
-    if (amountMinor <= 0n) throw AppException.validation([{ field: 'amount.amount', message: 'top-up must be positive' }]);
+    if (amountMinor <= 0n)
+      throw AppException.validation([
+        { field: 'amount.amount', message: 'top-up must be positive' },
+      ]);
 
     const ledgerKey = `topup:${wallet.id}:${digest(idempotencyKey)}`;
     const transactionsModel = this.prisma.ledgerTransaction;
-    const already = await transactionsModel.findUnique({ where: { idempotencyKey: ledgerKey }, select: { reference: true } });
+    const already = await transactionsModel.findUnique({
+      where: { idempotencyKey: ledgerKey },
+      select: { reference: true },
+    });
     if (already) {
-      return { status: 'CAPTURED', actionUrl: null, providerRef: already.reference, wallet: this.toDto(await this.reload(wallet.id)) };
+      return {
+        status: 'CAPTURED',
+        actionUrl: null,
+        providerRef: already.reference,
+        wallet: this.toDto(await this.reload(wallet.id)),
+      };
     }
 
     const operationId = randomUUID();
@@ -198,24 +259,51 @@ export class WalletService {
     });
 
     if (result.status === 'REQUIRES_ACTION') {
-      return { status: 'REQUIRES_ACTION', actionUrl: result.actionUrl ?? null, providerRef: result.providerRef, wallet: this.toDto(wallet) };
+      return {
+        status: 'REQUIRES_ACTION',
+        actionUrl: result.actionUrl ?? null,
+        providerRef: result.providerRef,
+        wallet: this.toDto(wallet),
+      };
     }
     if (result.status === 'FAILED') {
-      this.metrics.paymentFailures.inc({ method: input.method, code: result.failureCode ?? 'gateway_failed' });
-      throw AppException.badRequest(ErrorCode.PAYMENT_FAILED, result.failureMessage ?? 'Top-up was declined');
+      this.metrics.paymentFailures.inc({
+        method: input.method,
+        code: result.failureCode ?? 'gateway_failed',
+      });
+      throw AppException.badRequest(
+        ErrorCode.PAYMENT_FAILED,
+        result.failureMessage ?? 'Top-up was declined',
+      );
     }
 
-    const captured = result.status === 'CAPTURED' ? result : await this.gateway.capture(result.providerRef ?? operationId, amountMinor, ledgerKey);
+    const captured =
+      result.status === 'CAPTURED'
+        ? result
+        : await this.gateway.capture(result.providerRef ?? operationId, amountMinor, ledgerKey);
     if (captured.status !== 'CAPTURED') {
-      this.metrics.paymentFailures.inc({ method: input.method, code: captured.failureCode ?? 'capture_failed' });
-      throw AppException.badRequest(ErrorCode.PAYMENT_FAILED, captured.failureMessage ?? 'Top-up capture failed');
+      this.metrics.paymentFailures.inc({
+        method: input.method,
+        code: captured.failureCode ?? 'capture_failed',
+      });
+      throw AppException.badRequest(
+        ErrorCode.PAYMENT_FAILED,
+        captured.failureMessage ?? 'Top-up capture failed',
+      );
     }
 
     await this.ledger.post({
       type: LedgerTransactionType.WALLET_TOPUP,
       currency: wallet.currency,
       entries: [
-        { accountCode: platformAccountCode(LedgerAccountType.PLATFORM_GATEWAY_CLEARING, wallet.currency), direction: LedgerEntryDirection.DEBIT, amountMinor },
+        {
+          accountCode: platformAccountCode(
+            LedgerAccountType.PLATFORM_GATEWAY_CLEARING,
+            wallet.currency,
+          ),
+          direction: LedgerEntryDirection.DEBIT,
+          amountMinor,
+        },
         { walletId: wallet.id, direction: LedgerEntryDirection.CREDIT, amountMinor },
       ],
       reference: captured.providerRef ?? operationId,
@@ -224,7 +312,12 @@ export class WalletService {
       idempotencyKey: ledgerKey,
     });
 
-    return { status: 'CAPTURED', actionUrl: null, providerRef: captured.providerRef, wallet: this.toDto(await this.reload(wallet.id)) };
+    return {
+      status: 'CAPTURED',
+      actionUrl: null,
+      providerRef: captured.providerRef,
+      wallet: this.toDto(await this.reload(wallet.id)),
+    };
   }
 
   /* ------------------------------------------------------------- adjustment */
@@ -234,11 +327,16 @@ export class WalletService {
    * account is `PLATFORM_PAYABLES`, and the audit entry is written inside the same transaction
    * so an unaudited adjustment can never exist.
    */
-  async adjust(input: WalletAdjustmentInput, actor: RequestUser, requestId: string | null): Promise<WalletDto> {
+  async adjust(
+    input: WalletAdjustmentInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<WalletDto> {
     const wallet = await this.prisma.wallet.findUnique({ where: { id: input.walletId } });
     if (!wallet) throw AppException.notFound('Wallet', input.walletId);
     const amountMinor = BigInt(Math.abs(input.amountMinor));
-    if (amountMinor === 0n) throw AppException.validation([{ field: 'amountMinor', message: 'amount cannot be zero' }]);
+    if (amountMinor === 0n)
+      throw AppException.validation([{ field: 'amountMinor', message: 'amount cannot be zero' }]);
     const isCredit = input.amountMinor > 0;
     const payables = platformAccountCode(LedgerAccountType.PLATFORM_PAYABLES, wallet.currency);
 
@@ -288,30 +386,54 @@ export class WalletService {
    * Partner payout request (spec §55). The amount is held immediately — debited from the wallet
    * and credited to `PLATFORM_PAYABLES` — so it cannot be spent while finance reviews it.
    */
-  async requestWithdrawal(user: RequestUser, input: WithdrawalRequestInput, idempotencyKey: string): Promise<WithdrawalDto> {
+  async requestWithdrawal(
+    user: RequestUser,
+    input: WithdrawalRequestInput,
+    idempotencyKey: string,
+  ): Promise<WithdrawalDto> {
     if (!user.partnerId) throw AppException.forbidden('Only partners can withdraw');
     const wallet = await this.resolveOwnWallet(user, 'PARTNER');
     if (wallet.isFrozen) throw AppException.conflict('This wallet is frozen', ErrorCode.FORBIDDEN);
 
     const key = `withdraw:${user.id}:${digest(idempotencyKey)}`;
-    const replay = await this.prisma.withdrawal.findUnique({ where: { idempotencyKey: key }, include: withdrawalInclude });
+    const replay = await this.prisma.withdrawal.findUnique({
+      where: { idempotencyKey: key },
+      include: withdrawalInclude,
+    });
     if (replay) return this.toWithdrawalDto(replay);
 
-    const bankAccount = await this.prisma.partnerBankAccount.findFirst({ where: { id: input.bankAccountId, partnerId: user.id } });
+    const bankAccount = await this.prisma.partnerBankAccount.findFirst({
+      where: { id: input.bankAccountId, partnerId: user.id },
+    });
     if (!bankAccount) throw AppException.notFound('Bank account', input.bankAccountId);
 
     const amountMinor = BigInt(input.amountMinor);
-    const minimum = BigInt(Math.trunc(await this.config.getNumber(CONFIG_KEYS.WALLET_MIN_WITHDRAWAL_MINOR)));
+    const minimum = BigInt(
+      Math.trunc(await this.config.getNumber(CONFIG_KEYS.WALLET_MIN_WITHDRAWAL_MINOR)),
+    );
     if (amountMinor < minimum) {
-      throw AppException.badRequest(ErrorCode.VALIDATION_FAILED, `Minimum withdrawal is ${minimum} ${wallet.currency} minor units`);
+      throw AppException.badRequest(
+        ErrorCode.VALIDATION_FAILED,
+        `Minimum withdrawal is ${minimum} ${wallet.currency} minor units`,
+      );
     }
     await this.ledger.assertWalletIntegrity(wallet.id);
     const balance = await this.ledger.walletBalance(wallet.id);
-    if (balance < amountMinor) throw AppException.badRequest(ErrorCode.INSUFFICIENT_WALLET_BALANCE, 'Your balance is lower than the requested amount');
+    if (balance < amountMinor)
+      throw AppException.badRequest(
+        ErrorCode.INSUFFICIENT_WALLET_BALANCE,
+        'Your balance is lower than the requested amount',
+      );
 
     const row = await this.prisma.withLedgerWrite(async (tx) => {
       const withdrawal = await tx.withdrawal.create({
-        data: { partnerId: user.id, bankAccountId: bankAccount.id, currency: wallet.currency, amountMinor, idempotencyKey: key },
+        data: {
+          partnerId: user.id,
+          bankAccountId: bankAccount.id,
+          currency: wallet.currency,
+          amountMinor,
+          idempotencyKey: key,
+        },
         include: withdrawalInclude,
       });
       await this.ledger.post(
@@ -320,7 +442,14 @@ export class WalletService {
           currency: wallet.currency,
           entries: [
             { walletId: wallet.id, direction: LedgerEntryDirection.DEBIT, amountMinor },
-            { accountCode: platformAccountCode(LedgerAccountType.PLATFORM_PAYABLES, wallet.currency), direction: LedgerEntryDirection.CREDIT, amountMinor },
+            {
+              accountCode: platformAccountCode(
+                LedgerAccountType.PLATFORM_PAYABLES,
+                wallet.currency,
+              ),
+              direction: LedgerEntryDirection.CREDIT,
+              amountMinor,
+            },
           ],
           withdrawalId: withdrawal.id,
           reference: withdrawal.id,
@@ -338,8 +467,16 @@ export class WalletService {
   }
 
   /** APPROVE keeps the hold, REJECT reverses it, MARK_PAID records the bank transfer reference. */
-  async decideWithdrawal(id: string, input: WithdrawalDecisionInput, actor: RequestUser, requestId: string | null): Promise<WithdrawalDto> {
-    const current = await this.prisma.withdrawal.findUnique({ where: { id }, include: withdrawalInclude });
+  async decideWithdrawal(
+    id: string,
+    input: WithdrawalDecisionInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<WithdrawalDto> {
+    const current = await this.prisma.withdrawal.findUnique({
+      where: { id },
+      include: withdrawalInclude,
+    });
     if (!current) throw AppException.notFound('Withdrawal', id);
 
     const allowed: Record<WithdrawalDecisionInput['decision'], WithdrawalStatus[]> = {
@@ -351,11 +488,20 @@ export class WalletService {
       throw AppException.invalidTransition(current.status, input.decision);
     }
     if (input.decision === 'MARK_PAID' && !input.providerReference) {
-      throw AppException.validation([{ field: 'providerReference', message: 'a bank/provider reference is required to mark a withdrawal paid' }]);
+      throw AppException.validation([
+        {
+          field: 'providerReference',
+          message: 'a bank/provider reference is required to mark a withdrawal paid',
+        },
+      ]);
     }
 
     const next =
-      input.decision === 'APPROVE' ? WithdrawalStatus.APPROVED : input.decision === 'REJECT' ? WithdrawalStatus.REJECTED : WithdrawalStatus.PAID;
+      input.decision === 'APPROVE'
+        ? WithdrawalStatus.APPROVED
+        : input.decision === 'REJECT'
+          ? WithdrawalStatus.REJECTED
+          : WithdrawalStatus.PAID;
 
     const row = await this.prisma.withLedgerWrite(async (tx) => {
       const updated = await tx.withdrawal.update({
@@ -365,7 +511,10 @@ export class WalletService {
           decidedById: actor.id,
           decidedAt: new Date(),
           decisionReason: input.reason,
-          providerReference: input.decision === 'MARK_PAID' ? (input.providerReference ?? null) : current.providerReference,
+          providerReference:
+            input.decision === 'MARK_PAID'
+              ? (input.providerReference ?? null)
+              : current.providerReference,
           paidAt: input.decision === 'MARK_PAID' ? new Date() : current.paidAt,
         },
         include: withdrawalInclude,
@@ -378,8 +527,19 @@ export class WalletService {
             type: LedgerTransactionType.WALLET_WITHDRAWAL,
             currency: current.currency,
             entries: [
-              { accountCode: platformAccountCode(LedgerAccountType.PLATFORM_PAYABLES, current.currency), direction: LedgerEntryDirection.DEBIT, amountMinor: current.amountMinor },
-              { walletId: wallet.id, direction: LedgerEntryDirection.CREDIT, amountMinor: current.amountMinor },
+              {
+                accountCode: platformAccountCode(
+                  LedgerAccountType.PLATFORM_PAYABLES,
+                  current.currency,
+                ),
+                direction: LedgerEntryDirection.DEBIT,
+                amountMinor: current.amountMinor,
+              },
+              {
+                walletId: wallet.id,
+                direction: LedgerEntryDirection.CREDIT,
+                amountMinor: current.amountMinor,
+              },
             ],
             withdrawalId: current.id,
             reference: current.id,
@@ -429,19 +589,33 @@ export class WalletService {
    * `wallet movement + commission + cash retained`, which holds for every payment method.
    */
   async partnerEarnings(partnerId: string, period: EarningsPeriod): Promise<PartnerEarningsDto> {
-    const profile = await this.prisma.partnerProfile.findUnique({ where: { userId: partnerId }, select: { userId: true } });
+    const profile = await this.prisma.partnerProfile.findUnique({
+      where: { userId: partnerId },
+      select: { userId: true },
+    });
     if (!profile) throw AppException.notFound('Partner profile', partnerId);
-    const user = await this.prisma.user.findUnique({ where: { id: partnerId }, select: { currency: true } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: partnerId },
+      select: { currency: true },
+    });
     const wallet = await this.getOrCreate('PARTNER', partnerId, user?.currency ?? 'ILS');
-    const account = await this.prisma.ledgerAccount.findUnique({ where: { walletId: wallet.id }, select: { id: true } });
+    const account = await this.prisma.ledgerAccount.findUnique({
+      where: { walletId: wallet.id },
+      select: { id: true },
+    });
 
     const now = new Date();
     const today = startOfUtcDay(now);
-    const from = period === 'today' ? today : new Date(today.getTime() - (period === 'week' ? 6 : 29) * 86_400_000);
+    const from =
+      period === 'today'
+        ? today
+        : new Date(today.getTime() - (period === 'week' ? 6 : 29) * 86_400_000);
 
     const byType = new Map<string, { credit: bigint; debit: bigint }>();
     if (account) {
-      const rows = await this.prisma.$queryRaw<Array<{ type: string; direction: string; total: bigint }>>`
+      const rows = await this.prisma.$queryRaw<
+        Array<{ type: string; direction: string; total: bigint }>
+      >`
         SELECT t.type::text AS type, e.direction::text AS direction, COALESCE(SUM(e.amount_minor), 0)::bigint AS total
         FROM ledger_entries e
         JOIN ledger_transactions t ON t.id = e.transaction_id
@@ -459,7 +633,9 @@ export class WalletService {
       return bucket ? bucket.credit - bucket.debit : 0n;
     };
 
-    const platformRows = await this.prisma.$queryRaw<Array<{ account_type: string; credits: bigint; debits: bigint }>>`
+    const platformRows = await this.prisma.$queryRaw<
+      Array<{ account_type: string; credits: bigint; debits: bigint }>
+    >`
       SELECT a.type::text AS account_type,
              COALESCE(SUM(CASE WHEN e.direction = 'CREDIT' THEN e.amount_minor ELSE 0 END), 0)::bigint AS credits,
              COALESCE(SUM(CASE WHEN e.direction = 'DEBIT' THEN e.amount_minor ELSE 0 END), 0)::bigint AS debits
@@ -474,15 +650,24 @@ export class WalletService {
     let commissionMinor = 0n;
     let cashRetainedMinor = 0n;
     for (const row of platformRows) {
-      if (row.account_type === LedgerAccountType.PLATFORM_REVENUE) commissionMinor = BigInt(row.credits) - BigInt(row.debits);
-      if (row.account_type === LedgerAccountType.PLATFORM_CASH_CLEARING) cashRetainedMinor = BigInt(row.credits);
+      if (row.account_type === LedgerAccountType.PLATFORM_REVENUE)
+        commissionMinor = BigInt(row.credits) - BigInt(row.debits);
+      if (row.account_type === LedgerAccountType.PLATFORM_CASH_CLEARING)
+        cashRetainedMinor = BigInt(row.credits);
     }
 
-    const completedJobs = await this.prisma.job.count({ where: { partnerId, status: 'COMPLETED', completedAt: { gte: from, lte: now } } });
+    const completedJobs = await this.prisma.job.count({
+      where: { partnerId, status: 'COMPLETED', completedAt: { gte: from, lte: now } },
+    });
 
-    const jobsMovement = net(LedgerTransactionType.JOB_CHARGE) + net(LedgerTransactionType.CANCELLATION_FEE);
-    const bonusesMinor = net(LedgerTransactionType.BONUS) + net(LedgerTransactionType.REFERRAL_REWARD);
-    const adjustmentsMinor = net(LedgerTransactionType.MANUAL_ADJUSTMENT) + net(LedgerTransactionType.DISPUTE_SETTLEMENT) + net(LedgerTransactionType.REFUND);
+    const jobsMovement =
+      net(LedgerTransactionType.JOB_CHARGE) + net(LedgerTransactionType.CANCELLATION_FEE);
+    const bonusesMinor =
+      net(LedgerTransactionType.BONUS) + net(LedgerTransactionType.REFERRAL_REWARD);
+    const adjustmentsMinor =
+      net(LedgerTransactionType.MANUAL_ADJUSTMENT) +
+      net(LedgerTransactionType.DISPUTE_SETTLEMENT) +
+      net(LedgerTransactionType.REFUND);
     const withdrawalsMinor = -net(LedgerTransactionType.WALLET_WITHDRAWAL);
     const grossMinor = jobsMovement + commissionMinor + cashRetainedMinor;
     const netMinor = grossMinor - commissionMinor + bonusesMinor + adjustmentsMinor;

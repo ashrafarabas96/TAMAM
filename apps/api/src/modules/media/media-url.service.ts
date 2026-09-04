@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { STORAGE_PROVIDER, type StorageProvider } from '../../infrastructure/providers/storage/storage.provider';
+import {
+  STORAGE_PROVIDER,
+  type StorageProvider,
+} from '../../infrastructure/providers/storage/storage.provider';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 
 export interface MediaRef {
@@ -26,14 +29,28 @@ export class MediaUrlService {
 
   /** Synchronous variant for DTO mappers: public → direct URL; private → API proxy path resolved lazily. */
   urlFor(ref: MediaRef, variant: 'original' | 'medium' | 'thumbnail' = 'medium'): string {
-    const key = variant === 'thumbnail' ? (ref.thumbnailKey ?? ref.objectKey) : variant === 'medium' ? (ref.mediumKey ?? ref.objectKey) : ref.objectKey;
+    const key =
+      variant === 'thumbnail'
+        ? (ref.thumbnailKey ?? ref.objectKey)
+        : variant === 'medium'
+          ? (ref.mediumKey ?? ref.objectKey)
+          : ref.objectKey;
     if (ref.isPublic) return this.storage.publicUrl(ref.bucket, key);
     // Private objects are served through a signed redirect endpoint so DTOs stay synchronous.
     return `/api/v1/media/${encodeURIComponent(key)}/view`;
   }
 
-  async signedUrl(ref: MediaRef, variant: 'original' | 'medium' | 'thumbnail' = 'original', downloadName?: string): Promise<string> {
-    const key = variant === 'thumbnail' ? (ref.thumbnailKey ?? ref.objectKey) : variant === 'medium' ? (ref.mediumKey ?? ref.objectKey) : ref.objectKey;
+  async signedUrl(
+    ref: MediaRef,
+    variant: 'original' | 'medium' | 'thumbnail' = 'original',
+    downloadName?: string,
+  ): Promise<string> {
+    const key =
+      variant === 'thumbnail'
+        ? (ref.thumbnailKey ?? ref.objectKey)
+        : variant === 'medium'
+          ? (ref.mediumKey ?? ref.objectKey)
+          : ref.objectKey;
     if (ref.isPublic) return this.storage.publicUrl(ref.bucket, key);
     const cacheKey = `media:url:${ref.bucket}:${key}:${downloadName ?? ''}`;
     const cached = await this.redis.client.get(cacheKey);

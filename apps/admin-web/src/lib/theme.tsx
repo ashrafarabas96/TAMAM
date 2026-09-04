@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import { THEME_STORAGE_KEY } from '@/lib/env';
 
@@ -16,7 +24,10 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const systemTheme = (): ResolvedTheme => (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+const systemTheme = (): ResolvedTheme =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
 
 function readPreference(): ThemePreference {
   if (typeof window === 'undefined') return 'system';
@@ -59,8 +70,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setResolved(next === 'system' ? systemTheme() : next);
   }, []);
 
-  const toggle = useCallback(() => setPreference(resolved === 'dark' ? 'light' : 'dark'), [resolved, setPreference]);
-  const value = useMemo(() => ({ preference, resolved, setPreference, toggle }), [preference, resolved, setPreference, toggle]);
+  const toggle = useCallback(
+    () => setPreference(resolved === 'dark' ? 'light' : 'dark'),
+    [resolved, setPreference],
+  );
+  const value = useMemo(
+    () => ({ preference, resolved, setPreference, toggle }),
+    [preference, resolved, setPreference, toggle],
+  );
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 

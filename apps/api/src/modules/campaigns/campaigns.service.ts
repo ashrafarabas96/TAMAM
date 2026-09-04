@@ -13,7 +13,11 @@ import {
   type Page,
   Permission,
 } from '@tamam/shared-types';
-import type { BannerInput, CampaignStatusActionInput, UpsertCampaignInput } from '@tamam/validation';
+import type {
+  BannerInput,
+  CampaignStatusActionInput,
+  UpsertCampaignInput,
+} from '@tamam/validation';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -68,7 +72,12 @@ const campaignInclude = {
 } satisfies Prisma.CampaignInclude;
 
 type CampaignWithRelations = Prisma.CampaignGetPayload<{ include: typeof campaignInclude }>;
-type CampaignBannerRow = Prisma.BannerGetPayload<{ include: { imageAr: { select: typeof bannerMediaSelect }; imageEn: { select: typeof bannerMediaSelect } } }>;
+type CampaignBannerRow = Prisma.BannerGetPayload<{
+  include: {
+    imageAr: { select: typeof bannerMediaSelect };
+    imageEn: { select: typeof bannerMediaSelect };
+  };
+}>;
 
 interface PlacementAggregate {
   placement: string;
@@ -111,7 +120,9 @@ export class CampaignsService {
 
     const summaries = await this.lifetimeStats(rows.map((r) => r.id));
     const exp = await this.feed.defaultTokenExpiry();
-    return buildPage(rows, filter.limit, (row) => this.toDto(row, summaries.get(row.id) ?? emptyStats(), exp));
+    return buildPage(rows, filter.limit, (row) =>
+      this.toDto(row, summaries.get(row.id) ?? emptyStats(), exp),
+    );
   }
 
   async get(id: string): Promise<CampaignDto> {
@@ -123,7 +134,11 @@ export class CampaignsService {
 
   /* --------------------------------------------------------------- write */
 
-  async create(input: UpsertCampaignInput, actor: RequestUser, requestId: string | null): Promise<CampaignDto> {
+  async create(
+    input: UpsertCampaignInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<CampaignDto> {
     await this.validateInput(input);
 
     const created = await this.prisma.$transaction(async (tx) => {
@@ -151,7 +166,14 @@ export class CampaignsService {
         await tx.banner.create({ data: { campaignId: campaign.id, ...bannerData(banner) } });
       }
       await this.audit.record(
-        { actorId: actor.id, action: 'campaign.create', entity: 'campaign', entityId: campaign.id, newValue: { name: input.name, banners: input.banners.length }, requestId },
+        {
+          actorId: actor.id,
+          action: 'campaign.create',
+          entity: 'campaign',
+          entityId: campaign.id,
+          newValue: { name: input.name, banners: input.banners.length },
+          requestId,
+        },
         tx,
       );
       return campaign.id;
@@ -166,34 +188,65 @@ export class CampaignsService {
    * have no recorded events, and deactivated otherwise — deleting them would cascade away their
    * `banner_events` / `banner_daily_stats` history (CONVENTIONS §5: never delete operational data).
    */
-  async update(id: string, input: UpsertCampaignInput, actor: RequestUser, requestId: string | null): Promise<CampaignDto> {
-    const existing = await this.prisma.campaign.findUnique({ where: { id }, select: { id: true, status: true, name: true } });
+  async update(
+    id: string,
+    input: UpsertCampaignInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<CampaignDto> {
+    const existing = await this.prisma.campaign.findUnique({
+      where: { id },
+      select: { id: true, status: true, name: true },
+    });
     if (!existing) throw AppException.notFound('Campaign', id);
     if (existing.status === CampaignStatus.ARCHIVED) {
-      throw AppException.conflict('An archived campaign can no longer be edited', ErrorCode.INVALID_STATE_TRANSITION);
+      throw AppException.conflict(
+        'An archived campaign can no longer be edited',
+        ErrorCode.INVALID_STATE_TRANSITION,
+      );
     }
     await this.validateInput(input);
 
-    const providedIds = input.banners.map((b) => b.id).filter((v): v is string => typeof v === 'string');
-    const currentBanners = await this.prisma.banner.findMany({ where: { campaignId: id }, select: { id: true } });
+    const providedIds = input.banners
+      .map((b) => b.id)
+      .filter((v): v is string => typeof v === 'string');
+    const currentBanners = await this.prisma.banner.findMany({
+      where: { campaignId: id },
+      select: { id: true },
+    });
     const currentIds = new Set(currentBanners.map((b) => b.id));
     for (const providedId of providedIds) {
-      if (!currentIds.has(providedId)) throw AppException.validation([{ field: 'banners.id', message: `banner ${providedId} does not belong to this campaign` }]);
+      if (!currentIds.has(providedId))
+        throw AppException.validation([
+          { field: 'banners.id', message: `banner ${providedId} does not belong to this campaign` },
+        ]);
     }
 
-    const removed = currentBanners.map((b) => b.id).filter((bannerId) => !providedIds.includes(bannerId));
+    const removed = currentBanners
+      .map((b) => b.id)
+      .filter((bannerId) => !providedIds.includes(bannerId));
     const withEvents = removed.length
-      ? new Set((await this.prisma.bannerEvent.groupBy({ by: ['bannerId'], where: { bannerId: { in: removed } }, _count: { _all: true } })).map((g) => g.bannerId))
+      ? new Set(
+          (
+            await this.prisma.bannerEvent.groupBy({
+              by: ['bannerId'],
+              where: { bannerId: { in: removed } },
+              _count: { _all: true },
+            })
+          ).map((g) => g.bannerId),
+        )
       : new Set<string>();
 
     await this.prisma.$transaction(async (tx) => {
       const deletable = removed.filter((bannerId) => !withEvents.has(bannerId));
       const retirable = removed.filter((bannerId) => withEvents.has(bannerId));
       if (deletable.length) await tx.banner.deleteMany({ where: { id: { in: deletable } } });
-      if (retirable.length) await tx.banner.updateMany({ where: { id: { in: retirable } }, data: { isActive: false } });
+      if (retirable.length)
+        await tx.banner.updateMany({ where: { id: { in: retirable } }, data: { isActive: false } });
 
       for (const banner of input.banners) {
-        if (banner.id && currentIds.has(banner.id)) await tx.banner.update({ where: { id: banner.id }, data: bannerData(banner) });
+        if (banner.id && currentIds.has(banner.id))
+          await tx.banner.update({ where: { id: banner.id }, data: bannerData(banner) });
         else await tx.banner.create({ data: { campaignId: id, ...bannerData(banner) } });
       }
 
@@ -223,7 +276,12 @@ export class CampaignsService {
           entity: 'campaign',
           entityId: id,
           oldValue: { name: existing.name },
-          newValue: { name: input.name, banners: input.banners.length, retiredBanners: retirable.length, deletedBanners: deletable.length },
+          newValue: {
+            name: input.name,
+            banners: input.banners.length,
+            retiredBanners: retirable.length,
+            deletedBanners: deletable.length,
+          },
           requestId,
         },
         tx,
@@ -235,17 +293,36 @@ export class CampaignsService {
   }
 
   /** Runs one workflow action, enforcing the legal transitions and the publish permission. */
-  async changeStatus(id: string, action: CampaignStatusAction, actor: RequestUser, requestId: string | null, reason?: string): Promise<CampaignDto> {
-    const campaign = await this.prisma.campaign.findUnique({ where: { id }, select: { id: true, status: true, startsAt: true, endsAt: true, publishedAt: true } });
+  async changeStatus(
+    id: string,
+    action: CampaignStatusAction,
+    actor: RequestUser,
+    requestId: string | null,
+    reason?: string,
+  ): Promise<CampaignDto> {
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id },
+      select: { id: true, status: true, startsAt: true, endsAt: true, publishedAt: true },
+    });
     if (!campaign) throw AppException.notFound('Campaign', id);
 
-    if (PUBLISH_ACTIONS.includes(action) && !actor.isSuperAdmin && !actor.permissions.includes(Permission.CAMPAIGNS_PUBLISH)) {
-      throw AppException.forbidden('Publishing a campaign requires the campaigns.publish permission');
+    if (
+      PUBLISH_ACTIONS.includes(action) &&
+      !actor.isSuperAdmin &&
+      !actor.permissions.includes(Permission.CAMPAIGNS_PUBLISH)
+    ) {
+      throw AppException.forbidden(
+        'Publishing a campaign requires the campaigns.publish permission',
+      );
     }
 
     const allowedFrom = LEGAL_FROM[action];
     if (!allowedFrom.includes(campaign.status)) {
-      throw AppException.conflict(`Cannot ${action} a campaign in status ${campaign.status}`, ErrorCode.INVALID_STATE_TRANSITION, { from: campaign.status, action });
+      throw AppException.conflict(
+        `Cannot ${action} a campaign in status ${campaign.status}`,
+        ErrorCode.INVALID_STATE_TRANSITION,
+        { from: campaign.status, action },
+      );
     }
 
     const now = new Date();
@@ -256,7 +333,10 @@ export class CampaignsService {
 
     switch (action) {
       case 'PUBLISH':
-        next = campaign.startsAt.getTime() <= now.getTime() ? CampaignStatus.ACTIVE : CampaignStatus.SCHEDULED;
+        next =
+          campaign.startsAt.getTime() <= now.getTime()
+            ? CampaignStatus.ACTIVE
+            : CampaignStatus.SCHEDULED;
         data.publishedById = actor.id;
         data.publishedAt = campaign.publishedAt ?? now;
         break;
@@ -265,7 +345,10 @@ export class CampaignsService {
         data.pausedAt = now;
         break;
       case 'RESUME':
-        next = campaign.startsAt.getTime() <= now.getTime() ? CampaignStatus.ACTIVE : CampaignStatus.SCHEDULED;
+        next =
+          campaign.startsAt.getTime() <= now.getTime()
+            ? CampaignStatus.ACTIVE
+            : CampaignStatus.SCHEDULED;
         data.pausedAt = null;
         break;
       case 'END':
@@ -304,7 +387,11 @@ export class CampaignsService {
   /** SCHEDULED → ACTIVE once `startsAt` has passed. Called by the campaign scheduler job. */
   async activateScheduled(now = new Date()): Promise<{ activated: number }> {
     const result = await this.prisma.campaign.updateMany({
-      where: { status: CampaignStatus.SCHEDULED, startsAt: { lte: now }, OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
+      where: {
+        status: CampaignStatus.SCHEDULED,
+        startsAt: { lte: now },
+        OR: [{ endsAt: null }, { endsAt: { gt: now } }],
+      },
       data: { status: CampaignStatus.ACTIVE },
     });
     if (result.count) await this.feed.invalidateCandidateCache();
@@ -314,7 +401,10 @@ export class CampaignsService {
   /** ACTIVE/SCHEDULED → ENDED once `endsAt` has passed. Called by the campaign scheduler job. */
   async endExpired(now = new Date()): Promise<{ ended: number }> {
     const result = await this.prisma.campaign.updateMany({
-      where: { status: { in: [CampaignStatus.ACTIVE, CampaignStatus.SCHEDULED] }, endsAt: { not: null, lte: now } },
+      where: {
+        status: { in: [CampaignStatus.ACTIVE, CampaignStatus.SCHEDULED] },
+        endsAt: { not: null, lte: now },
+      },
       data: { status: CampaignStatus.ENDED, endedAt: now },
     });
     if (result.count) await this.feed.invalidateCandidateCache();
@@ -328,7 +418,10 @@ export class CampaignsService {
    * computed live from `banner_events` so the dashboard is never a day behind.
    */
   async stats(id: string, from?: string, to?: string): Promise<CampaignStatsDto> {
-    const campaign = await this.prisma.campaign.findUnique({ where: { id }, select: { startsAt: true } });
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id },
+      select: { startsAt: true },
+    });
     if (!campaign) throw AppException.notFound('Campaign', id);
 
     const now = new Date();
@@ -346,7 +439,13 @@ export class CampaignsService {
           })
         : [];
 
-    const totals = { impressions: 0, uniqueImpressions: 0, clicks: 0, dismissals: 0, conversions: 0 };
+    const totals = {
+      impressions: 0,
+      uniqueImpressions: 0,
+      clicks: 0,
+      dismissals: 0,
+      conversions: 0,
+    };
     const byPlacement = new Map<string, { impressions: number; clicks: number }>();
     const byDay = new Map<string, { impressions: number; clicks: number }>();
 
@@ -378,7 +477,9 @@ export class CampaignsService {
           FROM banner_events
           WHERE campaign_id = ${id}::uuid AND occurred_at >= ${todayStart}
           GROUP BY 1`,
-        this.prisma.job.count({ where: { attributedCampaignId: id, createdAt: { gte: todayStart } } }),
+        this.prisma.job.count({
+          where: { attributedCampaignId: id, createdAt: { gte: todayStart } },
+        }),
       ]);
 
       const todayKey = todayStart.toISOString().slice(0, 10);
@@ -412,7 +513,9 @@ export class CampaignsService {
         clicks: v.clicks,
         ctr: ratio(v.clicks, v.impressions),
       })),
-      byDay: [...byDay.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([date, v]) => ({ date, impressions: v.impressions, clicks: v.clicks })),
+      byDay: [...byDay.entries()]
+        .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+        .map(([date, v]) => ({ date, impressions: v.impressions, clicks: v.clicks })),
     };
   }
 
@@ -447,7 +550,11 @@ export class CampaignsService {
   private async replaceZones(tx: Tx, campaignId: string, zoneIds: string[]): Promise<void> {
     await tx.campaignZone.deleteMany({ where: { campaignId } });
     const unique = [...new Set(zoneIds)];
-    if (unique.length) await tx.campaignZone.createMany({ data: unique.map((zoneId) => ({ campaignId, zoneId })), skipDuplicates: true });
+    if (unique.length)
+      await tx.campaignZone.createMany({
+        data: unique.map((zoneId) => ({ campaignId, zoneId })),
+        skipDuplicates: true,
+      });
   }
 
   /**
@@ -457,38 +564,81 @@ export class CampaignsService {
   private async validateInput(input: UpsertCampaignInput): Promise<void> {
     const issues: Array<{ field: string; message: string }> = [];
 
-    const mediaIds = [...new Set(input.banners.flatMap((b) => [b.creative.imageMediaId.ar, b.creative.imageMediaId.en]))];
-    const media = await this.prisma.mediaAsset.findMany({ where: { id: { in: mediaIds } }, select: { id: true, kind: true, purpose: true, status: true } });
+    const mediaIds = [
+      ...new Set(
+        input.banners.flatMap((b) => [b.creative.imageMediaId.ar, b.creative.imageMediaId.en]),
+      ),
+    ];
+    const media = await this.prisma.mediaAsset.findMany({
+      where: { id: { in: mediaIds } },
+      select: { id: true, kind: true, purpose: true, status: true },
+    });
     const mediaById = new Map(media.map((m) => [m.id, m] as const));
     for (const mediaId of mediaIds) {
       const row = mediaById.get(mediaId);
-      if (!row) issues.push({ field: 'banners.creative.imageMediaId', message: `media ${mediaId} was not found` });
-      else if (row.purpose !== 'BANNER_CREATIVE') issues.push({ field: 'banners.creative.imageMediaId', message: `media ${mediaId} must have purpose BANNER_CREATIVE` });
-      else if (row.kind !== 'IMAGE') issues.push({ field: 'banners.creative.imageMediaId', message: `media ${mediaId} is not an image` });
-      else if (row.status !== 'READY') issues.push({ field: 'banners.creative.imageMediaId', message: `media ${mediaId} is not READY` });
+      if (!row)
+        issues.push({
+          field: 'banners.creative.imageMediaId',
+          message: `media ${mediaId} was not found`,
+        });
+      else if (row.purpose !== 'BANNER_CREATIVE')
+        issues.push({
+          field: 'banners.creative.imageMediaId',
+          message: `media ${mediaId} must have purpose BANNER_CREATIVE`,
+        });
+      else if (row.kind !== 'IMAGE')
+        issues.push({
+          field: 'banners.creative.imageMediaId',
+          message: `media ${mediaId} is not an image`,
+        });
+      else if (row.status !== 'READY')
+        issues.push({
+          field: 'banners.creative.imageMediaId',
+          message: `media ${mediaId} is not READY`,
+        });
     }
 
-    const categoryIds = [...new Set(input.banners.filter((b) => b.actionType === 'SERVICE_CATEGORY' && b.actionValue).map((b) => b.actionValue as string))];
+    const categoryIds = [
+      ...new Set(
+        input.banners
+          .filter((b) => b.actionType === 'SERVICE_CATEGORY' && b.actionValue)
+          .map((b) => b.actionValue as string),
+      ),
+    ];
     if (categoryIds.length) {
-      const found = await this.prisma.serviceCategory.findMany({ where: { id: { in: categoryIds } }, select: { id: true } });
+      const found = await this.prisma.serviceCategory.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true },
+      });
       const foundIds = new Set(found.map((c) => c.id));
       for (const categoryId of categoryIds) {
-        if (!foundIds.has(categoryId)) issues.push({ field: 'banners.actionValue', message: `service category ${categoryId} was not found` });
+        if (!foundIds.has(categoryId))
+          issues.push({
+            field: 'banners.actionValue',
+            message: `service category ${categoryId} was not found`,
+          });
       }
     }
 
     if (input.targeting.zoneIds.length) {
-      const zones = await this.prisma.serviceZone.findMany({ where: { id: { in: input.targeting.zoneIds } }, select: { id: true } });
+      const zones = await this.prisma.serviceZone.findMany({
+        where: { id: { in: input.targeting.zoneIds } },
+        select: { id: true },
+      });
       const zoneIds = new Set(zones.map((z) => z.id));
       for (const zoneId of input.targeting.zoneIds) {
-        if (!zoneIds.has(zoneId)) issues.push({ field: 'targeting.zoneIds', message: `zone ${zoneId} was not found` });
+        if (!zoneIds.has(zoneId))
+          issues.push({ field: 'targeting.zoneIds', message: `zone ${zoneId} was not found` });
       }
     }
 
     const min = input.targeting.minCompletedJobs;
     const max = input.targeting.maxCompletedJobs;
     if (min !== null && min !== undefined && max !== null && max !== undefined && min > max) {
-      issues.push({ field: 'targeting.maxCompletedJobs', message: 'maxCompletedJobs must be greater than or equal to minCompletedJobs' });
+      issues.push({
+        field: 'targeting.maxCompletedJobs',
+        message: 'maxCompletedJobs must be greater than or equal to minCompletedJobs',
+      });
     }
 
     if (issues.length) throw AppException.validation(issues);
@@ -500,7 +650,13 @@ export class CampaignsService {
     const grouped = await this.prisma.bannerDailyStat.groupBy({
       by: ['campaignId'],
       where: { campaignId: { in: campaignIds } },
-      _sum: { impressions: true, uniqueImpressions: true, clicks: true, dismissals: true, conversions: true },
+      _sum: {
+        impressions: true,
+        uniqueImpressions: true,
+        clicks: true,
+        dismissals: true,
+        conversions: true,
+      },
     });
     for (const row of grouped) {
       const impressions = row._sum.impressions ?? 0;
@@ -519,12 +675,18 @@ export class CampaignsService {
     return out;
   }
 
-  private toDto(row: CampaignWithRelations, stats: CampaignStatsDto, tokenExp: number): CampaignDto {
+  private toDto(
+    row: CampaignWithRelations,
+    stats: CampaignStatsDto,
+    tokenExp: number,
+  ): CampaignDto {
     const targeting: CampaignTargetingDto = {
       audiences: row.audiences,
       zoneIds: row.zones.map((z) => z.zoneId),
       languages: row.languages.filter((l): l is Language => l === 'ar' || l === 'en'),
-      platforms: row.platforms.filter((p): p is 'ios' | 'android' => p === 'ios' || p === 'android'),
+      platforms: row.platforms.filter(
+        (p): p is 'ios' | 'android' => p === 'ios' || p === 'android',
+      ),
       newCustomersOnly: row.newCustomersOnly,
       minCompletedJobs: row.minCompletedJobs,
       maxCompletedJobs: row.maxCompletedJobs,
@@ -602,9 +764,11 @@ export function toCandidateBanner(row: CampaignBannerRow): CandidateBanner {
   };
 }
 
-const ratio = (numerator: number, denominator: number): number => (denominator > 0 ? Math.round((numerator / denominator) * 10_000) / 10_000 : 0);
+const ratio = (numerator: number, denominator: number): number =>
+  denominator > 0 ? Math.round((numerator / denominator) * 10_000) / 10_000 : 0;
 
-const utcMidnight = (d: Date): Date => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+const utcMidnight = (d: Date): Date =>
+  new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 
 const emptyStats = (): CampaignStatsDto => ({
   impressions: 0,

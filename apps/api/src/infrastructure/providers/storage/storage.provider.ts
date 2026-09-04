@@ -16,8 +16,18 @@ export interface StorageObjectInfo {
 /** Object storage abstraction (spec §183). Private buckets + signed URLs by default (spec §93). */
 export interface StorageProvider {
   readonly name: string;
-  createUploadIntent(bucket: string, key: string, contentType: string, sizeBytes: number): Promise<UploadIntent>;
-  getSignedReadUrl(bucket: string, key: string, expiresInSeconds: number, downloadName?: string): Promise<string>;
+  createUploadIntent(
+    bucket: string,
+    key: string,
+    contentType: string,
+    sizeBytes: number,
+  ): Promise<UploadIntent>;
+  getSignedReadUrl(
+    bucket: string,
+    key: string,
+    expiresInSeconds: number,
+    downloadName?: string,
+  ): Promise<string>;
   publicUrl(bucket: string, key: string): string;
   head(bucket: string, key: string): Promise<StorageObjectInfo>;
   getObject(bucket: string, key: string): Promise<Buffer>;

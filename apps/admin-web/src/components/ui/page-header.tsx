@@ -8,12 +8,34 @@ export interface Crumb {
   href?: string;
 }
 
-export function PageHeader({ title, description, actions, crumbs, className, badge }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; crumbs?: Crumb[]; className?: string; badge?: ReactNode }) {
+export function PageHeader({
+  title,
+  description,
+  actions,
+  crumbs,
+  className,
+  badge,
+}: {
+  title: ReactNode;
+  description?: ReactNode;
+  actions?: ReactNode;
+  crumbs?: Crumb[];
+  className?: string;
+  badge?: ReactNode;
+}) {
   return (
-    <header className={cn('mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between', className)}>
+    <header
+      className={cn(
+        'mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between',
+        className,
+      )}
+    >
       <div className="min-w-0">
         {crumbs && crumbs.length > 0 ? (
-          <nav className="mb-1 flex flex-wrap items-center gap-1 text-xs text-text-tertiary" aria-label="breadcrumb">
+          <nav
+            className="mb-1 flex flex-wrap items-center gap-1 text-xs text-text-tertiary"
+            aria-label="breadcrumb"
+          >
             {crumbs.map((c, i) => (
               <span key={i} className="flex items-center gap-1">
                 {i > 0 ? <span aria-hidden>/</span> : null}
@@ -39,7 +61,21 @@ export function PageHeader({ title, description, actions, crumbs, className, bad
   );
 }
 
-export function Card({ title, description, actions, children, className, padded = true }: { title?: ReactNode; description?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string; padded?: boolean }) {
+export function Card({
+  title,
+  description,
+  actions,
+  children,
+  className,
+  padded = true,
+}: {
+  title?: ReactNode;
+  description?: ReactNode;
+  actions?: ReactNode;
+  children: ReactNode;
+  className?: string;
+  padded?: boolean;
+}) {
   return (
     <section className={cn('card', className)}>
       {title || actions ? (
@@ -56,13 +92,28 @@ export function Card({ title, description, actions, children, className, padded 
   );
 }
 
-export function KeyValue({ items, className, columns = 2 }: { items: Array<{ label: ReactNode; value: ReactNode; wide?: boolean }>; className?: string; columns?: 1 | 2 | 3 }) {
-  const grid = columns === 1 ? 'grid-cols-1' : columns === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2';
+export function KeyValue({
+  items,
+  className,
+  columns = 2,
+}: {
+  items: Array<{ label: ReactNode; value: ReactNode; wide?: boolean }>;
+  className?: string;
+  columns?: 1 | 2 | 3;
+}) {
+  const grid =
+    columns === 1
+      ? 'grid-cols-1'
+      : columns === 3
+        ? 'grid-cols-1 sm:grid-cols-3'
+        : 'grid-cols-1 sm:grid-cols-2';
   return (
     <dl className={cn('grid gap-x-6 gap-y-3', grid, className)}>
       {items.map((item, i) => (
         <div key={i} className={cn('min-w-0', item.wide && 'sm:col-span-full')}>
-          <dt className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">{item.label}</dt>
+          <dt className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
+            {item.label}
+          </dt>
           <dd className="mt-0.5 break-words text-sm text-text-primary">{item.value ?? '—'}</dd>
         </div>
       ))}

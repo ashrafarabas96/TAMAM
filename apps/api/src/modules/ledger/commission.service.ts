@@ -69,11 +69,17 @@ export class CommissionService {
   /** Highest-priority active policy matching the context, falling back to the configured default. */
   async resolve(ctx: CommissionContext, tx?: Tx): Promise<ResolvedCommission> {
     const client = tx ?? this.prisma;
-    const scopeMatchers: Prisma.CommissionPolicyWhereInput[] = [{ scope: CommissionScope.GLOBAL }, { scope: CommissionScope.JOB_TYPE, jobType: ctx.jobType }];
-    if (ctx.categoryId) scopeMatchers.push({ scope: CommissionScope.CATEGORY, categoryId: ctx.categoryId });
+    const scopeMatchers: Prisma.CommissionPolicyWhereInput[] = [
+      { scope: CommissionScope.GLOBAL },
+      { scope: CommissionScope.JOB_TYPE, jobType: ctx.jobType },
+    ];
+    if (ctx.categoryId)
+      scopeMatchers.push({ scope: CommissionScope.CATEGORY, categoryId: ctx.categoryId });
     if (ctx.zoneId) scopeMatchers.push({ scope: CommissionScope.ZONE, zoneId: ctx.zoneId });
-    if (ctx.partnerId) scopeMatchers.push({ scope: CommissionScope.PARTNER, partnerId: ctx.partnerId });
-    if (ctx.campaignCode) scopeMatchers.push({ scope: CommissionScope.CAMPAIGN, campaignCode: ctx.campaignCode });
+    if (ctx.partnerId)
+      scopeMatchers.push({ scope: CommissionScope.PARTNER, partnerId: ctx.partnerId });
+    if (ctx.campaignCode)
+      scopeMatchers.push({ scope: CommissionScope.CAMPAIGN, campaignCode: ctx.campaignCode });
 
     const candidates = await client.commissionPolicy.findMany({
       where: {
@@ -86,9 +92,17 @@ export class CommissionService {
 
     const winner = this.pickWinner(candidates);
     if (!winner) {
-      return { percent: await this.config.getNumber(CONFIG_KEYS.COMMISSION_DEFAULT_PERCENT), fixedMinor: 0n, policyId: null };
+      return {
+        percent: await this.config.getNumber(CONFIG_KEYS.COMMISSION_DEFAULT_PERCENT),
+        fixedMinor: 0n,
+        policyId: null,
+      };
     }
-    return { percent: winner.percent.toNumber(), fixedMinor: winner.fixedMinor, policyId: winner.id };
+    return {
+      percent: winner.percent.toNumber(),
+      fixedMinor: winner.fixedMinor,
+      policyId: winner.id,
+    };
   }
 
   private pickWinner(candidates: PolicyRow[]): PolicyRow | null {
@@ -128,11 +142,22 @@ export class CommissionService {
    * Creates or replaces the policy for a scope target. There is at most one policy per
    * (scope, target) so admins never have to hunt for duplicated rules.
    */
-  async upsert(input: UpsertCommissionPolicyInput, actorId: string, requestId: string | null): Promise<CommissionPolicyDto> {
+  async upsert(
+    input: UpsertCommissionPolicyInput,
+    actorId: string,
+    requestId: string | null,
+  ): Promise<CommissionPolicyDto> {
     const target = this.resolveTarget(input);
     const row = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.commissionPolicy.findFirst({
-        where: { scope: input.scope, jobType: target.jobType, categoryId: target.categoryId, zoneId: target.zoneId, partnerId: target.partnerId, campaignCode: target.campaignCode },
+        where: {
+          scope: input.scope,
+          jobType: target.jobType,
+          categoryId: target.categoryId,
+          zoneId: target.zoneId,
+          partnerId: target.partnerId,
+          campaignCode: target.campaignCode,
+        },
         orderBy: { createdAt: 'desc' },
       });
       const data = {
@@ -154,8 +179,21 @@ export class CommissionService {
           action: existing ? 'commission_policy.update' : 'commission_policy.create',
           entity: 'commission_policy',
           entityId: saved.id,
-          oldValue: existing ? { percent: existing.percent.toString(), fixedMinor: existing.fixedMinor.toString(), priority: existing.priority, isActive: existing.isActive } : null,
-          newValue: { scope: input.scope, percent: input.percent, fixedMinor: input.fixedMinor, priority: input.priority, isActive: input.isActive },
+          oldValue: existing
+            ? {
+                percent: existing.percent.toString(),
+                fixedMinor: existing.fixedMinor.toString(),
+                priority: existing.priority,
+                isActive: existing.isActive,
+              }
+            : null,
+          newValue: {
+            scope: input.scope,
+            percent: input.percent,
+            fixedMinor: input.fixedMinor,
+            priority: input.priority,
+            isActive: input.isActive,
+          },
           reason: input.reason,
           requestId,
         },
@@ -173,13 +211,25 @@ export class CommissionService {
     partnerId: string | null;
     campaignCode: string | null;
   } {
-    const empty = { jobType: null, categoryId: null, zoneId: null, partnerId: null, campaignCode: null };
+    const empty = {
+      jobType: null,
+      categoryId: null,
+      zoneId: null,
+      partnerId: null,
+      campaignCode: null,
+    };
     const requireId = (): string => {
-      if (!input.scopeId) throw AppException.validation([{ field: 'scopeId', message: `scopeId is required for scope ${input.scope}` }]);
+      if (!input.scopeId)
+        throw AppException.validation([
+          { field: 'scopeId', message: `scopeId is required for scope ${input.scope}` },
+        ]);
       return input.scopeId;
     };
     const requireCode = (): string => {
-      if (!input.scopeCode) throw AppException.validation([{ field: 'scopeCode', message: `scopeCode is required for scope ${input.scope}` }]);
+      if (!input.scopeCode)
+        throw AppException.validation([
+          { field: 'scopeCode', message: `scopeCode is required for scope ${input.scope}` },
+        ]);
       return input.scopeCode;
     };
     switch (input.scope) {
@@ -196,7 +246,9 @@ export class CommissionService {
       case CommissionScope.CAMPAIGN:
         return { ...empty, campaignCode: requireCode() };
       default:
-        throw AppException.validation([{ field: 'scope', message: `unsupported scope ${String(input.scope)}` }]);
+        throw AppException.validation([
+          { field: 'scope', message: `unsupported scope ${String(input.scope)}` },
+        ]);
     }
   }
 

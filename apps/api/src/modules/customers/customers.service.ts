@@ -20,7 +20,11 @@ import {
   type ServiceCategoryDto,
   type UserDto,
 } from '@tamam/shared-types';
-import type { JobListFilterInput, PageRequestInput, UpsertSavedPlaceInput } from '@tamam/validation';
+import type {
+  JobListFilterInput,
+  PageRequestInput,
+  UpsertSavedPlaceInput,
+} from '@tamam/validation';
 
 import { AppException } from '../../common/errors/app.exception';
 import { decrypt, maskPhone } from '../../common/utils/crypto.util';
@@ -134,31 +138,60 @@ export class CustomersService {
     await this.requireCustomer(userId);
     const data = this.savedPlaceData(input);
     if (input.kind === 'CUSTOM') {
-      const created = await this.prisma.savedPlace.create({ data: { customerId: userId, ...data }, select: savedPlaceSelect });
+      const created = await this.prisma.savedPlace.create({
+        data: { customerId: userId, ...data },
+        select: savedPlaceSelect,
+      });
       return this.toSavedPlaceDto(created);
     }
-    const existing = await this.prisma.savedPlace.findFirst({ where: { customerId: userId, kind: input.kind }, select: { id: true } });
+    const existing = await this.prisma.savedPlace.findFirst({
+      where: { customerId: userId, kind: input.kind },
+      select: { id: true },
+    });
     const row = existing
-      ? await this.prisma.savedPlace.update({ where: { id: existing.id }, data, select: savedPlaceSelect })
-      : await this.prisma.savedPlace.create({ data: { customerId: userId, ...data }, select: savedPlaceSelect });
+      ? await this.prisma.savedPlace.update({
+          where: { id: existing.id },
+          data,
+          select: savedPlaceSelect,
+        })
+      : await this.prisma.savedPlace.create({
+          data: { customerId: userId, ...data },
+          select: savedPlaceSelect,
+        });
     return this.toSavedPlaceDto(row);
   }
 
-  async updatePlace(userId: string, placeId: string, input: UpsertSavedPlaceInput): Promise<SavedPlaceDto> {
+  async updatePlace(
+    userId: string,
+    placeId: string,
+    input: UpsertSavedPlaceInput,
+  ): Promise<SavedPlaceDto> {
     await this.requireCustomer(userId);
-    const existing = await this.prisma.savedPlace.findFirst({ where: { id: placeId, customerId: userId }, select: { id: true } });
+    const existing = await this.prisma.savedPlace.findFirst({
+      where: { id: placeId, customerId: userId },
+      select: { id: true },
+    });
     if (!existing) throw AppException.notFound('Saved place', placeId);
     if (input.kind !== 'CUSTOM') {
-      const clash = await this.prisma.savedPlace.findFirst({ where: { customerId: userId, kind: input.kind, NOT: { id: placeId } }, select: { id: true } });
+      const clash = await this.prisma.savedPlace.findFirst({
+        where: { customerId: userId, kind: input.kind, NOT: { id: placeId } },
+        select: { id: true },
+      });
       if (clash) throw AppException.conflict(`You already have a ${input.kind} place saved`);
     }
-    const row = await this.prisma.savedPlace.update({ where: { id: placeId }, data: this.savedPlaceData(input), select: savedPlaceSelect });
+    const row = await this.prisma.savedPlace.update({
+      where: { id: placeId },
+      data: this.savedPlaceData(input),
+      select: savedPlaceSelect,
+    });
     return this.toSavedPlaceDto(row);
   }
 
   async deletePlace(userId: string, placeId: string): Promise<void> {
     await this.requireCustomer(userId);
-    const result = await this.prisma.savedPlace.deleteMany({ where: { id: placeId, customerId: userId } });
+    const result = await this.prisma.savedPlace.deleteMany({
+      where: { id: placeId, customerId: userId },
+    });
     if (!result.count) throw AppException.notFound('Saved place', placeId);
   }
 
@@ -166,7 +199,11 @@ export class CustomersService {
 
   async listFavorites(userId: string): Promise<ServiceCategoryDto[]> {
     await this.requireCustomer(userId);
-    const favorites = await this.prisma.favoriteService.findMany({ where: { customerId: userId }, select: { categoryId: true }, orderBy: { createdAt: 'desc' } });
+    const favorites = await this.prisma.favoriteService.findMany({
+      where: { customerId: userId },
+      select: { categoryId: true },
+      orderBy: { createdAt: 'desc' },
+    });
     if (!favorites.length) return [];
     const order = new Map(favorites.map((f, index) => [f.categoryId, index] as const));
     const categories = await this.catalog.listCategories(undefined, null);
@@ -177,8 +214,12 @@ export class CustomersService {
 
   async addFavorite(userId: string, categoryId: string): Promise<ServiceCategoryDto[]> {
     await this.requireCustomer(userId);
-    const category = await this.prisma.serviceCategory.findUnique({ where: { id: categoryId }, select: { id: true, isActive: true } });
-    if (!category || !category.isActive) throw AppException.notFound('Service category', categoryId);
+    const category = await this.prisma.serviceCategory.findUnique({
+      where: { id: categoryId },
+      select: { id: true, isActive: true },
+    });
+    if (!category || !category.isActive)
+      throw AppException.notFound('Service category', categoryId);
     await this.prisma.favoriteService.upsert({
       where: { customerId_categoryId: { customerId: userId, categoryId } },
       update: {},
@@ -203,7 +244,16 @@ export class CustomersService {
         type: true,
         categoryId: true,
         createdAt: true,
-        category: { select: { id: true, slug: true, nameAr: true, nameEn: true, isActive: true, iconMedia: true } },
+        category: {
+          select: {
+            id: true,
+            slug: true,
+            nameAr: true,
+            nameEn: true,
+            isActive: true,
+            iconMedia: true,
+          },
+        },
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: RECENT_SERVICES_WINDOW,
@@ -233,7 +283,10 @@ export class CustomersService {
 
   /* ---------------------------------------------------------- order history */
 
-  async listJobs(userId: string, filter: JobListFilterInput & PageRequestInput): Promise<Page<JobDto>> {
+  async listJobs(
+    userId: string,
+    filter: JobListFilterInput & PageRequestInput,
+  ): Promise<Page<JobDto>> {
     await this.requireCustomer(userId);
     const cursor = decodeCursor(filter.cursor);
     const rows = await this.prisma.job.findMany({
@@ -245,7 +298,10 @@ export class CustomersService {
         number: filter.q ? { contains: filter.q.toUpperCase() } : undefined,
         createdAt:
           filter.from || filter.to
-            ? { gte: filter.from ? new Date(filter.from) : undefined, lte: filter.to ? new Date(filter.to) : undefined }
+            ? {
+                gte: filter.from ? new Date(filter.from) : undefined,
+                lte: filter.to ? new Date(filter.to) : undefined,
+              }
             : undefined,
       },
       include: jobInclude,
@@ -265,12 +321,26 @@ export class CustomersService {
   async reorder(userId: string, jobId: string): Promise<ReorderDraftDto> {
     const job = await this.requireOwnJob(userId, jobId);
     if (job.categoryId) {
-      const category = await this.prisma.serviceCategory.findUnique({ where: { id: job.categoryId }, select: { isActive: true } });
-      if (!category?.isActive) throw AppException.conflict('This service is no longer available', ErrorCode.SERVICE_UNAVAILABLE_IN_ZONE);
+      const category = await this.prisma.serviceCategory.findUnique({
+        where: { id: job.categoryId },
+        select: { isActive: true },
+      });
+      if (!category?.isActive)
+        throw AppException.conflict(
+          'This service is no longer available',
+          ErrorCode.SERVICE_UNAVAILABLE_IN_ZONE,
+        );
     }
     if (job.vehicleTypeId) {
-      const vehicleType = await this.prisma.vehicleType.findUnique({ where: { id: job.vehicleTypeId }, select: { isActive: true } });
-      if (!vehicleType?.isActive) throw AppException.conflict('This vehicle type is no longer available', ErrorCode.SERVICE_UNAVAILABLE_IN_ZONE);
+      const vehicleType = await this.prisma.vehicleType.findUnique({
+        where: { id: job.vehicleTypeId },
+        select: { isActive: true },
+      });
+      if (!vehicleType?.isActive)
+        throw AppException.conflict(
+          'This vehicle type is no longer available',
+          ErrorCode.SERVICE_UNAVAILABLE_IN_ZONE,
+        );
     }
 
     const key = this.appConfig.encryptionKey;
@@ -294,8 +364,12 @@ export class CustomersService {
       packageCategoryId: job.delivery?.packageCategoryId ?? null,
       approximateSize: job.delivery?.approximateSize ?? null,
       approximateWeightKg: job.delivery?.approximateWeightKg?.toNumber() ?? null,
-      sender: job.delivery ? { name: job.delivery.senderName, phone: decrypt(job.delivery.senderPhoneEnc, key) } : null,
-      recipient: job.delivery ? { name: job.delivery.recipientName, phone: decrypt(job.delivery.recipientPhoneEnc, key) } : null,
+      sender: job.delivery
+        ? { name: job.delivery.senderName, phone: decrypt(job.delivery.senderPhoneEnc, key) }
+        : null,
+      recipient: job.delivery
+        ? { name: job.delivery.recipientName, phone: decrypt(job.delivery.recipientPhoneEnc, key) }
+        : null,
       description: job.description,
       deliveryNotes: job.delivery?.deliveryNotes ?? null,
       notes: job.notes,
@@ -308,12 +382,18 @@ export class CustomersService {
   /* ------------------------------------------------------------- helpers */
 
   private async requireCustomer(userId: string): Promise<void> {
-    const exists = await this.prisma.customerProfile.findUnique({ where: { userId }, select: { userId: true } });
+    const exists = await this.prisma.customerProfile.findUnique({
+      where: { userId },
+      select: { userId: true },
+    });
     if (!exists) throw AppException.notFound('Customer profile', userId);
   }
 
   private async requireOwnJob(userId: string, jobId: string): Promise<JobWithRelations> {
-    const job = await this.prisma.job.findFirst({ where: { id: jobId, customerId: userId }, include: jobInclude });
+    const job = await this.prisma.job.findFirst({
+      where: { id: jobId, customerId: userId },
+      include: jobInclude,
+    });
     if (!job) throw AppException.notFound('Job', jobId);
     return job;
   }
@@ -336,7 +416,9 @@ export class CustomersService {
     };
   }
 
-  private statusGroupFilter(group: JobListFilterInput['statusGroup']): Prisma.JobWhereInput['status'] {
+  private statusGroupFilter(
+    group: JobListFilterInput['statusGroup'],
+  ): Prisma.JobWhereInput['status'] {
     if (group === 'completed') return { in: [JobStatus.COMPLETED] };
     if (group === 'cancelled') return { in: [JobStatus.CANCELLED, JobStatus.NO_PARTNER_AVAILABLE] };
     if (group === 'active') return { in: [...ACTIVE_JOB_STATUSES] };
@@ -387,7 +469,8 @@ export class CustomersService {
   toJobSummaryDto(job: JobWithRelations): JobDto {
     const key = this.appConfig.encryptionKey;
     const currency = job.currency as Money['currency'];
-    const money = (value: bigint | null): Money | null => (value === null ? null : { amount: Number(value), currency });
+    const money = (value: bigint | null): Money | null =>
+      value === null ? null : { amount: Number(value), currency };
 
     const stops: JobStopDto[] = job.stops.map((s) => ({
       id: s.id,
@@ -405,8 +488,12 @@ export class CustomersService {
       ? {
           id: job.partner.userId,
           fullName: job.partner.user.fullName ?? '',
-          profileImageUrl: job.partner.user.profileImage ? this.mediaUrls.urlFor(job.partner.user.profileImage) : null,
-          rating: job.partner.ratingCount ? Number((job.partner.ratingSum / job.partner.ratingCount).toFixed(2)) : 5,
+          profileImageUrl: job.partner.user.profileImage
+            ? this.mediaUrls.urlFor(job.partner.user.profileImage)
+            : null,
+          rating: job.partner.ratingCount
+            ? Number((job.partner.ratingSum / job.partner.ratingCount).toFixed(2))
+            : 5,
           ratingCount: job.partner.ratingCount,
           maskedPhone: maskPhone(job.partner.user.phone),
           vehicle: job.vehicle
@@ -415,7 +502,10 @@ export class CustomersService {
                 model: job.vehicle.model,
                 color: job.vehicle.color,
                 plate: job.vehicle.plate,
-                typeName: { ar: job.vehicle.vehicleType.nameAr, en: job.vehicle.vehicleType.nameEn },
+                typeName: {
+                  ar: job.vehicle.vehicleType.nameAr,
+                  en: job.vehicle.vehicleType.nameEn,
+                },
               }
             : null,
           // Live position belongs to the tracking channel, never to history.
@@ -426,7 +516,10 @@ export class CustomersService {
     const delivery: DeliveryDetailsDto | undefined = job.delivery
       ? {
           packageCategoryId: job.delivery.packageCategoryId,
-          packageCategoryName: { ar: job.delivery.packageCategory.nameAr, en: job.delivery.packageCategory.nameEn },
+          packageCategoryName: {
+            ar: job.delivery.packageCategory.nameAr,
+            en: job.delivery.packageCategory.nameEn,
+          },
           approximateSize: job.delivery.approximateSize,
           approximateWeightKg: job.delivery.approximateWeightKg?.toNumber() ?? null,
           senderName: job.delivery.senderName,
@@ -437,9 +530,16 @@ export class CustomersService {
           proof: job.delivery.podTimestamp
             ? {
                 receiverName: job.delivery.podReceiverName,
-                photoUrl: job.delivery.podPhoto ? this.mediaUrls.urlFor(job.delivery.podPhoto) : null,
-                signatureUrl: job.delivery.podSignature ? this.mediaUrls.urlFor(job.delivery.podSignature) : null,
-                location: job.delivery.podLat !== null && job.delivery.podLng !== null ? { lat: job.delivery.podLat.toNumber(), lng: job.delivery.podLng.toNumber() } : null,
+                photoUrl: job.delivery.podPhoto
+                  ? this.mediaUrls.urlFor(job.delivery.podPhoto)
+                  : null,
+                signatureUrl: job.delivery.podSignature
+                  ? this.mediaUrls.urlFor(job.delivery.podSignature)
+                  : null,
+                location:
+                  job.delivery.podLat !== null && job.delivery.podLng !== null
+                    ? { lat: job.delivery.podLat.toNumber(), lng: job.delivery.podLng.toNumber() }
+                    : null,
                 otpVerified: job.delivery.podOtpVerified,
                 timestamp: job.delivery.podTimestamp.toISOString(),
               }
@@ -483,7 +583,10 @@ export class CustomersService {
       promoCode: job.promoCode?.code ?? null,
       cancellationReason: job.cancellationReasonCode,
       cancelledBy: job.cancelledBy,
-      cancellationFee: job.cancellationFeeMinor > 0n ? { amount: Number(job.cancellationFeeMinor), currency } : null,
+      cancellationFee:
+        job.cancellationFeeMinor > 0n
+          ? { amount: Number(job.cancellationFeeMinor), currency }
+          : null,
       createdAt: job.createdAt.toISOString(),
       updatedAt: job.updatedAt.toISOString(),
       completedAt: job.completedAt ? job.completedAt.toISOString() : null,

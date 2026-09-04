@@ -5,14 +5,27 @@ import { Permission } from '@tamam/shared-types';
 import type { Queue } from 'bullmq';
 import { z } from 'zod';
 
-import { Audited, CurrentUser, RequirePermission, ZodBody, ZodParams } from '../../common/decorators';
+import {
+  Audited,
+  CurrentUser,
+  RequirePermission,
+  ZodBody,
+  ZodParams,
+} from '../../common/decorators';
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
-import { MAINTENANCE_JOBS, QUEUES, type QueueName } from '../../infrastructure/queue/queue.constants';
+import {
+  MAINTENANCE_JOBS,
+  QUEUES,
+  type QueueName,
+} from '../../infrastructure/queue/queue.constants';
 
 import { type MaintenanceJobName, MaintenanceScheduler } from './maintenance.scheduler';
 
-const MAINTENANCE_JOB_NAMES = Object.values(MAINTENANCE_JOBS) as [MaintenanceJobName, ...MaintenanceJobName[]];
+const MAINTENANCE_JOB_NAMES = Object.values(MAINTENANCE_JOBS) as [
+  MaintenanceJobName,
+  ...MaintenanceJobName[],
+];
 
 const runParamsSchema = z.object({ job: z.enum(MAINTENANCE_JOB_NAMES) });
 type RunParams = z.infer<typeof runParamsSchema>;
@@ -20,7 +33,10 @@ type RunParams = z.infer<typeof runParamsSchema>;
 const runBodySchema = z.object({
   reason: z.string().trim().min(5).max(500),
   /** Optional target day for the day-scoped jobs (banner rollup, daily KPIs). */
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 type RunBody = z.infer<typeof runBodySchema>;
 
@@ -67,9 +83,19 @@ export class MaintenanceController {
   @Post('admin/maintenance/run/:job')
   @HttpCode(HttpStatus.ACCEPTED)
   @RequirePermission(Permission.CONFIG_MANAGE)
-  @Audited({ action: 'maintenance.run', entity: 'maintenance_job', entityIdFrom: 'job', sensitive: true })
-  async run(@ZodParams(runParamsSchema) params: RunParams, @ZodBody(runBodySchema) body: RunBody, @CurrentUser() actor: RequestUser) {
-    if (!actor.isSuperAdmin) throw AppException.forbidden('Only a SUPER_ADMIN can trigger maintenance jobs');
+  @Audited({
+    action: 'maintenance.run',
+    entity: 'maintenance_job',
+    entityIdFrom: 'job',
+    sensitive: true,
+  })
+  async run(
+    @ZodParams(runParamsSchema) params: RunParams,
+    @ZodBody(runBodySchema) body: RunBody,
+    @CurrentUser() actor: RequestUser,
+  ) {
+    if (!actor.isSuperAdmin)
+      throw AppException.forbidden('Only a SUPER_ADMIN can trigger maintenance jobs');
     const { jobId } = await this.scheduler.runNow(params.job, actor.id, body.date);
     return { queued: true, job: params.job, jobId };
   }
@@ -79,7 +105,10 @@ export class MaintenanceController {
   async queueStatus(): Promise<QueueCountsDto[]> {
     return Promise.all(
       this.queues.map(async ({ name, queue }) => {
-        const [counts, paused] = await Promise.all([queue.getJobCounts('waiting', 'active', 'delayed', 'failed', 'completed'), queue.isPaused()]);
+        const [counts, paused] = await Promise.all([
+          queue.getJobCounts('waiting', 'active', 'delayed', 'failed', 'completed'),
+          queue.isPaused(),
+        ]);
         return {
           queue: name,
           waiting: counts.waiting ?? 0,

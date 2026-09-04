@@ -8,7 +8,9 @@ export const zonesApi = {
   list: () => api.get<ServiceZoneDto[]>('/admin/zones'),
   get: (id: string) => api.get<ServiceZoneDto>(`/admin/zones/${id}`),
   create: (input: UpsertServiceZoneInput) => api.post<ServiceZoneDto>('/admin/zones', input),
-  update: (id: string, input: UpsertServiceZoneInput) => api.put<ServiceZoneDto>(`/admin/zones/${id}`, input),
+  update: (id: string, input: UpsertServiceZoneInput) =>
+    api.put<ServiceZoneDto>(`/admin/zones/${id}`, input),
   rules: (id: string) => api.get<ZoneServiceRuleRow[]>(`/admin/zones/${id}/rules`),
-  upsertRule: (input: ZoneServiceRuleInput) => api.put<ZoneServiceRuleRow>('/admin/zones/rules', input),
+  upsertRule: (input: ZoneServiceRuleInput) =>
+    api.put<ZoneServiceRuleRow>('/admin/zones/rules', input),
 };

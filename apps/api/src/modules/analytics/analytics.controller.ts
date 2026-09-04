@@ -1,11 +1,23 @@
 import { Controller, Get, HttpCode, HttpStatus, Post, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '@tamam/shared-types';
-import { type ReportQueryInput, isoDateTimeSchema, reportQuerySchema, uuidSchema } from '@tamam/validation';
+import {
+  type ReportQueryInput,
+  isoDateTimeSchema,
+  reportQuerySchema,
+  uuidSchema,
+} from '@tamam/validation';
 import type { Response } from 'express';
 import { z } from 'zod';
 
-import { CurrentUser, Public, RateLimit, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  CurrentUser,
+  Public,
+  RateLimit,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { toJsonSafe } from '../../common/interceptors/serialize.interceptor';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -45,8 +57,16 @@ export class AnalyticsController {
   @Post('analytics/events')
   @HttpCode(HttpStatus.OK)
   @RateLimit({ name: 'analytics-events', limit: 120, windowSeconds: 60, keyBy: 'user-or-ip' })
-  track(@ZodBody(trackEventsSchema) body: z.infer<typeof trackEventsSchema>, @CurrentUser() user: RequestUser | undefined) {
-    return this.analytics.track(user ?? null, body.events, body.platform ?? null, body.appVersion ?? null);
+  track(
+    @ZodBody(trackEventsSchema) body: z.infer<typeof trackEventsSchema>,
+    @CurrentUser() user: RequestUser | undefined,
+  ) {
+    return this.analytics.track(
+      user ?? null,
+      body.events,
+      body.platform ?? null,
+      body.appVersion ?? null,
+    );
   }
 
   @ApiBearerAuth()
@@ -70,7 +90,11 @@ export class AnalyticsController {
   @ApiBearerAuth()
   @Get('admin/reports')
   @RequirePermission(Permission.ANALYTICS_READ)
-  async reports(@ZodQuery(reportQuerySchema) query: ReportQueryInput, @CurrentUser() user: RequestUser, @Res() res: Response): Promise<void> {
+  async reports(
+    @ZodQuery(reportQuerySchema) query: ReportQueryInput,
+    @CurrentUser() user: RequestUser,
+    @Res() res: Response,
+  ): Promise<void> {
     if (query.format === 'json') {
       const result = await this.analytics.report(query);
       res.status(HttpStatus.OK).json(toJsonSafe(result));

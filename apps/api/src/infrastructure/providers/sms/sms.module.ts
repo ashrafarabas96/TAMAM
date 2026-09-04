@@ -12,7 +12,10 @@ import { SMS_PROVIDER } from './sms.provider';
     {
       provide: SMS_PROVIDER,
       inject: [AppConfigService, PinoLogger],
-      useFactory: (config: AppConfigService, logger: PinoLogger) => (config.env.SMS_PROVIDER === 'http' ? new HttpSmsProvider(config) : new ConsoleSmsProvider(logger)),
+      useFactory: (config: AppConfigService, logger: PinoLogger) =>
+        config.env.SMS_PROVIDER === 'http'
+          ? new HttpSmsProvider(config)
+          : new ConsoleSmsProvider(logger),
     },
   ],
   exports: [SMS_PROVIDER],

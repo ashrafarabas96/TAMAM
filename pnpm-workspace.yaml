@@ -1,7 +1,7 @@
 packages:
-  - "apps/api"
-  - "apps/admin-web"
-  - "packages/*"
+  - 'apps/api'
+  - 'apps/admin-web'
+  - 'packages/*'
 
 # pnpm 10 refuses to run dependency build scripts unless they are named here.
 # These are all native or codegen builds the workspace genuinely needs:
@@ -9,9 +9,9 @@ packages:
 # esbuild and unrs-resolver (platform binaries), sharp (image pipeline),
 # msgpackr-extract (BullMQ msgpack accelerator), @nestjs/core (postinstall notice).
 onlyBuiltDependencies:
-  - "@nestjs/core"
-  - "@prisma/client"
-  - "@prisma/engines"
+  - '@nestjs/core'
+  - '@prisma/client'
+  - '@prisma/engines'
   - argon2
   - esbuild
   - msgpackr-extract

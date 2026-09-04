@@ -28,7 +28,10 @@ export class PaymentsProcessor extends WorkerHost {
     switch (job.name) {
       case FINANCE_JOBS.PROCESS_WEBHOOK: {
         const webhookEventId = job.data.webhookEventId;
-        if (!webhookEventId) throw AppException.validation([{ field: 'webhookEventId', message: 'missing webhookEventId' }]);
+        if (!webhookEventId)
+          throw AppException.validation([
+            { field: 'webhookEventId', message: 'missing webhookEventId' },
+          ]);
         await this.payments.processWebhook(webhookEventId);
         break;
       }

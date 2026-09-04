@@ -36,9 +36,24 @@ interface StaffSeed {
 }
 
 const STAFF: StaffSeed[] = [
-  { email: 'admin@tamam.app', phone: '+970599000010', fullName: 'مدير النظام', roles: [UserRole.SUPER_ADMIN] },
-  { email: 'dispatcher@tamam.app', phone: '+970599000011', fullName: 'منسق العمليات', roles: [UserRole.DISPATCHER] },
-  { email: 'support@tamam.app', phone: '+970599000012', fullName: 'موظف الدعم', roles: [UserRole.SUPPORT] },
+  {
+    email: 'admin@tamam.app',
+    phone: '+970599000010',
+    fullName: 'مدير النظام',
+    roles: [UserRole.SUPER_ADMIN],
+  },
+  {
+    email: 'dispatcher@tamam.app',
+    phone: '+970599000011',
+    fullName: 'منسق العمليات',
+    roles: [UserRole.DISPATCHER],
+  },
+  {
+    email: 'support@tamam.app',
+    phone: '+970599000012',
+    fullName: 'موظف الدعم',
+    roles: [UserRole.SUPPORT],
+  },
 ];
 
 interface PartnerSeed {
@@ -50,7 +65,15 @@ interface PartnerSeed {
   roles: PartnerRoleType[];
   categorySlugs: string[];
   documents: DocumentType[];
-  vehicle: { typeCode: string; brand: string; model: string; year: number; color: string; plate: string; seats: number } | null;
+  vehicle: {
+    typeCode: string;
+    brand: string;
+    model: string;
+    year: number;
+    color: string;
+    plate: string;
+    seats: number;
+  } | null;
   /** Offset from the Ramallah centre, in degrees, so the demo fleet is spread over the zone. */
   offset: { lat: number; lng: number };
 }
@@ -65,7 +88,15 @@ const PARTNERS: PartnerSeed[] = [
     roles: [PartnerRoleType.DRIVER],
     categorySlugs: [],
     documents: [DocumentType.ID, DocumentType.DRIVING_LICENSE, DocumentType.VEHICLE_LICENSE],
-    vehicle: { typeCode: 'ECONOMY', brand: 'Hyundai', model: 'Accent', year: 2019, color: 'أبيض', plate: '1234567', seats: 4 },
+    vehicle: {
+      typeCode: 'ECONOMY',
+      brand: 'Hyundai',
+      model: 'Accent',
+      year: 2019,
+      color: 'أبيض',
+      plate: '1234567',
+      seats: 4,
+    },
     offset: { lat: 0.004, lng: 0.005 },
   },
   {
@@ -77,7 +108,15 @@ const PARTNERS: PartnerSeed[] = [
     roles: [PartnerRoleType.COURIER],
     categorySlugs: [],
     documents: [DocumentType.ID, DocumentType.DRIVING_LICENSE],
-    vehicle: { typeCode: 'MOTORBIKE', brand: 'Honda', model: 'CB125', year: 2021, color: 'أحمر', plate: '7654321', seats: 1 },
+    vehicle: {
+      typeCode: 'MOTORBIKE',
+      brand: 'Honda',
+      model: 'CB125',
+      year: 2021,
+      color: 'أحمر',
+      plate: '7654321',
+      seats: 1,
+    },
     offset: { lat: -0.006, lng: 0.003 },
   },
   {
@@ -96,7 +135,11 @@ const PARTNERS: PartnerSeed[] = [
 
 const TWO_YEARS_MS = 2 * 365 * 86_400_000;
 
-export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zones: ZoneSeedResult): Promise<UserSeedResult> {
+export async function seedUsers(
+  ctx: SeedContext,
+  catalog: CatalogSeedResult,
+  zones: ZoneSeedResult,
+): Promise<UserSeedResult> {
   const { prisma, config, summary } = ctx;
   const encryptionKey = config.encryptionKey;
   const ramallahId = zones.zoneIds.get('RAMALLAH');
@@ -126,7 +169,8 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
 
   /* ---------------------------------------------------------- staff users */
   const rawPassword = optionalEnv(process.env.SEED_ADMIN_PASSWORD) ?? DEFAULT_ADMIN_PASSWORD;
-  if (rawPassword.length < 12) throw new Error('SEED_ADMIN_PASSWORD must be at least 12 characters');
+  if (rawPassword.length < 12)
+    throw new Error('SEED_ADMIN_PASSWORD must be at least 12 characters');
   const passwordHash = await AuthService.hashPassword(rawPassword);
   const adminRoles = await prisma.adminRole.findMany({ select: { id: true, name: true } });
   const adminRoleIdByName = new Map(adminRoles.map((r) => [r.name, r.id]));
@@ -136,11 +180,23 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
     const user = await prisma.user.upsert({
       where: { phone: staff.phone },
       update: { email: staff.email, fullName: staff.fullName },
-      create: { phone: staff.phone, email: staff.email, fullName: staff.fullName, language: 'ar', notificationPreference: { create: {} } },
+      create: {
+        phone: staff.phone,
+        email: staff.email,
+        fullName: staff.fullName,
+        language: 'ar',
+        notificationPreference: { create: {} },
+      },
     });
     await prisma.adminCredential.upsert({
       where: { userId: user.id },
-      update: { email: staff.email, passwordHash, mustChangePassword: true, failedAttempts: 0, lockedUntil: null },
+      update: {
+        email: staff.email,
+        passwordHash,
+        mustChangePassword: true,
+        failedAttempts: 0,
+        lockedUntil: null,
+      },
       create: { userId: user.id, email: staff.email, passwordHash, mustChangePassword: true },
     });
     for (const role of staff.roles) {
@@ -153,23 +209,35 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
     if (staff.roles.includes(UserRole.SUPER_ADMIN)) superAdminId = user.id;
   }
   summary.set('staff users', STAFF.length);
-  summary.note(`admin login: admin@tamam.app / ${optionalEnv(process.env.SEED_ADMIN_PASSWORD) ? '(SEED_ADMIN_PASSWORD)' : DEFAULT_ADMIN_PASSWORD} — must be changed on first login`);
+  summary.note(
+    `admin login: admin@tamam.app / ${optionalEnv(process.env.SEED_ADMIN_PASSWORD) ? '(SEED_ADMIN_PASSWORD)' : DEFAULT_ADMIN_PASSWORD} — must be changed on first login`,
+  );
 
   /* ------------------------------------------------------- demo customer */
   const customerPhone = '+970599000001';
   const customerUser = await prisma.user.upsert({
     where: { phone: customerPhone },
     update: { fullName: 'سارة أحمد' },
-    create: { phone: customerPhone, fullName: 'سارة أحمد', language: 'ar', phoneVerifiedAt: new Date(), notificationPreference: { create: {} } },
+    create: {
+      phone: customerPhone,
+      fullName: 'سارة أحمد',
+      language: 'ar',
+      phoneVerifiedAt: new Date(),
+      notificationPreference: { create: {} },
+    },
   });
   await prisma.userRoleAssignment.upsert({
     where: { userId_role: { userId: customerUser.id, role: UserRole.CUSTOMER } },
     update: {},
     create: { userId: customerUser.id, role: UserRole.CUSTOMER },
   });
-  const existingCustomer = await prisma.customerProfile.findUnique({ where: { userId: customerUser.id } });
+  const existingCustomer = await prisma.customerProfile.findUnique({
+    where: { userId: customerUser.id },
+  });
   if (!existingCustomer) {
-    await prisma.customerProfile.create({ data: { userId: customerUser.id, referralCode: randomReferralCode(8) } });
+    await prisma.customerProfile.create({
+      data: { userId: customerUser.id, referralCode: randomReferralCode(8) },
+    });
   }
   await prisma.savedPlace.deleteMany({ where: { customerId: customerUser.id } });
   await prisma.savedPlace.create({
@@ -191,7 +259,13 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
     const user = await prisma.user.upsert({
       where: { phone: seed.phone },
       update: { fullName: seed.fullName },
-      create: { phone: seed.phone, fullName: seed.fullName, language: 'ar', phoneVerifiedAt: new Date(), notificationPreference: { create: {} } },
+      create: {
+        phone: seed.phone,
+        fullName: seed.fullName,
+        language: 'ar',
+        phoneVerifiedAt: new Date(),
+        notificationPreference: { create: {} },
+      },
     });
     await prisma.userRoleAssignment.upsert({
       where: { userId_role: { userId: user.id, role: UserRole.PARTNER } },
@@ -210,34 +284,62 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
       city: seed.city,
       yearsOfExperience: 5,
     };
-    await prisma.partnerProfile.upsert({ where: { userId: user.id }, update: profileData, create: { userId: user.id, ...profileData } });
+    await prisma.partnerProfile.upsert({
+      where: { userId: user.id },
+      update: profileData,
+      create: { userId: user.id, ...profileData },
+    });
     partnerIds.set(seed.key, user.id);
 
     for (const role of seed.roles) {
-      await prisma.partnerRole.upsert({ where: { partnerId_role: { partnerId: user.id, role } }, update: { isActive: true }, create: { partnerId: user.id, role, isActive: true } });
+      await prisma.partnerRole.upsert({
+        where: { partnerId_role: { partnerId: user.id, role } },
+        update: { isActive: true },
+        create: { partnerId: user.id, role, isActive: true },
+      });
     }
 
     for (const slug of seed.categorySlugs) {
       const categoryId = catalog.categoryIds.get(slug);
       if (!categoryId) throw new Error(`category ${slug} is missing — seed the catalogue first`);
-      await prisma.partnerCategory.upsert({ where: { partnerId_categoryId: { partnerId: user.id, categoryId } }, update: {}, create: { partnerId: user.id, categoryId } });
+      await prisma.partnerCategory.upsert({
+        where: { partnerId_categoryId: { partnerId: user.id, categoryId } },
+        update: {},
+        create: { partnerId: user.id, categoryId },
+      });
     }
 
-    await prisma.partnerZone.upsert({ where: { partnerId_zoneId: { partnerId: user.id, zoneId: ramallahId } }, update: {}, create: { partnerId: user.id, zoneId: ramallahId } });
+    await prisma.partnerZone.upsert({
+      where: { partnerId_zoneId: { partnerId: user.id, zoneId: ramallahId } },
+      update: {},
+      create: { partnerId: user.id, zoneId: ramallahId },
+    });
 
     const expiresAt = new Date(Date.now() + TWO_YEARS_MS);
     for (const type of seed.documents) {
       // partner_documents has no natural unique key — one seeded document per (partner, type).
-      const existing = await prisma.partnerDocument.findFirst({ where: { partnerId: user.id, type } });
-      const docData = { status: DocumentStatus.APPROVED, verifiedAt: new Date(), expiresAt, mediaId: documentMedia.id, expiryNotifiedAt: null };
-      if (existing) await prisma.partnerDocument.update({ where: { id: existing.id }, data: docData });
+      const existing = await prisma.partnerDocument.findFirst({
+        where: { partnerId: user.id, type },
+      });
+      const docData = {
+        status: DocumentStatus.APPROVED,
+        verifiedAt: new Date(),
+        expiresAt,
+        mediaId: documentMedia.id,
+        expiryNotifiedAt: null,
+      };
+      if (existing)
+        await prisma.partnerDocument.update({ where: { id: existing.id }, data: docData });
       else await prisma.partnerDocument.create({ data: { partnerId: user.id, type, ...docData } });
     }
 
     let activeVehicleId: string | null = null;
     if (seed.vehicle) {
       const vehicleTypeId = catalog.vehicleTypeIds.get(seed.vehicle.typeCode);
-      if (!vehicleTypeId) throw new Error(`vehicle type ${seed.vehicle.typeCode} is missing — seed the catalogue first`);
+      if (!vehicleTypeId)
+        throw new Error(
+          `vehicle type ${seed.vehicle.typeCode} is missing — seed the catalogue first`,
+        );
       const plateNormalized = seed.vehicle.plate.replace(/[\s-]/g, '').toUpperCase();
       const vehicleData = {
         partnerId: user.id,
@@ -252,10 +354,15 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
         verificationStatus: VerificationStatus.APPROVED,
         verifiedAt: new Date(),
       };
-      const vehicle = await prisma.vehicle.upsert({ where: { plateNormalized }, update: vehicleData, create: { plateNormalized, ...vehicleData } });
+      const vehicle = await prisma.vehicle.upsert({
+        where: { plateNormalized },
+        update: vehicleData,
+        create: { plateNormalized, ...vehicleData },
+      });
       activeVehicleId = vehicle.id;
     }
-    if (activeVehicleId) await prisma.partnerProfile.update({ where: { userId: user.id }, data: { activeVehicleId } });
+    if (activeVehicleId)
+      await prisma.partnerProfile.update({ where: { userId: user.id }, data: { activeVehicleId } });
 
     const availabilityData = {
       status: AvailabilityStatus.OFFLINE,
@@ -267,10 +374,21 @@ export async function seedUsers(ctx: SeedContext, catalog: CatalogSeedResult, zo
       currentJobId: null,
       onlineSince: null,
     };
-    await prisma.partnerAvailability.upsert({ where: { partnerId: user.id }, update: availabilityData, create: { partnerId: user.id, ...availabilityData } });
+    await prisma.partnerAvailability.upsert({
+      where: { partnerId: user.id },
+      update: availabilityData,
+      create: { partnerId: user.id, ...availabilityData },
+    });
   }
   summary.set('demo partners', PARTNERS.length);
-  summary.note(`demo phones: customer ${customerPhone}, partners ${PARTNERS.map((p) => p.phone).join(', ')} (OTP via console SMS provider)`);
+  summary.note(
+    `demo phones: customer ${customerPhone}, partners ${PARTNERS.map((p) => p.phone).join(', ')} (OTP via console SMS provider)`,
+  );
 
-  return { superAdminId, customerId: customerUser.id, partnerIds, documentMediaId: documentMedia.id };
+  return {
+    superAdminId,
+    customerId: customerUser.id,
+    partnerIds,
+    documentMediaId: documentMedia.id,
+  };
 }

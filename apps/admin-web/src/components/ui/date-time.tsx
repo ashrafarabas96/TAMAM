@@ -5,7 +5,15 @@ import { type DateInput, formatDate, formatDateTime, formatRelative } from '@/li
 
 import { Tooltip } from './tooltip';
 
-export function DateTime({ value, mode = 'datetime', className }: { value: DateInput; mode?: 'datetime' | 'date' | 'relative'; className?: string }) {
+export function DateTime({
+  value,
+  mode = 'datetime',
+  className,
+}: {
+  value: DateInput;
+  mode?: 'datetime' | 'date' | 'relative';
+  className?: string;
+}) {
   const { locale } = useI18n();
   if (!value) return <span className="text-text-tertiary">—</span>;
   const absolute = formatDateTime(value, { locale });

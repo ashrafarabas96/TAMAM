@@ -1,10 +1,21 @@
 import { Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { LedgerAccountType, LedgerTransactionType, Permission } from '@tamam/shared-types';
-import { type UpsertCommissionPolicyInput, pageRequestSchema, upsertCommissionPolicySchema } from '@tamam/validation';
+import {
+  type UpsertCommissionPolicyInput,
+  pageRequestSchema,
+  upsertCommissionPolicySchema,
+} from '@tamam/validation';
 import { z } from 'zod';
 
-import { Audited, CurrentUser, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  Audited,
+  CurrentUser,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -51,7 +62,10 @@ export class LedgerController {
 
   @Get('admin/ledger/wallets/:walletId/statement')
   @RequirePermission(Permission.LEDGER_READ)
-  statement(@Param('walletId', UuidPipe) walletId: string, @ZodQuery(pageRequestSchema) query: PageQuery) {
+  statement(
+    @Param('walletId', UuidPipe) walletId: string,
+    @ZodQuery(pageRequestSchema) query: PageQuery,
+  ) {
     return this.ledger.statement(walletId, query.cursor, query.limit);
   }
 

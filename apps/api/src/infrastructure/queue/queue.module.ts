@@ -8,7 +8,12 @@ import { QUEUES } from './queue.constants';
 const queueRegistrations = Object.values(QUEUES).map((name) =>
   BullModule.registerQueue({
     name,
-    defaultJobOptions: { attempts: 5, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: 1000, removeOnFail: 5000 },
+    defaultJobOptions: {
+      attempts: 5,
+      backoff: { type: 'exponential', delay: 2000 },
+      removeOnComplete: 1000,
+      removeOnFail: 5000,
+    },
   }),
 );
 

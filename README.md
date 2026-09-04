@@ -30,15 +30,15 @@ scripts/              setup, token/contract generation, migrations, backup, load
 
 ## Principles the code holds to
 
-* **One vocabulary.** Enums, permissions, the job state machine and the design tokens live in
-  `packages/` and are *generated* into the Flutter apps. No client hand-copies a value.
-* **The server owns money.** Every price, fee and payout is computed server-side in integer minor
+- **One vocabulary.** Enums, permissions, the job state machine and the design tokens live in
+  `packages/` and are _generated_ into the Flutter apps. No client hand-copies a value.
+- **The server owns money.** Every price, fee and payout is computed server-side in integer minor
   units and frozen into an immutable pricing snapshot. Clients display; they never calculate.
-* **Double-entry or nothing.** Balances are derived from an append-only ledger whose immutability
+- **Double-entry or nothing.** Balances are derived from an append-only ledger whose immutability
   is enforced by database triggers, not by convention.
-* **Permissions, not roles.** Route guards check permissions; services additionally check
+- **Permissions, not roles.** Route guards check permissions; services additionally check
   ownership and answer `404` — not `403` — to callers with no relationship to a resource.
-* **No prototypes.** No mock APIs, no stubbed screens, no `TODO`.
+- **No prototypes.** No mock APIs, no stubbed screens, no `TODO`.
 
 ## Quick start
 

@@ -13,7 +13,11 @@ import {
   VerificationStatus,
   type VehicleDto,
 } from '@tamam/shared-types';
-import type { PartnerDocumentUploadInput, PartnerVehicleInput, ReviewDocumentInput } from '@tamam/validation';
+import type {
+  PartnerDocumentUploadInput,
+  PartnerVehicleInput,
+  ReviewDocumentInput,
+} from '@tamam/validation';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -34,7 +38,10 @@ export const ROLE_JOB_TYPES: Record<PartnerRoleType, readonly JobType[]> = {
 };
 
 /** Roles that cannot go online without an APPROVED vehicle selected as the active one. */
-export const VEHICLE_REQUIRED_ROLES: readonly PartnerRoleType[] = [PartnerRoleType.DRIVER, PartnerRoleType.COURIER];
+export const VEHICLE_REQUIRED_ROLES: readonly PartnerRoleType[] = [
+  PartnerRoleType.DRIVER,
+  PartnerRoleType.COURIER,
+];
 
 /** Job types whose dispatch actually needs a vehicle (the ones that constrain the vehicle type). */
 const VEHICLE_BOUND_JOB_TYPES: readonly JobType[] = [JobType.RIDE, JobType.DELIVERY];
@@ -116,7 +123,13 @@ export class VehiclesService {
           verificationStatus: VerificationStatus.PENDING,
         },
       });
-      await tx.vehiclePhoto.createMany({ data: photoMediaIds.map((mediaId, index) => ({ vehicleId: vehicle.id, mediaId, sortOrder: index })) });
+      await tx.vehiclePhoto.createMany({
+        data: photoMediaIds.map((mediaId, index) => ({
+          vehicleId: vehicle.id,
+          mediaId,
+          sortOrder: index,
+        })),
+      });
       return tx.vehicle.findUniqueOrThrow({ where: { id: vehicle.id }, include: vehicleInclude });
     });
     return this.toDto(row);
@@ -156,7 +169,13 @@ export class VehiclesService {
         },
       });
       await tx.vehiclePhoto.deleteMany({ where: { vehicleId: existing.id } });
-      await tx.vehiclePhoto.createMany({ data: photoMediaIds.map((mediaId, index) => ({ vehicleId: existing.id, mediaId, sortOrder: index })) });
+      await tx.vehiclePhoto.createMany({
+        data: photoMediaIds.map((mediaId, index) => ({
+          vehicleId: existing.id,
+          mediaId,
+          sortOrder: index,
+        })),
+      });
       await this.releaseIfActive(tx, existing.partnerId, existing.id);
       return tx.vehicle.findUniqueOrThrow({ where: { id: existing.id }, include: vehicleInclude });
     });
@@ -166,24 +185,41 @@ export class VehiclesService {
   async activate(userId: string, vehicleId: string): Promise<VehicleDto> {
     const vehicle = await this.requireOwnedVehicle(userId, vehicleId);
     if (vehicle.verificationStatus !== VerificationStatus.APPROVED) {
-      throw AppException.badRequest(ErrorCode.PARTNER_NOT_APPROVED, 'Only an approved vehicle can be activated');
+      throw AppException.badRequest(
+        ErrorCode.PARTNER_NOT_APPROVED,
+        'Only an approved vehicle can be activated',
+      );
     }
     if (!vehicle.isActive) throw AppException.conflict('This vehicle is archived');
-    await this.prisma.partnerProfile.update({ where: { userId }, data: { activeVehicleId: vehicle.id } });
+    await this.prisma.partnerProfile.update({
+      where: { userId },
+      data: { activeVehicleId: vehicle.id },
+    });
     return this.toDto(vehicle);
   }
 
   async listDocuments(userId: string, vehicleId: string): Promise<PartnerDocumentDto[]> {
     await this.requireOwnedVehicle(userId, vehicleId);
-    const rows = await this.prisma.vehicleDocument.findMany({ where: { vehicleId }, include: documentInclude, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
+    const rows = await this.prisma.vehicleDocument.findMany({
+      where: { vehicleId },
+      include: documentInclude,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    });
     return Promise.all(rows.map((r) => this.toDocumentDto(r)));
   }
 
   /** One live document per (vehicle, type): re-uploading replaces the row and re-opens review. */
-  async addDocument(userId: string, vehicleId: string, input: PartnerDocumentUploadInput): Promise<PartnerDocumentDto> {
+  async addDocument(
+    userId: string,
+    vehicleId: string,
+    input: PartnerDocumentUploadInput,
+  ): Promise<PartnerDocumentDto> {
     await this.requireOwnedVehicle(userId, vehicleId);
     await this.media.assertOwnedReady(userId, [input.mediaId], [MediaPurpose.PARTNER_DOCUMENT]);
-    const existing = await this.prisma.vehicleDocument.findFirst({ where: { vehicleId, type: input.type }, orderBy: { createdAt: 'desc' } });
+    const existing = await this.prisma.vehicleDocument.findFirst({
+      where: { vehicleId, type: input.type },
+      orderBy: { createdAt: 'desc' },
+    });
     const data = {
       type: input.type,
       number: input.number ?? null,
@@ -196,8 +232,15 @@ export class VehiclesService {
       rejectionReason: null,
     };
     const row = existing
-      ? await this.prisma.vehicleDocument.update({ where: { id: existing.id }, data, include: documentInclude })
-      : await this.prisma.vehicleDocument.create({ data: { vehicleId, ...data }, include: documentInclude });
+      ? await this.prisma.vehicleDocument.update({
+          where: { id: existing.id },
+          data,
+          include: documentInclude,
+        })
+      : await this.prisma.vehicleDocument.create({
+          data: { vehicleId, ...data },
+          include: documentInclude,
+        });
     return this.toDocumentDto(row);
   }
 
@@ -219,12 +262,20 @@ export class VehiclesService {
   }
 
   async adminGet(vehicleId: string): Promise<VehicleDto> {
-    const row = await this.prisma.vehicle.findUnique({ where: { id: vehicleId }, include: vehicleInclude });
+    const row = await this.prisma.vehicle.findUnique({
+      where: { id: vehicleId },
+      include: vehicleInclude,
+    });
     if (!row) throw AppException.notFound('Vehicle', vehicleId);
     return this.toDto(row);
   }
 
-  async reviewVehicle(vehicleId: string, input: ReviewDocumentInput, actor: RequestUser, requestId: string | null): Promise<VehicleDto> {
+  async reviewVehicle(
+    vehicleId: string,
+    input: ReviewDocumentInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<VehicleDto> {
     const vehicle = await this.prisma.vehicle.findUnique({ where: { id: vehicleId } });
     if (!vehicle) throw AppException.notFound('Vehicle', vehicleId);
     const approve = input.decision === 'APPROVE';
@@ -260,14 +311,27 @@ export class VehiclesService {
     await this.notifications.notify({
       userId: vehicle.partnerId,
       event: NotificationEvent.DOCUMENT_REVIEWED,
-      vars: { documentType: `${row.brand} ${row.model} (${row.plate})`, decision: approve ? 'APPROVED' : 'REJECTED', reason: input.rejectionReason ?? '' },
+      vars: {
+        documentType: `${row.brand} ${row.model} (${row.plate})`,
+        decision: approve ? 'APPROVED' : 'REJECTED',
+        reason: input.rejectionReason ?? '',
+      },
       data: { vehicleId },
     });
     return this.toDto(row);
   }
 
-  async reviewVehicleDocument(vehicleId: string, documentId: string, input: ReviewDocumentInput, actor: RequestUser, requestId: string | null): Promise<PartnerDocumentDto> {
-    const doc = await this.prisma.vehicleDocument.findFirst({ where: { id: documentId, vehicleId }, include: { vehicle: { select: { partnerId: true } } } });
+  async reviewVehicleDocument(
+    vehicleId: string,
+    documentId: string,
+    input: ReviewDocumentInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<PartnerDocumentDto> {
+    const doc = await this.prisma.vehicleDocument.findFirst({
+      where: { id: documentId, vehicleId },
+      include: { vehicle: { select: { partnerId: true } } },
+    });
     if (!doc) throw AppException.notFound('Vehicle document', documentId);
     const approve = input.decision === 'APPROVE';
 
@@ -302,7 +366,11 @@ export class VehiclesService {
     await this.notifications.notify({
       userId: doc.vehicle.partnerId,
       event: NotificationEvent.DOCUMENT_REVIEWED,
-      vars: { documentType: doc.type, decision: approve ? 'APPROVED' : 'REJECTED', reason: input.rejectionReason ?? '' },
+      vars: {
+        documentType: doc.type,
+        decision: approve ? 'APPROVED' : 'REJECTED',
+        reason: input.rejectionReason ?? '',
+      },
       data: { vehicleId, documentId },
     });
     return this.toDocumentDto(row);
@@ -312,10 +380,18 @@ export class VehiclesService {
 
   /** True when the partner has an APPROVED, active vehicle selected — used by availability and dispatch. */
   async hasUsableActiveVehicle(partnerId: string): Promise<boolean> {
-    const partner = await this.prisma.partnerProfile.findUnique({ where: { userId: partnerId }, select: { activeVehicleId: true } });
+    const partner = await this.prisma.partnerProfile.findUnique({
+      where: { userId: partnerId },
+      select: { activeVehicleId: true },
+    });
     if (!partner?.activeVehicleId) return false;
     const vehicle = await this.prisma.vehicle.findFirst({
-      where: { id: partner.activeVehicleId, partnerId, isActive: true, verificationStatus: VerificationStatus.APPROVED },
+      where: {
+        id: partner.activeVehicleId,
+        partnerId,
+        isActive: true,
+        verificationStatus: VerificationStatus.APPROVED,
+      },
       select: { id: true },
     });
     return !!vehicle;
@@ -324,37 +400,64 @@ export class VehiclesService {
   /* ------------------------------------------------------------- helpers */
 
   private async requireOwnedVehicle(userId: string, vehicleId: string): Promise<VehicleRow> {
-    const row = await this.prisma.vehicle.findFirst({ where: { id: vehicleId, partnerId: userId }, include: vehicleInclude });
+    const row = await this.prisma.vehicle.findFirst({
+      where: { id: vehicleId, partnerId: userId },
+      include: vehicleInclude,
+    });
     if (!row) throw AppException.notFound('Vehicle', vehicleId);
     return row;
   }
 
   private async activeRoles(userId: string): Promise<PartnerRoleType[]> {
-    const partner = await this.prisma.partnerProfile.findUnique({ where: { userId }, include: { roles: true } });
+    const partner = await this.prisma.partnerProfile.findUnique({
+      where: { userId },
+      include: { roles: true },
+    });
     if (!partner) throw AppException.notFound('Partner profile', userId);
     return partner.roles.filter((r) => r.isActive).map((r) => r.role);
   }
 
-  private assertVehicleTypeFitsRoles(allowedJobTypes: readonly JobType[], roles: readonly PartnerRoleType[]): void {
+  private assertVehicleTypeFitsRoles(
+    allowedJobTypes: readonly JobType[],
+    roles: readonly PartnerRoleType[],
+  ): void {
     const served = new Set<JobType>();
     for (const role of roles) for (const jobType of ROLE_JOB_TYPES[role]) served.add(jobType);
     const constraining = [...served].filter((t) => VEHICLE_BOUND_JOB_TYPES.includes(t));
     if (!constraining.length) return; // technicians / service providers may register any vehicle type
     if (!constraining.some((t) => allowedJobTypes.includes(t))) {
-      throw AppException.validation([{ field: 'vehicleTypeId', message: `this vehicle type does not serve ${constraining.join(', ')}` }]);
+      throw AppException.validation([
+        {
+          field: 'vehicleTypeId',
+          message: `this vehicle type does not serve ${constraining.join(', ')}`,
+        },
+      ]);
     }
   }
 
-  private async assertPlateFree(plateNormalized: string, exceptVehicleId: string | null): Promise<void> {
-    const clash = await this.prisma.vehicle.findUnique({ where: { plateNormalized }, select: { id: true } });
-    if (clash && clash.id !== exceptVehicleId) throw AppException.conflict(`Plate ${plateNormalized} is already registered`);
+  private async assertPlateFree(
+    plateNormalized: string,
+    exceptVehicleId: string | null,
+  ): Promise<void> {
+    const clash = await this.prisma.vehicle.findUnique({
+      where: { plateNormalized },
+      select: { id: true },
+    });
+    if (clash && clash.id !== exceptVehicleId)
+      throw AppException.conflict(`Plate ${plateNormalized} is already registered`);
   }
 
   /** A vehicle that is no longer usable must stop being the active one, and the partner goes offline. */
   private async releaseIfActive(tx: Tx, partnerId: string, vehicleId: string): Promise<void> {
-    const partner = await tx.partnerProfile.findUnique({ where: { userId: partnerId }, select: { activeVehicleId: true } });
+    const partner = await tx.partnerProfile.findUnique({
+      where: { userId: partnerId },
+      select: { activeVehicleId: true },
+    });
     if (partner?.activeVehicleId !== vehicleId) return;
-    await tx.partnerProfile.update({ where: { userId: partnerId }, data: { activeVehicleId: null } });
+    await tx.partnerProfile.update({
+      where: { userId: partnerId },
+      data: { activeVehicleId: null },
+    });
     await tx.partnerAvailability.updateMany({
       where: { partnerId, status: { in: [AvailabilityStatus.ONLINE, AvailabilityStatus.BUSY] } },
       data: { status: AvailabilityStatus.OFFLINE, onlineSince: null },

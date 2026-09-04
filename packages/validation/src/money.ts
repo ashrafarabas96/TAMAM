@@ -25,9 +25,20 @@ export const deliveryPricingRuleSchema = z.object({
   perKgOverThreshold: moneyAmountSchema.default(0),
   weightThresholdKg: z.number().min(0).max(500).default(5),
   sizeMultipliers: z
-    .object({ SMALL: z.number().min(0.5).max(5).default(1), MEDIUM: z.number().min(0.5).max(5).default(1.2), LARGE: z.number().min(0.5).max(5).default(1.5), XL: z.number().min(0.5).max(5).default(2) })
+    .object({
+      SMALL: z.number().min(0.5).max(5).default(1),
+      MEDIUM: z.number().min(0.5).max(5).default(1.2),
+      LARGE: z.number().min(0.5).max(5).default(1.5),
+      XL: z.number().min(0.5).max(5).default(2),
+    })
     .default({}),
-  urgencySurchargePercent: z.object({ STANDARD: z.number().min(0).max(200).default(0), URGENT: z.number().min(0).max(200).default(20), EMERGENCY: z.number().min(0).max(200).default(50) }).default({}),
+  urgencySurchargePercent: z
+    .object({
+      STANDARD: z.number().min(0).max(200).default(0),
+      URGENT: z.number().min(0).max(200).default(20),
+      EMERGENCY: z.number().min(0).max(200).default(50),
+    })
+    .default({}),
   perAdditionalStop: moneyAmountSchema.default(0),
   minimumFare: moneyAmountSchema,
   bookingFee: moneyAmountSchema.default(0),
@@ -38,7 +49,13 @@ export const homeServicePricingRuleSchema = z.object({
   inspectionFee: moneyAmountSchema.default(0),
   /** Fee waived if the customer approves the quote. */
   inspectionFeeWaivedOnApproval: z.boolean().default(true),
-  urgencySurchargePercent: z.object({ STANDARD: z.number().min(0).max(200).default(0), URGENT: z.number().min(0).max(200).default(20), EMERGENCY: z.number().min(0).max(200).default(50) }).default({}),
+  urgencySurchargePercent: z
+    .object({
+      STANDARD: z.number().min(0).max(200).default(0),
+      URGENT: z.number().min(0).max(200).default(20),
+      EMERGENCY: z.number().min(0).max(200).default(50),
+    })
+    .default({}),
   bookingFee: moneyAmountSchema.default(0),
   taxPercent: z.number().min(0).max(30).default(0),
 });
@@ -63,7 +80,12 @@ export const upsertPricingRuleSchema = z
       (v.jobType === 'RIDE' && ridePricingRuleSchema.safeParse(v.rule).success) ||
       (v.jobType === 'DELIVERY' && deliveryPricingRuleSchema.safeParse(v.rule).success) ||
       (v.jobType === 'HOME_SERVICE' && homeServicePricingRuleSchema.safeParse(v.rule).success);
-    if (!ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: `rule shape does not match jobType ${v.jobType}`, path: ['rule'] });
+    if (!ok)
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `rule shape does not match jobType ${v.jobType}`,
+        path: ['rule'],
+      });
   });
 
 export const surgeOverrideSchema = z.object({
@@ -108,7 +130,11 @@ export const upsertCancellationPolicySchema = z.object({
 /* --------------------------------------------------------------- promos */
 export const upsertPromoCodeSchema = z
   .object({
-    code: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{3,20}$/),
+    code: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z0-9]{3,20}$/),
     description: z.string().trim().max(300).optional(),
     type: z.nativeEnum(PromoType),
     value: z.number().min(0), // percent (0-100) or minor units
@@ -127,7 +153,10 @@ export const upsertPromoCodeSchema = z
     paymentMethods: z.array(z.nativeEnum(PaymentMethod)).default([]),
     isActive: z.boolean().default(true),
   })
-  .refine((p) => p.type !== 'PERCENTAGE' || p.value <= 100, { message: 'Percentage cannot exceed 100', path: ['value'] });
+  .refine((p) => p.type !== 'PERCENTAGE' || p.value <= 100, {
+    message: 'Percentage cannot exceed 100',
+    path: ['value'],
+  });
 
 export const applyPromoSchema = z.object({
   code: z.string().trim().toUpperCase().min(3).max(20),
@@ -149,7 +178,10 @@ export const upsertReferralProgramSchema = z.object({
 /* --------------------------------------------------------------- wallet */
 export const walletAdjustmentSchema = z.object({
   walletId: uuidSchema,
-  amountMinor: z.number().int().refine((n) => n !== 0, 'amount cannot be zero'),
+  amountMinor: z
+    .number()
+    .int()
+    .refine((n) => n !== 0, 'amount cannot be zero'),
   reason: z.string().trim().min(5).max(500),
   reference: z.string().trim().min(2).max(120),
 });
@@ -168,7 +200,12 @@ export const withdrawalDecisionSchema = z.object({
 export const bankAccountSchema = z.object({
   bankName: z.string().trim().min(2).max(80),
   accountHolder: z.string().trim().min(2).max(80),
-  iban: z.string().trim().min(10).max(40).regex(/^[A-Z0-9]+$/),
+  iban: z
+    .string()
+    .trim()
+    .min(10)
+    .max(40)
+    .regex(/^[A-Z0-9]+$/),
 });
 
 export const topUpWalletSchema = z.object({
@@ -197,7 +234,12 @@ export const submitQuoteSchema = z.object({
   items: z.array(quoteItemSchema).min(1).max(50),
   discountMinor: moneyAmountSchema.default(0),
   description: z.string().trim().max(1000).optional(),
-  estimatedDurationMin: z.number().int().min(5).max(30 * 24 * 60).optional(),
+  estimatedDurationMin: z
+    .number()
+    .int()
+    .min(5)
+    .max(30 * 24 * 60)
+    .optional(),
   kind: z.enum(['INITIAL', 'CHANGE_ORDER']).default('INITIAL'),
   version: z.number().int().min(0),
 });

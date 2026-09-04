@@ -33,7 +33,13 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { PaymentsService } from '../payments/payments.service';
 import { WalletService } from '../wallet/wallet.service';
 
-import { LIVE_DISPUTE_STATUSES, assertDecidable, assertJobDisputable, disputeNumber, partnerAdjustmentEntries } from './domain/dispute-decision';
+import {
+  LIVE_DISPUTE_STATUSES,
+  assertDecidable,
+  assertJobDisputable,
+  disputeNumber,
+  partnerAdjustmentEntries,
+} from './domain/dispute-decision';
 
 /* ------------------------------------------------------------- contracts */
 
@@ -83,7 +89,9 @@ export interface DisputeListFilter {
 
 const disputeInclude = { evidence: { include: { media: true } } } satisfies Prisma.DisputeInclude;
 
-const disputeMessageInclude = { author: { select: { fullName: true } } } satisfies Prisma.DisputeMessageInclude;
+const disputeMessageInclude = {
+  author: { select: { fullName: true } },
+} satisfies Prisma.DisputeMessageInclude;
 
 const disputeDetailInclude = {
   evidence: { include: { media: true } },
@@ -126,9 +134,14 @@ export class DisputesService {
     const job = await this.loadJob(input.jobId);
     const openedByCustomer = JobPolicy.isCustomer(user, job);
     const openedByPartner = JobPolicy.isAssignedPartner(user, job);
-    if (!openedByCustomer && !openedByPartner) throw AppException.forbidden('Only the parties of a job can open a dispute');
+    if (!openedByCustomer && !openedByPartner)
+      throw AppException.forbidden('Only the parties of a job can open a dispute');
     const partnerId = job.partnerId;
-    if (!partnerId) throw AppException.badRequest(ErrorCode.VALIDATION_FAILED, 'This job was never assigned to a partner');
+    if (!partnerId)
+      throw AppException.badRequest(
+        ErrorCode.VALIDATION_FAILED,
+        'This job was never assigned to a partner',
+      );
 
     assertJobDisputable(job.status, openedByCustomer);
 
@@ -136,9 +149,16 @@ export class DisputesService {
       where: { jobId: job.id, status: { in: [...LIVE_DISPUTE_STATUSES] } },
       select: { id: true, number: true },
     });
-    if (live) throw AppException.conflict(`Dispute ${live.number} is already open for this job`, ErrorCode.CONFLICT, { disputeId: live.id });
+    if (live)
+      throw AppException.conflict(
+        `Dispute ${live.number} is already open for this job`,
+        ErrorCode.CONFLICT,
+        { disputeId: live.id },
+      );
 
-    await this.media.assertOwnedReady(user.id, input.evidenceMediaIds, [MediaPurpose.DISPUTE_EVIDENCE]);
+    await this.media.assertOwnedReady(user.id, input.evidenceMediaIds, [
+      MediaPurpose.DISPUTE_EVIDENCE,
+    ]);
 
     const dispute = await this.prisma.$transaction(async (tx) => {
       const created = await tx.dispute.create({
@@ -150,13 +170,17 @@ export class DisputesService {
           openedByRole: openedByCustomer ? UserRole.CUSTOMER : UserRole.PARTNER,
           reason: input.reason,
           description: input.description,
-          requestedRefundMinor: input.requestedRefundMinor === undefined ? null : BigInt(input.requestedRefundMinor),
+          requestedRefundMinor:
+            input.requestedRefundMinor === undefined ? null : BigInt(input.requestedRefundMinor),
           currency: job.currency,
         },
         select: { id: true },
       });
       await this.attachEvidence(tx, created.id, user.id, input.evidenceMediaIds);
-      return tx.dispute.findUniqueOrThrow({ where: { id: created.id }, include: disputeDetailInclude });
+      return tx.dispute.findUniqueOrThrow({
+        where: { id: created.id },
+        include: disputeDetailInclude,
+      });
     });
 
     // A job that was already paid for moves out of COMPLETED so settlement/payouts pause.
@@ -176,7 +200,11 @@ export class DisputesService {
 
   /* ----------------------------------------------------------- party reads */
 
-  async listMine(user: RequestUser, cursorRaw: string | undefined, limit: number): Promise<Page<DisputeDto>> {
+  async listMine(
+    user: RequestUser,
+    cursorRaw: string | undefined,
+    limit: number,
+  ): Promise<Page<DisputeDto>> {
     const cursor = decodeCursor(cursorRaw);
     const rows = await this.prisma.dispute.findMany({
       where: { ...cursorWhere(cursor), OR: [{ customerId: user.id }, { partnerId: user.id }] },
@@ -196,7 +224,11 @@ export class DisputesService {
 
   /* ------------------------------------------------------------- messages */
 
-  async addMessage(user: RequestUser, id: string, input: DisputeMessageInput): Promise<DisputeMessageDto> {
+  async addMessage(
+    user: RequestUser,
+    id: string,
+    input: DisputeMessageInput,
+  ): Promise<DisputeMessageDto> {
     const dispute = await this.prisma.dispute.findUnique({
       where: { id },
       select: { id: true, number: true, status: true, customerId: true, partnerId: true },
@@ -208,7 +240,9 @@ export class DisputesService {
     // Only staff may leave internal notes; a party-supplied flag is ignored, never honoured.
     const internal = staff && input.internal;
 
-    await this.media.assertOwnedReady(user.id, input.evidenceMediaIds, [MediaPurpose.DISPUTE_EVIDENCE]);
+    await this.media.assertOwnedReady(user.id, input.evidenceMediaIds, [
+      MediaPurpose.DISPUTE_EVIDENCE,
+    ]);
 
     const message = await this.prisma.$transaction(async (tx) => {
       const created = await tx.disputeMessage.create({
@@ -218,13 +252,21 @@ export class DisputesService {
       await this.attachEvidence(tx, dispute.id, user.id, input.evidenceMediaIds);
       // The first party or agent reply takes the dispute off the untouched pile.
       if (dispute.status === DisputeStatus.OPEN && staff) {
-        await tx.dispute.update({ where: { id: dispute.id }, data: { status: DisputeStatus.UNDER_REVIEW } });
+        await tx.dispute.update({
+          where: { id: dispute.id },
+          data: { status: DisputeStatus.UNDER_REVIEW },
+        });
       }
-      return tx.disputeMessage.findUniqueOrThrow({ where: { id: created.id }, include: disputeMessageInclude });
+      return tx.disputeMessage.findUniqueOrThrow({
+        where: { id: created.id },
+        include: disputeMessageInclude,
+      });
     });
 
     if (!internal) {
-      const recipients = [dispute.customerId, dispute.partnerId].filter((party) => party !== user.id);
+      const recipients = [dispute.customerId, dispute.partnerId].filter(
+        (party) => party !== user.id,
+      );
       const senderName = await this.displayName(user.id);
       for (const recipient of recipients) {
         await this.notifications.notify({
@@ -245,7 +287,8 @@ export class DisputesService {
     const dispute = await this.loadDetail(id);
     const staff = this.isStaff(user);
     if (!staff && !this.isParty(user, dispute)) throw AppException.notFound('Dispute', id);
-    if (!LIVE_DISPUTE_STATUSES.includes(dispute.status)) throw AppException.conflict('This dispute was already decided', ErrorCode.CONFLICT);
+    if (!LIVE_DISPUTE_STATUSES.includes(dispute.status))
+      throw AppException.conflict('This dispute was already decided', ErrorCode.CONFLICT);
 
     await this.media.assertOwnedReady(user.id, mediaIds, [MediaPurpose.DISPUTE_EVIDENCE]);
     await this.prisma.$transaction((tx) => this.attachEvidence(tx, dispute.id, user.id, mediaIds));
@@ -258,7 +301,13 @@ export class DisputesService {
   async list(filter: DisputeListFilter): Promise<Page<DisputeDto>> {
     const cursor = decodeCursor(filter.cursor);
     const rows = await this.prisma.dispute.findMany({
-      where: { ...cursorWhere(cursor), status: filter.status, jobId: filter.jobId, customerId: filter.customerId, partnerId: filter.partnerId },
+      where: {
+        ...cursorWhere(cursor),
+        status: filter.status,
+        jobId: filter.jobId,
+        customerId: filter.customerId,
+        partnerId: filter.partnerId,
+      },
       include: disputeInclude,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: filter.limit + 1,
@@ -281,7 +330,12 @@ export class DisputesService {
    * `JobsService` and tell both parties. Idempotency is provided by the ledger key and by the
    * `@Idempotent` guard on the route.
    */
-  async decide(id: string, input: DecideDisputeInput, actor: RequestUser, requestId: string | null = null): Promise<DisputeDetailDto> {
+  async decide(
+    id: string,
+    input: DecideDisputeInput,
+    actor: RequestUser,
+    requestId: string | null = null,
+  ): Promise<DisputeDetailDto> {
     const before = await this.prisma.dispute.findUnique({ where: { id }, include: disputeInclude });
     if (!before) throw AppException.notFound('Dispute', id);
     assertDecidable(before.status);
@@ -293,18 +347,31 @@ export class DisputesService {
     if (refundMinor > 0n) {
       const payment = await this.capturedPaymentFor(before.jobId);
       await this.payments.refund(
-        { paymentId: payment.id, amountMinor: Number(refundMinor), reason: input.reason, disputeId: before.id },
+        {
+          paymentId: payment.id,
+          amountMinor: Number(refundMinor),
+          reason: input.reason,
+          disputeId: before.id,
+        },
         actor,
         requestId,
       );
     }
 
     if (adjustmentMinor !== 0n) {
-      const wallet = await this.wallets.getOrCreate(WalletOwnerType.PARTNER, before.partnerId, before.currency);
+      const wallet = await this.wallets.getOrCreate(
+        WalletOwnerType.PARTNER,
+        before.partnerId,
+        before.currency,
+      );
       await this.ledger.post({
         type: LedgerTransactionType.DISPUTE_SETTLEMENT,
         currency: before.currency,
-        entries: partnerAdjustmentEntries({ adjustmentMinor, currency: before.currency, partnerWalletId: wallet.id }),
+        entries: partnerAdjustmentEntries({
+          adjustmentMinor,
+          currency: before.currency,
+          partnerWalletId: wallet.id,
+        }),
         jobId: before.jobId,
         disputeId: before.id,
         reference: before.number,
@@ -360,7 +427,12 @@ export class DisputesService {
     ]);
 
     this.logger.info(
-      { disputeId: id, decision: input.decision, refundMinor: refundMinor.toString(), partnerAdjustmentMinor: adjustmentMinor.toString() },
+      {
+        disputeId: id,
+        decision: input.decision,
+        refundMinor: refundMinor.toString(),
+        partnerAdjustmentMinor: adjustmentMinor.toString(),
+      },
       'dispute decided',
     );
     return this.toDetailDto(decided, { includeInternal: true });
@@ -368,9 +440,17 @@ export class DisputesService {
 
   /** A decided dispute hands the job back to COMPLETED; anything else is left to the job module. */
   private async restoreJob(jobId: string, actor: RequestUser, number: string): Promise<void> {
-    const job = await this.prisma.job.findUnique({ where: { id: jobId }, select: { status: true } });
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      select: { status: true },
+    });
     if (!job || job.status !== JobStatus.DISPUTED) return;
-    await this.jobs.transition(jobId, JobStatus.COMPLETED, { type: JobActorType.ADMIN, id: actor.id }, { reason: `dispute.resolved:${number}` });
+    await this.jobs.transition(
+      jobId,
+      JobStatus.COMPLETED,
+      { type: JobActorType.ADMIN, id: actor.id },
+      { reason: `dispute.resolved:${number}` },
+    );
   }
 
   private async capturedPaymentFor(jobId: string): Promise<{ id: string }> {
@@ -379,7 +459,11 @@ export class DisputesService {
       select: { id: true },
       orderBy: { createdAt: 'desc' },
     });
-    if (!payment) throw AppException.badRequest(ErrorCode.PAYMENT_FAILED, 'This job has no captured payment to refund');
+    if (!payment)
+      throw AppException.badRequest(
+        ErrorCode.PAYMENT_FAILED,
+        'This job has no captured payment to refund',
+      );
     return payment;
   }
 
@@ -388,14 +472,24 @@ export class DisputesService {
   private async loadJob(jobId: string): Promise<DisputeJob> {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
-      select: { id: true, customerId: true, partnerId: true, status: true, zoneId: true, currency: true },
+      select: {
+        id: true,
+        customerId: true,
+        partnerId: true,
+        status: true,
+        zoneId: true,
+        currency: true,
+      },
     });
     if (!job) throw AppException.notFound('Job', jobId);
     return job;
   }
 
   private async loadDetail(id: string): Promise<DisputeDetailRow> {
-    const dispute = await this.prisma.dispute.findUnique({ where: { id }, include: disputeDetailInclude });
+    const dispute = await this.prisma.dispute.findUnique({
+      where: { id },
+      include: disputeDetailInclude,
+    });
     if (!dispute) throw AppException.notFound('Dispute', id);
     return dispute;
   }
@@ -405,12 +499,23 @@ export class DisputesService {
   }
 
   private isStaff(user: RequestUser): boolean {
-    return user.isSuperAdmin || user.permissions.includes(Permission.DISPUTES_READ) || user.permissions.includes(Permission.DISPUTES_DECIDE);
+    return (
+      user.isSuperAdmin ||
+      user.permissions.includes(Permission.DISPUTES_READ) ||
+      user.permissions.includes(Permission.DISPUTES_DECIDE)
+    );
   }
 
-  private async attachEvidence(tx: Tx, disputeId: string, uploadedById: string, mediaIds: string[]): Promise<void> {
+  private async attachEvidence(
+    tx: Tx,
+    disputeId: string,
+    uploadedById: string,
+    mediaIds: string[],
+  ): Promise<void> {
     if (!mediaIds.length) return;
-    await tx.disputeEvidence.createMany({ data: mediaIds.map((mediaId) => ({ disputeId, mediaId, uploadedById })) });
+    await tx.disputeEvidence.createMany({
+      data: mediaIds.map((mediaId) => ({ disputeId, mediaId, uploadedById })),
+    });
   }
 
   private async notifyParty(userId: string, disputeId: string, number: string): Promise<void> {
@@ -425,7 +530,10 @@ export class DisputesService {
   }
 
   private async displayName(userId: string): Promise<string> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { fullName: true, phone: true } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { fullName: true, phone: true },
+    });
     return user?.fullName ?? user?.phone ?? '';
   }
 
@@ -442,7 +550,10 @@ export class DisputesService {
       status: dispute.status,
       reason: dispute.reason,
       description: dispute.description,
-      requestedRefund: dispute.requestedRefundMinor === null ? null : toMoney(dispute.requestedRefundMinor, dispute.currency),
+      requestedRefund:
+        dispute.requestedRefundMinor === null
+          ? null
+          : toMoney(dispute.requestedRefundMinor, dispute.currency),
       refund: toMoney(dispute.refundMinor, dispute.currency),
       partnerAdjustment: toMoney(dispute.partnerAdjustmentMinor, dispute.currency),
       decidedById: dispute.decidedById,
@@ -454,8 +565,13 @@ export class DisputesService {
     };
   }
 
-  private toDetailDto(dispute: DisputeDetailRow, opts: { includeInternal: boolean }): DisputeDetailDto {
-    const messages = opts.includeInternal ? dispute.messages : dispute.messages.filter((m) => !m.isInternal);
+  private toDetailDto(
+    dispute: DisputeDetailRow,
+    opts: { includeInternal: boolean },
+  ): DisputeDetailDto {
+    const messages = opts.includeInternal
+      ? dispute.messages
+      : dispute.messages.filter((m) => !m.isInternal);
     return { ...this.toDto(dispute), messages: messages.map((m) => this.toMessageDto(m)) };
   }
 

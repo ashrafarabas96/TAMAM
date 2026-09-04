@@ -1,9 +1,20 @@
 import { Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '@tamam/shared-types';
-import { type UpdateConfigInput, type UpdateFeatureFlagInput, updateConfigSchema, updateFeatureFlagSchema } from '@tamam/validation';
+import {
+  type UpdateConfigInput,
+  type UpdateFeatureFlagInput,
+  updateConfigSchema,
+  updateFeatureFlagSchema,
+} from '@tamam/validation';
 
-import { CurrentUser, Public, RequestId, RequirePermission, ZodBody } from '../../common/decorators';
+import {
+  CurrentUser,
+  Public,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+} from '../../common/decorators';
 import type { RequestUser } from '../../common/types/request-user';
 
 import { SystemConfigService } from './system-config.service';
@@ -30,7 +41,11 @@ export class ConfigController {
   @ApiBearerAuth()
   @Patch('admin/config')
   @RequirePermission(Permission.CONFIG_MANAGE)
-  update(@ZodBody(updateConfigSchema) input: UpdateConfigInput, @CurrentUser() user: RequestUser, @RequestId() requestId: string) {
+  update(
+    @ZodBody(updateConfigSchema) input: UpdateConfigInput,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.config.updateConfig(input, user.id, requestId);
   }
 
@@ -44,7 +59,12 @@ export class ConfigController {
   @ApiBearerAuth()
   @Patch('admin/feature-flags/:key')
   @RequirePermission(Permission.FEATURE_FLAGS_MANAGE)
-  updateFlag(@Param('key') key: string, @ZodBody(updateFeatureFlagSchema) input: UpdateFeatureFlagInput, @CurrentUser() user: RequestUser, @RequestId() requestId: string) {
+  updateFlag(
+    @Param('key') key: string,
+    @ZodBody(updateFeatureFlagSchema) input: UpdateFeatureFlagInput,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.config.updateFlag(key, input, user.id, requestId);
   }
 }

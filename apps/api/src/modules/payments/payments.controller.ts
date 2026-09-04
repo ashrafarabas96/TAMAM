@@ -5,7 +5,18 @@ import { type IssueRefundInput, issueRefundSchema, pageRequestSchema } from '@ta
 import type { Request } from 'express';
 import { z } from 'zod';
 
-import { Audited, CurrentUser, Idempotent, Public, RateLimit, RequestId, RequirePermission, ZodBody, ZodParams, ZodQuery } from '../../common/decorators';
+import {
+  Audited,
+  CurrentUser,
+  Idempotent,
+  Public,
+  RateLimit,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+  ZodParams,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -52,7 +63,10 @@ export class PaymentsController {
   @Public()
   @HttpCode(200)
   @RateLimit({ name: 'payments.webhook', limit: 600, windowSeconds: 60, keyBy: 'ip' })
-  webhook(@ZodParams(webhookParamsSchema) params: WebhookParams, @Req() req: RawBodyRequest<Request>) {
+  webhook(
+    @ZodParams(webhookParamsSchema) params: WebhookParams,
+    @Req() req: RawBodyRequest<Request>,
+  ) {
     return this.payments.handleWebhook(params.provider, req.rawBody, req.headers);
   }
 
@@ -74,7 +88,11 @@ export class PaymentsController {
   @RequirePermission(Permission.REFUNDS_ISSUE)
   @Idempotent('refunds.issue')
   @Audited({ action: 'refund.issue', entity: 'refund', entityIdFrom: 'paymentId', sensitive: true })
-  issueRefund(@ZodBody(issueRefundSchema) input: IssueRefundInput, @CurrentUser() actor: RequestUser, @RequestId() requestId: string) {
+  issueRefund(
+    @ZodBody(issueRefundSchema) input: IssueRefundInput,
+    @CurrentUser() actor: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.payments.refund(input, actor, requestId);
   }
 

@@ -25,7 +25,11 @@ import { platformAccountCode } from '../ledger/domain/ledger.rules';
 import { type LedgerPostEntry, LedgerService } from '../ledger/ledger.service';
 import { WalletService } from '../wallet/wallet.service';
 
-export const ReferralRewardStatus = { PENDING: 'PENDING', GRANTED: 'GRANTED', BLOCKED: 'BLOCKED' } as const;
+export const ReferralRewardStatus = {
+  PENDING: 'PENDING',
+  GRANTED: 'GRANTED',
+  BLOCKED: 'BLOCKED',
+} as const;
 export type ReferralRewardStatus = (typeof ReferralRewardStatus)[keyof typeof ReferralRewardStatus];
 
 /** Fraud signals checked before a referral pays out. A shared phone prefix is deliberately not one. */
@@ -105,12 +109,17 @@ export class ReferralsService {
   /* ------------------------------------------------------------------ self */
 
   async getMyCode(userId: string): Promise<MyReferralDto> {
-    const customer = await this.prisma.customerProfile.findUnique({ where: { userId }, select: { referralCode: true } });
+    const customer = await this.prisma.customerProfile.findUnique({
+      where: { userId },
+      select: { referralCode: true },
+    });
     if (!customer) throw AppException.notFound('Customer profile', userId);
     const program = await this.activeProgram();
     const [invitedCount, rewardedCount] = await Promise.all([
       this.prisma.customerProfile.count({ where: { referredById: userId } }),
-      this.prisma.referralReward.count({ where: { inviterId: userId, status: ReferralRewardStatus.GRANTED } }),
+      this.prisma.referralReward.count({
+        where: { inviterId: userId, status: ReferralRewardStatus.GRANTED },
+      }),
     ]);
     const shareUrl = `${this.appConfig.env.DEEP_LINK_SCHEME}://invite/${customer.referralCode}`;
     const reward = program ? formatMajor(program.inviteeRewardMinor, program.currency) : '';
@@ -132,7 +141,14 @@ export class ReferralsService {
   @OnEvent('job.completed')
   async handleJobCompleted(event: JobCompletedEventLike): Promise<void> {
     try {
-      const customerId = event.customerId ?? (await this.prisma.job.findUnique({ where: { id: event.jobId }, select: { customerId: true } }))?.customerId;
+      const customerId =
+        event.customerId ??
+        (
+          await this.prisma.job.findUnique({
+            where: { id: event.jobId },
+            select: { customerId: true },
+          })
+        )?.customerId;
       if (!customerId) return;
       await this.onCustomerFirstJobCompleted(customerId, event.jobId);
     } catch (err) {
@@ -145,21 +161,34 @@ export class ReferralsService {
    * Grants the referral reward once the invitee's first job completes. Idempotent: the unique
    * `invitee_id` on `referral_rewards` means a second call can never pay twice.
    */
-  async onCustomerFirstJobCompleted(customerId: string, jobId: string): Promise<ReferralRewardDto | null> {
+  async onCustomerFirstJobCompleted(
+    customerId: string,
+    jobId: string,
+  ): Promise<ReferralRewardDto | null> {
     const program = await this.activeProgram();
     if (!program || program.rewardOn !== 'FIRST_COMPLETED_JOB') return null;
 
-    const invitee = await this.prisma.customerProfile.findUnique({ where: { userId: customerId }, select: { userId: true, referredById: true } });
+    const invitee = await this.prisma.customerProfile.findUnique({
+      where: { userId: customerId },
+      select: { userId: true, referredById: true },
+    });
     if (!invitee?.referredById) return null;
 
-    const existing = await this.prisma.referralReward.findUnique({ where: { inviteeId: customerId } });
+    const existing = await this.prisma.referralReward.findUnique({
+      where: { inviteeId: customerId },
+    });
     if (existing) return this.toRewardDto(existing);
 
-    const job = await this.prisma.job.findUnique({ where: { id: jobId }, select: { customerId: true, status: true, finalTotalMinor: true, currency: true } });
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      select: { customerId: true, status: true, finalTotalMinor: true, currency: true },
+    });
     if (!job || job.customerId !== customerId || job.status !== JobStatus.COMPLETED) return null;
     if ((job.finalTotalMinor ?? 0n) < program.minFirstJobMinor) return null;
 
-    const completedJobs = await this.prisma.job.count({ where: { customerId, status: JobStatus.COMPLETED } });
+    const completedJobs = await this.prisma.job.count({
+      where: { customerId, status: JobStatus.COMPLETED },
+    });
     if (completedJobs > 1) return null; // rewards are only for the *first* completed job
 
     const inviterId = invitee.referredById;
@@ -202,27 +231,55 @@ export class ReferralsService {
       return created;
     });
 
-    this.logger.info({ rewardId: reward.id, inviterId, inviteeId: customerId }, 'referral reward granted');
+    this.logger.info(
+      { rewardId: reward.id, inviterId, inviteeId: customerId },
+      'referral reward granted',
+    );
     return this.toRewardDto(reward);
   }
 
-  private async postReward(reward: ReferralReward, program: ReferralProgram, tx: Tx): Promise<void> {
+  private async postReward(
+    reward: ReferralReward,
+    program: ReferralProgram,
+    tx: Tx,
+  ): Promise<void> {
     const total = program.inviterRewardMinor + program.inviteeRewardMinor;
     if (total <= 0n) return;
     const entries: LedgerPostEntry[] = [
       {
-        accountCode: platformAccountCode(LedgerAccountType.PLATFORM_PROMO_EXPENSE, program.currency),
+        accountCode: platformAccountCode(
+          LedgerAccountType.PLATFORM_PROMO_EXPENSE,
+          program.currency,
+        ),
         direction: LedgerEntryDirection.DEBIT,
         amountMinor: total,
       },
     ];
     if (program.inviterRewardMinor > 0n) {
-      const wallet = await this.wallets.getOrCreate(WalletOwnerType.CUSTOMER, reward.inviterId, program.currency, tx);
-      entries.push({ walletId: wallet.id, direction: LedgerEntryDirection.CREDIT, amountMinor: program.inviterRewardMinor });
+      const wallet = await this.wallets.getOrCreate(
+        WalletOwnerType.CUSTOMER,
+        reward.inviterId,
+        program.currency,
+        tx,
+      );
+      entries.push({
+        walletId: wallet.id,
+        direction: LedgerEntryDirection.CREDIT,
+        amountMinor: program.inviterRewardMinor,
+      });
     }
     if (program.inviteeRewardMinor > 0n) {
-      const wallet = await this.wallets.getOrCreate(WalletOwnerType.CUSTOMER, reward.inviteeId, program.currency, tx);
-      entries.push({ walletId: wallet.id, direction: LedgerEntryDirection.CREDIT, amountMinor: program.inviteeRewardMinor });
+      const wallet = await this.wallets.getOrCreate(
+        WalletOwnerType.CUSTOMER,
+        reward.inviteeId,
+        program.currency,
+        tx,
+      );
+      entries.push({
+        walletId: wallet.id,
+        direction: LedgerEntryDirection.CREDIT,
+        amountMinor: program.inviteeRewardMinor,
+      });
     }
     await this.ledger.post(
       {
@@ -242,18 +299,33 @@ export class ReferralsService {
    * or a self-referral. Phone-number similarity is explicitly *not* a signal — families share
    * prefixes in Palestine and would be punished for it.
    */
-  private async fraudFlags(inviterId: string, inviteeId: string, program: ReferralProgram): Promise<ReferralFraudFlag[]> {
+  private async fraudFlags(
+    inviterId: string,
+    inviteeId: string,
+    program: ReferralProgram,
+  ): Promise<ReferralFraudFlag[]> {
     const flags: ReferralFraudFlag[] = [];
     if (inviterId === inviteeId) flags.push(ReferralFraudFlag.SELF_REFERRAL);
 
     const [inviterDevices, inviteeDevices] = await Promise.all([
-      this.prisma.userSession.findMany({ where: { userId: inviterId }, select: { deviceId: true }, distinct: ['deviceId'] }),
-      this.prisma.userSession.findMany({ where: { userId: inviteeId }, select: { deviceId: true }, distinct: ['deviceId'] }),
+      this.prisma.userSession.findMany({
+        where: { userId: inviterId },
+        select: { deviceId: true },
+        distinct: ['deviceId'],
+      }),
+      this.prisma.userSession.findMany({
+        where: { userId: inviteeId },
+        select: { deviceId: true },
+        distinct: ['deviceId'],
+      }),
     ]);
     const inviterSet = new Set(inviterDevices.map((d) => d.deviceId));
-    if (inviteeDevices.some((d) => inviterSet.has(d.deviceId))) flags.push(ReferralFraudFlag.SHARED_DEVICE);
+    if (inviteeDevices.some((d) => inviterSet.has(d.deviceId)))
+      flags.push(ReferralFraudFlag.SHARED_DEVICE);
 
-    const granted = await this.prisma.referralReward.count({ where: { inviterId, status: ReferralRewardStatus.GRANTED } });
+    const granted = await this.prisma.referralReward.count({
+      where: { inviterId, status: ReferralRewardStatus.GRANTED },
+    });
     if (granted >= program.maxRewardsPerInviter) flags.push(ReferralFraudFlag.MAX_REWARDS_EXCEEDED);
 
     return flags;
@@ -266,7 +338,11 @@ export class ReferralsService {
     return program ? this.toProgramDto(program) : null;
   }
 
-  async upsertProgram(input: UpsertReferralProgramInput, actor: RequestUser, requestId: string | null): Promise<ReferralProgramDto> {
+  async upsertProgram(
+    input: UpsertReferralProgramInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<ReferralProgramDto> {
     const row = await this.prisma.$transaction(async (tx) => {
       const before = await tx.referralProgram.findFirst({ orderBy: { createdAt: 'desc' } });
       const data = {
@@ -279,15 +355,27 @@ export class ReferralsService {
         codeExpiryDays: input.codeExpiryDays,
         isActive: input.isActive,
       };
-      const program = before ? await tx.referralProgram.update({ where: { id: before.id }, data }) : await tx.referralProgram.create({ data });
+      const program = before
+        ? await tx.referralProgram.update({ where: { id: before.id }, data })
+        : await tx.referralProgram.create({ data });
       await this.audit.record(
         {
           actorId: actor.id,
           action: before ? 'referral_program.update' : 'referral_program.create',
           entity: 'referral_program',
           entityId: program.id,
-          oldValue: before ? { inviterRewardMinor: before.inviterRewardMinor.toString(), inviteeRewardMinor: before.inviteeRewardMinor.toString(), isActive: before.isActive } : null,
-          newValue: { inviterRewardMinor: input.inviterRewardMinor, inviteeRewardMinor: input.inviteeRewardMinor, isActive: input.isActive },
+          oldValue: before
+            ? {
+                inviterRewardMinor: before.inviterRewardMinor.toString(),
+                inviteeRewardMinor: before.inviteeRewardMinor.toString(),
+                isActive: before.isActive,
+              }
+            : null,
+          newValue: {
+            inviterRewardMinor: input.inviterRewardMinor,
+            inviteeRewardMinor: input.inviteeRewardMinor,
+            isActive: input.isActive,
+          },
           requestId,
         },
         tx,
@@ -310,7 +398,10 @@ export class ReferralsService {
   /* --------------------------------------------------------------- helpers */
 
   private async activeProgram(): Promise<ReferralProgram | null> {
-    const active = await this.prisma.referralProgram.findFirst({ where: { isActive: true }, orderBy: { createdAt: 'desc' } });
+    const active = await this.prisma.referralProgram.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
     return active ?? this.prisma.referralProgram.findFirst({ orderBy: { createdAt: 'desc' } });
   }
 

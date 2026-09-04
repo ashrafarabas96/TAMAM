@@ -1,5 +1,14 @@
 import type { Prisma } from '@prisma/client';
-import { ADMIN_ROLES, ALL_PERMISSIONS, CONFIG_DEFINITIONS, DEFAULT_ROLE_PERMISSIONS, FEATURE_FLAG_DEFAULTS, type NotificationChannel, NotificationEvent, SENSITIVE_PERMISSIONS } from '@tamam/shared-types';
+import {
+  ADMIN_ROLES,
+  ALL_PERMISSIONS,
+  CONFIG_DEFINITIONS,
+  DEFAULT_ROLE_PERMISSIONS,
+  FEATURE_FLAG_DEFAULTS,
+  type NotificationChannel,
+  NotificationEvent,
+  SENSITIVE_PERMISSIONS,
+} from '@tamam/shared-types';
 
 import { DEFAULT_TEMPLATES } from '../../src/modules/notifications/notification-template.service';
 import type { SeedContext } from './context';
@@ -18,7 +27,14 @@ export async function seedPlatform(ctx: SeedContext): Promise<void> {
   for (const def of CONFIG_DEFINITIONS) {
     await prisma.systemConfig.upsert({
       where: { key: def.key },
-      update: { description: def.description, min: def.min ?? null, max: def.max ?? null, unit: def.unit ?? null, group: def.group, type: def.type },
+      update: {
+        description: def.description,
+        min: def.min ?? null,
+        max: def.max ?? null,
+        unit: def.unit ?? null,
+        group: def.group,
+        type: def.type,
+      },
       create: {
         key: def.key,
         value: def.default as Prisma.InputJsonValue,
@@ -34,7 +50,11 @@ export async function seedPlatform(ctx: SeedContext): Promise<void> {
   summary.set('system configs', CONFIG_DEFINITIONS.length);
 
   for (const [key, def] of Object.entries(FEATURE_FLAG_DEFAULTS)) {
-    await prisma.featureFlag.upsert({ where: { key }, update: { description: def.description }, create: { key, description: def.description, enabled: def.enabled } });
+    await prisma.featureFlag.upsert({
+      where: { key },
+      update: { description: def.description },
+      create: { key, description: def.description, enabled: def.enabled },
+    });
   }
   summary.set('feature flags', Object.keys(FEATURE_FLAG_DEFAULTS).length);
 
@@ -56,7 +76,10 @@ export async function seedPlatform(ctx: SeedContext): Promise<void> {
     // Replace the bundle so a changed DEFAULT_ROLE_PERMISSIONS is reflected in development.
     await prisma.adminRolePermission.deleteMany({ where: { roleId: row.id } });
     await prisma.adminRolePermission.createMany({
-      data: DEFAULT_ROLE_PERMISSIONS[role].map((permissionKey) => ({ roleId: row.id, permissionKey })),
+      data: DEFAULT_ROLE_PERMISSIONS[role].map((permissionKey) => ({
+        roleId: row.id,
+        permissionKey,
+      })),
       skipDuplicates: true,
     });
   }
@@ -70,7 +93,14 @@ export async function seedPlatform(ctx: SeedContext): Promise<void> {
       await prisma.notificationTemplate.upsert({
         where: { event_channel: { event, channel } },
         update: {},
-        create: { event, channel, titleAr: def.ar.title, titleEn: def.en.title, bodyAr: def.ar.body, bodyEn: def.en.body },
+        create: {
+          event,
+          channel,
+          titleAr: def.ar.title,
+          titleEn: def.en.title,
+          bodyAr: def.ar.body,
+          bodyEn: def.en.body,
+        },
       });
       templates += 1;
     }

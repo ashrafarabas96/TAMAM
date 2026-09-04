@@ -24,7 +24,12 @@ export interface TabsProps {
 export function Tabs({ items, value, defaultValue, onValueChange, className }: TabsProps) {
   const first = items[0]?.value;
   return (
-    <TabsPrimitive.Root value={value} defaultValue={defaultValue ?? first} onValueChange={onValueChange} className={className}>
+    <TabsPrimitive.Root
+      value={value}
+      defaultValue={defaultValue ?? first}
+      onValueChange={onValueChange}
+      className={className}
+    >
       <TabsPrimitive.List className="scrollbar-thin flex gap-1 overflow-x-auto border-b border-border">
         {items.map((item) => (
           <TabsPrimitive.Trigger
@@ -34,12 +39,20 @@ export function Tabs({ items, value, defaultValue, onValueChange, className }: T
             className="-mb-px inline-flex h-10 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary data-[state=active]:border-accent data-[state=active]:text-primary disabled:opacity-50"
           >
             {item.label}
-            {item.badge !== undefined ? <span className="rounded-pill bg-surface-alt px-1.5 py-0.5 text-[11px] font-semibold text-text-secondary">{item.badge}</span> : null}
+            {item.badge !== undefined ? (
+              <span className="rounded-pill bg-surface-alt px-1.5 py-0.5 text-[11px] font-semibold text-text-secondary">
+                {item.badge}
+              </span>
+            ) : null}
           </TabsPrimitive.Trigger>
         ))}
       </TabsPrimitive.List>
       {items.map((item) => (
-        <TabsPrimitive.Content key={item.value} value={item.value} className={cn('pt-4 focus:outline-none')}>
+        <TabsPrimitive.Content
+          key={item.value}
+          value={item.value}
+          className={cn('pt-4 focus:outline-none')}
+        >
           {item.content}
         </TabsPrimitive.Content>
       ))}

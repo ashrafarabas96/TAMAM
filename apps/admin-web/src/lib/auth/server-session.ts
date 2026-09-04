@@ -15,8 +15,14 @@ export interface UpstreamError {
   body: { code?: string; message?: string; details?: unknown; requestId?: string } | null;
 }
 
-async function upstream<T>(path: string, init: RequestInit): Promise<{ ok: true; data: T } | { ok: false; error: UpstreamError }> {
-  const response = await fetch(`${serverEnv.apiInternalBaseUrl}${path}`, { ...init, cache: 'no-store' });
+async function upstream<T>(
+  path: string,
+  init: RequestInit,
+): Promise<{ ok: true; data: T } | { ok: false; error: UpstreamError }> {
+  const response = await fetch(`${serverEnv.apiInternalBaseUrl}${path}`, {
+    ...init,
+    cache: 'no-store',
+  });
   const text = await response.text();
   let parsed: unknown = null;
   try {
@@ -24,13 +30,22 @@ async function upstream<T>(path: string, init: RequestInit): Promise<{ ok: true;
   } catch {
     parsed = null;
   }
-  if (!response.ok) return { ok: false, error: { status: response.status, body: (parsed as UpstreamError['body']) ?? null } };
+  if (!response.ok)
+    return {
+      ok: false,
+      error: { status: response.status, body: (parsed as UpstreamError['body']) ?? null },
+    };
   return { ok: true, data: parsed as T };
 }
 
-const expiresAtFrom = (seconds: number): string => new Date(Date.now() + seconds * 1000).toISOString();
+const expiresAtFrom = (seconds: number): string =>
+  new Date(Date.now() + seconds * 1000).toISOString();
 
-export function payloadFromTokens(tokens: AuthTokens, userId: string, deviceId: string): SessionPayload {
+export function payloadFromTokens(
+  tokens: AuthTokens,
+  userId: string,
+  deviceId: string,
+): SessionPayload {
   return {
     userId,
     deviceId,
@@ -53,7 +68,13 @@ export async function writeSessionCookie(payload: SessionPayload): Promise<void>
 }
 
 export function clearSessionCookie(): void {
-  cookies().set(SESSION_COOKIE_NAME, '', { httpOnly: true, sameSite: 'lax', secure: serverEnv.cookieSecure, path: '/', maxAge: 0 });
+  cookies().set(SESSION_COOKIE_NAME, '', {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: serverEnv.cookieSecure,
+    path: '/',
+    maxAge: 0,
+  });
 }
 
 export async function readSessionCookie(): Promise<SessionPayload | null> {
@@ -62,14 +83,33 @@ export async function readSessionCookie(): Promise<SessionPayload | null> {
   return openSession(raw, serverEnv.sessionSecret);
 }
 
-export async function adminLogin(input: { email: string; password: string; deviceId: string; deviceName?: string; ip: string | null; userAgent: string | null }) {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Device-Id': input.deviceId };
+export async function adminLogin(input: {
+  email: string;
+  password: string;
+  deviceId: string;
+  deviceName?: string;
+  ip: string | null;
+  userAgent: string | null;
+}) {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-Device-Id': input.deviceId,
+  };
   if (input.ip) headers['X-Forwarded-For'] = input.ip;
   if (input.userAgent) headers['User-Agent'] = input.userAgent;
   return upstream<AuthSession>('/auth/admin/login', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ email: input.email, password: input.password, device: { deviceId: input.deviceId, deviceName: input.deviceName ?? 'Admin console', platform: 'web' } }),
+    body: JSON.stringify({
+      email: input.email,
+      password: input.password,
+      device: {
+        deviceId: input.deviceId,
+        deviceName: input.deviceName ?? 'Admin console',
+        platform: 'web',
+      },
+    }),
   });
 }
 
@@ -81,7 +121,10 @@ export async function adminLogin(input: { email: string; password: string; devic
  */
 const refreshLocks = new Map<string, Promise<SessionPayload | null>>();
 
-export async function refreshSession(session: SessionPayload, force: boolean): Promise<SessionPayload | null> {
+export async function refreshSession(
+  session: SessionPayload,
+  force: boolean,
+): Promise<SessionPayload | null> {
   const accessFresh = new Date(session.accessExpiresAt).getTime() - REFRESH_SKEW_MS > Date.now();
   if (accessFresh && !force) return session;
   const existing = refreshLocks.get(session.userId);
@@ -89,8 +132,15 @@ export async function refreshSession(session: SessionPayload, force: boolean): P
   const task = (async (): Promise<SessionPayload | null> => {
     const result = await upstream<AuthTokens>('/auth/refresh', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Device-Id': session.deviceId },
-      body: JSON.stringify({ refreshToken: session.refreshToken, device: { deviceId: session.deviceId } }),
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-Device-Id': session.deviceId,
+      },
+      body: JSON.stringify({
+        refreshToken: session.refreshToken,
+        device: { deviceId: session.deviceId },
+      }),
     });
     if (!result.ok) return null;
     return payloadFromTokens(result.data, session.userId, session.deviceId);
@@ -104,7 +154,11 @@ export async function refreshSession(session: SessionPayload, force: boolean): P
 export async function apiLogout(session: SessionPayload): Promise<void> {
   await upstream<{ revoked: number }>('/auth/logout', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${session.accessToken}` },
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${session.accessToken}`,
+    },
     body: JSON.stringify({ all: false }),
   }).catch(() => undefined);
 }

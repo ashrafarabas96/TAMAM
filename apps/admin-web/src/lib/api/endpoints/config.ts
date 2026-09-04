@@ -8,7 +8,12 @@ export const configApi = {
   list: () => api.get<SystemConfigDto[]>('/admin/config'),
   update: (input: UpdateConfigInput) => api.patch<SystemConfigDto>('/admin/config', input),
   flags: () => api.get<FeatureFlagDto[]>('/admin/feature-flags'),
-  updateFlag: (key: string, input: UpdateFeatureFlagInput) => api.patch<FeatureFlagDto>(`/admin/feature-flags/${key}`, input),
+  updateFlag: (key: string, input: UpdateFeatureFlagInput) =>
+    api.patch<FeatureFlagDto>(`/admin/feature-flags/${key}`, input),
   queues: () => api.get<QueueCountsDto[]>('/admin/maintenance/queues'),
-  runMaintenance: (job: string, input: { reason: string; date?: string }) => api.post<{ queued: boolean; job: string; jobId: string }>(`/admin/maintenance/run/${job}`, input),
+  runMaintenance: (job: string, input: { reason: string; date?: string }) =>
+    api.post<{ queued: boolean; job: string; jobId: string }>(
+      `/admin/maintenance/run/${job}`,
+      input,
+    ),
 };

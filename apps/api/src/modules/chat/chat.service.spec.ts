@@ -1,4 +1,12 @@
-import { AccountStatus, ErrorCode, JobStatus, MessageType, NotificationEvent, Permission, UserRole } from '@tamam/shared-types';
+import {
+  AccountStatus,
+  ErrorCode,
+  JobStatus,
+  MessageType,
+  NotificationEvent,
+  Permission,
+  UserRole,
+} from '@tamam/shared-types';
 import type { PinoLogger } from 'nestjs-pino';
 
 import { AppException } from '../../common/errors/app.exception';
@@ -52,7 +60,9 @@ function user(overrides: Partial<RequestUser> = {}): RequestUser {
   };
 }
 
-function buildHarness(options: { jobStatus?: JobStatus; closedAt?: Date | null; allowRate?: boolean } = {}) {
+function buildHarness(
+  options: { jobStatus?: JobStatus; closedAt?: Date | null; allowRate?: boolean } = {},
+) {
   const messages: MessageRow[] = [];
   const members: Array<{ chatId: string; userId: string; role: string; leftAt: Date | null }> = [
     { chatId: CHAT_ID, userId: CUSTOMER_ID, role: 'CUSTOMER', leftAt: null },
@@ -95,55 +105,109 @@ function buildHarness(options: { jobStatus?: JobStatus; closedAt?: Date | null; 
   const prisma = {
     job: { findUnique: jest.fn(async () => job) },
     chat: {
-      findUnique: jest.fn(async () => ({ id: CHAT_ID, jobId: JOB_ID, closedAt: options.closedAt ?? null })),
-      upsert: jest.fn(async () => ({ id: CHAT_ID, jobId: JOB_ID, closedAt: options.closedAt ?? null })),
+      findUnique: jest.fn(async () => ({
+        id: CHAT_ID,
+        jobId: JOB_ID,
+        closedAt: options.closedAt ?? null,
+      })),
+      upsert: jest.fn(async () => ({
+        id: CHAT_ID,
+        jobId: JOB_ID,
+        closedAt: options.closedAt ?? null,
+      })),
       updateMany: jest.fn(async () => ({ count: 1 })),
     },
     chatMember: {
-      upsert: jest.fn(async ({ create }: { create: { chatId: string; userId: string; role: string } }) => {
-        if (!members.some((m) => m.userId === create.userId)) members.push({ ...create, leftAt: null });
-        return create;
-      }),
-      findMany: jest.fn(async ({ where }: { where: { userId: { not: string } } }) => members.filter((m) => m.userId !== where.userId.not)),
+      upsert: jest.fn(
+        async ({ create }: { create: { chatId: string; userId: string; role: string } }) => {
+          if (!members.some((m) => m.userId === create.userId))
+            members.push({ ...create, leftAt: null });
+          return create;
+        },
+      ),
+      findMany: jest.fn(async ({ where }: { where: { userId: { not: string } } }) =>
+        members.filter((m) => m.userId !== where.userId.not),
+      ),
       updateMany: jest.fn(async () => ({ count: 1 })),
     },
     message: {
       create: messageCreate,
-      findUnique: jest.fn(async ({ where }: { where: { chatId_senderId_clientMessageId: { senderId: string; clientMessageId: string } } }) => {
-        const key = where.chatId_senderId_clientMessageId;
-        return messages.find((m) => m.senderId === key.senderId && m.clientMessageId === key.clientMessageId) ?? null;
-      }),
+      findUnique: jest.fn(
+        async ({
+          where,
+        }: {
+          where: { chatId_senderId_clientMessageId: { senderId: string; clientMessageId: string } };
+        }) => {
+          const key = where.chatId_senderId_clientMessageId;
+          return (
+            messages.find(
+              (m) => m.senderId === key.senderId && m.clientMessageId === key.clientMessageId,
+            ) ?? null
+          );
+        },
+      ),
       findFirst: jest.fn(async () => messages[0] ?? null),
       findMany: jest.fn(async () => messages),
       updateMany: jest.fn(async () => ({ count: 1 })),
     },
-    user: { findUnique: jest.fn(async () => ({ fullName: 'Layla Nasser', phone: '+970599000001' })) },
+    user: {
+      findUnique: jest.fn(async () => ({ fullName: 'Layla Nasser', phone: '+970599000001' })),
+    },
     $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
   } as unknown as PrismaService;
 
   const assertOwnedReady = jest.fn(async () => undefined);
   const media = { assertOwnedReady } as unknown as MediaService;
-  const mediaUrls = { urlFor: jest.fn(() => '/api/v1/media/key/view') } as unknown as MediaUrlService;
+  const mediaUrls = {
+    urlFor: jest.fn(() => '/api/v1/media/key/view'),
+  } as unknown as MediaUrlService;
   const notify = jest.fn(async () => undefined);
   const notifications = { notify } as unknown as NotificationsService;
   const assertEnabled = jest.fn(async () => undefined);
   const systemConfig = { assertEnabled } as unknown as SystemConfigService;
-  const hit = jest.fn(async () => ({ allowed: options.allowRate ?? true, remaining: 29, retryAfterSeconds: 60 }));
+  const hit = jest.fn(async () => ({
+    allowed: options.allowRate ?? true,
+    remaining: 29,
+    retryAfterSeconds: 60,
+  }));
   const rateLimit = { hit } as unknown as RateLimitService;
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as PinoLogger;
+  const logger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  } as unknown as PinoLogger;
   const emitToJob = jest.fn();
   const isUserInRoom = jest.fn(async () => false);
   const gateway = { emitToJob, isUserInRoom } as unknown as ChatGateway;
 
-  const service = new ChatService(prisma, media, mediaUrls, notifications, systemConfig, rateLimit, logger, gateway);
+  const service = new ChatService(
+    prisma,
+    media,
+    mediaUrls,
+    notifications,
+    systemConfig,
+    rateLimit,
+    logger,
+    gateway,
+  );
 
-  return { service, messages, members, mocks: { messageCreate, emitToJob, notify, isUserInRoom, assertOwnedReady, assertEnabled, hit } };
+  return {
+    service,
+    messages,
+    members,
+    mocks: { messageCreate, emitToJob, notify, isUserInRoom, assertOwnedReady, assertEnabled, hit },
+  };
 }
 
 describe('ChatService.send', () => {
   it('deduplicates on clientMessageId: a retried send returns the stored message and writes once', async () => {
     const { service, messages, mocks } = buildHarness();
-    const input = { type: MessageType.TEXT, text: 'On my way', clientMessageId: 'client-msg-0001' } as const;
+    const input = {
+      type: MessageType.TEXT,
+      text: 'On my way',
+      clientMessageId: 'client-msg-0001',
+    } as const;
 
     const first = await service.send(user(), JOB_ID, input);
     const second = await service.send(user(), JOB_ID, input);
@@ -159,7 +223,11 @@ describe('ChatService.send', () => {
     const { service, mocks } = buildHarness();
     mocks.isUserInRoom.mockResolvedValue(true);
 
-    await service.send(user(), JOB_ID, { type: MessageType.TEXT, text: 'Hello', clientMessageId: 'client-msg-0002' });
+    await service.send(user(), JOB_ID, {
+      type: MessageType.TEXT,
+      text: 'Hello',
+      clientMessageId: 'client-msg-0002',
+    });
 
     expect(mocks.notify).not.toHaveBeenCalled();
   });
@@ -168,7 +236,11 @@ describe('ChatService.send', () => {
     const { service, mocks } = buildHarness();
     const long = 'x'.repeat(200);
 
-    await service.send(user(), JOB_ID, { type: MessageType.TEXT, text: long, clientMessageId: 'client-msg-0003' });
+    await service.send(user(), JOB_ID, {
+      type: MessageType.TEXT,
+      text: long,
+      clientMessageId: 'client-msg-0003',
+    });
 
     expect(mocks.notify).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -183,7 +255,11 @@ describe('ChatService.send', () => {
     const { service, mocks } = buildHarness();
     const mediaId = '77777777-7777-4777-8777-777777777777';
 
-    await service.send(user(), JOB_ID, { type: MessageType.IMAGE, mediaId, clientMessageId: 'client-msg-0004' });
+    await service.send(user(), JOB_ID, {
+      type: MessageType.IMAGE,
+      mediaId,
+      clientMessageId: 'client-msg-0004',
+    });
 
     expect(mocks.assertOwnedReady).toHaveBeenCalledWith(CUSTOMER_ID, [mediaId], ['CHAT']);
   });
@@ -192,7 +268,13 @@ describe('ChatService.send', () => {
     const { service, mocks } = buildHarness();
     const outsider = user({ id: OUTSIDER_ID, customerId: OUTSIDER_ID });
 
-    await expect(service.send(outsider, JOB_ID, { type: MessageType.TEXT, text: 'hi', clientMessageId: 'client-msg-0005' })).rejects.toMatchObject({
+    await expect(
+      service.send(outsider, JOB_ID, {
+        type: MessageType.TEXT,
+        text: 'hi',
+        clientMessageId: 'client-msg-0005',
+      }),
+    ).rejects.toMatchObject({
       code: ErrorCode.FORBIDDEN,
     });
     expect(mocks.messageCreate).not.toHaveBeenCalled();
@@ -201,22 +283,45 @@ describe('ChatService.send', () => {
   it('rejects a party once the job left its active statuses (canChat)', async () => {
     const { service } = buildHarness({ jobStatus: JobStatus.COMPLETED });
 
-    await expect(service.send(user(), JOB_ID, { type: MessageType.TEXT, text: 'hi', clientMessageId: 'client-msg-0006' })).rejects.toBeInstanceOf(AppException);
+    await expect(
+      service.send(user(), JOB_ID, {
+        type: MessageType.TEXT,
+        text: 'hi',
+        clientMessageId: 'client-msg-0006',
+      }),
+    ).rejects.toBeInstanceOf(AppException);
   });
 
   it('lets a support agent write and joins them as a SUPPORT member', async () => {
     const { service, members } = buildHarness({ jobStatus: JobStatus.COMPLETED });
-    const agent = user({ id: OUTSIDER_ID, customerId: undefined, roles: [UserRole.SUPPORT], permissions: [Permission.SUPPORT_MANAGE, Permission.SUPPORT_READ] });
+    const agent = user({
+      id: OUTSIDER_ID,
+      customerId: undefined,
+      roles: [UserRole.SUPPORT],
+      permissions: [Permission.SUPPORT_MANAGE, Permission.SUPPORT_READ],
+    });
 
-    await service.send(agent, JOB_ID, { type: MessageType.TEXT, text: 'Support here', clientMessageId: 'client-msg-0007' });
+    await service.send(agent, JOB_ID, {
+      type: MessageType.TEXT,
+      text: 'Support here',
+      clientMessageId: 'client-msg-0007',
+    });
 
-    expect(members).toContainEqual(expect.objectContaining({ userId: OUTSIDER_ID, role: 'SUPPORT' }));
+    expect(members).toContainEqual(
+      expect.objectContaining({ userId: OUTSIDER_ID, role: 'SUPPORT' }),
+    );
   });
 
   it('refuses to write into a closed chat', async () => {
     const { service } = buildHarness({ closedAt: new Date('2026-04-01T12:00:00.000Z') });
 
-    await expect(service.send(user(), JOB_ID, { type: MessageType.TEXT, text: 'hi', clientMessageId: 'client-msg-0008' })).rejects.toMatchObject({
+    await expect(
+      service.send(user(), JOB_ID, {
+        type: MessageType.TEXT,
+        text: 'hi',
+        clientMessageId: 'client-msg-0008',
+      }),
+    ).rejects.toMatchObject({
       code: ErrorCode.CONFLICT,
     });
   });
@@ -224,7 +329,13 @@ describe('ChatService.send', () => {
   it('enforces the 30/minute send budget', async () => {
     const { service } = buildHarness({ allowRate: false });
 
-    await expect(service.send(user(), JOB_ID, { type: MessageType.TEXT, text: 'hi', clientMessageId: 'client-msg-0009' })).rejects.toMatchObject({
+    await expect(
+      service.send(user(), JOB_ID, {
+        type: MessageType.TEXT,
+        text: 'hi',
+        clientMessageId: 'client-msg-0009',
+      }),
+    ).rejects.toMatchObject({
       code: ErrorCode.RATE_LIMITED,
     });
   });
@@ -233,16 +344,29 @@ describe('ChatService.send', () => {
 describe('ChatService.markRead', () => {
   it('emits a delivery receipt and stores the member read watermark', async () => {
     const { service, mocks } = buildHarness();
-    await service.send(user({ id: PARTNER_ID, customerId: undefined, partnerId: PARTNER_ID, roles: [UserRole.PARTNER] }), JOB_ID, {
-      type: MessageType.TEXT,
-      text: 'Arriving',
-      clientMessageId: 'client-msg-0010',
-    });
+    await service.send(
+      user({
+        id: PARTNER_ID,
+        customerId: undefined,
+        partnerId: PARTNER_ID,
+        roles: [UserRole.PARTNER],
+      }),
+      JOB_ID,
+      {
+        type: MessageType.TEXT,
+        text: 'Arriving',
+        clientMessageId: 'client-msg-0010',
+      },
+    );
     mocks.emitToJob.mockClear();
 
     const receipt = await service.markRead(user(), JOB_ID, 'msg-1');
 
     expect(receipt).toMatchObject({ jobId: JOB_ID, upToMessageId: 'msg-1', readerId: CUSTOMER_ID });
-    expect(mocks.emitToJob).toHaveBeenCalledWith(JOB_ID, 'chat:delivery', expect.objectContaining({ readerId: CUSTOMER_ID }));
+    expect(mocks.emitToJob).toHaveBeenCalledWith(
+      JOB_ID,
+      'chat:delivery',
+      expect.objectContaining({ readerId: CUSTOMER_ID }),
+    );
   });
 });

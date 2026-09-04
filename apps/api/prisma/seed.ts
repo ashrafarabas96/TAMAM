@@ -28,7 +28,9 @@ import { seedZones } from './seed/zones';
  */
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('prisma/seed.ts creates demo accounts and must never run with NODE_ENV=production');
+    throw new Error(
+      'prisma/seed.ts creates demo accounts and must never run with NODE_ENV=production',
+    );
   }
 
   const config = new AppConfigService();
@@ -87,6 +89,8 @@ async function main(): Promise<void> {
 }
 
 main().catch((err: unknown) => {
-  process.stderr.write(`Seed failed: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`);
+  process.stderr.write(
+    `Seed failed: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
+  );
   process.exitCode = 1;
 });

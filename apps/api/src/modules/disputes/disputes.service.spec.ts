@@ -24,7 +24,11 @@ import type { PaymentsService } from '../payments/payments.service';
 import type { WalletService } from '../wallet/wallet.service';
 
 import { DisputesService } from './disputes.service';
-import { assertJobDisputable, disputeNumber, partnerAdjustmentEntries } from './domain/dispute-decision';
+import {
+  assertJobDisputable,
+  disputeNumber,
+  partnerAdjustmentEntries,
+} from './domain/dispute-decision';
 
 const JOB_ID = '11111111-1111-4111-8111-111111111111';
 const DISPUTE_ID = '22222222-2222-4222-8222-222222222222';
@@ -54,8 +58,24 @@ interface DisputeState {
   decisionReason: string | null;
   createdAt: Date;
   updatedAt: Date;
-  evidence: Array<{ media: { bucket: string; objectKey: string; isPublic: boolean; mediumKey: string | null; thumbnailKey: string | null } }>;
-  messages: Array<{ id: string; disputeId: string; authorId: string; text: string; isInternal: boolean; createdAt: Date; author: { fullName: string | null } }>;
+  evidence: Array<{
+    media: {
+      bucket: string;
+      objectKey: string;
+      isPublic: boolean;
+      mediumKey: string | null;
+      thumbnailKey: string | null;
+    };
+  }>;
+  messages: Array<{
+    id: string;
+    disputeId: string;
+    authorId: string;
+    text: string;
+    isInternal: boolean;
+    createdAt: Date;
+    author: { fullName: string | null };
+  }>;
 }
 
 function disputeState(overrides: Partial<DisputeState> = {}): DisputeState {
@@ -101,9 +121,21 @@ function principal(overrides: Partial<RequestUser> = {}): RequestUser {
 }
 
 const admin = (): RequestUser =>
-  principal({ id: ADMIN_ID, customerId: undefined, roles: [UserRole.ADMIN], permissions: [Permission.DISPUTES_READ, Permission.DISPUTES_DECIDE] });
+  principal({
+    id: ADMIN_ID,
+    customerId: undefined,
+    roles: [UserRole.ADMIN],
+    permissions: [Permission.DISPUTES_READ, Permission.DISPUTES_DECIDE],
+  });
 
-function buildHarness(options: { dispute?: DisputeState; jobStatus?: JobStatus; live?: DisputeState | null; hasPayment?: boolean } = {}) {
+function buildHarness(
+  options: {
+    dispute?: DisputeState;
+    jobStatus?: JobStatus;
+    live?: DisputeState | null;
+    hasPayment?: boolean;
+  } = {},
+) {
   const dispute = options.dispute ?? disputeState();
   const job = {
     id: JOB_ID,
@@ -125,7 +157,11 @@ function buildHarness(options: { dispute?: DisputeState; jobStatus?: JobStatus; 
     dispute: {
       create: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
         createdDisputes.push(data);
-        Object.assign(dispute, { number: String(data.number), openedByRole: String(data.openedByRole), status: DisputeStatus.OPEN });
+        Object.assign(dispute, {
+          number: String(data.number),
+          openedByRole: String(data.openedByRole),
+          status: DisputeStatus.OPEN,
+        });
         return { id: dispute.id };
       }),
       update: disputeUpdate,
@@ -150,18 +186,30 @@ function buildHarness(options: { dispute?: DisputeState; jobStatus?: JobStatus; 
         dispute.messages.push(row);
         return { id: row.id };
       }),
-      findUniqueOrThrow: jest.fn(async ({ where }: { where: { id: string } }) => dispute.messages.find((m) => m.id === where.id)),
+      findUniqueOrThrow: jest.fn(async ({ where }: { where: { id: string } }) =>
+        dispute.messages.find((m) => m.id === where.id),
+      ),
     },
-    disputeEvidence: { createMany: jest.fn(async ({ data }: { data: unknown[] }) => ({ count: data.length })) },
-    payment: { findFirst: jest.fn(async () => (options.hasPayment === false ? null : { id: PAYMENT_ID, status: PaymentStatus.CAPTURED })) },
-    user: { findUnique: jest.fn(async () => ({ fullName: 'Layla Nasser', phone: '+970599000001' })) },
+    disputeEvidence: {
+      createMany: jest.fn(async ({ data }: { data: unknown[] }) => ({ count: data.length })),
+    },
+    payment: {
+      findFirst: jest.fn(async () =>
+        options.hasPayment === false ? null : { id: PAYMENT_ID, status: PaymentStatus.CAPTURED },
+      ),
+    },
+    user: {
+      findUnique: jest.fn(async () => ({ fullName: 'Layla Nasser', phone: '+970599000001' })),
+    },
     nextCounter: jest.fn(async () => 1n),
     $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
   } as unknown as PrismaService;
 
   const assertOwnedReady = jest.fn(async () => undefined);
   const media = { assertOwnedReady } as unknown as MediaService;
-  const mediaUrls = { urlFor: jest.fn(() => '/api/v1/media/key/view') } as unknown as MediaUrlService;
+  const mediaUrls = {
+    urlFor: jest.fn(() => '/api/v1/media/key/view'),
+  } as unknown as MediaUrlService;
   const notify = jest.fn(async () => undefined);
   const notifications = { notify } as unknown as NotificationsService;
   const refund = jest.fn(async () => ({ id: 'refund-1' }));
@@ -172,12 +220,42 @@ function buildHarness(options: { dispute?: DisputeState; jobStatus?: JobStatus; 
   const wallets = { getOrCreate } as unknown as WalletService;
   const record = jest.fn(async () => undefined);
   const audit = { record } as unknown as AuditService;
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as PinoLogger;
+  const logger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  } as unknown as PinoLogger;
   const transition = jest.fn(async () => ({ id: JOB_ID }));
   const jobs = { transition } as unknown as JobsService;
 
-  const service = new DisputesService(prisma, media, mediaUrls, notifications, payments, ledger, wallets, audit, logger, jobs);
-  return { service, dispute, createdDisputes, mocks: { refund, post, getOrCreate, record, notify, transition, disputeUpdate, assertOwnedReady } };
+  const service = new DisputesService(
+    prisma,
+    media,
+    mediaUrls,
+    notifications,
+    payments,
+    ledger,
+    wallets,
+    audit,
+    logger,
+    jobs,
+  );
+  return {
+    service,
+    dispute,
+    createdDisputes,
+    mocks: {
+      refund,
+      post,
+      getOrCreate,
+      record,
+      notify,
+      transition,
+      disputeUpdate,
+      assertOwnedReady,
+    },
+  };
 }
 
 describe('dispute domain rules', () => {
@@ -193,26 +271,56 @@ describe('dispute domain rules', () => {
   });
 
   it('debits the partner wallet for a negative adjustment and credits it for a positive one', () => {
-    const negative = partnerAdjustmentEntries({ adjustmentMinor: -2_500n, currency: 'ILS', partnerWalletId: WALLET_ID });
+    const negative = partnerAdjustmentEntries({
+      adjustmentMinor: -2_500n,
+      currency: 'ILS',
+      partnerWalletId: WALLET_ID,
+    });
     expect(negative).toEqual([
       { walletId: WALLET_ID, direction: LedgerEntryDirection.DEBIT, amountMinor: 2_500n },
-      { accountCode: 'PLATFORM_REFUND_EXPENSE:ILS', direction: LedgerEntryDirection.CREDIT, amountMinor: 2_500n },
+      {
+        accountCode: 'PLATFORM_REFUND_EXPENSE:ILS',
+        direction: LedgerEntryDirection.CREDIT,
+        amountMinor: 2_500n,
+      },
     ]);
 
-    const positive = partnerAdjustmentEntries({ adjustmentMinor: 2_500n, currency: 'ILS', partnerWalletId: WALLET_ID });
+    const positive = partnerAdjustmentEntries({
+      adjustmentMinor: 2_500n,
+      currency: 'ILS',
+      partnerWalletId: WALLET_ID,
+    });
     expect(positive).toEqual([
       { walletId: WALLET_ID, direction: LedgerEntryDirection.CREDIT, amountMinor: 2_500n },
-      { accountCode: 'PLATFORM_REFUND_EXPENSE:ILS', direction: LedgerEntryDirection.DEBIT, amountMinor: 2_500n },
+      {
+        accountCode: 'PLATFORM_REFUND_EXPENSE:ILS',
+        direction: LedgerEntryDirection.DEBIT,
+        amountMinor: 2_500n,
+      },
     ]);
 
-    expect(partnerAdjustmentEntries({ adjustmentMinor: 0n, currency: 'ILS', partnerWalletId: WALLET_ID })).toEqual([]);
+    expect(
+      partnerAdjustmentEntries({
+        adjustmentMinor: 0n,
+        currency: 'ILS',
+        partnerWalletId: WALLET_ID,
+      }),
+    ).toEqual([]);
   });
 
   it('keeps every adjustment balanced', () => {
     for (const amount of [-10_000n, -1n, 1n, 10_000n]) {
-      const entries = partnerAdjustmentEntries({ adjustmentMinor: amount, currency: 'ILS', partnerWalletId: WALLET_ID });
-      const debits = entries.filter((e) => e.direction === LedgerEntryDirection.DEBIT).reduce((sum, e) => sum + e.amountMinor, 0n);
-      const credits = entries.filter((e) => e.direction === LedgerEntryDirection.CREDIT).reduce((sum, e) => sum + e.amountMinor, 0n);
+      const entries = partnerAdjustmentEntries({
+        adjustmentMinor: amount,
+        currency: 'ILS',
+        partnerWalletId: WALLET_ID,
+      });
+      const debits = entries
+        .filter((e) => e.direction === LedgerEntryDirection.DEBIT)
+        .reduce((sum, e) => sum + e.amountMinor, 0n);
+      const credits = entries
+        .filter((e) => e.direction === LedgerEntryDirection.CREDIT)
+        .reduce((sum, e) => sum + e.amountMinor, 0n);
       expect(debits).toBe(credits);
     }
   });
@@ -233,24 +341,46 @@ describe('DisputesService.open', () => {
 
     expect(dto.number).toMatch(/^DP-\d{4}-000001$/);
     expect(createdDisputes[0]).toMatchObject({ openedByRole: UserRole.CUSTOMER, currency: 'ILS' });
-    expect(mocks.assertOwnedReady).toHaveBeenCalledWith(CUSTOMER_ID, [mediaId], ['DISPUTE_EVIDENCE']);
-    expect(mocks.transition).toHaveBeenCalledWith(JOB_ID, JobStatus.DISPUTED, { type: JobActorType.CUSTOMER, id: CUSTOMER_ID }, expect.any(Object));
+    expect(mocks.assertOwnedReady).toHaveBeenCalledWith(
+      CUSTOMER_ID,
+      [mediaId],
+      ['DISPUTE_EVIDENCE'],
+    );
+    expect(mocks.transition).toHaveBeenCalledWith(
+      JOB_ID,
+      JobStatus.DISPUTED,
+      { type: JobActorType.CUSTOMER, id: CUSTOMER_ID },
+      expect.any(Object),
+    );
     expect(mocks.notify).toHaveBeenCalledWith(expect.objectContaining({ userId: PARTNER_ID }));
   });
 
   it('does not transition a job that is only WORK_COMPLETED', async () => {
     const { service, mocks } = buildHarness({ jobStatus: JobStatus.WORK_COMPLETED });
 
-    await service.open(principal(), { jobId: JOB_ID, reason: 'NOT_COMPLETED', description: 'Work was never finished.', evidenceMediaIds: [] });
+    await service.open(principal(), {
+      jobId: JOB_ID,
+      reason: 'NOT_COMPLETED',
+      description: 'Work was never finished.',
+      evidenceMediaIds: [],
+    });
 
     expect(mocks.transition).not.toHaveBeenCalled();
   });
 
   it('refuses a second live dispute on the same job', async () => {
-    const { service } = buildHarness({ jobStatus: JobStatus.COMPLETED, live: disputeState({ status: DisputeStatus.OPEN }) });
+    const { service } = buildHarness({
+      jobStatus: JobStatus.COMPLETED,
+      live: disputeState({ status: DisputeStatus.OPEN }),
+    });
 
     await expect(
-      service.open(principal(), { jobId: JOB_ID, reason: 'OVERCHARGED', description: 'Charged more than quoted.', evidenceMediaIds: [] }),
+      service.open(principal(), {
+        jobId: JOB_ID,
+        reason: 'OVERCHARGED',
+        description: 'Charged more than quoted.',
+        evidenceMediaIds: [],
+      }),
     ).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
   });
 
@@ -259,16 +389,31 @@ describe('DisputesService.open', () => {
     const outsider = principal({ id: ADMIN_ID, customerId: ADMIN_ID });
 
     await expect(
-      service.open(outsider, { jobId: JOB_ID, reason: 'DAMAGE', description: 'Something went wrong here.', evidenceMediaIds: [] }),
+      service.open(outsider, {
+        jobId: JOB_ID,
+        reason: 'DAMAGE',
+        description: 'Something went wrong here.',
+        evidenceMediaIds: [],
+      }),
     ).rejects.toMatchObject({ code: ErrorCode.FORBIDDEN });
   });
 
   it('refuses a partner disputing a job that is not yet COMPLETED', async () => {
     const { service } = buildHarness({ jobStatus: JobStatus.WORK_COMPLETED });
-    const partner = principal({ id: PARTNER_ID, customerId: undefined, partnerId: PARTNER_ID, roles: [UserRole.PARTNER] });
+    const partner = principal({
+      id: PARTNER_ID,
+      customerId: undefined,
+      partnerId: PARTNER_ID,
+      roles: [UserRole.PARTNER],
+    });
 
     await expect(
-      service.open(partner, { jobId: JOB_ID, reason: 'CUSTOMER_MISCONDUCT', description: 'The customer refused entry.', evidenceMediaIds: [] }),
+      service.open(partner, {
+        jobId: JOB_ID,
+        reason: 'CUSTOMER_MISCONDUCT',
+        description: 'The customer refused entry.',
+        evidenceMediaIds: [],
+      }),
     ).rejects.toMatchObject({ code: ErrorCode.INVALID_STATE_TRANSITION });
   });
 });
@@ -279,13 +424,23 @@ describe('DisputesService.decide', () => {
 
     const dto = await service.decide(
       DISPUTE_ID,
-      { decision: DisputeStatus.RESOLVED_CUSTOMER, refundMinor: 5_000, partnerAdjustmentMinor: -5_000, reason: 'Work was not delivered as quoted.' },
+      {
+        decision: DisputeStatus.RESOLVED_CUSTOMER,
+        refundMinor: 5_000,
+        partnerAdjustmentMinor: -5_000,
+        reason: 'Work was not delivered as quoted.',
+      },
       admin(),
       'req-1',
     );
 
     expect(mocks.refund).toHaveBeenCalledWith(
-      { paymentId: PAYMENT_ID, amountMinor: 5_000, reason: 'Work was not delivered as quoted.', disputeId: DISPUTE_ID },
+      {
+        paymentId: PAYMENT_ID,
+        amountMinor: 5_000,
+        reason: 'Work was not delivered as quoted.',
+        disputeId: DISPUTE_ID,
+      },
       expect.objectContaining({ id: ADMIN_ID }),
       'req-1',
     );
@@ -297,11 +452,20 @@ describe('DisputesService.decide', () => {
         idempotencyKey: `dispute:${DISPUTE_ID}:partner-adjustment`,
         entries: [
           { walletId: WALLET_ID, direction: LedgerEntryDirection.DEBIT, amountMinor: 5_000n },
-          { accountCode: 'PLATFORM_REFUND_EXPENSE:ILS', direction: LedgerEntryDirection.CREDIT, amountMinor: 5_000n },
+          {
+            accountCode: 'PLATFORM_REFUND_EXPENSE:ILS',
+            direction: LedgerEntryDirection.CREDIT,
+            amountMinor: 5_000n,
+          },
         ],
       }),
     );
-    expect(mocks.transition).toHaveBeenCalledWith(JOB_ID, JobStatus.COMPLETED, { type: JobActorType.ADMIN, id: ADMIN_ID }, expect.any(Object));
+    expect(mocks.transition).toHaveBeenCalledWith(
+      JOB_ID,
+      JobStatus.COMPLETED,
+      { type: JobActorType.ADMIN, id: ADMIN_ID },
+      expect.any(Object),
+    );
     expect(dispute.status).toBe(DisputeStatus.RESOLVED_CUSTOMER);
     expect(dispute.refundMinor).toBe(5_000n);
     expect(dispute.partnerAdjustmentMinor).toBe(-5_000n);
@@ -312,7 +476,17 @@ describe('DisputesService.decide', () => {
   it('skips the refund and the ledger when the decision costs nothing', async () => {
     const { service, mocks } = buildHarness();
 
-    await service.decide(DISPUTE_ID, { decision: DisputeStatus.REJECTED, refundMinor: 0, partnerAdjustmentMinor: 0, reason: 'Evidence did not support the claim.' }, admin(), 'req-2');
+    await service.decide(
+      DISPUTE_ID,
+      {
+        decision: DisputeStatus.REJECTED,
+        refundMinor: 0,
+        partnerAdjustmentMinor: 0,
+        reason: 'Evidence did not support the claim.',
+      },
+      admin(),
+      'req-2',
+    );
 
     expect(mocks.refund).not.toHaveBeenCalled();
     expect(mocks.post).not.toHaveBeenCalled();
@@ -324,7 +498,12 @@ describe('DisputesService.decide', () => {
 
     await service.decide(
       DISPUTE_ID,
-      { decision: DisputeStatus.RESOLVED_PARTNER, refundMinor: 0, partnerAdjustmentMinor: 3_000, reason: 'The partner absorbed an unfair cancellation.' },
+      {
+        decision: DisputeStatus.RESOLVED_PARTNER,
+        refundMinor: 0,
+        partnerAdjustmentMinor: 3_000,
+        reason: 'The partner absorbed an unfair cancellation.',
+      },
       admin(),
       'req-3',
     );
@@ -333,7 +512,11 @@ describe('DisputesService.decide', () => {
       expect.objectContaining({
         entries: [
           { walletId: WALLET_ID, direction: LedgerEntryDirection.CREDIT, amountMinor: 3_000n },
-          { accountCode: 'PLATFORM_REFUND_EXPENSE:ILS', direction: LedgerEntryDirection.DEBIT, amountMinor: 3_000n },
+          {
+            accountCode: 'PLATFORM_REFUND_EXPENSE:ILS',
+            direction: LedgerEntryDirection.DEBIT,
+            amountMinor: 3_000n,
+          },
         ],
       }),
     );
@@ -344,7 +527,12 @@ describe('DisputesService.decide', () => {
 
     await service.decide(
       DISPUTE_ID,
-      { decision: DisputeStatus.RESOLVED_SPLIT, refundMinor: 2_000, partnerAdjustmentMinor: -1_000, reason: 'Both sides carry part of the loss.' },
+      {
+        decision: DisputeStatus.RESOLVED_SPLIT,
+        refundMinor: 2_000,
+        partnerAdjustmentMinor: -1_000,
+        reason: 'Both sides carry part of the loss.',
+      },
       admin(),
       'req-4',
     );
@@ -363,10 +551,22 @@ describe('DisputesService.decide', () => {
   });
 
   it('refuses to decide a dispute twice', async () => {
-    const { service } = buildHarness({ dispute: disputeState({ status: DisputeStatus.RESOLVED_CUSTOMER, refundMinor: 5_000n }) });
+    const { service } = buildHarness({
+      dispute: disputeState({ status: DisputeStatus.RESOLVED_CUSTOMER, refundMinor: 5_000n }),
+    });
 
     await expect(
-      service.decide(DISPUTE_ID, { decision: DisputeStatus.REJECTED, refundMinor: 0, partnerAdjustmentMinor: 0, reason: 'Changed my mind about it.' }, admin(), 'req-5'),
+      service.decide(
+        DISPUTE_ID,
+        {
+          decision: DisputeStatus.REJECTED,
+          refundMinor: 0,
+          partnerAdjustmentMinor: 0,
+          reason: 'Changed my mind about it.',
+        },
+        admin(),
+        'req-5',
+      ),
     ).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
   });
 
@@ -374,7 +574,17 @@ describe('DisputesService.decide', () => {
     const { service, mocks } = buildHarness({ hasPayment: false });
 
     await expect(
-      service.decide(DISPUTE_ID, { decision: DisputeStatus.RESOLVED_CUSTOMER, refundMinor: 1_000, partnerAdjustmentMinor: 0, reason: 'Refund the customer please.' }, admin(), 'req-6'),
+      service.decide(
+        DISPUTE_ID,
+        {
+          decision: DisputeStatus.RESOLVED_CUSTOMER,
+          refundMinor: 1_000,
+          partnerAdjustmentMinor: 0,
+          reason: 'Refund the customer please.',
+        },
+        admin(),
+        'req-6',
+      ),
     ).rejects.toMatchObject({ code: ErrorCode.PAYMENT_FAILED });
     expect(mocks.refund).not.toHaveBeenCalled();
   });
@@ -384,7 +594,11 @@ describe('DisputesService.addMessage', () => {
   it('ignores the internal flag for a party and notifies the other side', async () => {
     const { service, mocks } = buildHarness();
 
-    const message = await service.addMessage(principal(), DISPUTE_ID, { text: 'Any update?', evidenceMediaIds: [], internal: true });
+    const message = await service.addMessage(principal(), DISPUTE_ID, {
+      text: 'Any update?',
+      evidenceMediaIds: [],
+      internal: true,
+    });
 
     expect(message.internal).toBe(false);
     expect(mocks.notify).toHaveBeenCalledWith(expect.objectContaining({ userId: PARTNER_ID }));
@@ -393,7 +607,11 @@ describe('DisputesService.addMessage', () => {
   it('keeps a staff internal note out of the notification path', async () => {
     const { service, mocks } = buildHarness();
 
-    const message = await service.addMessage(admin(), DISPUTE_ID, { text: 'Finance approved 50 ILS.', evidenceMediaIds: [], internal: true });
+    const message = await service.addMessage(admin(), DISPUTE_ID, {
+      text: 'Finance approved 50 ILS.',
+      evidenceMediaIds: [],
+      internal: true,
+    });
 
     expect(message.internal).toBe(true);
     expect(mocks.notify).not.toHaveBeenCalled();
@@ -401,9 +619,18 @@ describe('DisputesService.addMessage', () => {
 
   it('hides a dispute the caller is not a party to', async () => {
     const { service } = buildHarness();
-    const stranger = principal({ id: '00000000-0000-4000-8000-000000000000', customerId: '00000000-0000-4000-8000-000000000000' });
+    const stranger = principal({
+      id: '00000000-0000-4000-8000-000000000000',
+      customerId: '00000000-0000-4000-8000-000000000000',
+    });
 
-    await expect(service.addMessage(stranger, DISPUTE_ID, { text: 'Hello', evidenceMediaIds: [], internal: false })).rejects.toMatchObject({
+    await expect(
+      service.addMessage(stranger, DISPUTE_ID, {
+        text: 'Hello',
+        evidenceMediaIds: [],
+        internal: false,
+      }),
+    ).rejects.toMatchObject({
       code: ErrorCode.NOT_FOUND,
     });
   });

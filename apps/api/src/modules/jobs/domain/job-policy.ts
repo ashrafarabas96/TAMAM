@@ -1,4 +1,10 @@
-import { ACTIVE_JOB_STATUSES, JobActorType, type JobStatus, Permission, UserRole } from '@tamam/shared-types';
+import {
+  ACTIVE_JOB_STATUSES,
+  JobActorType,
+  type JobStatus,
+  Permission,
+  UserRole,
+} from '@tamam/shared-types';
 
 import type { RequestUser } from '../../../common/types/request-user';
 
@@ -22,7 +28,9 @@ export const JobPolicy = {
     return !!job.partnerId && (user.partnerId === job.partnerId || user.id === job.partnerId);
   },
   isStaff(user: RequestUser): boolean {
-    return user.isSuperAdmin || user.roles.some((r) => r !== UserRole.CUSTOMER && r !== UserRole.PARTNER);
+    return (
+      user.isSuperAdmin || user.roles.some((r) => r !== UserRole.CUSTOMER && r !== UserRole.PARTNER)
+    );
   },
   canView(user: RequestUser, job: JobLike): boolean {
     if (JobPolicy.isCustomer(user, job) || JobPolicy.isAssignedPartner(user, job)) return true;
@@ -35,10 +43,20 @@ export const JobPolicy = {
   canChat(user: RequestUser, job: JobLike): boolean {
     const active = (ACTIVE_JOB_STATUSES as readonly string[]).includes(job.status);
     if (!active) return user.isSuperAdmin || user.permissions.includes(Permission.SUPPORT_READ);
-    return JobPolicy.isCustomer(user, job) || JobPolicy.isAssignedPartner(user, job) || user.permissions.includes(Permission.SUPPORT_MANAGE) || user.isSuperAdmin;
+    return (
+      JobPolicy.isCustomer(user, job) ||
+      JobPolicy.isAssignedPartner(user, job) ||
+      user.permissions.includes(Permission.SUPPORT_MANAGE) ||
+      user.isSuperAdmin
+    );
   },
   canCancel(user: RequestUser, job: JobLike): boolean {
-    return JobPolicy.isCustomer(user, job) || JobPolicy.isAssignedPartner(user, job) || user.isSuperAdmin || user.permissions.includes(Permission.JOBS_CANCEL);
+    return (
+      JobPolicy.isCustomer(user, job) ||
+      JobPolicy.isAssignedPartner(user, job) ||
+      user.isSuperAdmin ||
+      user.permissions.includes(Permission.JOBS_CANCEL)
+    );
   },
   actorTypeFor(user: RequestUser, job: JobLike): JobActorType {
     if (JobPolicy.isStaff(user)) return JobActorType.ADMIN;

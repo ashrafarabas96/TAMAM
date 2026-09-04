@@ -21,7 +21,8 @@ function counters(overrides: Partial<RiskCounters> = {}): RiskCounters {
   return { ...emptyCounters(), ...overrides };
 }
 
-const signals = (c: RiskCounters): RiskSignal[] => evaluateRiskRules(c, thresholds).map((f) => f.signal);
+const signals = (c: RiskCounters): RiskSignal[] =>
+  evaluateRiskRules(c, thresholds).map((f) => f.signal);
 
 describe('ratioScore', () => {
   it('returns the floor exactly at the threshold', () => {
@@ -62,7 +63,9 @@ describe('evaluateRiskRules', () => {
 
   /* ------------------------------------------------------ failed payments */
   it('fires REPEATED_FAILED_PAYMENTS above the threshold', () => {
-    expect(signals(counters({ failedPaymentsToday: 6 }))).toEqual([RiskSignal.REPEATED_FAILED_PAYMENTS]);
+    expect(signals(counters({ failedPaymentsToday: 6 }))).toEqual([
+      RiskSignal.REPEATED_FAILED_PAYMENTS,
+    ]);
     expect(signals(counters({ failedPaymentsToday: 5 }))).toEqual([]);
   });
 
@@ -86,14 +89,22 @@ describe('evaluateRiskRules', () => {
 
   /* --------------------------------------------------- multiple accounts */
   it('fires MULTIPLE_ACCOUNTS at the device threshold (inclusive)', () => {
-    expect(signals(counters({ accountsOnDevice: MULTIPLE_ACCOUNTS_DEVICE_THRESHOLD }))).toEqual([RiskSignal.MULTIPLE_ACCOUNTS]);
-    expect(signals(counters({ accountsOnDevice: MULTIPLE_ACCOUNTS_DEVICE_THRESHOLD - 1 }))).toEqual([]);
+    expect(signals(counters({ accountsOnDevice: MULTIPLE_ACCOUNTS_DEVICE_THRESHOLD }))).toEqual([
+      RiskSignal.MULTIPLE_ACCOUNTS,
+    ]);
+    expect(signals(counters({ accountsOnDevice: MULTIPLE_ACCOUNTS_DEVICE_THRESHOLD - 1 }))).toEqual(
+      [],
+    );
   });
 
   /* --------------------------------------------------------- referrals */
   it('fires UNUSUAL_REFERRAL_BEHAVIOUR at the referral threshold (inclusive)', () => {
-    expect(signals(counters({ referralsFromSameDevice: UNUSUAL_REFERRAL_THRESHOLD }))).toEqual([RiskSignal.UNUSUAL_REFERRAL_BEHAVIOUR]);
-    expect(signals(counters({ referralsFromSameDevice: UNUSUAL_REFERRAL_THRESHOLD - 1 }))).toEqual([]);
+    expect(signals(counters({ referralsFromSameDevice: UNUSUAL_REFERRAL_THRESHOLD }))).toEqual([
+      RiskSignal.UNUSUAL_REFERRAL_BEHAVIOUR,
+    ]);
+    expect(signals(counters({ referralsFromSameDevice: UNUSUAL_REFERRAL_THRESHOLD - 1 }))).toEqual(
+      [],
+    );
   });
 
   /* ---------------------------------------------------------- combining */
@@ -102,14 +113,25 @@ describe('evaluateRiskRules', () => {
       counters({ cancellationsToday: 6, promoRedemptionsToday: 12, maxObservedSpeedKmh: 200 }),
       thresholds,
     );
-    expect(findings.map((f) => f.signal)).toEqual([RiskSignal.PROMO_ABUSE, RiskSignal.EXCESSIVE_CANCELLATIONS, RiskSignal.IMPOSSIBLE_GPS_MOVEMENT]);
+    expect(findings.map((f) => f.signal)).toEqual([
+      RiskSignal.PROMO_ABUSE,
+      RiskSignal.EXCESSIVE_CANCELLATIONS,
+      RiskSignal.IMPOSSIBLE_GPS_MOVEMENT,
+    ]);
     const scores = findings.map((f) => f.score);
     expect(scores).toEqual([...scores].sort((a, b) => b - a));
   });
 
   it('keeps every score inside 50..100', () => {
     const findings = evaluateRiskRules(
-      counters({ cancellationsToday: 500, failedPaymentsToday: 6, promoRedemptionsToday: 4, maxObservedSpeedKmh: 190, accountsOnDevice: 9, referralsFromSameDevice: 5 }),
+      counters({
+        cancellationsToday: 500,
+        failedPaymentsToday: 6,
+        promoRedemptionsToday: 4,
+        maxObservedSpeedKmh: 190,
+        accountsOnDevice: 9,
+        referralsFromSameDevice: 5,
+      }),
       thresholds,
     );
     expect(findings).toHaveLength(6);

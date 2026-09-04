@@ -12,7 +12,12 @@ import {
   TicketStatus,
   UserRole,
 } from '@tamam/shared-types';
-import type { CreateTicketInput, ReportInput, TicketMessageInput, UpdateTicketInput } from '@tamam/validation';
+import type {
+  CreateTicketInput,
+  ReportInput,
+  TicketMessageInput,
+  UpdateTicketInput,
+} from '@tamam/validation';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -24,7 +29,13 @@ import { MediaUrlService } from '../media/media-url.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
-import { ACTIVE_TICKET_STATUSES, assertTicketTransition, priorityFor, routeReport, ticketNumber } from './domain/ticket-state';
+import {
+  ACTIVE_TICKET_STATUSES,
+  assertTicketTransition,
+  priorityFor,
+  routeReport,
+  ticketNumber,
+} from './domain/ticket-state';
 
 /* ------------------------------------------------------------- contracts */
 
@@ -82,9 +93,14 @@ export interface ReportListFilter {
   limit: number;
 }
 
-const messageInclude = { author: { select: { fullName: true } }, attachments: { include: { media: true } } } satisfies Prisma.SupportMessageInclude;
+const messageInclude = {
+  author: { select: { fullName: true } },
+  attachments: { include: { media: true } },
+} satisfies Prisma.SupportMessageInclude;
 
-const ticketInclude = { attachments: { include: { media: true } } } satisfies Prisma.SupportTicketInclude;
+const ticketInclude = {
+  attachments: { include: { media: true } },
+} satisfies Prisma.SupportTicketInclude;
 
 const ticketDetailInclude = {
   attachments: { include: { media: true } },
@@ -119,7 +135,8 @@ export class SupportService {
     let job: JobLike | null = null;
     if (input.jobId) {
       job = await this.loadJob(input.jobId);
-      if (!JobPolicy.canView(user, job)) throw AppException.forbidden('You cannot open a ticket about this job');
+      if (!JobPolicy.canView(user, job))
+        throw AppException.forbidden('You cannot open a ticket about this job');
     }
 
     const ticket = await this.prisma.$transaction(async (tx) => {
@@ -137,13 +154,20 @@ export class SupportService {
         select: { id: true },
       });
       await this.attachMedia(tx, created.id, null, input.attachmentMediaIds);
-      return tx.supportTicket.findUniqueOrThrow({ where: { id: created.id }, include: ticketInclude });
+      return tx.supportTicket.findUniqueOrThrow({
+        where: { id: created.id },
+        include: ticketInclude,
+      });
     });
 
     return this.toDto(ticket);
   }
 
-  async listMine(user: RequestUser, cursorRaw: string | undefined, limit: number): Promise<Page<SupportTicketDto>> {
+  async listMine(
+    user: RequestUser,
+    cursorRaw: string | undefined,
+    limit: number,
+  ): Promise<Page<SupportTicketDto>> {
     const cursor = decodeCursor(cursorRaw);
     const rows = await this.prisma.supportTicket.findMany({
       where: { raisedById: user.id, ...cursorWhere(cursor) },
@@ -156,7 +180,10 @@ export class SupportService {
 
   /** The raiser's view: internal agent notes are stripped before the ticket leaves the service. */
   async getMine(user: RequestUser, id: string): Promise<SupportTicketDetailDto> {
-    const ticket = await this.prisma.supportTicket.findUnique({ where: { id }, include: ticketDetailInclude });
+    const ticket = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: ticketDetailInclude,
+    });
     if (!ticket || ticket.raisedById !== user.id) throw AppException.notFound('Support ticket', id);
     return this.toDetailDto(ticket, { includeInternal: false });
   }
@@ -167,17 +194,29 @@ export class SupportService {
    * Adds one message to a ticket. A user reply reopens a resolved ticket; an agent reply records
    * the first response time, moves the ticket to WAITING_USER and notifies the raiser.
    */
-  async addMessage(user: RequestUser, ticketId: string, input: TicketMessageInput): Promise<SupportMessageDto> {
+  async addMessage(
+    user: RequestUser,
+    ticketId: string,
+    input: TicketMessageInput,
+  ): Promise<SupportMessageDto> {
     const ticket = await this.prisma.supportTicket.findUnique({
       where: { id: ticketId },
-      select: { id: true, number: true, status: true, raisedById: true, assignedAgentId: true, firstResponseAt: true },
+      select: {
+        id: true,
+        number: true,
+        status: true,
+        raisedById: true,
+        assignedAgentId: true,
+        firstResponseAt: true,
+      },
     });
     if (!ticket) throw AppException.notFound('Support ticket', ticketId);
 
     const isAgent = this.isAgent(user);
     const isOwner = ticket.raisedById === user.id;
     if (!isAgent && !isOwner) throw AppException.notFound('Support ticket', ticketId);
-    if (ticket.status === TicketStatus.CLOSED) throw AppException.conflict('This ticket is closed', ErrorCode.CONFLICT);
+    if (ticket.status === TicketStatus.CLOSED)
+      throw AppException.conflict('This ticket is closed', ErrorCode.CONFLICT);
 
     // Only agents may write internal notes; a user-supplied flag is ignored, never honoured.
     const internal = isAgent && input.internal;
@@ -195,25 +234,36 @@ export class SupportService {
 
       const firstResponse = isAgent && !internal && !ticket.firstResponseAt;
       if (nextStatus || firstResponse) {
-        const data: Prisma.SupportTicketUncheckedUpdateInput = nextStatus ? this.statusPatch(nextStatus) : {};
+        const data: Prisma.SupportTicketUncheckedUpdateInput = nextStatus
+          ? this.statusPatch(nextStatus)
+          : {};
         if (firstResponse) data.firstResponseAt = new Date();
         await tx.supportTicket.update({ where: { id: ticket.id }, data });
       }
 
-      return tx.supportMessage.findUniqueOrThrow({ where: { id: created.id }, include: messageInclude });
+      return tx.supportMessage.findUniqueOrThrow({
+        where: { id: created.id },
+        include: messageInclude,
+      });
     });
 
     await this.notifyMessage(ticket, user, isAgent, internal);
     return this.toMessageDto(message, ticket.raisedById);
   }
 
-  private statusAfterMessage(current: TicketStatus, isAgent: boolean, internal: boolean): TicketStatus | null {
+  private statusAfterMessage(
+    current: TicketStatus,
+    isAgent: boolean,
+    internal: boolean,
+  ): TicketStatus | null {
     if (isAgent) {
       if (internal) return current === TicketStatus.OPEN ? TicketStatus.IN_PROGRESS : null;
       return current === TicketStatus.WAITING_USER ? null : TicketStatus.WAITING_USER;
     }
     // The user answered: a resolved or waiting ticket goes back into the agent queue.
-    return current === TicketStatus.RESOLVED || current === TicketStatus.WAITING_USER ? TicketStatus.IN_PROGRESS : null;
+    return current === TicketStatus.RESOLVED || current === TicketStatus.WAITING_USER
+      ? TicketStatus.IN_PROGRESS
+      : null;
   }
 
   private async notifyMessage(
@@ -246,15 +296,22 @@ export class SupportService {
 
     const isCustomer = JobPolicy.isCustomer(user, job);
     const isPartner = JobPolicy.isAssignedPartner(user, job);
-    if (!isCustomer && !isPartner) throw AppException.forbidden('Only the parties of a job can report each other');
+    if (!isCustomer && !isPartner)
+      throw AppException.forbidden('Only the parties of a job can report each other');
 
     const reportedId = isCustomer ? job.partnerId : job.customerId;
-    if (!reportedId) throw AppException.badRequest(ErrorCode.VALIDATION_FAILED, 'This job has no other party to report');
+    if (!reportedId)
+      throw AppException.badRequest(
+        ErrorCode.VALIDATION_FAILED,
+        'This job has no other party to report',
+      );
 
     await this.media.assertOwnedReady(user.id, input.attachmentMediaIds, [MediaPurpose.SUPPORT]);
     const routing = routeReport(input.reason, isCustomer);
     // Machine-readable subject/description: apps render the `reason` key, agents read the detail.
-    const description = input.description?.trim().length ? input.description.trim() : `REPORT:${input.reason} job=${job.id}`;
+    const description = input.description?.trim().length
+      ? input.description.trim()
+      : `REPORT:${input.reason} job=${job.id}`;
 
     const result = await this.prisma.$transaction(async (tx) => {
       const ticket = await tx.supportTicket.create({
@@ -281,7 +338,10 @@ export class SupportService {
           ticketId: ticket.id,
         },
       });
-      const stored = await tx.supportTicket.findUniqueOrThrow({ where: { id: ticket.id }, include: ticketInclude });
+      const stored = await tx.supportTicket.findUniqueOrThrow({
+        where: { id: ticket.id },
+        include: ticketInclude,
+      });
       return { report, ticket: stored };
     });
 
@@ -300,7 +360,12 @@ export class SupportService {
         category: filter.category,
         assignedAgentId: filter.assignedAgentId,
         ...(filter.q
-          ? { OR: [{ number: { contains: filter.q, mode: 'insensitive' } }, { subject: { contains: filter.q, mode: 'insensitive' } }] }
+          ? {
+              OR: [
+                { number: { contains: filter.q, mode: 'insensitive' } },
+                { subject: { contains: filter.q, mode: 'insensitive' } },
+              ],
+            }
           : {}),
       },
       include: ticketInclude,
@@ -312,18 +377,31 @@ export class SupportService {
 
   /** Agent view: internal notes included. */
   async get(id: string): Promise<SupportTicketDetailDto> {
-    const ticket = await this.prisma.supportTicket.findUnique({ where: { id }, include: ticketDetailInclude });
+    const ticket = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: ticketDetailInclude,
+    });
     if (!ticket) throw AppException.notFound('Support ticket', id);
     return this.toDetailDto(ticket, { includeInternal: true });
   }
 
-  async update(id: string, input: UpdateTicketInput, actor: RequestUser, requestId: string | null = null): Promise<SupportTicketDto> {
-    const before = await this.prisma.supportTicket.findUnique({ where: { id }, include: ticketInclude });
+  async update(
+    id: string,
+    input: UpdateTicketInput,
+    actor: RequestUser,
+    requestId: string | null = null,
+  ): Promise<SupportTicketDto> {
+    const before = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: ticketInclude,
+    });
     if (!before) throw AppException.notFound('Support ticket', id);
     if (input.status) assertTicketTransition(before.status, input.status);
     if (input.assignedAgentId) await this.assertAgentExists(input.assignedAgentId);
 
-    const data: Prisma.SupportTicketUncheckedUpdateInput = input.status ? this.statusPatch(input.status) : {};
+    const data: Prisma.SupportTicketUncheckedUpdateInput = input.status
+      ? this.statusPatch(input.status)
+      : {};
     if (input.priority) data.priority = input.priority;
     if (input.category) data.category = input.category;
     if (input.assignedAgentId !== undefined) data.assignedAgentId = input.assignedAgentId;
@@ -336,8 +414,18 @@ export class SupportService {
           action: 'support_ticket.update',
           entity: 'support_ticket',
           entityId: id,
-          oldValue: { status: before.status, priority: before.priority, category: before.category, assignedAgentId: before.assignedAgentId },
-          newValue: { status: row.status, priority: row.priority, category: row.category, assignedAgentId: row.assignedAgentId },
+          oldValue: {
+            status: before.status,
+            priority: before.priority,
+            category: before.category,
+            assignedAgentId: before.assignedAgentId,
+          },
+          newValue: {
+            status: row.status,
+            priority: row.priority,
+            category: row.category,
+            assignedAgentId: row.assignedAgentId,
+          },
           requestId,
         },
         tx,
@@ -349,17 +437,36 @@ export class SupportService {
   }
 
   /** Assignment is an ordinary update so it lands in the same audit trail. */
-  async assign(id: string, agentId: string, actor: RequestUser, requestId: string | null = null): Promise<SupportTicketDto> {
-    const ticket = await this.prisma.supportTicket.findUnique({ where: { id }, select: { status: true } });
+  async assign(
+    id: string,
+    agentId: string,
+    actor: RequestUser,
+    requestId: string | null = null,
+  ): Promise<SupportTicketDto> {
+    const ticket = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      select: { status: true },
+    });
     if (!ticket) throw AppException.notFound('Support ticket', id);
     const status = ticket.status === TicketStatus.OPEN ? TicketStatus.IN_PROGRESS : undefined;
-    return this.update(id, { assignedAgentId: agentId, ...(status ? { status } : {}) }, actor, requestId);
+    return this.update(
+      id,
+      { assignedAgentId: agentId, ...(status ? { status } : {}) },
+      actor,
+      requestId,
+    );
   }
 
   async listReports(filter: ReportListFilter): Promise<Page<UserReportDto>> {
     const cursor = decodeCursor(filter.cursor);
     const rows = await this.prisma.userReport.findMany({
-      where: { ...cursorWhere(cursor), status: filter.status, reportedId: filter.reportedId, reporterId: filter.reporterId, jobId: filter.jobId },
+      where: {
+        ...cursorWhere(cursor),
+        status: filter.status,
+        reportedId: filter.reportedId,
+        reporterId: filter.reporterId,
+        jobId: filter.jobId,
+      },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: filter.limit + 1,
     });
@@ -368,7 +475,9 @@ export class SupportService {
 
   /** Tickets still waiting on somebody — the ops dashboard counter. */
   async openTicketCount(): Promise<number> {
-    return this.prisma.supportTicket.count({ where: { status: { in: [...ACTIVE_TICKET_STATUSES] } } });
+    return this.prisma.supportTicket.count({
+      where: { status: { in: [...ACTIVE_TICKET_STATUSES] } },
+    });
   }
 
   /* ---------------------------------------------------------------- helpers */
@@ -387,7 +496,10 @@ export class SupportService {
   }
 
   private async assertAgentExists(agentId: string): Promise<void> {
-    const agent = await this.prisma.user.findUnique({ where: { id: agentId }, select: { id: true, accountStatus: true } });
+    const agent = await this.prisma.user.findUnique({
+      where: { id: agentId },
+      select: { id: true, accountStatus: true },
+    });
     if (!agent || agent.accountStatus === 'DELETED') throw AppException.notFound('Agent', agentId);
   }
 
@@ -396,7 +508,9 @@ export class SupportService {
       if (JobPolicy.isAssignedPartner(user, job)) return UserRole.PARTNER;
       if (JobPolicy.isCustomer(user, job)) return UserRole.CUSTOMER;
     }
-    return user.roles.includes(UserRole.PARTNER) && !user.roles.includes(UserRole.CUSTOMER) ? UserRole.PARTNER : UserRole.CUSTOMER;
+    return user.roles.includes(UserRole.PARTNER) && !user.roles.includes(UserRole.CUSTOMER)
+      ? UserRole.PARTNER
+      : UserRole.CUSTOMER;
   }
 
   private statusPatch(status: TicketStatus): Prisma.SupportTicketUncheckedUpdateInput {
@@ -406,9 +520,16 @@ export class SupportService {
     return patch;
   }
 
-  private async attachMedia(tx: Tx, ticketId: string, messageId: string | null, mediaIds: string[]): Promise<void> {
+  private async attachMedia(
+    tx: Tx,
+    ticketId: string,
+    messageId: string | null,
+    mediaIds: string[],
+  ): Promise<void> {
     if (!mediaIds.length) return;
-    await tx.supportAttachment.createMany({ data: mediaIds.map((mediaId) => ({ ticketId, messageId, mediaId })) });
+    await tx.supportAttachment.createMany({
+      data: mediaIds.map((mediaId) => ({ ticketId, messageId, mediaId })),
+    });
   }
 
   /* ---------------------------------------------------------------- mapping */
@@ -428,14 +549,21 @@ export class SupportService {
       jobId: ticket.jobId,
       assignedAgentId: ticket.assignedAgentId,
       // Ticket-level attachments only; the ones bound to a message travel with that message.
-      attachmentUrls: ticket.attachments.filter((a) => a.messageId === null).map((a) => this.mediaUrls.urlFor(a.media, 'medium')),
+      attachmentUrls: ticket.attachments
+        .filter((a) => a.messageId === null)
+        .map((a) => this.mediaUrls.urlFor(a.media, 'medium')),
       createdAt: ticket.createdAt.toISOString(),
       updatedAt: ticket.updatedAt.toISOString(),
     };
   }
 
-  private toDetailDto(ticket: TicketDetailRow, opts: { includeInternal: boolean }): SupportTicketDetailDto {
-    const messages = opts.includeInternal ? ticket.messages : ticket.messages.filter((m) => !m.isInternal);
+  private toDetailDto(
+    ticket: TicketDetailRow,
+    opts: { includeInternal: boolean },
+  ): SupportTicketDetailDto {
+    const messages = opts.includeInternal
+      ? ticket.messages
+      : ticket.messages.filter((m) => !m.isInternal);
     return {
       ...this.toDto(ticket),
       messages: messages.map((m) => this.toMessageDto(m, ticket.raisedById)),

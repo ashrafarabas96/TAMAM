@@ -11,12 +11,12 @@ The specification (`docs/MASTER_DEVELOPMENT_PROMPT_TAMAM.pdf`, 93 pages) demands
 status per item, with no inflated claims (§200–§205). This report uses four values, and the
 distinction between the first two is the single most important fact in the document:
 
-| Status | Meaning |
-| --- | --- |
-| **Implemented** | Written **and executed** — compiled, run, or tested in this environment. |
+| Status                 | Meaning                                                                                                                                 |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Implemented**        | Written **and executed** — compiled, run, or tested in this environment.                                                                |
 | **Written-Unverified** | Code is complete and internally consistent, but **has never been compiled or run**, because the sandbox had no package-registry access. |
-| **Partial** | Deliberately incomplete; the gap is named. |
-| **Not Implemented** | Absent; the reason is named. |
+| **Partial**            | Deliberately incomplete; the gap is named.                                                                                              |
+| **Not Implemented**    | Absent; the reason is named.                                                                                                            |
 
 **The overwhelming majority of this repository is `Written-Unverified`.** That is a statement
 about the environment, not about the code: `registry.npmjs.org`, `pub.dev` and the Ubuntu
@@ -26,7 +26,7 @@ faked to work around this — the code was written to compile, and the verificat
 deferred to a session with network access. **Section 6 is the procedure for that session, and it
 is a required part of the delivery, not an optional follow-up.**
 
-What *was* executed here: the design-token generator, the Dart contracts generator, and the
+What _was_ executed here: the design-token generator, the Dart contracts generator, and the
 structural self-checks described in §5 (import resolution, key parity, truncation, brace
 balance, TODO scan) — all run with Node against the source tree.
 
@@ -34,15 +34,15 @@ balance, TODO scan) — all run with Node against the source tree.
 
 ## 1. Executive summary
 
-| Part | Files | Status | One-line assessment |
-| --- | ---: | --- | --- |
-| `apps/api` — NestJS backend | 255 | Written-Unverified | All 32 modules, 31 controllers, 313 documented routes, 96 Prisma models. |
-| `apps/admin-web` — Next.js console | 164 | Written-Unverified | 29 pages, permission-gated, incl. the campaign/banner manager. |
-| `apps/customer-mobile` — Flutter | 160 | Written-Unverified | 151 Dart files, all four services, banner surfaces, live tracking. |
-| `apps/partner-mobile` — Flutter | 191 | Written-Unverified | 182 Dart files, onboarding→offer→job→quote→earnings, background location. |
-| `packages/*` — shared contracts | 28 | Mixed | Tokens **Implemented**; types/validation Written-Unverified. |
-| `docs/*`, `infrastructure/*`, `scripts/*` | 22 | Implemented | Written and reviewed; the bring-up script is unexecuted. |
-| Compile / test / migrate / seed run | — | **Not Implemented** | Blocked by network policy — see §6. |
+| Part                                      | Files | Status              | One-line assessment                                                       |
+| ----------------------------------------- | ----: | ------------------- | ------------------------------------------------------------------------- |
+| `apps/api` — NestJS backend               |   255 | Written-Unverified  | All 32 modules, 31 controllers, 313 documented routes, 96 Prisma models.  |
+| `apps/admin-web` — Next.js console        |   164 | Written-Unverified  | 29 pages, permission-gated, incl. the campaign/banner manager.            |
+| `apps/customer-mobile` — Flutter          |   160 | Written-Unverified  | 151 Dart files, all four services, banner surfaces, live tracking.        |
+| `apps/partner-mobile` — Flutter           |   191 | Written-Unverified  | 182 Dart files, onboarding→offer→job→quote→earnings, background location. |
+| `packages/*` — shared contracts           |    28 | Mixed               | Tokens **Implemented**; types/validation Written-Unverified.              |
+| `docs/*`, `infrastructure/*`, `scripts/*` |    22 | Implemented         | Written and reviewed; the bring-up script is unexecuted.                  |
+| Compile / test / migrate / seed run       |     — | **Not Implemented** | Blocked by network policy — see §6.                                       |
 
 Zero occurrences of `TODO`/`FIXME` across all TypeScript, TSX and Dart sources (excluding
 generated files, which carry a DO-NOT-EDIT banner). No mock API layer exists in any client: every
@@ -54,14 +54,14 @@ screen calls the real endpoints.
 
 ### 2.1 Foundation
 
-| Item | Status | Notes |
-| --- | --- | --- |
-| Bootstrap, versioned prefix `/api/v1`, Swagger at `/docs` (non-prod) | Written-Unverified | `main.ts`; OpenAPI export script included. |
+| Item                                                                      | Status             | Notes                                                               |
+| ------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------- |
+| Bootstrap, versioned prefix `/api/v1`, Swagger at `/docs` (non-prod)      | Written-Unverified | `main.ts`; OpenAPI export script included.                          |
 | Config service with typed keys + bounds, DB-backed overrides, Redis cache | Written-Unverified | `packages/shared-types/src/config-keys.ts` is the single catalogue. |
-| Structured logging (pino) with redaction, `X-Request-Id` propagation | Written-Unverified | Every error envelope carries `requestId`. |
-| Global error filter → `{ code, message, details?, requestId }` | Written-Unverified | Clients branch on `code`, never on `message`. |
-| Health (`/health/live`, `/health/ready`) and Prometheus `/metrics` | Written-Unverified | `@nestjs/terminus` + `prom-client`. |
-| Guard chain `RateLimit → JwtAuth → AccountStatus → Permissions` | Written-Unverified | Applied globally; per-route policies declared by decorator. |
+| Structured logging (pino) with redaction, `X-Request-Id` propagation      | Written-Unverified | Every error envelope carries `requestId`.                           |
+| Global error filter → `{ code, message, details?, requestId }`            | Written-Unverified | Clients branch on `code`, never on `message`.                       |
+| Health (`/health/live`, `/health/ready`) and Prometheus `/metrics`        | Written-Unverified | `@nestjs/terminus` + `prom-client`.                                 |
+| Guard chain `RateLimit → JwtAuth → AccountStatus → Permissions`           | Written-Unverified | Applied globally; per-route policies declared by decorator.         |
 
 ### 2.2 Domain modules (32)
 
@@ -72,35 +72,35 @@ screen calls the real endpoints.
 
 Highlights of the core engine, which was authored directly rather than delegated:
 
-* **Universal Job Engine** — one `jobs` table serving RIDE, DELIVERY and HOME_SERVICE. Transitions
+- **Universal Job Engine** — one `jobs` table serving RIDE, DELIVERY and HOME_SERVICE. Transitions
   are validated against an explicit `JOB_TRANSITIONS` table in `shared-types`, executed under
   `SELECT … FOR UPDATE` with an optimistic `version` column, and recorded in an append-only
   `job_events` table. Domain events are emitted **after** commit, never inside the transaction.
-* **Dispatch** — PostGIS candidate search, deterministic weighted scoring (unit-tested pure
+- **Dispatch** — PostGIS candidate search, deterministic weighted scoring (unit-tested pure
   function), wave-based offers on BullMQ delayed jobs, offer TTL, total-timeout →
   `NO_PARTNER_AVAILABLE`. Accept is race-safe three ways: a Redis lock, a transaction, and a
   partial unique index (`uq_job_assignments_one_accepted`) as the last line of defence.
-* **Pricing** — server-side only. Integer minor units throughout; rule JSON per job type / zone /
+- **Pricing** — server-side only. Integer minor units throughout; rule JSON per job type / zone /
   vehicle / category; surge overrides; Redis-cached estimates; an immutable `pricing_snapshots`
   row written at creation and used at completion. No client computes a price.
-* **Money** — double-entry ledger with immutability triggers and a deferred balanced-transaction
+- **Money** — double-entry ledger with immutability triggers and a deferred balanced-transaction
   constraint. The wallet balance cache can only be written inside `PrismaService.withLedgerWrite`,
   which sets a session GUC the trigger checks — a stray `UPDATE` fails loudly.
-* **Tracking** — batched location ingestion, adaptive client intervals, ETA refresh, Socket.IO
+- **Tracking** — batched location ingestion, adaptive client intervals, ETA refresh, Socket.IO
   `/tracking` namespace with a Redis adapter for horizontal scale, and a retention purge job.
 
 ### 2.3 Security (spec §85–§99)
 
-| Control | Status |
-| --- | --- |
-| OTP stored as HMAC with a server pepper, attempt + resend limits | Written-Unverified |
-| Rotating refresh tokens with family reuse-detection, device sessions | Written-Unverified |
-| Permission-based RBAC (never role checks in code paths) | Written-Unverified |
+| Control                                                                     | Status             |
+| --------------------------------------------------------------------------- | ------------------ |
+| OTP stored as HMAC with a server pepper, attempt + resend limits            | Written-Unverified |
+| Rotating refresh tokens with family reuse-detection, device sessions        | Written-Unverified |
+| Permission-based RBAC (never role checks in code paths)                     | Written-Unverified |
 | Object-level authorization answering **404** rather than 403 for non-owners | Written-Unverified |
-| AES-256-GCM encryption of PII at rest | Written-Unverified |
-| Redis sliding-window rate limits, per-route policies | Written-Unverified |
-| Append-only audit log with DB-enforced immutability | Written-Unverified |
-| helmet, strict CORS allow-list, payload caps, log redaction | Written-Unverified |
+| AES-256-GCM encryption of PII at rest                                       | Written-Unverified |
+| Redis sliding-window rate limits, per-route policies                        | Written-Unverified |
+| Append-only audit log with DB-enforced immutability                         | Written-Unverified |
+| helmet, strict CORS allow-list, payload caps, log redaction                 | Written-Unverified |
 
 ### 2.4 Tests
 
@@ -174,12 +174,12 @@ for both apps. Each still requires a one-time `flutter create` to generate the p
 
 Executed successfully in this environment:
 
-* `packages/ui-tokens/scripts/generate.mjs` → `dist/tokens.ts`, `dist/tokens.css`, and the Dart
+- `packages/ui-tokens/scripts/generate.mjs` → `dist/tokens.ts`, `dist/tokens.css`, and the Dart
   token files in both Flutter apps. **Implemented.**
-* `scripts/generate-dart-contracts.mjs` → 48 enums plus the API constants into both apps.
+- `scripts/generate-dart-contracts.mjs` → 48 enums plus the API constants into both apps.
   **Implemented.** (Two generator defects — an invalid Dart literal and skipped single-line enums —
   were found and fixed here.)
-* Structural checks over the source tree: zero `TODO`/`FIXME`; every local and workspace import
+- Structural checks over the source tree: zero `TODO`/`FIXME`; every local and workspace import
   path resolves; no truncated files; balanced braces; localization key parity in both directions
   for both mobile apps and the admin console; every admin page's permission gate matches its nav
   entry; every partner route referenced exists in the router.
@@ -232,51 +232,51 @@ that no compiler has ever seen.
 
 ### 7.1 Blocking
 
-| # | Item | Impact |
-| --- | --- | --- |
-| B1 | Nothing has been compiled, migrated, seeded or tested | The single blocker. Until §6 runs, "it works" is unproven. |
-| B2 | `pnpm-lock.yaml` does not exist | `pnpm install` in §6 creates it. Until then the Dockerfiles and CI, which use `--frozen-lockfile`, cannot build. |
-| B3 | Flutter platform scaffolds absent | Each app needs one `flutter create` (documented) before it can build. |
+| #   | Item                                                  | Impact                                                                                                           |
+| --- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| B1  | Nothing has been compiled, migrated, seeded or tested | The single blocker. Until §6 runs, "it works" is unproven.                                                       |
+| B2  | `pnpm-lock.yaml` does not exist                       | `pnpm install` in §6 creates it. Until then the Dockerfiles and CI, which use `--frozen-lockfile`, cannot build. |
+| B3  | Flutter platform scaffolds absent                     | Each app needs one `flutter create` (documented) before it can build.                                            |
 
 ### 7.2 Backend API gaps found while building the clients
 
 Each of these was discovered by a client needing something the API does not offer. None is
 worked around with a fake — the client degrades honestly, and the fix belongs in the API.
 
-| # | Gap | Consequence today |
-| --- | --- | --- |
-| A1 | `GET /me` returns roles, not effective permissions | The console re-derives permissions from the default role bundles; it drifts the moment a role is edited. Add `permissions[]` — the client already prefers it. |
-| A2 | Admin campaign DTO exposes `creative.imageUrl` but `PUT` needs `imageMediaId` | Editing a campaign forces re-uploading both language creatives. |
-| A3 | No `GET /media/:id` status route | Processing is async and campaign create rejects non-`READY` media; the console can only retry, not poll. |
-| A4 | No admin view of a partner's earnings; no wallet lookup by owner | The partner page shows balance but not commission history; statements need a `walletId` only obtainable from the ledger accounts list. |
-| A5 | `JobPolicy.canChat` requires a support permission | Dispatchers with `JOBS_READ_ALL` cannot read a job's chat transcript. |
-| A6 | No PATCH for an approved partner's registered roles/zones/categories | Only the onboarding endpoints exist; the app reuses them for zones/skills and treats active roles as a per-shift device preference. |
-| A7 | No `DELETE /partners/me/bank-accounts/:id`; no document delete/replace | A stale payout account cannot be removed; re-upload relies on the server superseding by type. |
-| A8 | Admins cannot attach dispute evidence | Only the user-facing evidence route exists. |
-| A9 | Several admin GETs return raw Prisma rows | BigInt/Decimal arrive as number-or-string; clients type defensively. DTO mappers would stabilise them. |
-| A10 | Zone service rules have no delete/disable-by-id | The UI renders them read-only. |
-| A11 | Feature-flag catalogue has no descriptive route | The console toggles `enabled` + reason; rollout is displayed read-only. |
-| A12 | Notification templates have no delete route | |
+| #   | Gap                                                                           | Consequence today                                                                                                                                             |
+| --- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | `GET /me` returns roles, not effective permissions                            | The console re-derives permissions from the default role bundles; it drifts the moment a role is edited. Add `permissions[]` — the client already prefers it. |
+| A2  | Admin campaign DTO exposes `creative.imageUrl` but `PUT` needs `imageMediaId` | Editing a campaign forces re-uploading both language creatives.                                                                                               |
+| A3  | No `GET /media/:id` status route                                              | Processing is async and campaign create rejects non-`READY` media; the console can only retry, not poll.                                                      |
+| A4  | No admin view of a partner's earnings; no wallet lookup by owner              | The partner page shows balance but not commission history; statements need a `walletId` only obtainable from the ledger accounts list.                        |
+| A5  | `JobPolicy.canChat` requires a support permission                             | Dispatchers with `JOBS_READ_ALL` cannot read a job's chat transcript.                                                                                         |
+| A6  | No PATCH for an approved partner's registered roles/zones/categories          | Only the onboarding endpoints exist; the app reuses them for zones/skills and treats active roles as a per-shift device preference.                           |
+| A7  | No `DELETE /partners/me/bank-accounts/:id`; no document delete/replace        | A stale payout account cannot be removed; re-upload relies on the server superseding by type.                                                                 |
+| A8  | Admins cannot attach dispute evidence                                         | Only the user-facing evidence route exists.                                                                                                                   |
+| A9  | Several admin GETs return raw Prisma rows                                     | BigInt/Decimal arrive as number-or-string; clients type defensively. DTO mappers would stabilise them.                                                        |
+| A10 | Zone service rules have no delete/disable-by-id                               | The UI renders them read-only.                                                                                                                                |
+| A11 | Feature-flag catalogue has no descriptive route                               | The console toggles `enabled` + reason; rollout is displayed read-only.                                                                                       |
+| A12 | Notification templates have no delete route                                   |                                                                                                                                                               |
 
 ### 7.3 Internal inconsistencies to fix during verification
 
-| # | Item |
-| --- | --- |
-| C1 | `PaymentsService.getForJob` answers **403** for a non-owner where `JobsService.getForUser` answers **404**. The spec requires 404; align payments. |
-| C2 | Six DTO shapes (`RefundDto`, `DailyKpiDto`, `PartnerAvailabilityDto`, `HeartbeatResultDto`, `WalletIntegrityDto`, `RiskSignalDto`) are declared inside services rather than `packages/shared-types`. Move them so clients share one definition. |
-| C3 | `ZoneOperatingHours` cannot express midnight as an end time; the seed uses `23:59`. Either allow `24:00` or store minutes-from-midnight. |
-| C4 | The Prettier check is commented out in CI. Re-enable once `pnpm format` has been run against a compiled tree. |
-| C5 | Neither Flutter app calls `initializeDateFormatting()` before `runApp`. It works inside a resolved widget tree, but a `DateFormat` built outside one (background isolate, early formatter) would throw. One line in each `main.dart`. |
-| C6 | Jest coverage threshold of 60 % is unmeasured; re-tune against real output. |
+| #   | Item                                                                                                                                                                                                                                            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | `PaymentsService.getForJob` answers **403** for a non-owner where `JobsService.getForUser` answers **404**. The spec requires 404; align payments.                                                                                              |
+| C2  | Six DTO shapes (`RefundDto`, `DailyKpiDto`, `PartnerAvailabilityDto`, `HeartbeatResultDto`, `WalletIntegrityDto`, `RiskSignalDto`) are declared inside services rather than `packages/shared-types`. Move them so clients share one definition. |
+| C3  | `ZoneOperatingHours` cannot express midnight as an end time; the seed uses `23:59`. Either allow `24:00` or store minutes-from-midnight.                                                                                                        |
+| C4  | The Prettier check is commented out in CI. Re-enable once `pnpm format` has been run against a compiled tree.                                                                                                                                   |
+| C5  | Neither Flutter app calls `initializeDateFormatting()` before `runApp`. It works inside a resolved widget tree, but a `DateFormat` built outside one (background isolate, early formatter) would throw. One line in each `main.dart`.           |
+| C6  | Jest coverage threshold of 60 % is unmeasured; re-tune against real output.                                                                                                                                                                     |
 
 ### 7.4 Deliberately out of scope
 
-| Item | Reason |
-| --- | --- |
-| Real payment-gateway integration | The spec asks for an abstraction; `PaymentGatewayProvider` has mock and none implementations. A live provider requires the owner's merchant credentials. |
-| Push delivery (FCM/APNs) | The `PushTokenProvider` interface and registration flow exist with a no-op implementation; wiring needs project credentials and the platform scaffolds from B3. |
-| App Store / Play submission assets | Beyond the code deliverable. |
-| Load and penetration testing | A k6 tracking script is included; running it needs a deployed environment. |
+| Item                               | Reason                                                                                                                                                          |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Real payment-gateway integration   | The spec asks for an abstraction; `PaymentGatewayProvider` has mock and none implementations. A live provider requires the owner's merchant credentials.        |
+| Push delivery (FCM/APNs)           | The `PushTokenProvider` interface and registration flow exist with a no-op implementation; wiring needs project credentials and the platform scaffolds from B3. |
+| App Store / Play submission assets | Beyond the code deliverable.                                                                                                                                    |
+| Load and penetration testing       | A k6 tracking script is included; running it needs a deployed environment.                                                                                      |
 
 ---
 

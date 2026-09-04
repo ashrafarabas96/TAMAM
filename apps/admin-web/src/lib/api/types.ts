@@ -30,7 +30,13 @@ import type {
 
 /* These four moved into @tamam/shared-types (they were maintained twice); re-exported so
    the console's existing imports keep resolving from this module. */
-export type { DailyKpiDto, RefundDto, RestrictionKind, RiskSignalDto, WalletIntegrityDto } from '@tamam/shared-types';
+export type {
+  DailyKpiDto,
+  RefundDto,
+  RestrictionKind,
+  RiskSignalDto,
+  WalletIntegrityDto,
+} from '@tamam/shared-types';
 
 /* ------------------------------------------------ admin/admin-overview.service.ts */
 export interface AdminOverviewDto {
@@ -113,7 +119,13 @@ export interface AdminSearchResult {
 }
 
 /* ----------------------------------------------------- admin/dispatcher.service.ts */
-export type DispatchProblem = 'UNASSIGNED' | 'NO_PARTNER_AVAILABLE' | 'ASSIGNED_NOT_MOVING' | 'ETA_EXCEEDED' | 'WAITING_CUSTOMER' | 'PARTNER_HEARTBEAT_STALE';
+export type DispatchProblem =
+  | 'UNASSIGNED'
+  | 'NO_PARTNER_AVAILABLE'
+  | 'ASSIGNED_NOT_MOVING'
+  | 'ETA_EXCEEDED'
+  | 'WAITING_CUSTOMER'
+  | 'PARTNER_HEARTBEAT_STALE';
 
 export interface DispatchConsoleRow {
   job: JobDto;
@@ -176,7 +188,13 @@ export interface TemporaryPasswordResult {
 }
 
 /* ------------------------------------------------------- dispatch/dispatch.service.ts */
-export type NearbyPartnerDto = LiveMapPartnerDto & { distanceMeters: number; rating: number; completedJobs: number; fullName: string | null; phone: string };
+export type NearbyPartnerDto = LiveMapPartnerDto & {
+  distanceMeters: number;
+  rating: number;
+  completedJobs: number;
+  fullName: string | null;
+  phone: string;
+};
 
 /** Raw `job_assignments` rows (Prisma include) returned by GET /admin/jobs/:id/assignments. */
 export interface JobAssignmentRow {
@@ -211,7 +229,14 @@ export interface SosAlertRow {
   acknowledgedAt: string | null;
   resolvedAt: string | null;
   createdAt: string;
-  job: { number: string; type: JobType; status: JobStatus; zoneId: string; customerId: string; partnerId: string | null };
+  job: {
+    number: string;
+    type: JobType;
+    status: JobStatus;
+    zoneId: string;
+    customerId: string;
+    partnerId: string | null;
+  };
   user: { fullName: string | null; phone: string };
 }
 
@@ -225,7 +250,13 @@ export interface ZoneServiceRuleRow {
   isEnabled: boolean;
   createdAt: string;
   updatedAt: string;
-  hours: Array<{ id: string; dayOfWeek: number; opensAt: string; closesAt: string; isClosed: boolean }>;
+  hours: Array<{
+    id: string;
+    dayOfWeek: number;
+    opensAt: string;
+    closesAt: string;
+    isClosed: boolean;
+  }>;
   serviceType: { code: string } | null;
   category: { slug: string; nameAr: string; nameEn: string } | null;
   vehicleType: { code: string } | null;
@@ -367,7 +398,14 @@ export interface LedgerTransactionDto {
   reason: string | null;
   actorId: string | null;
   createdAt: string;
-  entries: Array<{ id: string; accountId: string; accountCode: string; direction: LedgerEntryDirection; amount: Money; balanceAfter: Money }>;
+  entries: Array<{
+    id: string;
+    accountId: string;
+    accountCode: string;
+    direction: LedgerEntryDirection;
+    amount: Money;
+    balanceAfter: Money;
+  }>;
 }
 export interface CommissionPolicyDto {
   id: string;

@@ -11,7 +11,10 @@ export const requestOtpSchema = z.object({
 
 export const verifyOtpSchema = z.object({
   phone: phoneSchema,
-  code: z.string().trim().regex(/^\d{4,8}$/, 'OTP must be 4-8 digits'),
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{4,8}$/, 'OTP must be 4-8 digits'),
   audience: z.enum(['CUSTOMER', 'PARTNER']).default('CUSTOMER'),
   device: deviceInfoSchema,
   language: languageSchema.default('ar'),
@@ -49,7 +52,10 @@ export const adminChangePasswordSchema = z
       .regex(/[a-z]/, 'One lowercase letter')
       .regex(/\d/, 'One digit'),
   })
-  .refine((v) => v.currentPassword !== v.newPassword, { message: 'New password must differ', path: ['newPassword'] });
+  .refine((v) => v.currentPassword !== v.newPassword, {
+    message: 'New password must differ',
+    path: ['newPassword'],
+  });
 
 export const updateProfileSchema = z.object({
   fullName: z.string().trim().min(2).max(80).optional(),

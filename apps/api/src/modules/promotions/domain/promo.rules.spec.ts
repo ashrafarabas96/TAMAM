@@ -54,88 +54,158 @@ describe('evaluatePromo', () => {
   });
 
   it('applies a fixed discount in minor units', () => {
-    expect(evaluatePromo(rule({ type: PromoType.FIXED_AMOUNT, value: 1_500 }), ctx())).toEqual({ ok: true, discountMinor: 1_500n });
+    expect(evaluatePromo(rule({ type: PromoType.FIXED_AMOUNT, value: 1_500 }), ctx())).toEqual({
+      ok: true,
+      discountMinor: 1_500n,
+    });
   });
 
   it('caps the discount at maxDiscountMinor', () => {
-    expect(evaluatePromo(rule({ value: 50, maxDiscountMinor: 1_000n }), ctx())).toEqual({ ok: true, discountMinor: 1_000n });
+    expect(evaluatePromo(rule({ value: 50, maxDiscountMinor: 1_000n }), ctx())).toEqual({
+      ok: true,
+      discountMinor: 1_000n,
+    });
   });
 
   it('never discounts more than the order total', () => {
-    expect(evaluatePromo(rule({ type: PromoType.FIXED_AMOUNT, value: 99_999 }), ctx({ subtotalMinor: 3_000n }))).toEqual({ ok: true, discountMinor: 3_000n });
+    expect(
+      evaluatePromo(
+        rule({ type: PromoType.FIXED_AMOUNT, value: 99_999 }),
+        ctx({ subtotalMinor: 3_000n }),
+      ),
+    ).toEqual({ ok: true, discountMinor: 3_000n });
   });
 
   it('rejects an inactive code', () => {
-    expect(evaluatePromo(rule({ isActive: false }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_INVALID });
+    expect(evaluatePromo(rule({ isActive: false }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_INVALID,
+    });
   });
 
   it('rejects a code that has not started', () => {
-    expect(evaluatePromo(rule({ startsAt: new Date('2026-06-01T00:00:00.000Z') }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_INVALID });
+    expect(evaluatePromo(rule({ startsAt: new Date('2026-06-01T00:00:00.000Z') }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_INVALID,
+    });
   });
 
   it('rejects an expired code', () => {
-    expect(evaluatePromo(rule({ endsAt: new Date('2026-03-01T00:00:00.000Z') }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_EXPIRED });
+    expect(evaluatePromo(rule({ endsAt: new Date('2026-03-01T00:00:00.000Z') }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_EXPIRED,
+    });
   });
 
   it('rejects a currency mismatch', () => {
-    expect(evaluatePromo(rule({ currency: 'USD' }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
+    expect(evaluatePromo(rule({ currency: 'USD' }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_NOT_ELIGIBLE,
+    });
   });
 
   it('rejects once the global usage limit is reached', () => {
-    expect(evaluatePromo(rule({ usageLimit: 100, usageCount: 100 }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_USAGE_EXCEEDED });
+    expect(evaluatePromo(rule({ usageLimit: 100, usageCount: 100 }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_USAGE_EXCEEDED,
+    });
   });
 
   it('rejects once the per-user limit is reached', () => {
-    expect(evaluatePromo(rule({ perUserLimit: 2 }), ctx({ userRedemptions: 2 }))).toEqual({ ok: false, code: ErrorCode.PROMO_USAGE_EXCEEDED });
+    expect(evaluatePromo(rule({ perUserLimit: 2 }), ctx({ userRedemptions: 2 }))).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_USAGE_EXCEEDED,
+    });
   });
 
   it('allows a second redemption while the per-user limit is not reached', () => {
-    expect(evaluatePromo(rule({ perUserLimit: 3 }), ctx({ userRedemptions: 2 }))).toEqual({ ok: true, discountMinor: 2_000n });
+    expect(evaluatePromo(rule({ perUserLimit: 3 }), ctx({ userRedemptions: 2 }))).toEqual({
+      ok: true,
+      discountMinor: 2_000n,
+    });
   });
 
   it('rejects a first-order-only code for a returning customer', () => {
-    expect(evaluatePromo(rule({ firstOrderOnly: true }), ctx({ isFirstOrder: false }))).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
+    expect(evaluatePromo(rule({ firstOrderOnly: true }), ctx({ isFirstOrder: false }))).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_NOT_ELIGIBLE,
+    });
   });
 
   it('rejects a job type outside the allow list', () => {
-    expect(evaluatePromo(rule({ jobTypes: [JobType.DELIVERY] }), ctx({ jobType: JobType.RIDE }))).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
+    expect(
+      evaluatePromo(rule({ jobTypes: [JobType.DELIVERY] }), ctx({ jobType: JobType.RIDE })),
+    ).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
   });
 
   it('accepts a job type inside the allow list', () => {
-    expect(evaluatePromo(rule({ jobTypes: [JobType.RIDE, JobType.DELIVERY] }), ctx())).toEqual({ ok: true, discountMinor: 2_000n });
+    expect(evaluatePromo(rule({ jobTypes: [JobType.RIDE, JobType.DELIVERY] }), ctx())).toEqual({
+      ok: true,
+      discountMinor: 2_000n,
+    });
   });
 
   it('rejects a category outside the allow list (including a job with no category)', () => {
-    expect(evaluatePromo(rule({ categoryIds: [CATEGORY_ID] }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
-    expect(evaluatePromo(rule({ categoryIds: [CATEGORY_ID] }), ctx({ categoryId: 'other' }))).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
-    expect(evaluatePromo(rule({ categoryIds: [CATEGORY_ID] }), ctx({ categoryId: CATEGORY_ID }))).toEqual({ ok: true, discountMinor: 2_000n });
+    expect(evaluatePromo(rule({ categoryIds: [CATEGORY_ID] }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_NOT_ELIGIBLE,
+    });
+    expect(
+      evaluatePromo(rule({ categoryIds: [CATEGORY_ID] }), ctx({ categoryId: 'other' })),
+    ).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
+    expect(
+      evaluatePromo(rule({ categoryIds: [CATEGORY_ID] }), ctx({ categoryId: CATEGORY_ID })),
+    ).toEqual({ ok: true, discountMinor: 2_000n });
   });
 
   it('rejects a zone outside the allow list', () => {
-    expect(evaluatePromo(rule({ zoneIds: ['other-zone'] }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
+    expect(evaluatePromo(rule({ zoneIds: ['other-zone'] }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_NOT_ELIGIBLE,
+    });
   });
 
   it('rejects a user outside a targeted code', () => {
-    expect(evaluatePromo(rule({ userIds: ['someone-else'] }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
-    expect(evaluatePromo(rule({ userIds: [USER_ID] }), ctx())).toEqual({ ok: true, discountMinor: 2_000n });
+    expect(evaluatePromo(rule({ userIds: ['someone-else'] }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_NOT_ELIGIBLE,
+    });
+    expect(evaluatePromo(rule({ userIds: [USER_ID] }), ctx())).toEqual({
+      ok: true,
+      discountMinor: 2_000n,
+    });
   });
 
   it('rejects a payment method outside the allow list', () => {
-    expect(evaluatePromo(rule({ paymentMethods: [PaymentMethod.WALLET] }), ctx({ paymentMethod: PaymentMethod.CASH }))).toEqual({
+    expect(
+      evaluatePromo(
+        rule({ paymentMethods: [PaymentMethod.WALLET] }),
+        ctx({ paymentMethod: PaymentMethod.CASH }),
+      ),
+    ).toEqual({
       ok: false,
       code: ErrorCode.PROMO_NOT_ELIGIBLE,
     });
   });
 
   it('rejects an order below the minimum', () => {
-    expect(evaluatePromo(rule({ minOrderMinor: 15_000n }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_MIN_ORDER_NOT_MET });
+    expect(evaluatePromo(rule({ minOrderMinor: 15_000n }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_MIN_ORDER_NOT_MET,
+    });
   });
 
   it('rejects a discount that rounds to zero', () => {
-    expect(evaluatePromo(rule({ type: PromoType.FIXED_AMOUNT, value: 0 }), ctx())).toEqual({ ok: false, code: ErrorCode.PROMO_NOT_ELIGIBLE });
+    expect(evaluatePromo(rule({ type: PromoType.FIXED_AMOUNT, value: 0 }), ctx())).toEqual({
+      ok: false,
+      code: ErrorCode.PROMO_NOT_ELIGIBLE,
+    });
   });
 
   it('rounds percentage discounts half-up on odd amounts', () => {
-    expect(evaluatePromo(rule({ value: 12.5 }), ctx({ subtotalMinor: 999n }))).toEqual({ ok: true, discountMinor: 125n });
+    expect(evaluatePromo(rule({ value: 12.5 }), ctx({ subtotalMinor: 999n }))).toEqual({
+      ok: true,
+      discountMinor: 125n,
+    });
   });
 });

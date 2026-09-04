@@ -12,14 +12,26 @@ import {
 } from '@tamam/validation';
 import { z } from 'zod';
 
-import { AllowRestricted, Audited, CurrentUser, RateLimit, RequestId, RequirePermission, RequireRole, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  Audited,
+  CurrentUser,
+  RateLimit,
+  RequestId,
+  RequirePermission,
+  RequireRole,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
 import { PromotionsService } from './promotions.service';
 import { ReferralsService } from './referrals.service';
 
-const validatePromoSchema = applyPromoSchema.extend({ paymentMethod: z.nativeEnum(PaymentMethod).optional() });
+const validatePromoSchema = applyPromoSchema.extend({
+  paymentMethod: z.nativeEnum(PaymentMethod).optional(),
+});
 type ValidatePromoBody = ApplyPromoInput & { paymentMethod?: PaymentMethod };
 
 const promoListSchema = pageRequestSchema.extend({
@@ -49,7 +61,10 @@ export class PromotionsController {
   @Post('promos/validate')
   @RequireRole('CUSTOMER')
   @RateLimit({ name: 'promos.validate', limit: 30, windowSeconds: 300, keyBy: 'user' })
-  validate(@CurrentUser() user: RequestUser, @ZodBody(validatePromoSchema) input: ValidatePromoBody) {
+  validate(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(validatePromoSchema) input: ValidatePromoBody,
+  ) {
     return this.promotions.previewForEstimate(user.id, input, input.paymentMethod);
   }
 
@@ -71,7 +86,11 @@ export class PromotionsController {
   @Post('admin/promo-codes')
   @RequirePermission(Permission.PROMOS_MANAGE)
   @Audited({ action: 'promo_code.create', entity: 'promo_code' })
-  createPromo(@ZodBody(upsertPromoCodeSchema) input: UpsertPromoCodeInput, @CurrentUser() actor: RequestUser, @RequestId() requestId: string) {
+  createPromo(
+    @ZodBody(upsertPromoCodeSchema) input: UpsertPromoCodeInput,
+    @CurrentUser() actor: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.promotions.upsert(input, actor.id, requestId);
   }
 

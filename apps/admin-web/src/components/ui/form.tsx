@@ -1,7 +1,13 @@
 'use client';
 
 import { type ReactNode } from 'react';
-import { type Control, Controller, type FieldPath, type FieldValues, type UseFormReturn } from 'react-hook-form';
+import {
+  type Control,
+  Controller,
+  type FieldPath,
+  type FieldValues,
+  type UseFormReturn,
+} from 'react-hook-form';
 
 import { useT } from '@/i18n';
 import { isApiError } from '@/lib/api/errors';
@@ -14,7 +20,23 @@ import { Label } from './label';
 import { Select, type SelectOption } from './select';
 
 /** Layout wrapper: label, control, hint and error message. */
-export function Field({ label, htmlFor, required, hint, error, children, className }: { label?: ReactNode; htmlFor?: string; required?: boolean; hint?: ReactNode; error?: string | undefined; children: ReactNode; className?: string }) {
+export function Field({
+  label,
+  htmlFor,
+  required,
+  hint,
+  error,
+  children,
+  className,
+}: {
+  label?: ReactNode;
+  htmlFor?: string;
+  required?: boolean;
+  hint?: ReactNode;
+  error?: string | undefined;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div className={cn('min-w-0', className)}>
       {label ? (
@@ -34,7 +56,15 @@ export function Field({ label, htmlFor, required, hint, error, children, classNa
   );
 }
 
-export function FormGrid({ children, className, cols = 2 }: { children: ReactNode; className?: string; cols?: 1 | 2 | 3 | 4 }) {
+export function FormGrid({
+  children,
+  className,
+  cols = 2,
+}: {
+  children: ReactNode;
+  className?: string;
+  cols?: 1 | 2 | 3 | 4;
+}) {
   // Written out rather than interpolated so Tailwind can see every class it must emit.
   const grid =
     cols === 1
@@ -47,7 +77,17 @@ export function FormGrid({ children, className, cols = 2 }: { children: ReactNod
   return <div className={cn('grid gap-4', grid, className)}>{children}</div>;
 }
 
-export function FormSection({ title, description, children, className }: { title: ReactNode; description?: ReactNode; children: ReactNode; className?: string }) {
+export function FormSection({
+  title,
+  description,
+  children,
+  className,
+}: {
+  title: ReactNode;
+  description?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <section className={cn('space-y-4', className)}>
       <header>
@@ -68,14 +108,35 @@ interface BaseFieldProps<TValues extends FieldValues> {
   className?: string;
 }
 
-export function TextField<TValues extends FieldValues>({ control, name, label, required, hint, className, ...inputProps }: BaseFieldProps<TValues> & Omit<InputProps, 'name'>) {
+export function TextField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  required,
+  hint,
+  className,
+  ...inputProps
+}: BaseFieldProps<TValues> & Omit<InputProps, 'name'>) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
-          <Input id={name} {...inputProps} {...field} value={field.value ?? ''} invalid={!!fieldState.error} />
+        <Field
+          label={label}
+          htmlFor={name}
+          required={required}
+          hint={hint}
+          error={fieldState.error?.message}
+          className={className}
+        >
+          <Input
+            id={name}
+            {...inputProps}
+            {...field}
+            value={field.value ?? ''}
+            invalid={!!fieldState.error}
+          />
         </Field>
       )}
     />
@@ -83,13 +144,29 @@ export function TextField<TValues extends FieldValues>({ control, name, label, r
 }
 
 /** Number input that stores a JS number (or null when empty) — never a string. */
-export function NumberField<TValues extends FieldValues>({ control, name, label, required, hint, className, nullable = false, ...inputProps }: BaseFieldProps<TValues> & Omit<InputProps, 'name' | 'type'> & { nullable?: boolean }) {
+export function NumberField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  required,
+  hint,
+  className,
+  nullable = false,
+  ...inputProps
+}: BaseFieldProps<TValues> & Omit<InputProps, 'name' | 'type'> & { nullable?: boolean }) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
+        <Field
+          label={label}
+          htmlFor={name}
+          required={required}
+          hint={hint}
+          error={fieldState.error?.message}
+          className={className}
+        >
           <Input
             id={name}
             type="number"
@@ -98,7 +175,11 @@ export function NumberField<TValues extends FieldValues>({ control, name, label,
             name={field.name}
             ref={field.ref}
             onBlur={field.onBlur}
-            value={field.value === null || field.value === undefined || Number.isNaN(field.value) ? '' : String(field.value)}
+            value={
+              field.value === null || field.value === undefined || Number.isNaN(field.value)
+                ? ''
+                : String(field.value)
+            }
             onChange={(e) => {
               const raw = e.target.value;
               if (raw === '') field.onChange(nullable ? null : undefined);
@@ -113,42 +194,127 @@ export function NumberField<TValues extends FieldValues>({ control, name, label,
   );
 }
 
-export function TextareaField<TValues extends FieldValues>({ control, name, label, required, hint, className, ...props }: BaseFieldProps<TValues> & Omit<TextareaProps, 'name'>) {
+export function TextareaField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  required,
+  hint,
+  className,
+  ...props
+}: BaseFieldProps<TValues> & Omit<TextareaProps, 'name'>) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
-          <Textarea id={name} {...props} {...field} value={field.value ?? ''} invalid={!!fieldState.error} />
+        <Field
+          label={label}
+          htmlFor={name}
+          required={required}
+          hint={hint}
+          error={fieldState.error?.message}
+          className={className}
+        >
+          <Textarea
+            id={name}
+            {...props}
+            {...field}
+            value={field.value ?? ''}
+            invalid={!!fieldState.error}
+          />
         </Field>
       )}
     />
   );
 }
 
-export function SelectField<TValues extends FieldValues>({ control, name, label, required, hint, className, options, placeholder, disabled, nullable = false }: BaseFieldProps<TValues> & { options: SelectOption[]; placeholder?: string; disabled?: boolean; nullable?: boolean }) {
+export function SelectField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  required,
+  hint,
+  className,
+  options,
+  placeholder,
+  disabled,
+  nullable = false,
+}: BaseFieldProps<TValues> & {
+  options: SelectOption[];
+  placeholder?: string;
+  disabled?: boolean;
+  nullable?: boolean;
+}) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
-          <Select id={name} value={field.value ?? ''} onValueChange={(v) => field.onChange(nullable && v === '__none__' ? null : v)} options={options} placeholder={placeholder} disabled={disabled} invalid={!!fieldState.error} />
+        <Field
+          label={label}
+          htmlFor={name}
+          required={required}
+          hint={hint}
+          error={fieldState.error?.message}
+          className={className}
+        >
+          <Select
+            id={name}
+            value={field.value ?? ''}
+            onValueChange={(v) => field.onChange(nullable && v === '__none__' ? null : v)}
+            options={options}
+            placeholder={placeholder}
+            disabled={disabled}
+            invalid={!!fieldState.error}
+          />
         </Field>
       )}
     />
   );
 }
 
-export function NativeSelectField<TValues extends FieldValues>({ control, name, label, required, hint, className, options, placeholder, disabled, nullable = false }: BaseFieldProps<TValues> & { options: Array<{ value: string; label: string }>; placeholder?: string; disabled?: boolean; nullable?: boolean }) {
+export function NativeSelectField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  required,
+  hint,
+  className,
+  options,
+  placeholder,
+  disabled,
+  nullable = false,
+}: BaseFieldProps<TValues> & {
+  options: Array<{ value: string; label: string }>;
+  placeholder?: string;
+  disabled?: boolean;
+  nullable?: boolean;
+}) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
-          <NativeSelect id={name} value={field.value ?? ''} onChange={(e) => field.onChange(nullable && e.target.value === '' ? null : e.target.value)} disabled={disabled} invalid={!!fieldState.error} ref={field.ref} onBlur={field.onBlur}>
+        <Field
+          label={label}
+          htmlFor={name}
+          required={required}
+          hint={hint}
+          error={fieldState.error?.message}
+          className={className}
+        >
+          <NativeSelect
+            id={name}
+            value={field.value ?? ''}
+            onChange={(e) =>
+              field.onChange(nullable && e.target.value === '' ? null : e.target.value)
+            }
+            disabled={disabled}
+            invalid={!!fieldState.error}
+            ref={field.ref}
+            onBlur={field.onBlur}
+          >
             {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
             {options.map((o) => (
               <option key={o.value} value={o.value}>
@@ -162,28 +328,54 @@ export function NativeSelectField<TValues extends FieldValues>({ control, name, 
   );
 }
 
-export function CheckboxField<TValues extends FieldValues>({ control, name, label, hint, className, description }: BaseFieldProps<TValues> & { description?: ReactNode }) {
+export function CheckboxField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  hint,
+  className,
+  description,
+}: BaseFieldProps<TValues> & { description?: ReactNode }) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => (
         <Field error={fieldState.error?.message} hint={hint} className={className}>
-          <Checkbox id={name} checked={!!field.value} onCheckedChange={field.onChange} label={label} description={description} />
+          <Checkbox
+            id={name}
+            checked={!!field.value}
+            onCheckedChange={field.onChange}
+            label={label}
+            description={description}
+          />
         </Field>
       )}
     />
   );
 }
 
-export function SwitchField<TValues extends FieldValues>({ control, name, label, hint, className, description }: BaseFieldProps<TValues> & { description?: ReactNode }) {
+export function SwitchField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  hint,
+  className,
+  description,
+}: BaseFieldProps<TValues> & { description?: ReactNode }) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => (
         <Field error={fieldState.error?.message} hint={hint} className={className}>
-          <Switch id={name} checked={!!field.value} onCheckedChange={field.onChange} label={label} description={description} />
+          <Switch
+            id={name}
+            checked={!!field.value}
+            onCheckedChange={field.onChange}
+            label={label}
+            description={description}
+          />
         </Field>
       )}
     />
@@ -191,7 +383,15 @@ export function SwitchField<TValues extends FieldValues>({ control, name, label,
 }
 
 /** Multi-select rendered as a checkbox grid (enum arrays such as job types or platforms). */
-export function CheckboxGroupField<TValues extends FieldValues>({ control, name, label, hint, className, options, required }: BaseFieldProps<TValues> & { options: Array<{ value: string; label: ReactNode }> }) {
+export function CheckboxGroupField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  hint,
+  className,
+  options,
+  required,
+}: BaseFieldProps<TValues> & { options: Array<{ value: string; label: ReactNode }> }) {
   return (
     <Controller
       control={control}
@@ -199,10 +399,25 @@ export function CheckboxGroupField<TValues extends FieldValues>({ control, name,
       render={({ field, fieldState }) => {
         const selected: string[] = Array.isArray(field.value) ? (field.value as string[]) : [];
         return (
-          <Field label={label} required={required} hint={hint} error={fieldState.error?.message} className={className}>
+          <Field
+            label={label}
+            required={required}
+            hint={hint}
+            error={fieldState.error?.message}
+            className={className}
+          >
             <div className="flex flex-wrap gap-x-5 gap-y-2 rounded-md border border-border bg-surface-alt/50 p-3">
               {options.map((o) => (
-                <Checkbox key={o.value} checked={selected.includes(o.value)} onCheckedChange={(checked) => field.onChange(checked ? [...selected, o.value] : selected.filter((v) => v !== o.value))} label={o.label} />
+                <Checkbox
+                  key={o.value}
+                  checked={selected.includes(o.value)}
+                  onCheckedChange={(checked) =>
+                    field.onChange(
+                      checked ? [...selected, o.value] : selected.filter((v) => v !== o.value),
+                    )
+                  }
+                  label={o.label}
+                />
               ))}
             </div>
           </Field>
@@ -213,7 +428,15 @@ export function CheckboxGroupField<TValues extends FieldValues>({ control, name,
 }
 
 /** Two inputs for `{ ar, en }` localised text. */
-export function LocalizedTextField<TValues extends FieldValues>({ control, name, label, required, hint, className, multiline = false }: BaseFieldProps<TValues> & { multiline?: boolean }) {
+export function LocalizedTextField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  required,
+  hint,
+  className,
+  multiline = false,
+}: BaseFieldProps<TValues> & { multiline?: boolean }) {
   const t = useT();
   const arName = `${name}.ar` as FieldPath<TValues>;
   const enName = `${name}.en` as FieldPath<TValues>;
@@ -221,13 +444,39 @@ export function LocalizedTextField<TValues extends FieldValues>({ control, name,
     <div className={cn('grid gap-3 md:grid-cols-2', className)}>
       {multiline ? (
         <>
-          <TextareaField control={control} name={arName} label={`${label ?? ''} (${t('common.arabic')})`} required={required} dir="rtl" hint={hint} />
-          <TextareaField control={control} name={enName} label={`${label ?? ''} (${t('common.english')})`} required={required} dir="ltr" />
+          <TextareaField
+            control={control}
+            name={arName}
+            label={`${label ?? ''} (${t('common.arabic')})`}
+            required={required}
+            dir="rtl"
+            hint={hint}
+          />
+          <TextareaField
+            control={control}
+            name={enName}
+            label={`${label ?? ''} (${t('common.english')})`}
+            required={required}
+            dir="ltr"
+          />
         </>
       ) : (
         <>
-          <TextField control={control} name={arName} label={`${label ?? ''} (${t('common.arabic')})`} required={required} dir="rtl" hint={hint} />
-          <TextField control={control} name={enName} label={`${label ?? ''} (${t('common.english')})`} required={required} dir="ltr" />
+          <TextField
+            control={control}
+            name={arName}
+            label={`${label ?? ''} (${t('common.arabic')})`}
+            required={required}
+            dir="rtl"
+            hint={hint}
+          />
+          <TextField
+            control={control}
+            name={enName}
+            label={`${label ?? ''} (${t('common.english')})`}
+            required={required}
+            dir="ltr"
+          />
         </>
       )}
     </div>
@@ -235,7 +484,10 @@ export function LocalizedTextField<TValues extends FieldValues>({ control, name,
 }
 
 /** Pushes API field errors (`details: [{field,message}]`) into the form so they render inline. */
-export function applyApiFieldErrors<TValues extends FieldValues>(form: UseFormReturn<TValues>, error: unknown): boolean {
+export function applyApiFieldErrors<TValues extends FieldValues>(
+  form: UseFormReturn<TValues>,
+  error: unknown,
+): boolean {
   if (!isApiError(error) || error.fieldErrors.length === 0) return false;
   for (const issue of error.fieldErrors) {
     form.setError(issue.field as FieldPath<TValues>, { type: 'server', message: issue.message });
@@ -246,7 +498,10 @@ export function applyApiFieldErrors<TValues extends FieldValues>(form: UseFormRe
 export function FormError({ message }: { message: string | null | undefined }) {
   if (!message) return null;
   return (
-    <div className="rounded-md border border-danger/40 bg-danger-soft px-3 py-2 text-xs text-danger-strong" role="alert">
+    <div
+      className="rounded-md border border-danger/40 bg-danger-soft px-3 py-2 text-xs text-danger-strong"
+      role="alert"
+    >
       {message}
     </div>
   );
@@ -256,16 +511,40 @@ export function FormError({ message }: { message: string | null | undefined }) {
  * Money input: the operator types major units (e.g. 12.50 ILS) and the form stores
  * `{ amount: <integer minor units>, currency }` exactly as `moneySchema` requires.
  */
-export function MoneyField<TValues extends FieldValues>({ control, name, label, required, hint, className, currency, nullable = false, disabled }: BaseFieldProps<TValues> & { currency: 'ILS' | 'USD' | 'JOD'; nullable?: boolean; disabled?: boolean }) {
+export function MoneyField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  required,
+  hint,
+  className,
+  currency,
+  nullable = false,
+  disabled,
+}: BaseFieldProps<TValues> & {
+  currency: 'ILS' | 'USD' | 'JOD';
+  nullable?: boolean;
+  disabled?: boolean;
+}) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => {
         const money = field.value as { amount: number; currency: string } | null | undefined;
-        const major = money && typeof money.amount === 'number' ? String(minorToMajor(money.amount, currency)) : '';
+        const major =
+          money && typeof money.amount === 'number'
+            ? String(minorToMajor(money.amount, currency))
+            : '';
         return (
-          <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
+          <Field
+            label={label}
+            htmlFor={name}
+            required={required}
+            hint={hint}
+            error={fieldState.error?.message}
+            className={className}
+          >
             <div className="flex items-center gap-2">
               <Input
                 id={name}
@@ -296,16 +575,33 @@ export function MoneyField<TValues extends FieldValues>({ control, name, label, 
 }
 
 /** Minor-units integer field (schemas that store `*_minor` numbers directly). */
-export function MinorAmountField<TValues extends FieldValues>({ control, name, label, required, hint, className, currency, disabled }: BaseFieldProps<TValues> & { currency: string; disabled?: boolean }) {
+export function MinorAmountField<TValues extends FieldValues>({
+  control,
+  name,
+  label,
+  required,
+  hint,
+  className,
+  currency,
+  disabled,
+}: BaseFieldProps<TValues> & { currency: string; disabled?: boolean }) {
   const supported = isSupportedCurrency(currency) ? currency : 'ILS';
   return (
     <Controller
       control={control}
       name={name}
       render={({ field, fieldState }) => {
-        const value = typeof field.value === 'number' ? String(minorToMajor(field.value, supported)) : '';
+        const value =
+          typeof field.value === 'number' ? String(minorToMajor(field.value, supported)) : '';
         return (
-          <Field label={label} htmlFor={name} required={required} hint={hint} error={fieldState.error?.message} className={className}>
+          <Field
+            label={label}
+            htmlFor={name}
+            required={required}
+            hint={hint}
+            error={fieldState.error?.message}
+            className={className}
+          >
             <div className="flex items-center gap-2">
               <Input
                 id={name}
@@ -319,7 +615,13 @@ export function MinorAmountField<TValues extends FieldValues>({ control, name, l
                 ref={field.ref}
                 onBlur={field.onBlur}
                 value={value}
-                onChange={(e) => field.onChange(e.target.value === '' ? undefined : majorToMinor(Number(e.target.value), supported))}
+                onChange={(e) =>
+                  field.onChange(
+                    e.target.value === ''
+                      ? undefined
+                      : majorToMinor(Number(e.target.value), supported),
+                  )
+                }
                 invalid={!!fieldState.error}
               />
               <span className="shrink-0 text-xs font-semibold text-text-secondary">{currency}</span>

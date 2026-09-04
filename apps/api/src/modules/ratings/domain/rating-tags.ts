@@ -28,7 +28,14 @@ export const CUSTOMER_TO_PARTNER_TAGS = [
 ] as const;
 
 /** What a partner may say about a customer. */
-export const PARTNER_TO_CUSTOMER_TAGS = ['POLITE', 'ON_TIME', 'CLEAR_INSTRUCTIONS', 'LATE', 'RUDE', 'WRONG_ADDRESS'] as const;
+export const PARTNER_TO_CUSTOMER_TAGS = [
+  'POLITE',
+  'ON_TIME',
+  'CLEAR_INSTRUCTIONS',
+  'LATE',
+  'RUDE',
+  'WRONG_ADDRESS',
+] as const;
 
 export const RATING_TAGS: Record<RatingDirection, readonly string[]> = {
   [RatingDirection.CUSTOMER_TO_PARTNER]: CUSTOMER_TO_PARTNER_TAGS,
@@ -41,11 +48,16 @@ export const NEUTRAL_RATING = 5;
 /** Deduplicates and validates the submitted tags against the whitelist for this direction. */
 export function normaliseTags(direction: RatingDirection, tags: readonly string[]): string[] {
   const allowed = RATING_TAGS[direction];
-  const unique = [...new Set(tags.map((tag) => tag.trim().toUpperCase()))].filter((tag) => tag.length > 0);
+  const unique = [...new Set(tags.map((tag) => tag.trim().toUpperCase()))].filter(
+    (tag) => tag.length > 0,
+  );
   const unknown = unique.filter((tag) => !allowed.includes(tag));
   if (unknown.length) {
     throw AppException.validation(
-      unknown.map((tag) => ({ field: 'tags', message: `${tag} is not a valid tag for ${direction}` })),
+      unknown.map((tag) => ({
+        field: 'tags',
+        message: `${tag} is not a valid tag for ${direction}`,
+      })),
       'Unknown rating tag',
     );
   }
@@ -61,7 +73,10 @@ export interface RatingAggregateDelta {
  * How a submission moves the ratee's cached `ratingSum` / `ratingCount`. An edit replaces the
  * previous score (sum moves by the difference, the count stays); a first rating adds both.
  */
-export function aggregateDelta(previousRating: number | null, nextRating: number): RatingAggregateDelta {
+export function aggregateDelta(
+  previousRating: number | null,
+  nextRating: number,
+): RatingAggregateDelta {
   if (previousRating === null) return { sumDelta: nextRating, countDelta: 1 };
   return { sumDelta: nextRating - previousRating, countDelta: 0 };
 }

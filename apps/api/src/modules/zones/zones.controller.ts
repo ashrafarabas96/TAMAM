@@ -1,16 +1,33 @@
 import { Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '@tamam/shared-types';
-import { type UpsertServiceZoneInput, type ZoneServiceRuleInput, upsertServiceZoneSchema, zoneServiceRuleSchema } from '@tamam/validation';
+import {
+  type UpsertServiceZoneInput,
+  type ZoneServiceRuleInput,
+  upsertServiceZoneSchema,
+  zoneServiceRuleSchema,
+} from '@tamam/validation';
 import { z } from 'zod';
 
-import { AllowRestricted, Audited, CurrentUser, Public, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  Audited,
+  CurrentUser,
+  Public,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
 import { ZonesService } from './zones.service';
 
-const pointSchema = z.object({ lat: z.coerce.number().min(-90).max(90), lng: z.coerce.number().min(-180).max(180) });
+const pointSchema = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+});
 
 @ApiTags('zones')
 @Controller()
@@ -49,14 +66,23 @@ export class ZonesController {
   @ApiBearerAuth()
   @Post('admin/zones')
   @RequirePermission(Permission.ZONES_MANAGE)
-  create(@ZodBody(upsertServiceZoneSchema) input: UpsertServiceZoneInput, @CurrentUser() user: RequestUser, @RequestId() requestId: string) {
+  create(
+    @ZodBody(upsertServiceZoneSchema) input: UpsertServiceZoneInput,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.zones.upsert(null, input, user.id, requestId);
   }
 
   @ApiBearerAuth()
   @Put('admin/zones/:id')
   @RequirePermission(Permission.ZONES_MANAGE)
-  update(@Param('id', UuidPipe) id: string, @ZodBody(upsertServiceZoneSchema) input: UpsertServiceZoneInput, @CurrentUser() user: RequestUser, @RequestId() requestId: string) {
+  update(
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(upsertServiceZoneSchema) input: UpsertServiceZoneInput,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.zones.upsert(id, input, user.id, requestId);
   }
 
@@ -71,7 +97,11 @@ export class ZonesController {
   @Put('admin/zones/rules')
   @RequirePermission(Permission.ZONES_MANAGE)
   @Audited({ action: 'zone.rule', entity: 'zone_service_rule' })
-  upsertRule(@ZodBody(zoneServiceRuleSchema) input: ZoneServiceRuleInput, @CurrentUser() user: RequestUser, @RequestId() requestId: string) {
+  upsertRule(
+    @ZodBody(zoneServiceRuleSchema) input: ZoneServiceRuleInput,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.zones.upsertRule(input, user.id, requestId);
   }
 }

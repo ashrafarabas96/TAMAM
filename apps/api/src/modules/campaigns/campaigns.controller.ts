@@ -16,7 +16,17 @@ import {
 } from '@tamam/validation';
 import { z } from 'zod';
 
-import { AcceptLanguage, Audited, CurrentUser, Public, RateLimit, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AcceptLanguage,
+  Audited,
+  CurrentUser,
+  Public,
+  RateLimit,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -106,7 +116,11 @@ export class CampaignsController {
   @Post('admin/campaigns')
   @RequirePermission(Permission.CAMPAIGNS_MANAGE)
   @Audited({ action: 'campaign.create', entity: 'campaign' })
-  create(@ZodBody(upsertCampaignSchema) input: UpsertCampaignInput, @CurrentUser() user: RequestUser, @RequestId() requestId: string) {
+  create(
+    @ZodBody(upsertCampaignSchema) input: UpsertCampaignInput,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.campaigns.create(input, user, requestId);
   }
 
@@ -143,7 +157,10 @@ export class CampaignsController {
   @ApiBearerAuth()
   @Get('admin/campaigns/:id/stats')
   @RequirePermission(Permission.CAMPAIGNS_READ)
-  stats(@Param('id', UuidPipe) id: string, @ZodQuery(campaignStatsQuerySchema) query: { from?: string; to?: string }) {
+  stats(
+    @Param('id', UuidPipe) id: string,
+    @ZodQuery(campaignStatsQuerySchema) query: { from?: string; to?: string },
+  ) {
     return this.campaigns.stats(id, query.from, query.to);
   }
 

@@ -13,7 +13,16 @@ import {
 } from '@tamam/validation';
 import { z } from 'zod';
 
-import { AllowRestricted, Audited, CurrentUser, RequestId, RequirePermission, RequireRole, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  Audited,
+  CurrentUser,
+  RequestId,
+  RequirePermission,
+  RequireRole,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -49,13 +58,20 @@ export class VehiclesController {
 
   @Post('partners/me/vehicles')
   @RequireRole('PARTNER')
-  create(@CurrentUser() user: RequestUser, @ZodBody(partnerVehicleSchema) input: PartnerVehicleInput) {
+  create(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(partnerVehicleSchema) input: PartnerVehicleInput,
+  ) {
     return this.vehicles.create(user.id, input);
   }
 
   @Put('partners/me/vehicles/:id')
   @RequireRole('PARTNER')
-  update(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string, @ZodBody(partnerVehicleSchema) input: PartnerVehicleInput) {
+  update(
+    @CurrentUser() user: RequestUser,
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(partnerVehicleSchema) input: PartnerVehicleInput,
+  ) {
     return this.vehicles.update(user.id, id, input);
   }
 
@@ -74,7 +90,11 @@ export class VehiclesController {
 
   @Post('partners/me/vehicles/:id/documents')
   @RequireRole('PARTNER')
-  addDocument(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string, @ZodBody(partnerDocumentUploadSchema) input: PartnerDocumentUploadInput) {
+  addDocument(
+    @CurrentUser() user: RequestUser,
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(partnerDocumentUploadSchema) input: PartnerDocumentUploadInput,
+  ) {
     return this.vehicles.addDocument(user.id, id, input);
   }
 
@@ -83,7 +103,12 @@ export class VehiclesController {
   @Get('admin/vehicles')
   @RequirePermission(Permission.PARTNERS_READ)
   adminList(@ZodQuery(adminVehicleListSchema) query: AdminVehicleListQuery) {
-    return this.vehicles.adminList({ partnerId: query.partnerId, status: query.status, cursor: query.cursor, limit: query.limit });
+    return this.vehicles.adminList({
+      partnerId: query.partnerId,
+      status: query.status,
+      cursor: query.cursor,
+      limit: query.limit,
+    });
   }
 
   @Get('admin/vehicles/:id')

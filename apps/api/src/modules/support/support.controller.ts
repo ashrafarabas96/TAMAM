@@ -14,7 +14,16 @@ import {
 } from '@tamam/validation';
 import { z } from 'zod';
 
-import { AllowRestricted, Audited, CurrentUser, RateLimit, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  Audited,
+  CurrentUser,
+  RateLimit,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -54,7 +63,10 @@ export class SupportController {
   @Post('support/tickets')
   @AllowRestricted()
   @RateLimit({ name: 'support.ticket', limit: 10, windowSeconds: 3600, keyBy: 'user' })
-  createTicket(@CurrentUser() user: RequestUser, @ZodBody(createTicketSchema) input: CreateTicketInput) {
+  createTicket(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(createTicketSchema) input: CreateTicketInput,
+  ) {
     return this.support.createTicket(user, input);
   }
 
@@ -73,7 +85,11 @@ export class SupportController {
   @Post('support/tickets/:id/messages')
   @AllowRestricted()
   @RateLimit({ name: 'support.message', limit: 60, windowSeconds: 3600, keyBy: 'user' })
-  addMessage(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string, @ZodBody(ticketMessageSchema) input: TicketMessageInput) {
+  addMessage(
+    @CurrentUser() user: RequestUser,
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(ticketMessageSchema) input: TicketMessageInput,
+  ) {
     return this.support.addMessage(user, id, input);
   }
 
@@ -112,7 +128,11 @@ export class SupportController {
 
   @Post('admin/support/tickets/:id/messages')
   @RequirePermission(Permission.SUPPORT_MANAGE)
-  agentMessage(@Param('id', UuidPipe) id: string, @CurrentUser() actor: RequestUser, @ZodBody(ticketMessageSchema) input: TicketMessageInput) {
+  agentMessage(
+    @Param('id', UuidPipe) id: string,
+    @CurrentUser() actor: RequestUser,
+    @ZodBody(ticketMessageSchema) input: TicketMessageInput,
+  ) {
     return this.support.addMessage(actor, id, input);
   }
 

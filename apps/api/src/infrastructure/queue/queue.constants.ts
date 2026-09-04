@@ -23,7 +23,11 @@ export const JOB_JOBS = {
   QUOTE_RESPONSE_TIMEOUT: 'quote-response-timeout',
 } as const;
 
-export const FINANCE_JOBS = { SETTLE_JOB: 'settle-job', PROCESS_WEBHOOK: 'process-webhook', PROCESS_WITHDRAWAL: 'process-withdrawal' } as const;
+export const FINANCE_JOBS = {
+  SETTLE_JOB: 'settle-job',
+  PROCESS_WEBHOOK: 'process-webhook',
+  PROCESS_WITHDRAWAL: 'process-withdrawal',
+} as const;
 
 export const MEDIA_JOBS = { PROCESS_IMAGE: 'process-image', SCAN: 'scan' } as const;
 

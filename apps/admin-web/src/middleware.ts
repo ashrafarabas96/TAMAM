@@ -38,12 +38,18 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const locale = request.cookies.get(LOCALE_COOKIE_NAME)?.value;
   if (locale !== 'ar' && locale !== 'en') {
     const fallback = process.env.NEXT_PUBLIC_DEFAULT_LOCALE === 'en' ? 'en' : 'ar';
-    response.cookies.set(LOCALE_COOKIE_NAME, fallback, { path: '/', sameSite: 'lax', maxAge: 60 * 60 * 24 * 365 });
+    response.cookies.set(LOCALE_COOKIE_NAME, fallback, {
+      path: '/',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365,
+    });
   }
   return response;
 }
 
 export const config = {
   // Everything except Next internals, static files and the session API itself.
-  matcher: ['/((?!api/session|_next/static|_next/image|favicon.svg|favicon.ico|logo.svg|map-marker-partner.svg).*)'],
+  matcher: [
+    '/((?!api/session|_next/static|_next/image|favicon.svg|favicon.ico|logo.svg|map-marker-partner.svg).*)',
+  ],
 };

@@ -1,9 +1,26 @@
 import { Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '@tamam/shared-types';
-import { type AccountStatusActionInput, type CustomerListFilterInput, type UpdateProfileInput, type UpdatePushTokenInput, accountStatusActionSchema, customerListFilterSchema, updateProfileSchema, updatePushTokenSchema } from '@tamam/validation';
+import {
+  type AccountStatusActionInput,
+  type CustomerListFilterInput,
+  type UpdateProfileInput,
+  type UpdatePushTokenInput,
+  accountStatusActionSchema,
+  customerListFilterSchema,
+  updateProfileSchema,
+  updatePushTokenSchema,
+} from '@tamam/validation';
 
-import { AllowRestricted, Audited, CurrentUser, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  Audited,
+  CurrentUser,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 import { SessionService } from '../auth/session.service';
@@ -27,13 +44,19 @@ export class UsersController {
 
   @Patch('me')
   @AllowRestricted()
-  updateMe(@CurrentUser() user: RequestUser, @ZodBody(updateProfileSchema) input: UpdateProfileInput) {
+  updateMe(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(updateProfileSchema) input: UpdateProfileInput,
+  ) {
     return this.users.updateProfile(user.id, input);
   }
 
   @Post('me/push-token')
   @AllowRestricted()
-  async pushToken(@CurrentUser() user: RequestUser, @ZodBody(updatePushTokenSchema) input: UpdatePushTokenInput) {
+  async pushToken(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(updatePushTokenSchema) input: UpdatePushTokenInput,
+  ) {
     await this.users.upsertPushToken(user.id, input);
     return { ok: true };
   }
@@ -67,7 +90,12 @@ export class UsersController {
   @Post('admin/users/:id/status')
   @RequirePermission(Permission.CUSTOMERS_SUSPEND)
   @Audited({ action: 'user.status', entity: 'user', entityIdFrom: 'id', sensitive: true })
-  changeStatus(@Param('id', UuidPipe) id: string, @ZodBody(accountStatusActionSchema) input: AccountStatusActionInput, @CurrentUser() actor: RequestUser, @RequestId() requestId: string) {
+  changeStatus(
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(accountStatusActionSchema) input: AccountStatusActionInput,
+    @CurrentUser() actor: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.users.changeAccountStatus(id, input, actor.id, requestId);
   }
 }

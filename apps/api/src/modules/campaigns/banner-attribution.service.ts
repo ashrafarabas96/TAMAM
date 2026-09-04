@@ -56,7 +56,14 @@ export class BannerAttributionService {
   @OnEvent('job.created')
   async handleJobCreated(event: JobCreatedEventLike): Promise<void> {
     try {
-      const customerId = event.customerId ?? (await this.prisma.job.findUnique({ where: { id: event.jobId }, select: { customerId: true } }))?.customerId;
+      const customerId =
+        event.customerId ??
+        (
+          await this.prisma.job.findUnique({
+            where: { id: event.jobId },
+            select: { customerId: true },
+          })
+        )?.customerId;
       if (!customerId) return;
       await this.attribute(event.jobId, customerId);
     } catch (err) {
@@ -71,7 +78,10 @@ export class BannerAttributionService {
     const campaignId = await this.redis.client.get(key);
     if (!campaignId) return null;
 
-    const updated = await this.prisma.job.updateMany({ where: { id: jobId, attributedCampaignId: null }, data: { attributedCampaignId: campaignId } });
+    const updated = await this.prisma.job.updateMany({
+      where: { id: jobId, attributedCampaignId: null },
+      data: { attributedCampaignId: campaignId },
+    });
     await this.redis.del(key);
     return updated.count > 0 ? campaignId : null;
   }
@@ -112,8 +122,12 @@ export class BannerAttributionService {
       WHERE attributed_campaign_id IS NOT NULL AND created_at >= ${start} AND created_at < ${end}
       GROUP BY 1`;
 
-    const conversionsByCampaign = new Map<string, number>(conversionRows.map((r) => [r.campaign_id, Number(r.conversions)]));
-    const campaignIds = [...new Set([...events.map((e) => e.campaign_id), ...conversionsByCampaign.keys()])];
+    const conversionsByCampaign = new Map<string, number>(
+      conversionRows.map((r) => [r.campaign_id, Number(r.conversions)]),
+    );
+    const campaignIds = [
+      ...new Set([...events.map((e) => e.campaign_id), ...conversionsByCampaign.keys()]),
+    ];
     if (!campaignIds.length) return { date: isoDate(start), rowsWritten: 0, conversions: 0 };
 
     const banners = await this.prisma.banner.findMany({
@@ -122,16 +136,33 @@ export class BannerAttributionService {
       orderBy: [{ priority: 'desc' }, { sortOrder: 'asc' }, { id: 'asc' }],
     });
 
-    const clickedBanners = new Set(events.filter((e) => Number(e.clicks) > 0).map((e) => e.banner_id));
-    const conversionBannerByCampaign = new Map<string, { id: string; placement: BannerPlacement }>();
+    const clickedBanners = new Set(
+      events.filter((e) => Number(e.clicks) > 0).map((e) => e.banner_id),
+    );
+    const conversionBannerByCampaign = new Map<
+      string,
+      { id: string; placement: BannerPlacement }
+    >();
     for (const campaignId of conversionsByCampaign.keys()) {
       const owned = banners.filter((b) => b.campaignId === campaignId);
       const target = owned.find((b) => clickedBanners.has(b.id)) ?? owned[0];
-      if (target) conversionBannerByCampaign.set(campaignId, { id: target.id, placement: target.placement });
+      if (target)
+        conversionBannerByCampaign.set(campaignId, { id: target.id, placement: target.placement });
     }
 
-    const placementByBanner = new Map<string, BannerPlacement>(banners.map((b) => [b.id, b.placement]));
-    type StatRow = { bannerId: string; campaignId: string; placement: BannerPlacement; impressions: number; uniqueImpressions: number; clicks: number; dismissals: number; conversions: number };
+    const placementByBanner = new Map<string, BannerPlacement>(
+      banners.map((b) => [b.id, b.placement]),
+    );
+    type StatRow = {
+      bannerId: string;
+      campaignId: string;
+      placement: BannerPlacement;
+      impressions: number;
+      uniqueImpressions: number;
+      clicks: number;
+      dismissals: number;
+      conversions: number;
+    };
     const rows = new Map<string, StatRow>();
 
     for (const e of events) {

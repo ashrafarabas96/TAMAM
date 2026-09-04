@@ -23,7 +23,10 @@ export class ConsoleEmailProvider implements EmailProvider {
 export class SmtpEmailProvider implements EmailProvider {
   readonly name = 'smtp';
   private readonly url: URL;
-  constructor(config: AppConfigService, private readonly logger: PinoLogger) {
+  constructor(
+    config: AppConfigService,
+    private readonly logger: PinoLogger,
+  ) {
     this.url = new URL(config.env.SMTP_URL ?? 'smtps://localhost:465');
   }
 
@@ -32,7 +35,14 @@ export class SmtpEmailProvider implements EmailProvider {
     const from = decodeURIComponent(this.url.username);
     const pass = decodeURIComponent(this.url.password);
     return new Promise((resolve, reject) => {
-      const socket = tls.connect({ host: this.url.hostname, port: Number(this.url.port || 465), servername: this.url.hostname }, () => undefined);
+      const socket = tls.connect(
+        {
+          host: this.url.hostname,
+          port: Number(this.url.port || 465),
+          servername: this.url.hostname,
+        },
+        () => undefined,
+      );
       let buffer = '';
       const steps = [
         `EHLO tamam.app`,
@@ -50,17 +60,31 @@ export class SmtpEmailProvider implements EmailProvider {
         step += 1;
         if (step < steps.length) socket.write(`${steps[step]}\r\n`);
       };
-      socket.setTimeout(15000, () => { socket.destroy(); reject(new Error('SMTP timeout')); });
+      socket.setTimeout(15000, () => {
+        socket.destroy();
+        reject(new Error('SMTP timeout'));
+      });
       socket.on('data', (chunk: Buffer) => {
         buffer += chunk.toString();
         if (!/\r\n$/.test(buffer)) return;
         const code = Number(buffer.slice(0, 3));
         buffer = '';
-        if (code >= 400) { socket.destroy(); reject(new Error(`SMTP error ${code}`)); return; }
-        if (step === steps.length - 1) { socket.end(); resolve({ accepted: true, providerRef: null }); return; }
+        if (code >= 400) {
+          socket.destroy();
+          reject(new Error(`SMTP error ${code}`));
+          return;
+        }
+        if (step === steps.length - 1) {
+          socket.end();
+          resolve({ accepted: true, providerRef: null });
+          return;
+        }
         next();
       });
-      socket.on('error', (err) => { this.logger.warn({ err }, 'SMTP error'); reject(err); });
+      socket.on('error', (err) => {
+        this.logger.warn({ err }, 'SMTP error');
+        reject(err);
+      });
     });
   }
 }
@@ -70,7 +94,10 @@ export class SmtpEmailProvider implements EmailProvider {
     {
       provide: EMAIL_PROVIDER,
       inject: [AppConfigService, PinoLogger],
-      useFactory: (config: AppConfigService, logger: PinoLogger) => (config.env.EMAIL_PROVIDER === 'smtp' ? new SmtpEmailProvider(config, logger) : new ConsoleEmailProvider(logger)),
+      useFactory: (config: AppConfigService, logger: PinoLogger) =>
+        config.env.EMAIL_PROVIDER === 'smtp'
+          ? new SmtpEmailProvider(config, logger)
+          : new ConsoleEmailProvider(logger),
     },
   ],
   exports: [EMAIL_PROVIDER],

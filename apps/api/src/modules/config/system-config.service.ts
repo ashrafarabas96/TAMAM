@@ -1,6 +1,15 @@
 import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { CONFIG_DEFINITIONS, type ConfigKey, ErrorCode, FEATURE_FLAGS, FEATURE_FLAG_DEFAULTS, type FeatureFlagDto, type FeatureFlagKey, type SystemConfigDto } from '@tamam/shared-types';
+import {
+  CONFIG_DEFINITIONS,
+  type ConfigKey,
+  ErrorCode,
+  FEATURE_FLAGS,
+  FEATURE_FLAG_DEFAULTS,
+  type FeatureFlagDto,
+  type FeatureFlagKey,
+  type SystemConfigDto,
+} from '@tamam/shared-types';
 import type { UpdateConfigInput, UpdateFeatureFlagInput } from '@tamam/validation';
 
 import { AppException } from '../../common/errors/app.exception';
@@ -12,7 +21,11 @@ const CACHE_KEY = 'cfg:all';
 const FLAGS_KEY = 'cfg:flags';
 const CACHE_TTL = 30; // seconds — admin changes propagate within half a minute on every node
 
-interface FlagRollout { zoneIds: string[]; percent: number; userIds: string[] }
+interface FlagRollout {
+  zoneIds: string[];
+  percent: number;
+  userIds: string[];
+}
 
 /**
  * Runtime configuration with safe bounds (spec §84, §177) and feature flags with
@@ -40,22 +53,49 @@ export class SystemConfigService implements OnModuleInit {
     for (const def of CONFIG_DEFINITIONS) {
       await this.prisma.systemConfig.upsert({
         where: { key: def.key },
-        update: { description: def.description, min: def.min ?? null, max: def.max ?? null, unit: def.unit ?? null, group: def.group, type: def.type },
-        create: { key: def.key, value: def.default as Prisma.InputJsonValue, type: def.type, description: def.description, min: def.min ?? null, max: def.max ?? null, unit: def.unit ?? null, group: def.group },
+        update: {
+          description: def.description,
+          min: def.min ?? null,
+          max: def.max ?? null,
+          unit: def.unit ?? null,
+          group: def.group,
+          type: def.type,
+        },
+        create: {
+          key: def.key,
+          value: def.default as Prisma.InputJsonValue,
+          type: def.type,
+          description: def.description,
+          min: def.min ?? null,
+          max: def.max ?? null,
+          unit: def.unit ?? null,
+          group: def.group,
+        },
       });
     }
     for (const [key, def] of Object.entries(FEATURE_FLAG_DEFAULTS)) {
-      await this.prisma.featureFlag.upsert({ where: { key }, update: { description: def.description }, create: { key, description: def.description, enabled: def.enabled } });
+      await this.prisma.featureFlag.upsert({
+        where: { key },
+        update: { description: def.description },
+        create: { key, description: def.description, enabled: def.enabled },
+      });
     }
   }
 
   async refresh(): Promise<void> {
-    const [configs, flags] = await Promise.all([this.prisma.systemConfig.findMany(), this.prisma.featureFlag.findMany()]);
+    const [configs, flags] = await Promise.all([
+      this.prisma.systemConfig.findMany(),
+      this.prisma.featureFlag.findMany(),
+    ]);
     const cfg: Record<string, number | string | boolean> = {};
     for (const c of configs) cfg[c.key] = c.value as number | string | boolean;
     const fl: Record<string, { enabled: boolean; rollout: FlagRollout | null }> = {};
-    for (const f of flags) fl[f.key] = { enabled: f.enabled, rollout: (f.rollout as FlagRollout | null) ?? null };
-    await Promise.all([this.redis.setJson(CACHE_KEY, cfg, CACHE_TTL * 4), this.redis.setJson(FLAGS_KEY, fl, CACHE_TTL * 4)]);
+    for (const f of flags)
+      fl[f.key] = { enabled: f.enabled, rollout: (f.rollout as FlagRollout | null) ?? null };
+    await Promise.all([
+      this.redis.setJson(CACHE_KEY, cfg, CACHE_TTL * 4),
+      this.redis.setJson(FLAGS_KEY, fl, CACHE_TTL * 4),
+    ]);
     this.local = new Map(Object.entries(cfg));
     this.localFlags = new Map(Object.entries(fl));
     this.localLoadedAt = Date.now();
@@ -63,7 +103,12 @@ export class SystemConfigService implements OnModuleInit {
 
   private async ensureFresh(): Promise<void> {
     if (Date.now() - this.localLoadedAt < CACHE_TTL * 1000) return;
-    const [cfg, fl] = await Promise.all([this.redis.getJson<Record<string, number | string | boolean>>(CACHE_KEY), this.redis.getJson<Record<string, { enabled: boolean; rollout: FlagRollout | null }>>(FLAGS_KEY)]);
+    const [cfg, fl] = await Promise.all([
+      this.redis.getJson<Record<string, number | string | boolean>>(CACHE_KEY),
+      this.redis.getJson<Record<string, { enabled: boolean; rollout: FlagRollout | null }>>(
+        FLAGS_KEY,
+      ),
+    ]);
     if (cfg && fl) {
       this.local = new Map(Object.entries(cfg));
       this.localFlags = new Map(Object.entries(fl));
@@ -102,7 +147,9 @@ export class SystemConfigService implements OnModuleInit {
   }
 
   async listConfigs(): Promise<SystemConfigDto[]> {
-    const rows = await this.prisma.systemConfig.findMany({ orderBy: [{ group: 'asc' }, { key: 'asc' }] });
+    const rows = await this.prisma.systemConfig.findMany({
+      orderBy: [{ group: 'asc' }, { key: 'asc' }],
+    });
     return rows.map((r) => ({
       key: r.key,
       value: r.value as number | string | boolean,
@@ -117,18 +164,43 @@ export class SystemConfigService implements OnModuleInit {
     }));
   }
 
-  async updateConfig(input: UpdateConfigInput, actorId: string, requestId: string | null): Promise<SystemConfigDto> {
+  async updateConfig(
+    input: UpdateConfigInput,
+    actorId: string,
+    requestId: string | null,
+  ): Promise<SystemConfigDto> {
     const def = CONFIG_DEFINITIONS.find((d) => d.key === input.key);
     if (!def) throw AppException.notFound('Config key', input.key);
     if (def.type === 'number' && typeof input.value === 'number') {
-      if ((def.min !== undefined && input.value < def.min) || (def.max !== undefined && input.value > def.max)) {
-        throw AppException.badRequest(ErrorCode.CONFIG_OUT_OF_RANGE, `${input.key} must be between ${def.min} and ${def.max}`);
+      if (
+        (def.min !== undefined && input.value < def.min) ||
+        (def.max !== undefined && input.value > def.max)
+      ) {
+        throw AppException.badRequest(
+          ErrorCode.CONFIG_OUT_OF_RANGE,
+          `${input.key} must be between ${def.min} and ${def.max}`,
+        );
       }
     }
     const before = await this.prisma.systemConfig.findUnique({ where: { key: input.key } });
     const updated = await this.prisma.$transaction(async (tx) => {
-      const row = await tx.systemConfig.update({ where: { key: input.key }, data: { value: input.value as Prisma.InputJsonValue, updatedById: actorId } });
-      await this.audit.record({ actorId, action: 'config.update', entity: 'system_config', entityId: input.key, oldValue: { value: before?.value }, newValue: { value: input.value }, reason: input.reason, requestId }, tx);
+      const row = await tx.systemConfig.update({
+        where: { key: input.key },
+        data: { value: input.value as Prisma.InputJsonValue, updatedById: actorId },
+      });
+      await this.audit.record(
+        {
+          actorId,
+          action: 'config.update',
+          entity: 'system_config',
+          entityId: input.key,
+          oldValue: { value: before?.value },
+          newValue: { value: input.value },
+          reason: input.reason,
+          requestId,
+        },
+        tx,
+      );
       return row;
     });
     await this.refresh();
@@ -147,14 +219,21 @@ export class SystemConfigService implements OnModuleInit {
   }
 
   /* ------------------------------------------------------------ flags */
-  async isEnabled(flag: FeatureFlagKey, context?: { userId?: string; zoneId?: string | null }): Promise<boolean> {
+  async isEnabled(
+    flag: FeatureFlagKey,
+    context?: { userId?: string; zoneId?: string | null },
+  ): Promise<boolean> {
     await this.ensureFresh();
     const f = this.localFlags.get(flag);
     if (!f) return FEATURE_FLAG_DEFAULTS[flag]?.enabled ?? false;
     if (!f.enabled) return false;
     if (!f.rollout) return true;
     if (context?.userId && f.rollout.userIds.includes(context.userId)) return true;
-    if (f.rollout.zoneIds.length && (!context?.zoneId || !f.rollout.zoneIds.includes(context.zoneId))) return false;
+    if (
+      f.rollout.zoneIds.length &&
+      (!context?.zoneId || !f.rollout.zoneIds.includes(context.zoneId))
+    )
+      return false;
     if (f.rollout.percent < 100) {
       if (!context?.userId) return false;
       return this.bucket(`${flag}:${context.userId}`) < f.rollout.percent;
@@ -162,7 +241,10 @@ export class SystemConfigService implements OnModuleInit {
     return true;
   }
 
-  async assertEnabled(flag: FeatureFlagKey, context?: { userId?: string; zoneId?: string | null }): Promise<void> {
+  async assertEnabled(
+    flag: FeatureFlagKey,
+    context?: { userId?: string; zoneId?: string | null },
+  ): Promise<void> {
     if (!(await this.isEnabled(flag, context))) throw AppException.featureDisabled(flag);
   }
 
@@ -178,25 +260,66 @@ export class SystemConfigService implements OnModuleInit {
 
   async listFlags(): Promise<FeatureFlagDto[]> {
     const rows = await this.prisma.featureFlag.findMany({ orderBy: { key: 'asc' } });
-    return rows.map((r) => ({ key: r.key, description: r.description, enabled: r.enabled, rollout: (r.rollout as FeatureFlagDto['rollout']) ?? null, updatedAt: r.updatedAt.toISOString() }));
+    return rows.map((r) => ({
+      key: r.key,
+      description: r.description,
+      enabled: r.enabled,
+      rollout: (r.rollout as FeatureFlagDto['rollout']) ?? null,
+      updatedAt: r.updatedAt.toISOString(),
+    }));
   }
 
-  async updateFlag(key: string, input: UpdateFeatureFlagInput, actorId: string, requestId: string | null): Promise<FeatureFlagDto> {
-    if (!Object.values(FEATURE_FLAGS).includes(key as FeatureFlagKey)) throw AppException.notFound('Feature flag', key);
+  async updateFlag(
+    key: string,
+    input: UpdateFeatureFlagInput,
+    actorId: string,
+    requestId: string | null,
+  ): Promise<FeatureFlagDto> {
+    if (!Object.values(FEATURE_FLAGS).includes(key as FeatureFlagKey))
+      throw AppException.notFound('Feature flag', key);
     const before = await this.prisma.featureFlag.findUnique({ where: { key } });
     const row = await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.featureFlag.update({ where: { key }, data: { enabled: input.enabled, rollout: input.rollout === undefined ? undefined : ((input.rollout ?? Prisma.JsonNull) as Prisma.InputJsonValue), updatedById: actorId } });
-      await this.audit.record({ actorId, action: 'feature_flag.update', entity: 'feature_flag', entityId: key, oldValue: { enabled: before?.enabled, rollout: before?.rollout }, newValue: { enabled: input.enabled, rollout: input.rollout }, reason: input.reason, requestId }, tx);
+      const updated = await tx.featureFlag.update({
+        where: { key },
+        data: {
+          enabled: input.enabled,
+          rollout:
+            input.rollout === undefined
+              ? undefined
+              : ((input.rollout ?? Prisma.JsonNull) as Prisma.InputJsonValue),
+          updatedById: actorId,
+        },
+      });
+      await this.audit.record(
+        {
+          actorId,
+          action: 'feature_flag.update',
+          entity: 'feature_flag',
+          entityId: key,
+          oldValue: { enabled: before?.enabled, rollout: before?.rollout },
+          newValue: { enabled: input.enabled, rollout: input.rollout },
+          reason: input.reason,
+          requestId,
+        },
+        tx,
+      );
       return updated;
     });
     await this.refresh();
-    return { key: row.key, description: row.description, enabled: row.enabled, rollout: (row.rollout as FeatureFlagDto['rollout']) ?? null, updatedAt: row.updatedAt.toISOString() };
+    return {
+      key: row.key,
+      description: row.description,
+      enabled: row.enabled,
+      rollout: (row.rollout as FeatureFlagDto['rollout']) ?? null,
+      updatedAt: row.updatedAt.toISOString(),
+    };
   }
 
   /** Public, cacheable snapshot for mobile apps (no rollout internals leaked). */
   async publicFlags(userId?: string, zoneId?: string | null): Promise<Record<string, boolean>> {
     const out: Record<string, boolean> = {};
-    for (const key of Object.values(FEATURE_FLAGS)) out[key] = await this.isEnabled(key, { userId, zoneId });
+    for (const key of Object.values(FEATURE_FLAGS))
+      out[key] = await this.isEnabled(key, { userId, zoneId });
     return out;
   }
 }

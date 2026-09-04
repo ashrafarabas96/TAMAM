@@ -14,11 +14,16 @@ export const env = {
 /** Server-only configuration for the session route handlers and middleware. */
 export const serverEnv = {
   get apiInternalBaseUrl(): string {
-    return trimSlash(process.env.API_INTERNAL_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000/api/v1');
+    return trimSlash(
+      process.env.API_INTERNAL_BASE_URL ??
+        process.env.NEXT_PUBLIC_API_BASE_URL ??
+        'http://localhost:3000/api/v1',
+    );
   },
   get sessionSecret(): string {
     const secret = process.env.SESSION_SECRET;
-    if (!secret || secret.length < 32) throw new Error('SESSION_SECRET must be set and at least 32 characters long');
+    if (!secret || secret.length < 32)
+      throw new Error('SESSION_SECRET must be set and at least 32 characters long');
     return secret;
   },
   get cookieSecure(): boolean {

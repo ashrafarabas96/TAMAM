@@ -11,9 +11,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-text-on-brand hover:bg-primary-hover active:bg-primary-pressed shadow-card',
-        accent: 'bg-accent text-text-on-accent hover:bg-accent-hover active:bg-accent-pressed shadow-card',
-        secondary: 'bg-surface-brand-soft text-primary hover:bg-purple-100 dark:hover:bg-purple-800',
+        primary:
+          'bg-primary text-text-on-brand hover:bg-primary-hover active:bg-primary-pressed shadow-card',
+        accent:
+          'bg-accent text-text-on-accent hover:bg-accent-hover active:bg-accent-pressed shadow-card',
+        secondary:
+          'bg-surface-brand-soft text-primary hover:bg-purple-100 dark:hover:bg-purple-800',
         outline: 'border border-border-strong bg-surface text-text-primary hover:bg-surface-alt',
         ghost: 'text-text-secondary hover:bg-surface-alt hover:text-text-primary',
         danger: 'bg-danger text-neutral-0 hover:bg-danger-strong',
@@ -32,16 +35,29 @@ const buttonVariants = cva(
   },
 );
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+export interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   loading?: boolean;
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, loading = false, disabled, children, type = 'button', ...props }, ref) => (
-  <button ref={ref} type={type} className={cn(buttonVariants({ variant, size }), className)} disabled={disabled || loading} aria-busy={loading || undefined} {...props}>
-    {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
-    {children}
-  </button>
-));
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { className, variant, size, loading = false, disabled, children, type = 'button', ...props },
+    ref,
+  ) => (
+    <button
+      ref={ref}
+      type={type}
+      className={cn(buttonVariants({ variant, size }), className)}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+      {children}
+    </button>
+  ),
+);
 Button.displayName = 'Button';
 
 export { buttonVariants };

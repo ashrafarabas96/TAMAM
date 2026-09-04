@@ -47,7 +47,11 @@ import { AuditService } from '../audit/audit.service';
 import { MediaUrlService } from '../media/media-url.service';
 import { MediaService } from '../media/media.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { VEHICLE_REQUIRED_ROLES, VehiclesService, normalizePlate } from '../vehicles/vehicles.service';
+import {
+  VEHICLE_REQUIRED_ROLES,
+  VehiclesService,
+  normalizePlate,
+} from '../vehicles/vehicles.service';
 
 import { PartnerAvailabilityService } from './partner-availability.service';
 
@@ -101,7 +105,13 @@ export interface PartnerJobHistoryItemDto {
   estimatedEarnings: Money | null;
   distanceMeters: number | null;
   durationSeconds: number | null;
-  stops: Array<{ id: string; sequence: number; kind: JobStopKind; formatted: string; city: string | null }>;
+  stops: Array<{
+    id: string;
+    sequence: number;
+    kind: JobStopKind;
+    formatted: string;
+    city: string | null;
+  }>;
   cancellationReason: string | null;
   cancelledBy: JobActorType | null;
   createdAt: string;
@@ -110,10 +120,24 @@ export interface PartnerJobHistoryItemDto {
 }
 
 const partnerInclude = {
-  user: { select: { id: true, fullName: true, phone: true, email: true, currency: true, profileImage: true } },
+  user: {
+    select: {
+      id: true,
+      fullName: true,
+      phone: true,
+      email: true,
+      currency: true,
+      profileImage: true,
+    },
+  },
   roles: true,
   skills: true,
-  categories: { select: { categoryId: true, category: { select: { requiredDocumentTypes: true, requiredPartnerRole: true } } } },
+  categories: {
+    select: {
+      categoryId: true,
+      category: { select: { requiredDocumentTypes: true, requiredPartnerRole: true } },
+    },
+  },
   zones: { select: { zoneId: true } },
   availability: true,
   wallet: { select: { balanceMinor: true, currency: true } },
@@ -141,7 +165,10 @@ const jobHistorySelect = {
   completedAt: true,
   cancelledAt: true,
   category: { select: { id: true, nameAr: true, nameEn: true } },
-  stops: { select: { id: true, sequence: true, kind: true, formatted: true, city: true }, orderBy: { sequence: 'asc' as const } },
+  stops: {
+    select: { id: true, sequence: true, kind: true, formatted: true, city: true },
+    orderBy: { sequence: 'asc' as const },
+  },
 } satisfies Prisma.JobSelect;
 
 /**
@@ -182,9 +209,17 @@ export class PartnersService {
   async savePersonal(userId: string, input: PartnerOnboardingPersonalInput): Promise<PartnerDto> {
     const partner = await this.requirePartner(userId);
     this.assertOnboardingEditable(partner);
-    if (input.profileImageMediaId) await this.media.assertOwnedReady(userId, [input.profileImageMediaId], [MediaPurpose.PROFILE]);
+    if (input.profileImageMediaId)
+      await this.media.assertOwnedReady(
+        userId,
+        [input.profileImageMediaId],
+        [MediaPurpose.PROFILE],
+      );
     if (input.email) {
-      const clash = await this.prisma.user.findFirst({ where: { email: input.email, NOT: { id: userId } }, select: { id: true } });
+      const clash = await this.prisma.user.findFirst({
+        where: { email: input.email, NOT: { id: userId } },
+        select: { id: true },
+      });
       if (clash) throw AppException.conflict('Email already in use');
     }
 
@@ -248,17 +283,28 @@ export class PartnersService {
     });
     if (categories.length !== categoryIds.length) {
       const found = new Set(categories.map((c) => c.id));
-      throw AppException.validation(categoryIds.filter((id) => !found.has(id)).map((id) => ({ field: 'categoryIds', message: `unknown or inactive category ${id}` })));
+      throw AppException.validation(
+        categoryIds
+          .filter((id) => !found.has(id))
+          .map((id) => ({ field: 'categoryIds', message: `unknown or inactive category ${id}` })),
+      );
     }
     const roles = partner.roles.filter((r) => r.isActive).map((r) => r.role);
     const mismatched = categories.filter((c) => !roles.includes(c.requiredPartnerRole));
     if (mismatched.length) {
-      throw AppException.validation(mismatched.map((c) => ({ field: 'categoryIds', message: `${c.nameEn} requires the ${c.requiredPartnerRole} role` })));
+      throw AppException.validation(
+        mismatched.map((c) => ({
+          field: 'categoryIds',
+          message: `${c.nameEn} requires the ${c.requiredPartnerRole} role`,
+        })),
+      );
     }
     const skills = [...new Set(input.skills.map((s) => s.trim()).filter(Boolean))];
 
     await this.prisma.$transaction(async (tx) => {
-      await tx.partnerCategory.deleteMany({ where: { partnerId: userId, categoryId: { notIn: categoryIds } } });
+      await tx.partnerCategory.deleteMany({
+        where: { partnerId: userId, categoryId: { notIn: categoryIds } },
+      });
       for (const categoryId of categoryIds) {
         await tx.partnerCategory.upsert({
           where: { partnerId_categoryId: { partnerId: userId, categoryId } },
@@ -268,7 +314,11 @@ export class PartnersService {
       }
       await tx.partnerSkill.deleteMany({ where: { partnerId: userId, skill: { notIn: skills } } });
       for (const skill of skills) {
-        await tx.partnerSkill.upsert({ where: { partnerId_skill: { partnerId: userId, skill } }, update: {}, create: { partnerId: userId, skill } });
+        await tx.partnerSkill.upsert({
+          where: { partnerId_skill: { partnerId: userId, skill } },
+          update: {},
+          create: { partnerId: userId, skill },
+        });
       }
       await tx.partnerProfile.update({
         where: { userId },
@@ -282,13 +332,22 @@ export class PartnersService {
   }
 
   /** One live document per (partner, type): re-uploading replaces the row and re-opens review. */
-  async addDocument(userId: string, input: PartnerDocumentUploadInput): Promise<PartnerDocumentDto> {
+  async addDocument(
+    userId: string,
+    input: PartnerDocumentUploadInput,
+  ): Promise<PartnerDocumentDto> {
     const partner = await this.requirePartner(userId);
     if (partner.verificationStatus === VerificationStatus.SUSPENDED) {
-      throw AppException.forbidden('Suspended partners cannot upload documents', ErrorCode.PARTNER_NOT_APPROVED);
+      throw AppException.forbidden(
+        'Suspended partners cannot upload documents',
+        ErrorCode.PARTNER_NOT_APPROVED,
+      );
     }
     await this.media.assertOwnedReady(userId, [input.mediaId], [MediaPurpose.PARTNER_DOCUMENT]);
-    const existing = await this.prisma.partnerDocument.findFirst({ where: { partnerId: userId, type: input.type }, orderBy: { createdAt: 'desc' } });
+    const existing = await this.prisma.partnerDocument.findFirst({
+      where: { partnerId: userId, type: input.type },
+      orderBy: { createdAt: 'desc' },
+    });
     const data = {
       type: input.type,
       number: input.number ?? null,
@@ -303,11 +362,20 @@ export class PartnersService {
     };
     const row = await this.prisma.$transaction(async (tx) => {
       const doc = existing
-        ? await tx.partnerDocument.update({ where: { id: existing.id }, data, include: { media: true } })
-        : await tx.partnerDocument.create({ data: { partnerId: userId, ...data }, include: { media: true } });
+        ? await tx.partnerDocument.update({
+            where: { id: existing.id },
+            data,
+            include: { media: true },
+          })
+        : await tx.partnerDocument.create({
+            data: { partnerId: userId, ...data },
+            include: { media: true },
+          });
       await tx.partnerProfile.update({
         where: { userId },
-        data: { onboardingStep: Math.max(partner.onboardingStep, PARTNER_ONBOARDING_STEPS.DOCUMENTS) },
+        data: {
+          onboardingStep: Math.max(partner.onboardingStep, PARTNER_ONBOARDING_STEPS.DOCUMENTS),
+        },
       });
       return doc;
     });
@@ -322,7 +390,9 @@ export class PartnersService {
       where: { partnerId: userId, plateNormalized: normalizePlate(input.plate) },
       select: { id: true },
     });
-    const vehicle = existing ? await this.vehicles.update(userId, existing.id, input) : await this.vehicles.create(userId, input);
+    const vehicle = existing
+      ? await this.vehicles.update(userId, existing.id, input)
+      : await this.vehicles.create(userId, input);
     await this.prisma.partnerProfile.update({
       where: { userId },
       data: { onboardingStep: Math.max(partner.onboardingStep, PARTNER_ONBOARDING_STEPS.VEHICLE) },
@@ -334,16 +404,27 @@ export class PartnersService {
     const partner = await this.requirePartner(userId);
     this.assertOnboardingEditable(partner);
     const zoneIds = [...new Set(input.zoneIds)];
-    const zones = await this.prisma.serviceZone.findMany({ where: { id: { in: zoneIds }, isActive: true }, select: { id: true } });
+    const zones = await this.prisma.serviceZone.findMany({
+      where: { id: { in: zoneIds }, isActive: true },
+      select: { id: true },
+    });
     if (zones.length !== zoneIds.length) {
       const found = new Set(zones.map((z) => z.id));
-      throw AppException.validation(zoneIds.filter((id) => !found.has(id)).map((id) => ({ field: 'zoneIds', message: `unknown or inactive zone ${id}` })));
+      throw AppException.validation(
+        zoneIds
+          .filter((id) => !found.has(id))
+          .map((id) => ({ field: 'zoneIds', message: `unknown or inactive zone ${id}` })),
+      );
     }
 
     await this.prisma.$transaction(async (tx) => {
       await tx.partnerZone.deleteMany({ where: { partnerId: userId, zoneId: { notIn: zoneIds } } });
       for (const zoneId of zoneIds) {
-        await tx.partnerZone.upsert({ where: { partnerId_zoneId: { partnerId: userId, zoneId } }, update: {}, create: { partnerId: userId, zoneId } });
+        await tx.partnerZone.upsert({
+          where: { partnerId_zoneId: { partnerId: userId, zoneId } },
+          update: {},
+          create: { partnerId: userId, zoneId },
+        });
       }
       await tx.partnerProfile.update({
         where: { userId },
@@ -359,14 +440,23 @@ export class PartnersService {
    */
   async submitForReview(userId: string, acceptedTermsVersion: string): Promise<PartnerDto> {
     const partner = await this.requirePartner(userId);
-    if (partner.verificationStatus === VerificationStatus.APPROVED) throw AppException.conflict('Your partner account is already approved');
-    if (partner.verificationStatus === VerificationStatus.SUSPENDED) throw AppException.forbidden('Your partner account is suspended', ErrorCode.PARTNER_NOT_APPROVED);
-    if (partner.verificationStatus === VerificationStatus.PENDING || partner.verificationStatus === VerificationStatus.UNDER_REVIEW) {
+    if (partner.verificationStatus === VerificationStatus.APPROVED)
+      throw AppException.conflict('Your partner account is already approved');
+    if (partner.verificationStatus === VerificationStatus.SUSPENDED)
+      throw AppException.forbidden(
+        'Your partner account is suspended',
+        ErrorCode.PARTNER_NOT_APPROVED,
+      );
+    if (
+      partner.verificationStatus === VerificationStatus.PENDING ||
+      partner.verificationStatus === VerificationStatus.UNDER_REVIEW
+    ) {
       throw AppException.conflict('Your application is already under review');
     }
 
     const errors = await this.collectSubmissionGaps(partner);
-    if (errors.length) throw AppException.validation(errors, 'Your application is not complete yet');
+    if (errors.length)
+      throw AppException.validation(errors, 'Your application is not complete yet');
 
     await this.prisma.partnerProfile.update({
       where: { userId },
@@ -381,16 +471,22 @@ export class PartnersService {
   }
 
   /** Everything a reviewer needs before the file may enter the queue. */
-  private async collectSubmissionGaps(partner: PartnerRow): Promise<Array<{ field: string; message: string }>> {
+  private async collectSubmissionGaps(
+    partner: PartnerRow,
+  ): Promise<Array<{ field: string; message: string }>> {
     const errors: Array<{ field: string; message: string }> = [];
-    if (!partner.user.fullName) errors.push({ field: 'fullName', message: 'personal details are missing' });
-    if (!partner.dateOfBirth) errors.push({ field: 'dateOfBirth', message: 'date of birth is missing' });
-    if (!partner.nationalIdEnc) errors.push({ field: 'nationalId', message: 'national id is missing' });
+    if (!partner.user.fullName)
+      errors.push({ field: 'fullName', message: 'personal details are missing' });
+    if (!partner.dateOfBirth)
+      errors.push({ field: 'dateOfBirth', message: 'date of birth is missing' });
+    if (!partner.nationalIdEnc)
+      errors.push({ field: 'nationalId', message: 'national id is missing' });
     if (!partner.city) errors.push({ field: 'city', message: 'city is missing' });
 
     const roles = partner.roles.filter((r) => r.isActive).map((r) => r.role);
     if (!roles.length) errors.push({ field: 'roles', message: 'choose at least one partner role' });
-    if (!partner.categories.length) errors.push({ field: 'categoryIds', message: 'choose at least one service category' });
+    if (!partner.categories.length)
+      errors.push({ field: 'categoryIds', message: 'choose at least one service category' });
 
     const requiredTypes = PartnerAvailabilityService.requiredDocumentTypes(partner);
     const usable = new Map(
@@ -401,23 +497,38 @@ export class PartnersService {
     const now = new Date();
     for (const type of requiredTypes) {
       const doc = usable.get(type);
-      if (!doc) errors.push({ field: 'documents', message: `document ${type} is required for the selected categories` });
-      else if (doc.expiresAt && doc.expiresAt.getTime() < now.getTime()) errors.push({ field: 'documents', message: `document ${type} has expired` });
+      if (!doc)
+        errors.push({
+          field: 'documents',
+          message: `document ${type} is required for the selected categories`,
+        });
+      else if (doc.expiresAt && doc.expiresAt.getTime() < now.getTime())
+        errors.push({ field: 'documents', message: `document ${type} has expired` });
     }
 
     const needsVehicle = roles.filter((r) => VEHICLE_REQUIRED_ROLES.includes(r));
     if (needsVehicle.length) {
-      const vehicleCount = await this.prisma.vehicle.count({ where: { partnerId: partner.userId, isActive: true } });
-      if (!vehicleCount) errors.push({ field: 'vehicle', message: `working as ${needsVehicle.join(', ')} requires a registered vehicle` });
+      const vehicleCount = await this.prisma.vehicle.count({
+        where: { partnerId: partner.userId, isActive: true },
+      });
+      if (!vehicleCount)
+        errors.push({
+          field: 'vehicle',
+          message: `working as ${needsVehicle.join(', ')} requires a registered vehicle`,
+        });
     }
 
-    if (!partner.zones.length) errors.push({ field: 'zoneIds', message: 'choose at least one working zone' });
+    if (!partner.zones.length)
+      errors.push({ field: 'zoneIds', message: 'choose at least one working zone' });
     return errors;
   }
 
   /* -------------------------------------------------------- job history */
 
-  async listJobs(userId: string, filter: JobListFilterInput & PageRequestInput): Promise<Page<PartnerJobHistoryItemDto>> {
+  async listJobs(
+    userId: string,
+    filter: JobListFilterInput & PageRequestInput,
+  ): Promise<Page<PartnerJobHistoryItemDto>> {
     await this.requirePartnerExists(userId);
     const cursor = decodeCursor(filter.cursor);
     const rows = await this.prisma.job.findMany({
@@ -429,12 +540,19 @@ export class PartnersService {
         number: filter.q ? { contains: filter.q.toUpperCase() } : undefined,
         createdAt:
           filter.from || filter.to
-            ? { gte: filter.from ? new Date(filter.from) : undefined, lte: filter.to ? new Date(filter.to) : undefined }
+            ? {
+                gte: filter.from ? new Date(filter.from) : undefined,
+                lte: filter.to ? new Date(filter.to) : undefined,
+              }
             : undefined,
       },
       select: {
         ...jobHistorySelect,
-        assignments: { where: { partnerId: userId, status: AssignmentStatus.ACCEPTED }, select: { estimatedEarningsMinor: true }, take: 1 },
+        assignments: {
+          where: { partnerId: userId, status: AssignmentStatus.ACCEPTED },
+          select: { estimatedEarningsMinor: true },
+          take: 1,
+        },
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: filter.limit + 1,
@@ -456,17 +574,25 @@ export class PartnersService {
   async addBankAccount(userId: string, input: AddBankAccountInput): Promise<PartnerBankAccountDto> {
     await this.requirePartnerExists(userId);
     const iban = input.iban.toUpperCase().replace(/[\s-]+/g, '');
-    if (iban.length < 15 || iban.length > 34) throw AppException.validation([{ field: 'iban', message: 'IBAN must be 15-34 characters' }]);
+    if (iban.length < 15 || iban.length > 34)
+      throw AppException.validation([{ field: 'iban', message: 'IBAN must be 15-34 characters' }]);
 
     const key = this.appConfig.encryptionKey;
-    const existing = await this.prisma.partnerBankAccount.findMany({ where: { partnerId: userId }, select: { id: true, ibanEnc: true } });
+    const existing = await this.prisma.partnerBankAccount.findMany({
+      where: { partnerId: userId },
+      select: { id: true, ibanEnc: true },
+    });
     if (existing.some((row) => decrypt(row.ibanEnc, key) === iban)) {
       throw AppException.conflict('This bank account is already saved');
     }
     const makeDefault = input.isDefault || existing.length === 0;
 
     const row = await this.prisma.$transaction(async (tx) => {
-      if (makeDefault) await tx.partnerBankAccount.updateMany({ where: { partnerId: userId }, data: { isDefault: false } });
+      if (makeDefault)
+        await tx.partnerBankAccount.updateMany({
+          where: { partnerId: userId },
+          data: { isDefault: false },
+        });
       return tx.partnerBankAccount.create({
         data: {
           partnerId: userId,
@@ -489,14 +615,22 @@ export class PartnersService {
     const at = cursor ? new Date(cursor.createdAt) : null;
     const rows = await this.prisma.partnerProfile.findMany({
       where: {
-        ...(at && cursor ? { OR: [{ createdAt: { lt: at } }, { createdAt: at, userId: { lt: cursor.id } }] } : {}),
+        ...(at && cursor
+          ? { OR: [{ createdAt: { lt: at } }, { createdAt: at, userId: { lt: cursor.id } }] }
+          : {}),
         verificationStatus: statuses ? { in: statuses } : undefined,
         availability: filter.availability ? { is: { status: filter.availability } } : undefined,
         roles: filter.role ? { some: { role: filter.role, isActive: true } } : undefined,
         zones: filter.zoneId ? { some: { zoneId: filter.zoneId } } : undefined,
         categories: filter.categoryId ? { some: { categoryId: filter.categoryId } } : undefined,
         user: filter.q
-          ? { OR: [{ phone: { contains: filter.q } }, { fullName: { contains: filter.q, mode: 'insensitive' } }, { email: { contains: filter.q, mode: 'insensitive' } }] }
+          ? {
+              OR: [
+                { phone: { contains: filter.q } },
+                { fullName: { contains: filter.q, mode: 'insensitive' } },
+                { email: { contains: filter.q, mode: 'insensitive' } },
+              ],
+            }
           : undefined,
       },
       include: partnerInclude,
@@ -509,7 +643,10 @@ export class PartnersService {
     const last = slice[slice.length - 1];
     return {
       items: await Promise.all(slice.map((row) => this.toDto(row))),
-      nextCursor: hasMore && last ? encodeCursor({ createdAt: last.createdAt.toISOString(), id: last.userId }) : null,
+      nextCursor:
+        hasMore && last
+          ? encodeCursor({ createdAt: last.createdAt.toISOString(), id: last.userId })
+          : null,
     };
   }
 
@@ -524,7 +661,9 @@ export class PartnersService {
     actor: RequestUser,
     requestId: string | null,
   ): Promise<PartnerDocumentDto> {
-    const doc = await this.prisma.partnerDocument.findFirst({ where: { id: documentId, partnerId } });
+    const doc = await this.prisma.partnerDocument.findFirst({
+      where: { id: documentId, partnerId },
+    });
     if (!doc) throw AppException.notFound('Partner document', documentId);
     const approve = input.decision === 'APPROVE';
 
@@ -560,7 +699,11 @@ export class PartnersService {
     await this.notifications.notify({
       userId: partnerId,
       event: NotificationEvent.DOCUMENT_REVIEWED,
-      vars: { documentType: doc.type, decision: approve ? 'APPROVED' : 'REJECTED', reason: input.rejectionReason ?? '' },
+      vars: {
+        documentType: doc.type,
+        decision: approve ? 'APPROVED' : 'REJECTED',
+        reason: input.rejectionReason ?? '',
+      },
       data: { documentId },
     });
     return this.toDocumentDto(row);
@@ -570,15 +713,30 @@ export class PartnersService {
    * Approve / reject / suspend / reinstate a partner file. The permission required depends on
    * the decision, so the route allows either and the exact one is enforced here.
    */
-  async decide(partnerId: string, input: PartnerDecisionInput, actor: RequestUser, requestId: string | null): Promise<PartnerDto> {
-    const needed = input.decision === 'SUSPEND' || input.decision === 'REINSTATE' ? Permission.PARTNERS_SUSPEND : Permission.PARTNERS_APPROVE;
-    if (!actor.isSuperAdmin && !actor.permissions.includes(needed)) throw AppException.forbidden(`Missing permission: ${needed}`);
+  async decide(
+    partnerId: string,
+    input: PartnerDecisionInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<PartnerDto> {
+    const needed =
+      input.decision === 'SUSPEND' || input.decision === 'REINSTATE'
+        ? Permission.PARTNERS_SUSPEND
+        : Permission.PARTNERS_APPROVE;
+    if (!actor.isSuperAdmin && !actor.permissions.includes(needed))
+      throw AppException.forbidden(`Missing permission: ${needed}`);
 
     const partner = await this.requirePartner(partnerId);
-    if (input.decision === 'SUSPEND' && partner.verificationStatus === VerificationStatus.SUSPENDED) {
+    if (
+      input.decision === 'SUSPEND' &&
+      partner.verificationStatus === VerificationStatus.SUSPENDED
+    ) {
       throw AppException.conflict('Partner is already suspended');
     }
-    if (input.decision === 'REINSTATE' && partner.verificationStatus !== VerificationStatus.SUSPENDED) {
+    if (
+      input.decision === 'REINSTATE' &&
+      partner.verificationStatus !== VerificationStatus.SUSPENDED
+    ) {
       throw AppException.conflict('Only a suspended partner can be reinstated');
     }
 
@@ -599,13 +757,17 @@ export class PartnersService {
           reviewedById: actor.id,
           reviewedAt: now,
           reviewNote: input.reason,
-          suspendedUntil: input.decision === 'SUSPEND' ? (input.until ? new Date(input.until) : null) : null,
+          suspendedUntil:
+            input.decision === 'SUSPEND' ? (input.until ? new Date(input.until) : null) : null,
         },
       });
       if (goesOffline) {
         // A rejected or suspended partner must stop receiving offers immediately.
         await tx.partnerAvailability.updateMany({
-          where: { partnerId, status: { in: [AvailabilityStatus.ONLINE, AvailabilityStatus.BUSY] } },
+          where: {
+            partnerId,
+            status: { in: [AvailabilityStatus.ONLINE, AvailabilityStatus.BUSY] },
+          },
           data: { status: AvailabilityStatus.OFFLINE, onlineSince: null },
         });
       }
@@ -616,7 +778,10 @@ export class PartnersService {
           action: `partner.${input.decision.toLowerCase()}`,
           entity: 'partner',
           entityId: partnerId,
-          oldValue: { verificationStatus: partner.verificationStatus, suspendedUntil: partner.suspendedUntil },
+          oldValue: {
+            verificationStatus: partner.verificationStatus,
+            suspendedUntil: partner.suspendedUntil,
+          },
           newValue: { verificationStatus: nextStatus, suspendedUntil: input.until ?? null },
           reason: input.reason,
           requestId,
@@ -626,22 +791,40 @@ export class PartnersService {
     });
 
     if (nextStatus === VerificationStatus.APPROVED) {
-      await this.notifications.notify({ userId: partnerId, event: NotificationEvent.PARTNER_APPROVED, priority: 'high' });
+      await this.notifications.notify({
+        userId: partnerId,
+        event: NotificationEvent.PARTNER_APPROVED,
+        priority: 'high',
+      });
       // `decision` lets listeners tell a first approval from a reinstatement without a second event name.
-      this.events.emit('partner.approved', { partnerId, decision: input.decision, actorId: actor.id, at: now.toISOString() });
+      this.events.emit('partner.approved', {
+        partnerId,
+        decision: input.decision,
+        actorId: actor.id,
+        at: now.toISOString(),
+      });
     }
     return this.getProfile(partnerId);
   }
 
-  async adminUpdate(partnerId: string, input: AdminUpdatePartnerInput, actor: RequestUser, requestId: string | null): Promise<PartnerDto> {
+  async adminUpdate(
+    partnerId: string,
+    input: AdminUpdatePartnerInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<PartnerDto> {
     const partner = await this.requirePartner(partnerId);
     if (input.categoryIds?.length) {
-      const found = await this.prisma.serviceCategory.count({ where: { id: { in: input.categoryIds } } });
-      if (found !== new Set(input.categoryIds).size) throw AppException.validation([{ field: 'categoryIds', message: 'unknown category id' }]);
+      const found = await this.prisma.serviceCategory.count({
+        where: { id: { in: input.categoryIds } },
+      });
+      if (found !== new Set(input.categoryIds).size)
+        throw AppException.validation([{ field: 'categoryIds', message: 'unknown category id' }]);
     }
     if (input.zoneIds?.length) {
       const found = await this.prisma.serviceZone.count({ where: { id: { in: input.zoneIds } } });
-      if (found !== new Set(input.zoneIds).size) throw AppException.validation([{ field: 'zoneIds', message: 'unknown zone id' }]);
+      if (found !== new Set(input.zoneIds).size)
+        throw AppException.validation([{ field: 'zoneIds', message: 'unknown zone id' }]);
     }
 
     await this.prisma.$transaction(async (tx) => {
@@ -649,29 +832,51 @@ export class PartnersService {
         const roles = [...new Set(input.roles)];
         await tx.partnerRole.deleteMany({ where: { partnerId, role: { notIn: roles } } });
         for (const role of roles) {
-          await tx.partnerRole.upsert({ where: { partnerId_role: { partnerId, role } }, update: { isActive: true }, create: { partnerId, role } });
+          await tx.partnerRole.upsert({
+            where: { partnerId_role: { partnerId, role } },
+            update: { isActive: true },
+            create: { partnerId, role },
+          });
         }
-        await tx.partnerAvailability.upsert({ where: { partnerId }, update: { activeRoles: roles }, create: { partnerId, activeRoles: roles } });
+        await tx.partnerAvailability.upsert({
+          where: { partnerId },
+          update: { activeRoles: roles },
+          create: { partnerId, activeRoles: roles },
+        });
       }
       if (input.categoryIds) {
         const categoryIds = [...new Set(input.categoryIds)];
-        await tx.partnerCategory.deleteMany({ where: { partnerId, categoryId: { notIn: categoryIds } } });
+        await tx.partnerCategory.deleteMany({
+          where: { partnerId, categoryId: { notIn: categoryIds } },
+        });
         for (const categoryId of categoryIds) {
-          await tx.partnerCategory.upsert({ where: { partnerId_categoryId: { partnerId, categoryId } }, update: {}, create: { partnerId, categoryId } });
+          await tx.partnerCategory.upsert({
+            where: { partnerId_categoryId: { partnerId, categoryId } },
+            update: {},
+            create: { partnerId, categoryId },
+          });
         }
       }
       if (input.zoneIds) {
         const zoneIds = [...new Set(input.zoneIds)];
         await tx.partnerZone.deleteMany({ where: { partnerId, zoneId: { notIn: zoneIds } } });
         for (const zoneId of zoneIds) {
-          await tx.partnerZone.upsert({ where: { partnerId_zoneId: { partnerId, zoneId } }, update: {}, create: { partnerId, zoneId } });
+          await tx.partnerZone.upsert({
+            where: { partnerId_zoneId: { partnerId, zoneId } },
+            update: {},
+            create: { partnerId, zoneId },
+          });
         }
       }
       if (input.skills) {
         const skills = [...new Set(input.skills.map((s) => s.trim()).filter(Boolean))];
         await tx.partnerSkill.deleteMany({ where: { partnerId, skill: { notIn: skills } } });
         for (const skill of skills) {
-          await tx.partnerSkill.upsert({ where: { partnerId_skill: { partnerId, skill } }, update: {}, create: { partnerId, skill } });
+          await tx.partnerSkill.upsert({
+            where: { partnerId_skill: { partnerId, skill } },
+            update: {},
+            create: { partnerId, skill },
+          });
         }
       }
       await this.audit.record(
@@ -687,7 +892,12 @@ export class PartnersService {
             zoneIds: partner.zones.map((z) => z.zoneId),
             skills: partner.skills.map((s) => s.skill),
           },
-          newValue: { roles: input.roles, categoryIds: input.categoryIds, zoneIds: input.zoneIds, skills: input.skills },
+          newValue: {
+            roles: input.roles,
+            categoryIds: input.categoryIds,
+            zoneIds: input.zoneIds,
+            skills: input.skills,
+          },
           reason: input.reason,
           requestId,
         },
@@ -700,19 +910,27 @@ export class PartnersService {
   /* ------------------------------------------------------------- helpers */
 
   private async requirePartner(userId: string): Promise<PartnerRow> {
-    const partner = await this.prisma.partnerProfile.findUnique({ where: { userId }, include: partnerInclude });
+    const partner = await this.prisma.partnerProfile.findUnique({
+      where: { userId },
+      include: partnerInclude,
+    });
     if (!partner) throw AppException.notFound('Partner profile', userId);
     return partner;
   }
 
   private async requirePartnerExists(userId: string): Promise<void> {
-    const exists = await this.prisma.partnerProfile.findUnique({ where: { userId }, select: { userId: true } });
+    const exists = await this.prisma.partnerProfile.findUnique({
+      where: { userId },
+      select: { userId: true },
+    });
     if (!exists) throw AppException.notFound('Partner profile', userId);
   }
 
   private assertOnboardingEditable(partner: PartnerRow): void {
     if (!EDITABLE_STATUSES.includes(partner.verificationStatus)) {
-      throw AppException.conflict('Approved and suspended partner files are changed by support, not in the app');
+      throw AppException.conflict(
+        'Approved and suspended partner files are changed by support, not in the app',
+      );
     }
   }
 
@@ -724,11 +942,16 @@ export class PartnersService {
       .map((s) => s.trim().toUpperCase())
       .filter(Boolean);
     const parsed = wanted.filter((s): s is VerificationStatus => allowed.includes(s));
-    if (parsed.length !== wanted.length) throw AppException.validation([{ field: 'verificationStatus', message: `allowed values: ${allowed.join(', ')}` }]);
+    if (parsed.length !== wanted.length)
+      throw AppException.validation([
+        { field: 'verificationStatus', message: `allowed values: ${allowed.join(', ')}` },
+      ]);
     return parsed.length ? parsed : undefined;
   }
 
-  private statusGroupFilter(group: JobListFilterInput['statusGroup']): Prisma.JobWhereInput['status'] {
+  private statusGroupFilter(
+    group: JobListFilterInput['statusGroup'],
+  ): Prisma.JobWhereInput['status'] {
     if (group === 'completed') return { in: [JobStatus.COMPLETED] };
     if (group === 'cancelled') return { in: [JobStatus.CANCELLED, JobStatus.NO_PARTNER_AVAILABLE] };
     if (group === 'active') return { in: [...ACTIVE_JOB_STATUSES] };
@@ -750,7 +973,9 @@ export class PartnersService {
       rating: p.ratingCount ? Number((p.ratingSum / p.ratingCount).toFixed(2)) : 5,
       ratingCount: p.ratingCount,
       completedJobs: p.completedJobs,
-      acceptanceRate: p.offersReceived ? Number((p.offersAccepted / p.offersReceived).toFixed(3)) : 1,
+      acceptanceRate: p.offersReceived
+        ? Number((p.offersAccepted / p.offersReceived).toFixed(3))
+        : 1,
       cancellationRate: totalDecided ? Number((p.cancelledJobs / totalDecided).toFixed(3)) : 0,
       fullName: p.user.fullName,
       phone: p.user.phone,
@@ -761,7 +986,10 @@ export class PartnersService {
       activeVehicleId: p.activeVehicleId,
       walletBalance: { amount: Number(p.wallet?.balanceMinor ?? 0n), currency },
       lastHeartbeatAt: a?.lastHeartbeatAt ? a.lastHeartbeatAt.toISOString() : null,
-      lastLocation: a && a.lat !== null && a.lng !== null ? { lat: a.lat.toNumber(), lng: a.lng.toNumber() } : null,
+      lastLocation:
+        a && a.lat !== null && a.lng !== null
+          ? { lat: a.lat.toNumber(), lng: a.lng.toNumber() }
+          : null,
       documents: await Promise.all(p.documents.map((d) => this.toDocumentDto(d))),
       onboardingStep: p.onboardingStep,
       createdAt: p.createdAt.toISOString(),
@@ -784,7 +1012,14 @@ export class PartnersService {
     };
   }
 
-  private toBankAccountDto(row: { id: string; bankName: string; accountHolder: string; ibanLast4: string; isDefault: boolean; createdAt: Date }): PartnerBankAccountDto {
+  private toBankAccountDto(row: {
+    id: string;
+    bankName: string;
+    accountHolder: string;
+    ibanLast4: string;
+    isDefault: boolean;
+    createdAt: Date;
+  }): PartnerBankAccountDto {
     return {
       id: row.id,
       bankName: row.bankName,
@@ -796,7 +1031,9 @@ export class PartnersService {
   }
 
   private toJobHistoryItem(
-    job: Prisma.JobGetPayload<{ select: typeof jobHistorySelect }> & { assignments: Array<{ estimatedEarningsMinor: bigint }> },
+    job: Prisma.JobGetPayload<{ select: typeof jobHistorySelect }> & {
+      assignments: Array<{ estimatedEarningsMinor: bigint }>;
+    },
   ): PartnerJobHistoryItemDto {
     const currency = job.currency as Money['currency'];
     const accepted = job.assignments[0];
@@ -808,12 +1045,24 @@ export class PartnersService {
       categoryId: job.category?.id ?? null,
       categoryName: job.category ? { ar: job.category.nameAr, en: job.category.nameEn } : null,
       currency: job.currency,
-      estimatedTotal: job.estimatedTotalMinor === null ? null : { amount: Number(job.estimatedTotalMinor), currency },
-      finalTotal: job.finalTotalMinor === null ? null : { amount: Number(job.finalTotalMinor), currency },
-      estimatedEarnings: accepted ? { amount: Number(accepted.estimatedEarningsMinor), currency } : null,
+      estimatedTotal:
+        job.estimatedTotalMinor === null
+          ? null
+          : { amount: Number(job.estimatedTotalMinor), currency },
+      finalTotal:
+        job.finalTotalMinor === null ? null : { amount: Number(job.finalTotalMinor), currency },
+      estimatedEarnings: accepted
+        ? { amount: Number(accepted.estimatedEarningsMinor), currency }
+        : null,
       distanceMeters: job.actualDistanceMeters ?? job.distanceMeters,
       durationSeconds: job.actualDurationSeconds ?? job.durationSeconds,
-      stops: job.stops.map((s) => ({ id: s.id, sequence: s.sequence, kind: s.kind, formatted: s.formatted, city: s.city })),
+      stops: job.stops.map((s) => ({
+        id: s.id,
+        sequence: s.sequence,
+        kind: s.kind,
+        formatted: s.formatted,
+        city: s.city,
+      })),
       cancellationReason: job.cancellationReasonCode,
       cancelledBy: job.cancelledBy,
       createdAt: job.createdAt.toISOString(),

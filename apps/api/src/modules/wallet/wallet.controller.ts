@@ -14,7 +14,18 @@ import {
 } from '@tamam/validation';
 import { z } from 'zod';
 
-import { AllowRestricted, Audited, CurrentUser, Idempotent, RateLimit, RequestId, RequirePermission, RequireRole, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  Audited,
+  CurrentUser,
+  Idempotent,
+  RateLimit,
+  RequestId,
+  RequirePermission,
+  RequireRole,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { AppException } from '../../common/errors/app.exception';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
@@ -24,10 +35,14 @@ import { type EarningsPeriod, type WalletOwner, WalletService } from './wallet.s
 const walletQuerySchema = z.object({ owner: z.enum(['CUSTOMER', 'PARTNER']).optional() });
 type WalletQuery = z.infer<typeof walletQuerySchema>;
 
-const statementQuerySchema = pageRequestSchema.extend({ owner: z.enum(['CUSTOMER', 'PARTNER']).optional() });
+const statementQuerySchema = pageRequestSchema.extend({
+  owner: z.enum(['CUSTOMER', 'PARTNER']).optional(),
+});
 type StatementQuery = z.infer<typeof statementQuerySchema>;
 
-const earningsQuerySchema = z.object({ period: z.enum(['today', 'week', 'month']).default('today') });
+const earningsQuerySchema = z.object({
+  period: z.enum(['today', 'week', 'month']).default('today'),
+});
 type EarningsQuery = z.infer<typeof earningsQuerySchema>;
 
 const withdrawalListSchema = pageRequestSchema.extend({
@@ -38,7 +53,11 @@ type WithdrawalListQuery = z.infer<typeof withdrawalListSchema>;
 
 /** The interceptor guarantees the header on @Idempotent routes; this keeps the type honest. */
 function requireIdempotencyKey(value: string | undefined): string {
-  if (!value) throw AppException.badRequest(ErrorCode.IDEMPOTENCY_KEY_REQUIRED, 'Idempotency-Key header is required');
+  if (!value)
+    throw AppException.badRequest(
+      ErrorCode.IDEMPOTENCY_KEY_REQUIRED,
+      'Idempotency-Key header is required',
+    );
   return value;
 }
 
@@ -58,8 +77,16 @@ export class WalletController {
 
   @Get('wallet/statement')
   @AllowRestricted()
-  statement(@CurrentUser() user: RequestUser, @ZodQuery(statementQuerySchema) query: StatementQuery) {
-    return this.wallet.statement(user, query.cursor, query.limit, query.owner as WalletOwner | undefined);
+  statement(
+    @CurrentUser() user: RequestUser,
+    @ZodQuery(statementQuerySchema) query: StatementQuery,
+  ) {
+    return this.wallet.statement(
+      user,
+      query.cursor,
+      query.limit,
+      query.owner as WalletOwner | undefined,
+    );
   }
 
   @Post('wallet/top-up')
@@ -71,7 +98,12 @@ export class WalletController {
     @HttpHeaders('idempotency-key') idempotencyKey: string | undefined,
     @ZodQuery(walletQuerySchema) query: WalletQuery,
   ) {
-    return this.wallet.topUp(user, input, requireIdempotencyKey(idempotencyKey), query.owner as WalletOwner | undefined);
+    return this.wallet.topUp(
+      user,
+      input,
+      requireIdempotencyKey(idempotencyKey),
+      query.owner as WalletOwner | undefined,
+    );
   }
 
   @Post('wallet/withdrawals')
@@ -89,8 +121,16 @@ export class WalletController {
   @Get('wallet/withdrawals')
   @RequireRole('PARTNER')
   @AllowRestricted()
-  myWithdrawals(@CurrentUser() user: RequestUser, @ZodQuery(withdrawalListSchema) query: WithdrawalListQuery) {
-    return this.wallet.listWithdrawals({ partnerId: user.id, status: query.status, cursor: query.cursor, limit: query.limit });
+  myWithdrawals(
+    @CurrentUser() user: RequestUser,
+    @ZodQuery(withdrawalListSchema) query: WithdrawalListQuery,
+  ) {
+    return this.wallet.listWithdrawals({
+      partnerId: user.id,
+      status: query.status,
+      cursor: query.cursor,
+      limit: query.limit,
+    });
   }
 
   @Get('partners/me/earnings')
@@ -105,7 +145,11 @@ export class WalletController {
   @Post('admin/wallets/adjust')
   @RequirePermission(Permission.WALLET_ADJUST)
   @Audited({ action: 'wallet.adjust', entity: 'wallet', entityIdFrom: 'walletId', sensitive: true })
-  adjust(@ZodBody(walletAdjustmentSchema) input: WalletAdjustmentInput, @CurrentUser() actor: RequestUser, @RequestId() requestId: string) {
+  adjust(
+    @ZodBody(walletAdjustmentSchema) input: WalletAdjustmentInput,
+    @CurrentUser() actor: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.wallet.adjust(input, actor, requestId);
   }
 
@@ -117,7 +161,12 @@ export class WalletController {
 
   @Post('admin/withdrawals/:id/decision')
   @RequirePermission(Permission.WITHDRAWALS_MANAGE)
-  @Audited({ action: 'withdrawal.decision', entity: 'withdrawal', entityIdFrom: 'id', sensitive: true })
+  @Audited({
+    action: 'withdrawal.decision',
+    entity: 'withdrawal',
+    entityIdFrom: 'id',
+    sensitive: true,
+  })
   decide(
     @Param('id', UuidPipe) id: string,
     @ZodBody(withdrawalDecisionSchema) input: WithdrawalDecisionInput,

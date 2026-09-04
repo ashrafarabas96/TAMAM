@@ -67,7 +67,11 @@ export class RatingsService {
   async rate(user: RequestUser, jobId: string, input: RateJobInput): Promise<ReviewDto> {
     const job = await this.loadJob(jobId);
     if (job.status !== JobStatus.COMPLETED) {
-      throw AppException.badRequest(ErrorCode.RATING_NOT_ALLOWED, 'Only completed jobs can be rated', { status: job.status });
+      throw AppException.badRequest(
+        ErrorCode.RATING_NOT_ALLOWED,
+        'Only completed jobs can be rated',
+        { status: job.status },
+      );
     }
 
     const target = this.targetFor(user, job);
@@ -77,10 +81,13 @@ export class RatingsService {
 
     const review = await this.prisma.$transaction(async (tx) => {
       const now = new Date();
-      const existing = await tx.review.findUnique({ where: { jobId_direction: { jobId, direction: target.direction } } });
+      const existing = await tx.review.findUnique({
+        where: { jobId_direction: { jobId, direction: target.direction } },
+      });
 
       if (existing) {
-        if (existing.raterId !== user.id) throw AppException.forbidden('This rating belongs to someone else');
+        if (existing.raterId !== user.id)
+          throw AppException.forbidden('This rating belongs to someone else');
         assertEditable(existing.editableUntil, now);
         // Read the score being replaced before the row is written, not after.
         const previousRating = existing.rating;
@@ -115,16 +122,26 @@ export class RatingsService {
       return await tx.review.create({ data, include: reviewInclude });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        throw AppException.conflict('This job was already rated in this direction', ErrorCode.RATING_NOT_ALLOWED);
+        throw AppException.conflict(
+          'This job was already rated in this direction',
+          ErrorCode.RATING_NOT_ALLOWED,
+        );
       }
       throw err;
     }
   }
 
   /** Moves the cached aggregate on the profile of whoever was rated. */
-  private async moveAggregate(tx: Tx, target: RatingTarget, delta: RatingAggregateDelta): Promise<void> {
+  private async moveAggregate(
+    tx: Tx,
+    target: RatingTarget,
+    delta: RatingAggregateDelta,
+  ): Promise<void> {
     if (delta.sumDelta === 0 && delta.countDelta === 0) return;
-    const data = { ratingSum: { increment: delta.sumDelta }, ratingCount: { increment: delta.countDelta } };
+    const data = {
+      ratingSum: { increment: delta.sumDelta },
+      ratingCount: { increment: delta.countDelta },
+    };
     if (target.direction === RatingDirection.CUSTOMER_TO_PARTNER) {
       await tx.partnerProfile.update({ where: { userId: target.rateeId }, data });
       return;
@@ -140,15 +157,24 @@ export class RatingsService {
     if (!JobPolicy.canView(user, job)) throw AppException.notFound('Job', jobId); // 404, not 403: don't leak existence (spec §88)
 
     // Staff see the job from the customer's side; full rater identities live on the admin route.
-    const givenDirection = JobPolicy.isAssignedPartner(user, job) && !JobPolicy.isCustomer(user, job)
-      ? RatingDirection.PARTNER_TO_CUSTOMER
-      : RatingDirection.CUSTOMER_TO_PARTNER;
+    const givenDirection =
+      JobPolicy.isAssignedPartner(user, job) && !JobPolicy.isCustomer(user, job)
+        ? RatingDirection.PARTNER_TO_CUSTOMER
+        : RatingDirection.CUSTOMER_TO_PARTNER;
     const receivedDirection =
-      givenDirection === RatingDirection.CUSTOMER_TO_PARTNER ? RatingDirection.PARTNER_TO_CUSTOMER : RatingDirection.CUSTOMER_TO_PARTNER;
+      givenDirection === RatingDirection.CUSTOMER_TO_PARTNER
+        ? RatingDirection.PARTNER_TO_CUSTOMER
+        : RatingDirection.CUSTOMER_TO_PARTNER;
 
     const [given, received] = await Promise.all([
-      this.prisma.review.findUnique({ where: { jobId_direction: { jobId, direction: givenDirection } }, include: reviewInclude }),
-      this.prisma.review.findUnique({ where: { jobId_direction: { jobId, direction: receivedDirection } }, include: reviewInclude }),
+      this.prisma.review.findUnique({
+        where: { jobId_direction: { jobId, direction: givenDirection } },
+        include: reviewInclude,
+      }),
+      this.prisma.review.findUnique({
+        where: { jobId_direction: { jobId, direction: receivedDirection } },
+        include: reviewInclude,
+      }),
     ]);
 
     return {
@@ -158,7 +184,11 @@ export class RatingsService {
   }
 
   /** Reviews a user has received — the partner's own feed and the admin profile tab. */
-  async listForUser(userId: string, cursorRaw: string | undefined, limit: number): Promise<Page<ReceivedReviewDto>> {
+  async listForUser(
+    userId: string,
+    cursorRaw: string | undefined,
+    limit: number,
+  ): Promise<Page<ReceivedReviewDto>> {
     const cursor = decodeCursor(cursorRaw);
     const rows = await this.prisma.review.findMany({
       where: { rateeId: userId, ...cursorWhere(cursor) },
@@ -172,7 +202,11 @@ export class RatingsService {
   /** Average, count and tag histogram computed from the reviews table (the source of truth). */
   async summary(userId: string): Promise<RatingSummaryDto> {
     const [aggregate, tagRows] = await Promise.all([
-      this.prisma.review.aggregate({ _sum: { rating: true }, _count: { _all: true }, where: { rateeId: userId } }),
+      this.prisma.review.aggregate({
+        _sum: { rating: true },
+        _count: { _all: true },
+        where: { rateeId: userId },
+      }),
       this.prisma.$queryRaw<Array<{ tag: string; count: number }>>`
         SELECT t.tag AS tag, COUNT(*)::int AS count
         FROM reviews r, unnest(r.tags) AS t(tag)
@@ -203,7 +237,11 @@ export class RatingsService {
   /** Which review the caller is allowed to write, and about whom. */
   private targetFor(user: RequestUser, job: JobLike): RatingTarget {
     if (JobPolicy.isCustomer(user, job)) {
-      if (!job.partnerId) throw AppException.badRequest(ErrorCode.RATING_NOT_ALLOWED, 'This job was never assigned to a partner');
+      if (!job.partnerId)
+        throw AppException.badRequest(
+          ErrorCode.RATING_NOT_ALLOWED,
+          'This job was never assigned to a partner',
+        );
       return { direction: RatingDirection.CUSTOMER_TO_PARTNER, rateeId: job.partnerId };
     }
     if (JobPolicy.isAssignedPartner(user, job)) {

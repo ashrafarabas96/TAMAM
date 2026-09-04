@@ -31,14 +31,28 @@ describe('Dispatch race (§128)', () => {
   let economyVehicleTypeId: string;
 
   const secondDriverPhone = '+970599000202';
-  const pickup = { lat: RAMALLAH.lat, lng: RAMALLAH.lng, formatted: 'رام الله — دوار المنارة', city: 'Ramallah' };
-  const destination = { lat: RAMALLAH.lat + 0.01, lng: RAMALLAH.lng + 0.01, formatted: 'البيرة', city: 'Al-Bireh' };
+  const pickup = {
+    lat: RAMALLAH.lat,
+    lng: RAMALLAH.lng,
+    formatted: 'رام الله — دوار المنارة',
+    city: 'Ramallah',
+  };
+  const destination = {
+    lat: RAMALLAH.lat + 0.01,
+    lng: RAMALLAH.lng + 0.01,
+    formatted: 'البيرة',
+    city: 'Al-Bireh',
+  };
 
   beforeAll(async () => {
     api = await TestApp.boot();
     await api.truncateOperationalTables();
 
-    const second = await createDriverFixture(api, { phone: secondDriverPhone, fullName: 'سامي درويش', plate: '9990001' });
+    const second = await createDriverFixture(api, {
+      phone: secondDriverPhone,
+      fullName: 'سامي درويش',
+      plate: '9990001',
+    });
     vehicleB = second.vehicleId;
 
     customer = await api.loginCustomer(SEED.customerPhone);
@@ -47,7 +61,11 @@ describe('Dispatch race (§128)', () => {
 
     const economy = await api.prisma.vehicleType.findUniqueOrThrow({ where: { code: 'ECONOMY' } });
     economyVehicleTypeId = economy.id;
-    vehicleA = (await api.prisma.vehicle.findFirstOrThrow({ where: { partnerId: driverA.userId, vehicleTypeId: economyVehicleTypeId } })).id;
+    vehicleA = (
+      await api.prisma.vehicle.findFirstOrThrow({
+        where: { partnerId: driverA.userId, vehicleTypeId: economyVehicleTypeId },
+      })
+    ).id;
   }, 180_000);
 
   afterAll(async () => {
@@ -60,23 +78,48 @@ describe('Dispatch race (§128)', () => {
       .request()
       .put(api.url('partners/me/availability'))
       .set(driverA.headers)
-      .send({ status: 'ONLINE', activeRoles: ['DRIVER'], activeVehicleId: vehicleA, location: sampleAt(pickup.lat + 0.001, pickup.lng) })
+      .send({
+        status: 'ONLINE',
+        activeRoles: ['DRIVER'],
+        activeVehicleId: vehicleA,
+        location: sampleAt(pickup.lat + 0.001, pickup.lng),
+      })
       .expect(200);
     await api
       .request()
       .put(api.url('partners/me/availability'))
       .set(driverB.headers)
-      .send({ status: 'ONLINE', activeRoles: ['DRIVER'], activeVehicleId: vehicleB, location: sampleAt(pickup.lat - 0.001, pickup.lng) })
+      .send({
+        status: 'ONLINE',
+        activeRoles: ['DRIVER'],
+        activeVehicleId: vehicleB,
+        location: sampleAt(pickup.lat - 0.001, pickup.lng),
+      })
       .expect(200);
 
-    const estimate = (await api.request().post(api.url('estimates/ride')).set(customer.headers).send({ pickup, destination }).expect(201)).body as FareEstimateDto;
+    const estimate = (
+      await api
+        .request()
+        .post(api.url('estimates/ride'))
+        .set(customer.headers)
+        .send({ pickup, destination })
+        .expect(201)
+    ).body as FareEstimateDto;
     const job = (
       await api
         .request()
         .post(api.url('jobs'))
         .set(customer.headers)
         .set('Idempotency-Key', randomUUID())
-        .send({ type: 'RIDE', estimateId: estimate.estimateId, vehicleTypeId: economyVehicleTypeId, paymentMethod: 'CASH', scheduling: 'NOW', pickup, destination })
+        .send({
+          type: 'RIDE',
+          estimateId: estimate.estimateId,
+          vehicleTypeId: economyVehicleTypeId,
+          paymentMethod: 'CASH',
+          scheduling: 'NOW',
+          pickup,
+          destination,
+        })
         .expect(201)
     ).body as JobDto;
 
@@ -96,13 +139,23 @@ describe('Dispatch race (§128)', () => {
     );
     expect(offerA.assignmentId).not.toBe(offerB.assignmentId);
 
-    const offered = await api.prisma.jobAssignment.count({ where: { jobId: job.id, status: 'OFFERED' } });
+    const offered = await api.prisma.jobAssignment.count({
+      where: { jobId: job.id, status: 'OFFERED' },
+    });
     expect(offered).toBe(2);
 
     /* ------------------------------------------ simultaneous accept attempts */
     const [resA, resB] = await Promise.all([
-      api.request().post(api.url('partners/me/offers/respond')).set(driverA.headers).send({ assignmentId: offerA.assignmentId, accept: true }),
-      api.request().post(api.url('partners/me/offers/respond')).set(driverB.headers).send({ assignmentId: offerB.assignmentId, accept: true }),
+      api
+        .request()
+        .post(api.url('partners/me/offers/respond'))
+        .set(driverA.headers)
+        .send({ assignmentId: offerA.assignmentId, accept: true }),
+      api
+        .request()
+        .post(api.url('partners/me/offers/respond'))
+        .set(driverB.headers)
+        .send({ assignmentId: offerB.assignmentId, accept: true }),
     ]);
 
     const statuses = [resA.status, resB.status].sort((a, b) => a - b);
@@ -110,11 +163,15 @@ describe('Dispatch race (§128)', () => {
 
     const loser = resA.status === 409 ? resA : resB;
     const winner = resA.status === 200 ? resA : resB;
-    expect(['JOB_ALREADY_ASSIGNED', 'OFFER_EXPIRED']).toContain((loser.body as { code: string }).code);
+    expect(['JOB_ALREADY_ASSIGNED', 'OFFER_EXPIRED']).toContain(
+      (loser.body as { code: string }).code,
+    );
     expect((winner.body as JobDto).status).toBe('ASSIGNED');
 
     /* ------------------------------------------------ the database agrees */
-    const accepted = await api.prisma.jobAssignment.findMany({ where: { jobId: job.id, status: 'ACCEPTED' } });
+    const accepted = await api.prisma.jobAssignment.findMany({
+      where: { jobId: job.id, status: 'ACCEPTED' },
+    });
     expect(accepted).toHaveLength(1);
 
     const stored = await api.prisma.job.findUniqueOrThrow({ where: { id: job.id } });
@@ -122,7 +179,9 @@ describe('Dispatch race (§128)', () => {
     expect(stored.partnerId).toBe(accepted[0]?.partnerId);
 
     // The loser's offer is closed, not left dangling.
-    const open = await api.prisma.jobAssignment.count({ where: { jobId: job.id, status: 'OFFERED' } });
+    const open = await api.prisma.jobAssignment.count({
+      where: { jobId: job.id, status: 'OFFERED' },
+    });
     expect(open).toBe(0);
 
     // Only the winner is BUSY on this job.

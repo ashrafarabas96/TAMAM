@@ -17,7 +17,10 @@ export interface UseMapLibreOptions {
 }
 
 /** Creates one MapLibre instance for the container and destroys it on unmount. */
-export function useMapLibre(containerRef: RefObject<HTMLDivElement>, options: UseMapLibreOptions = {}): { map: MapLibreMap | null; loaded: boolean } {
+export function useMapLibre(
+  containerRef: RefObject<HTMLDivElement>,
+  options: UseMapLibreOptions = {},
+): { map: MapLibreMap | null; loaded: boolean } {
   const [map, setMap] = useState<MapLibreMap | null>(null);
   const [loaded, setLoaded] = useState(false);
   const { center = DEFAULT_CENTER, zoom = DEFAULT_ZOOM, interactive = true } = options;
@@ -25,7 +28,14 @@ export function useMapLibre(containerRef: RefObject<HTMLDivElement>, options: Us
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const instance = new maplibregl.Map({ container, style: env.mapStyleUrl, center, zoom, interactive, attributionControl: false });
+    const instance = new maplibregl.Map({
+      container,
+      style: env.mapStyleUrl,
+      center,
+      zoom,
+      interactive,
+      attributionControl: false,
+    });
     instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
     instance.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
     instance.on('load', () => setLoaded(true));

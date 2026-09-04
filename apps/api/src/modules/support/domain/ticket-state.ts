@@ -9,15 +9,32 @@ import { AppException } from '../../../common/errors/app.exception';
 
 /** Allowed agent-driven status moves. Reopening a resolved ticket is deliberate, closing is final. */
 export const TICKET_TRANSITIONS: Record<TicketStatus, readonly TicketStatus[]> = {
-  [TicketStatus.OPEN]: [TicketStatus.IN_PROGRESS, TicketStatus.WAITING_USER, TicketStatus.RESOLVED, TicketStatus.CLOSED],
-  [TicketStatus.IN_PROGRESS]: [TicketStatus.WAITING_USER, TicketStatus.RESOLVED, TicketStatus.CLOSED],
-  [TicketStatus.WAITING_USER]: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED, TicketStatus.CLOSED],
+  [TicketStatus.OPEN]: [
+    TicketStatus.IN_PROGRESS,
+    TicketStatus.WAITING_USER,
+    TicketStatus.RESOLVED,
+    TicketStatus.CLOSED,
+  ],
+  [TicketStatus.IN_PROGRESS]: [
+    TicketStatus.WAITING_USER,
+    TicketStatus.RESOLVED,
+    TicketStatus.CLOSED,
+  ],
+  [TicketStatus.WAITING_USER]: [
+    TicketStatus.IN_PROGRESS,
+    TicketStatus.RESOLVED,
+    TicketStatus.CLOSED,
+  ],
   [TicketStatus.RESOLVED]: [TicketStatus.IN_PROGRESS, TicketStatus.CLOSED],
   [TicketStatus.CLOSED]: [],
 };
 
 /** Statuses that still need somebody to act on them (dashboard "open tickets" counter). */
-export const ACTIVE_TICKET_STATUSES: readonly TicketStatus[] = [TicketStatus.OPEN, TicketStatus.IN_PROGRESS, TicketStatus.WAITING_USER];
+export const ACTIVE_TICKET_STATUSES: readonly TicketStatus[] = [
+  TicketStatus.OPEN,
+  TicketStatus.IN_PROGRESS,
+  TicketStatus.WAITING_USER,
+];
 
 export function canTransitionTicket(from: TicketStatus, to: TicketStatus): boolean {
   return from === to || (TICKET_TRANSITIONS[from] ?? []).includes(to);
@@ -25,7 +42,11 @@ export function canTransitionTicket(from: TicketStatus, to: TicketStatus): boole
 
 export function assertTicketTransition(from: TicketStatus, to: TicketStatus): void {
   if (!canTransitionTicket(from, to)) {
-    throw AppException.conflict(`A ticket cannot move from ${from} to ${to}`, ErrorCode.INVALID_STATE_TRANSITION, { from, to });
+    throw AppException.conflict(
+      `A ticket cannot move from ${from} to ${to}`,
+      ErrorCode.INVALID_STATE_TRANSITION,
+      { from, to },
+    );
   }
 }
 
@@ -52,7 +73,9 @@ export function routeReport(reason: string, reportedIsPartner: boolean): ReportR
     return { category: TicketCategory.SAFETY, priority: TicketPriority.CRITICAL };
   }
   return {
-    category: reportedIsPartner ? TicketCategory.PARTNER_BEHAVIOUR : TicketCategory.CUSTOMER_BEHAVIOUR,
+    category: reportedIsPartner
+      ? TicketCategory.PARTNER_BEHAVIOUR
+      : TicketCategory.CUSTOMER_BEHAVIOUR,
     priority: TicketPriority.HIGH,
   };
 }

@@ -100,7 +100,12 @@ const BANNERS: BannerSeed[] = [
  * generated into `infrastructure/docker/seed-assets/` and uploaded by `scripts/seed-assets.sh`.
  * Until that script runs, the rows are valid and the URLs simply 404.
  */
-export async function seedCampaign(ctx: SeedContext, catalog: CatalogSeedResult, zones: ZoneSeedResult, createdById: string): Promise<void> {
+export async function seedCampaign(
+  ctx: SeedContext,
+  catalog: CatalogSeedResult,
+  zones: ZoneSeedResult,
+  createdById: string,
+): Promise<void> {
   const { prisma, config, summary } = ctx;
 
   const mediaByKey = new Map<string, string>();
@@ -149,14 +154,19 @@ export async function seedCampaign(ctx: SeedContext, catalog: CatalogSeedResult,
     : await prisma.campaign.create({ data: { name: CAMPAIGN_NAME, ...campaignData } });
 
   await prisma.campaignZone.deleteMany({ where: { campaignId: campaign.id } });
-  await prisma.campaignZone.createMany({ data: [...zones.zoneIds.values()].map((zoneId) => ({ campaignId: campaign.id, zoneId })) });
+  await prisma.campaignZone.createMany({
+    data: [...zones.zoneIds.values()].map((zoneId) => ({ campaignId: campaign.id, zoneId })),
+  });
 
   for (const seed of BANNERS) {
     const imageArMediaId = mediaByKey.get(seed.imageArKey);
     const imageEnMediaId = mediaByKey.get(seed.imageEnKey);
-    if (!imageArMediaId || !imageEnMediaId) throw new Error(`banner creative missing for ${seed.placement}`);
+    if (!imageArMediaId || !imageEnMediaId)
+      throw new Error(`banner creative missing for ${seed.placement}`);
     const actionValue =
-      typeof seed.actionValue === 'string' ? seed.actionValue : (catalog.categoryIds.get(seed.actionValue.categorySlug) ?? null);
+      typeof seed.actionValue === 'string'
+        ? seed.actionValue
+        : (catalog.categoryIds.get(seed.actionValue.categorySlug) ?? null);
     if (!actionValue) throw new Error(`banner action target missing for ${seed.placement}`);
 
     const data = {
@@ -179,7 +189,9 @@ export async function seedCampaign(ctx: SeedContext, catalog: CatalogSeedResult,
       isActive: true,
     };
     // banners has no natural unique key — (campaign, placement, sortOrder) identifies a seeded row.
-    const current = await prisma.banner.findFirst({ where: { campaignId: campaign.id, placement: seed.placement, sortOrder: seed.sortOrder } });
+    const current = await prisma.banner.findFirst({
+      where: { campaignId: campaign.id, placement: seed.placement, sortOrder: seed.sortOrder },
+    });
     if (current) await prisma.banner.update({ where: { id: current.id }, data });
     else await prisma.banner.create({ data: { campaignId: campaign.id, ...data } });
   }

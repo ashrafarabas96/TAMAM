@@ -103,7 +103,8 @@ export const ar: Dictionary = {
   'campaigns.priority': 'الأولوية',
   'campaigns.priorityHint': 'الأولوية الأعلى تظهر أولًا داخل الموضع.',
   'campaigns.publishedAt': 'تاريخ النشر',
-  'campaigns.reuploadRequired': 'تعيد الواجهة روابط صور موقّعة وليس معرّفات وسائط — أعد رفع التصميمين قبل الحفظ.',
+  'campaigns.reuploadRequired':
+    'تعيد الواجهة روابط صور موقّعة وليس معرّفات وسائط — أعد رفع التصميمين قبل الحفظ.',
   'campaigns.reviewHint': 'بالضبط كما ستظهر البانرات في التطبيقات.',
   'campaigns.rolloutHint': 'ثابتة لكل معرّف مستخدم.',
   'campaigns.rolloutPercent': 'نسبة الطرح %',
@@ -701,7 +702,8 @@ export const ar: Dictionary = {
   /* ---- jobs ---- */
   'jobs.activeQuote': 'عرض السعر الحالي',
   'jobs.adminTransition': 'تغيير الحالة إداريًا',
-  'jobs.adminTransitionHint': 'الحالة الحالية: {status}. تُعرض فقط الانتقالات التي تسمح بها آلة الحالة للمشرف.',
+  'jobs.adminTransitionHint':
+    'الحالة الحالية: {status}. تُعرض فقط الانتقالات التي تسمح بها آلة الحالة للمشرف.',
   'jobs.allJobs': 'كل الطلبات',
   'jobs.arrivedAt': 'الوصول',
   'jobs.assignments': 'الإسنادات',
@@ -783,7 +785,8 @@ export const ar: Dictionary = {
   'liveMap.title': 'الخريطة الحية',
   /* ---- login ---- */
   'login.failed': 'فشل تسجيل الدخول. تحقق من بياناتك.',
-  'login.heroSubtitle': 'الخريطة الحية والإرسال والكتالوج والتسعير والحملات والمالية — بالعربية أولًا.',
+  'login.heroSubtitle':
+    'الخريطة الحية والإرسال والكتالوج والتسعير والحملات والمالية — بالعربية أولًا.',
   'login.heroTitle': 'لوحة واحدة لكل عمليات تمام.',
   'login.password': 'كلمة المرور',
   'login.securityNote': 'الوصول محكوم بالصلاحيات وكل إجراء يُسجَّل في سجل التدقيق.',

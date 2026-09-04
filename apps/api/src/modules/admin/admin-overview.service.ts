@@ -36,17 +36,34 @@ export class AdminOverviewService {
   ) {}
 
   async overview(): Promise<AdminOverviewDto> {
-    const [dashboard, openSupportTickets, openDisputes, sosAlerts, pendingPartnerVerifications, pendingPartnerDocuments] = await Promise.all([
+    const [
+      dashboard,
+      openSupportTickets,
+      openDisputes,
+      sosAlerts,
+      pendingPartnerVerifications,
+      pendingPartnerDocuments,
+    ] = await Promise.all([
       this.analytics.opsDashboard(),
       this.support.openTicketCount(),
       this.disputes.openCount(),
       this.safety.listOpenSos(),
-      this.prisma.partnerProfile.count({ where: { verificationStatus: { in: [VerificationStatus.PENDING, VerificationStatus.UNDER_REVIEW] } } }),
+      this.prisma.partnerProfile.count({
+        where: {
+          verificationStatus: { in: [VerificationStatus.PENDING, VerificationStatus.UNDER_REVIEW] },
+        },
+      }),
       this.prisma.partnerDocument.count({ where: { status: 'PENDING' } }),
     ]);
     return {
       dashboard,
-      queues: { openSupportTickets, openDisputes, openSosAlerts: sosAlerts.length, pendingPartnerVerifications, pendingPartnerDocuments },
+      queues: {
+        openSupportTickets,
+        openDisputes,
+        openSosAlerts: sosAlerts.length,
+        pendingPartnerVerifications,
+        pendingPartnerDocuments,
+      },
       generatedAt: new Date().toISOString(),
     };
   }

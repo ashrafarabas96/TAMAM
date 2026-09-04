@@ -3,7 +3,21 @@ import { type ReactNode } from 'react';
 
 import { cn } from '@/lib/utils/cn';
 
-export function KpiCard({ label, value, hint, icon: Icon, tone = 'brand', className }: { label: ReactNode; value: ReactNode; hint?: ReactNode; icon?: LucideIcon; tone?: 'brand' | 'accent' | 'success' | 'danger' | 'info' | 'neutral'; className?: string }) {
+export function KpiCard({
+  label,
+  value,
+  hint,
+  icon: Icon,
+  tone = 'brand',
+  className,
+}: {
+  label: ReactNode;
+  value: ReactNode;
+  hint?: ReactNode;
+  icon?: LucideIcon;
+  tone?: 'brand' | 'accent' | 'success' | 'danger' | 'info' | 'neutral';
+  className?: string;
+}) {
   const tones = {
     brand: 'bg-surface-brand-soft text-primary',
     accent: 'bg-yellow-100 text-yellow-900',
@@ -15,7 +29,12 @@ export function KpiCard({ label, value, hint, icon: Icon, tone = 'brand', classN
   return (
     <div className={cn('card flex items-center gap-4 p-4', className)}>
       {Icon ? (
-        <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-lg', tones[tone])}>
+        <span
+          className={cn(
+            'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg',
+            tones[tone],
+          )}
+        >
           <Icon className="h-5 w-5" aria-hidden />
         </span>
       ) : null}

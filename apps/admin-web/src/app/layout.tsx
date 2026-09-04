@@ -12,8 +12,18 @@ import { THEME_BOOT_SCRIPT } from '@/lib/theme-script';
 
 import { Providers } from './providers';
 
-const cairo = Cairo({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-cairo', display: 'swap' });
-const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-inter', display: 'swap' });
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-cairo',
+  display: 'swap',
+});
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: { default: 'TAMAM Admin', template: '%s · TAMAM Admin' },
@@ -26,9 +36,15 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, them
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const cookieLocale = cookies().get(LOCALE_COOKIE_NAME)?.value;
-  const locale: Locale = cookieLocale === 'en' ? 'en' : cookieLocale === 'ar' ? 'ar' : env.defaultLocale;
+  const locale: Locale =
+    cookieLocale === 'en' ? 'en' : cookieLocale === 'ar' ? 'ar' : env.defaultLocale;
   return (
-    <html lang={locale} dir={localeDirection(locale)} className={`${cairo.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={localeDirection(locale)}
+      className={`${cairo.variable} ${inter.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>

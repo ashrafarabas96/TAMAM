@@ -9,9 +9,26 @@ import { cn } from '@/lib/utils/cn';
 
 import { Button } from './button';
 
-export function EmptyState({ icon: Icon = Inbox, title, description, action, className }: { icon?: LucideIcon; title: ReactNode; description?: ReactNode; action?: ReactNode; className?: string }) {
+export function EmptyState({
+  icon: Icon = Inbox,
+  title,
+  description,
+  action,
+  className,
+}: {
+  icon?: LucideIcon;
+  title: ReactNode;
+  description?: ReactNode;
+  action?: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-2 px-6 py-12 text-center', className)}>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center gap-2 px-6 py-12 text-center',
+        className,
+      )}
+    >
       <span className="flex h-12 w-12 items-center justify-center rounded-pill bg-surface-brand-soft text-primary">
         <Icon className="h-6 w-6" aria-hidden />
       </span>
@@ -22,11 +39,31 @@ export function EmptyState({ icon: Icon = Inbox, title, description, action, cla
   );
 }
 
-export function ErrorState({ error, onRetry, title, className }: { error: unknown; onRetry?: () => void; title?: ReactNode; className?: string }) {
+export function ErrorState({
+  error,
+  onRetry,
+  title,
+  className,
+}: {
+  error: unknown;
+  onRetry?: () => void;
+  title?: ReactNode;
+  className?: string;
+}) {
   const { t, errorMessage } = useI18n();
-  const detail = isApiError(error) ? `${errorMessage(error.code, error.message)} · ${error.requestId}` : error instanceof Error ? error.message : t('errors.unknown');
+  const detail = isApiError(error)
+    ? `${errorMessage(error.code, error.message)} · ${error.requestId}`
+    : error instanceof Error
+      ? error.message
+      : t('errors.unknown');
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-2 px-6 py-12 text-center', className)} role="alert">
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center gap-2 px-6 py-12 text-center',
+        className,
+      )}
+      role="alert"
+    >
       <span className="flex h-12 w-12 items-center justify-center rounded-pill bg-danger-soft text-danger">
         <AlertTriangle className="h-6 w-6" aria-hidden />
       </span>
@@ -44,5 +81,12 @@ export function ErrorState({ error, onRetry, title, className }: { error: unknow
 
 export function ForbiddenState({ className }: { className?: string }) {
   const { t } = useI18n();
-  return <EmptyState icon={AlertTriangle} title={t('errors.forbiddenTitle')} description={t('errors.forbiddenDescription')} className={className} />;
+  return (
+    <EmptyState
+      icon={AlertTriangle}
+      title={t('errors.forbiddenTitle')}
+      description={t('errors.forbiddenDescription')}
+      className={className}
+    />
+  );
 }

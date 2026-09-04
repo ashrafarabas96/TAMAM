@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tamam_partner/app.dart';
 import 'package:tamam_partner/core/env/app_env.dart';
@@ -28,6 +29,12 @@ Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
   );
+
+  // Locale date symbols must be loaded before anything builds a DateFormat. Inside a
+  // resolved widget tree Flutter loads them for us; a formatter constructed earlier — in a
+  // background isolate, or at provider-construction time — would throw without this.
+  await initializeDateFormatting('ar');
+  await initializeDateFormatting('en');
 
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   final AppEnv env = AppEnv.fromDefines();

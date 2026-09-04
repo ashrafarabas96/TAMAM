@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDate, formatDateTime, formatDuration, fromDateTimeLocalValue, timeZoneOffsetMinutes, toDateTimeLocalValue } from '../date';
+import {
+  formatDate,
+  formatDateTime,
+  formatDuration,
+  fromDateTimeLocalValue,
+  timeZoneOffsetMinutes,
+  toDateTimeLocalValue,
+} from '../date';
 
 const TZ = 'Asia/Jerusalem';
 

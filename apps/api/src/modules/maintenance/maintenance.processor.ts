@@ -52,7 +52,16 @@ export class MaintenanceProcessor extends WorkerHost {
   async process(job: Job<MaintenanceJobData>): Promise<Record<string, unknown>> {
     const started = Date.now();
     const result = await this.dispatch(job);
-    this.logger.info({ job: job.name, jobId: job.id, manual: job.data.manual ?? false, durationMs: Date.now() - started, ...result }, 'maintenance job finished');
+    this.logger.info(
+      {
+        job: job.name,
+        jobId: job.id,
+        manual: job.data.manual ?? false,
+        durationMs: Date.now() - started,
+        ...result,
+      },
+      'maintenance job finished',
+    );
     return result;
   }
 
@@ -62,7 +71,10 @@ export class MaintenanceProcessor extends WorkerHost {
         return { markedOffline: await this.availability.markOfflineStale() };
 
       case MAINTENANCE_JOBS.CAMPAIGN_SCHEDULER: {
-        const [activated, ended] = await Promise.all([this.campaigns.activateScheduled(), this.campaigns.endExpired()]);
+        const [activated, ended] = await Promise.all([
+          this.campaigns.activateScheduled(),
+          this.campaigns.endExpired(),
+        ]);
         return { activated: activated.activated, ended: ended.ended };
       }
 
@@ -107,10 +119,16 @@ export class MaintenanceProcessor extends WorkerHost {
     const notificationDays = await this.config.getNumber(CONFIG_KEYS.RETENTION_NOTIFICATIONS_DAYS);
     const now = Date.now();
     const [notifications, bannerEvents, idempotencyKeys, analyticsEvents] = await Promise.all([
-      this.prisma.notification.deleteMany({ where: { createdAt: { lt: new Date(now - notificationDays * dayMs) } } }),
-      this.prisma.bannerEvent.deleteMany({ where: { occurredAt: { lt: new Date(now - BANNER_EVENT_RETENTION_DAYS * dayMs) } } }),
+      this.prisma.notification.deleteMany({
+        where: { createdAt: { lt: new Date(now - notificationDays * dayMs) } },
+      }),
+      this.prisma.bannerEvent.deleteMany({
+        where: { occurredAt: { lt: new Date(now - BANNER_EVENT_RETENTION_DAYS * dayMs) } },
+      }),
       this.prisma.idempotencyKey.deleteMany({ where: { expiresAt: { lt: new Date(now) } } }),
-      this.prisma.analyticsEvent.deleteMany({ where: { occurredAt: { lt: new Date(now - ANALYTICS_EVENT_RETENTION_DAYS * dayMs) } } }),
+      this.prisma.analyticsEvent.deleteMany({
+        where: { occurredAt: { lt: new Date(now - ANALYTICS_EVENT_RETENTION_DAYS * dayMs) } },
+      }),
     ]);
     return {
       deletedNotifications: notifications.count,
@@ -122,7 +140,9 @@ export class MaintenanceProcessor extends WorkerHost {
 
   private async purgeOtpRequests(): Promise<number> {
     const days = await this.config.getNumber(CONFIG_KEYS.RETENTION_OTP_DAYS);
-    const result = await this.prisma.otpRequest.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - days * dayMs) } } });
+    const result = await this.prisma.otpRequest.deleteMany({
+      where: { createdAt: { lt: new Date(Date.now() - days * dayMs) } },
+    });
     return result.count;
   }
 
@@ -134,6 +154,9 @@ export class MaintenanceProcessor extends WorkerHost {
       throw new Error(`Invalid date "${job.data.date}" for maintenance job ${job.name}`);
     }
     const today = new Date();
-    return new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) + offsetDays * dayMs);
+    return new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) +
+        offsetDays * dayMs,
+    );
   }
 }

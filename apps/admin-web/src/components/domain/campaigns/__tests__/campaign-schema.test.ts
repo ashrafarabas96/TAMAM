@@ -20,7 +20,15 @@ const campaign = (overrides: Record<string, unknown> = {}) => ({
   name: 'Ramadan offer',
   startsAt: '2026-03-01T00:00:00.000Z',
   endsAt: '2026-03-30T00:00:00.000Z',
-  targeting: { audiences: ['CUSTOMER'], zoneIds: [], languages: [], platforms: [], newCustomersOnly: false, serviceTypeInterest: [], rolloutPercent: 100 },
+  targeting: {
+    audiences: ['CUSTOMER'],
+    zoneIds: [],
+    languages: [],
+    platforms: [],
+    newCustomersOnly: false,
+    serviceTypeInterest: [],
+    rolloutPercent: 100,
+  },
   banners: [banner()],
   ...overrides,
 });
@@ -33,34 +41,82 @@ describe('campaign form schema', () => {
   });
 
   it('rejects an end date before the start date', () => {
-    const result = upsertCampaignSchema.safeParse(campaign({ startsAt: '2026-03-30T00:00:00.000Z', endsAt: '2026-03-01T00:00:00.000Z' }));
+    const result = upsertCampaignSchema.safeParse(
+      campaign({ startsAt: '2026-03-30T00:00:00.000Z', endsAt: '2026-03-01T00:00:00.000Z' }),
+    );
     expect(result.success).toBe(false);
     expect(result.success === false && result.error.issues[0]?.path).toEqual(['endsAt']);
   });
 
   it('requires at least one banner and caps the list at twelve', () => {
     expect(upsertCampaignSchema.safeParse(campaign({ banners: [] })).success).toBe(false);
-    expect(upsertCampaignSchema.safeParse(campaign({ banners: Array.from({ length: 13 }, () => banner()) })).success).toBe(false);
+    expect(
+      upsertCampaignSchema.safeParse(
+        campaign({ banners: Array.from({ length: 13 }, () => banner()) }),
+      ).success,
+    ).toBe(false);
   });
 
   it('requires an action value once an action type is set', () => {
-    const result = upsertCampaignSchema.safeParse(campaign({ banners: [banner({ actionType: 'DEEP_LINK' })] }));
+    const result = upsertCampaignSchema.safeParse(
+      campaign({ banners: [banner({ actionType: 'DEEP_LINK' })] }),
+    );
     expect(result.success).toBe(false);
   });
 
   it('enforces the deep-link scheme and https external urls', () => {
-    expect(upsertCampaignSchema.safeParse(campaign({ banners: [banner({ actionType: 'DEEP_LINK', actionValue: 'https://tamam.app' })] })).success).toBe(false);
-    expect(upsertCampaignSchema.safeParse(campaign({ banners: [banner({ actionType: 'DEEP_LINK', actionValue: 'tamam://services/plumbing' })] })).success).toBe(true);
-    expect(upsertCampaignSchema.safeParse(campaign({ banners: [banner({ actionType: 'EXTERNAL_URL', actionValue: 'http://tamam.app' })] })).success).toBe(false);
-    expect(upsertCampaignSchema.safeParse(campaign({ banners: [banner({ actionType: 'EXTERNAL_URL', actionValue: 'https://tamam.app' })] })).success).toBe(true);
+    expect(
+      upsertCampaignSchema.safeParse(
+        campaign({
+          banners: [banner({ actionType: 'DEEP_LINK', actionValue: 'https://tamam.app' })],
+        }),
+      ).success,
+    ).toBe(false);
+    expect(
+      upsertCampaignSchema.safeParse(
+        campaign({
+          banners: [banner({ actionType: 'DEEP_LINK', actionValue: 'tamam://services/plumbing' })],
+        }),
+      ).success,
+    ).toBe(true);
+    expect(
+      upsertCampaignSchema.safeParse(
+        campaign({
+          banners: [banner({ actionType: 'EXTERNAL_URL', actionValue: 'http://tamam.app' })],
+        }),
+      ).success,
+    ).toBe(false);
+    expect(
+      upsertCampaignSchema.safeParse(
+        campaign({
+          banners: [banner({ actionType: 'EXTERNAL_URL', actionValue: 'https://tamam.app' })],
+        }),
+      ).success,
+    ).toBe(true);
   });
 
   it('requires both language creatives as media ids', () => {
-    expect(upsertCampaignSchema.safeParse(campaign({ banners: [banner({ creative: { imageMediaId: { ar: UUID_A, en: '' }, theme: 'purple' } })] })).success).toBe(false);
+    expect(
+      upsertCampaignSchema.safeParse(
+        campaign({
+          banners: [
+            banner({ creative: { imageMediaId: { ar: UUID_A, en: '' }, theme: 'purple' } }),
+          ],
+        }),
+      ).success,
+    ).toBe(false);
   });
 
   it('keeps the rollout percentage inside 1..100', () => {
-    const targeting = { audiences: ['CUSTOMER'], zoneIds: [], languages: [], platforms: [], newCustomersOnly: false, serviceTypeInterest: [], rolloutPercent: 0 };
+    const targeting = {
+      audiences: ['CUSTOMER'],
+      zoneIds: [],
+      languages: [],
+      platforms: [],
+      newCustomersOnly: false,
+      serviceTypeInterest: [],
+      rolloutPercent: 0,
+    };
     expect(upsertCampaignSchema.safeParse(campaign({ targeting })).success).toBe(false);
   });
 

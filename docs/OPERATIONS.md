@@ -9,12 +9,12 @@ Deployment itself is in [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ### Schedule and retention
 
-| What | Frequency | Retention | Where |
-| --- | --- | --- | --- |
-| PostgreSQL full dump (`pg_dump -Fc`) | every 6 h | 14 days local, 90 days offsite | `scripts/db/backup.sh` → local dir + S3 bucket |
-| PostgreSQL WAL / PITR | continuous | 7 days | managed provider's PITR feature |
-| Object storage (`tamam-private`) | daily | 30 days | bucket versioning + lifecycle rule |
-| Redis | **not backed up** | — | queues and caches are reconstructible; nothing durable lives only in Redis |
+| What                                 | Frequency         | Retention                      | Where                                                                      |
+| ------------------------------------ | ----------------- | ------------------------------ | -------------------------------------------------------------------------- |
+| PostgreSQL full dump (`pg_dump -Fc`) | every 6 h         | 14 days local, 90 days offsite | `scripts/db/backup.sh` → local dir + S3 bucket                             |
+| PostgreSQL WAL / PITR                | continuous        | 7 days                         | managed provider's PITR feature                                            |
+| Object storage (`tamam-private`)     | daily             | 30 days                        | bucket versioning + lifecycle rule                                         |
+| Redis                                | **not backed up** | —                              | queues and caches are reconstructible; nothing durable lives only in Redis |
 
 ```bash
 # cron: 0 */6 * * *
@@ -28,11 +28,11 @@ SHA-256 checksum alongside it.
 
 ### Recovery targets
 
-| Target | Value | How it is met |
-| --- | --- | --- |
-| **RPO** (max data loss) | **5 minutes** | continuous WAL archiving / managed PITR; the 6-hourly dump is the fallback (RPO 6 h) |
-| **RTO** (time to serve) | **60 minutes** | provision from PITR or restore the newest dump (~10–20 min for a launch-sized database) + redeploy |
-| Restore drill | **monthly** | `TARGET_DATABASE_URL=…_restore_check bash scripts/db/restore.sh <dump>` — a drill that never touched a real restore is not a backup strategy |
+| Target                  | Value          | How it is met                                                                                                                                |
+| ----------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **RPO** (max data loss) | **5 minutes**  | continuous WAL archiving / managed PITR; the 6-hourly dump is the fallback (RPO 6 h)                                                         |
+| **RTO** (time to serve) | **60 minutes** | provision from PITR or restore the newest dump (~10–20 min for a launch-sized database) + redeploy                                           |
+| Restore drill           | **monthly**    | `TARGET_DATABASE_URL=…_restore_check bash scripts/db/restore.sh <dump>` — a drill that never touched a real restore is not a backup strategy |
 
 ### Restore procedure
 
@@ -55,20 +55,20 @@ docker compose -f infrastructure/docker/docker-compose.prod.yml up -d
 `restore.sh` recreates the required extensions, restores with `--clean --if-exists`, and then
 verifies the result before declaring success:
 
-* row counts for `users`, `jobs`, `ledger_entries`, `service_zones`
-* **every ledger transaction balances** (debits = credits) — a non-zero count aborts the restore
-* **PostGIS geometry survived** — `service_zones.area` is not null
+- row counts for `users`, `jobs`, `ledger_entries`, `service_zones`
+- **every ledger transaction balances** (debits = credits) — a non-zero count aborts the restore
+- **PostGIS geometry survived** — `service_zones.area` is not null
 
 ## 2. Routine maintenance
 
 Everything is enqueued by `MaintenanceScheduler` onto the `maintenance` queue and executed by
 `MaintenanceProcessor`. Job ids are `<name>-<yyyymmddHHMM>` so N replicas produce one run.
 
-| Cadence | Jobs | Effect |
-| --- | --- | --- |
-| every minute | `heartbeat-sweep`, `campaign-scheduler` | partners whose device went silent go OFFLINE; scheduled campaigns activate, expired ones end |
-| every 10 min | `expire-otps`, `session-cleanup` | OTP rows past `retention.otp_days` deleted; expired sessions purged |
-| hourly | `banner-stats-rollup`, `tracking-retention` | raw banner events aggregated into `banner_daily_stats`; tracking points past `tracking.retention_days` deleted |
+| Cadence         | Jobs                                                       | Effect                                                                                                                                                                     |
+| --------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| every minute    | `heartbeat-sweep`, `campaign-scheduler`                    | partners whose device went silent go OFFLINE; scheduled campaigns activate, expired ones end                                                                               |
+| every 10 min    | `expire-otps`, `session-cleanup`                           | OTP rows past `retention.otp_days` deleted; expired sessions purged                                                                                                        |
+| hourly          | `banner-stats-rollup`, `tracking-retention`                | raw banner events aggregated into `banner_daily_stats`; tracking points past `tracking.retention_days` deleted                                                             |
 | daily 02:00 UTC | `daily-kpis`, `notification-retention`, `expire-documents` | yesterday's KPIs materialised; retention sweep (notifications, banner events > 90 d, expired idempotency keys, analytics events > 180 d); partner documents warned/expired |
 
 Manual trigger (SUPER_ADMIN only):
@@ -86,16 +86,16 @@ per queue. **A growing `failed` count is an incident, not a metric.**
 
 `GET /metrics` (Prometheus, blocked at the proxy) exposes:
 
-| Metric | Watch for |
-| --- | --- |
-| `tamam_http_request_duration_seconds` | p95 > 500 ms on `/jobs` or `/estimates/*` |
-| `tamam_http_errors_total` | any sustained 5xx |
-| `tamam_dispatch_outcome_total{outcome="no_partner"}` | supply problem in a zone |
-| `tamam_dispatch_seconds` | p95 > 60 s — dispatch is too slow |
-| `tamam_payment_failures_total` | spike = gateway incident |
-| `tamam_queue_oldest_waiting_seconds` | > 60 s = a worker is stuck or starved |
-| `tamam_ws_connections{namespace}` | sudden drop = the proxy is closing upgrades |
-| `tamam_location_updates_total{result="rejected"}` | client clock skew or GPS abuse |
+| Metric                                               | Watch for                                   |
+| ---------------------------------------------------- | ------------------------------------------- |
+| `tamam_http_request_duration_seconds`                | p95 > 500 ms on `/jobs` or `/estimates/*`   |
+| `tamam_http_errors_total`                            | any sustained 5xx                           |
+| `tamam_dispatch_outcome_total{outcome="no_partner"}` | supply problem in a zone                    |
+| `tamam_dispatch_seconds`                             | p95 > 60 s — dispatch is too slow           |
+| `tamam_payment_failures_total`                       | spike = gateway incident                    |
+| `tamam_queue_oldest_waiting_seconds`                 | > 60 s = a worker is stuck or starved       |
+| `tamam_ws_connections{namespace}`                    | sudden drop = the proxy is closing upgrades |
+| `tamam_location_updates_total{result="rejected"}`    | client clock skew or GPS abuse              |
 
 Health: `/health/live` (process) and `/health/ready` (database + redis + storage).
 
@@ -110,8 +110,8 @@ found", `tamam_dispatch_outcome_total{outcome="no_partner"}` rising.
 
 1. **Is it supply or is it us?**
    `GET /api/v1/admin/dispatch/console?onlyUnassigned=true` — look at `offersSent`.
-   * `offersSent > 0` and every offer expired → real supply problem, go to step 5.
-   * `offersSent == 0` → no candidate matched, continue.
+   - `offersSent > 0` and every offer expired → real supply problem, go to step 5.
+   - `offersSent == 0` → no candidate matched, continue.
 2. **Are partners actually online?**
    `GET /api/v1/admin/dispatch/nearby-partners?lat=…&lng=…&radiusMeters=5000`.
    Empty while partners insist they are online usually means **stale heartbeats**: the console
@@ -128,11 +128,11 @@ found", `tamam_dispatch_outcome_total{outcome="no_partner"}` rising.
    `wallet.max_negative_partner_minor`. That last one silently removes partners who owe
    commission: check `GET /api/v1/admin/ledger/wallets/<id>/statement`.
 5. **Act.**
-   * Widen the search: raise `dispatch.wave*.radius_m` / `dispatch.wave*.size` via
+   - Widen the search: raise `dispatch.wave*.radius_m` / `dispatch.wave*.size` via
      `PATCH /api/v1/admin/config` (bounded, audited).
-   * Re-dispatch a specific job: `POST /api/v1/admin/jobs/<id>/redispatch`.
-   * Assign by hand: `POST /api/v1/admin/jobs/<id>/assign` with `{ partnerId, reason, version }`.
-   * Genuine shortage: raise surge (`POST /api/v1/admin/pricing/surge`) and notify partners
+   - Re-dispatch a specific job: `POST /api/v1/admin/jobs/<id>/redispatch`.
+   - Assign by hand: `POST /api/v1/admin/jobs/<id>/assign` with `{ partnerId, reason, version }`.
+   - Genuine shortage: raise surge (`POST /api/v1/admin/pricing/surge`) and notify partners
      (`POST /api/v1/admin/notifications/broadcast`).
 
 ## R2 — Payment webhook backlog
@@ -183,15 +183,15 @@ Walk the checks in the order the server applies them
    `activeVehicleId`. A vehicle whose review was reverted silently blocks going online.
    → `POST /api/v1/admin/vehicles/<id>/review`.
 5. **The switch worked but no offers arrive** — they are online but invisible:
-   * heartbeats stopped (`admin/dispatch/partners/<id>/timeline` shows no recent activity, or the
+   - heartbeats stopped (`admin/dispatch/partners/<id>/timeline` shows no recent activity, or the
      console shows `PARTNER_HEARTBEAT_STALE`) — a device/network problem, not a server one;
      `tracking.heartbeat_offline_after_s` controls how quickly they drop out;
-   * they are already `BUSY` on a job that never closed → find it in the dispatcher console and
+   - they are already `BUSY` on a job that never closed → find it in the dispatcher console and
      close it (`POST /api/v1/admin/jobs/<id>/transition`), which releases the partner;
-   * the zone is missing from `partner_zones` → `PATCH /api/v1/admin/partners/<id>`;
-   * a `BLOCK_JOBS` restriction is active → `GET /api/v1/admin/risk/restrictions`, lift with
+   - the zone is missing from `partner_zones` → `PATCH /api/v1/admin/partners/<id>`;
+   - a `BLOCK_JOBS` restriction is active → `GET /api/v1/admin/risk/restrictions`, lift with
      `POST /api/v1/admin/risk/restrictions/<id>/lift`;
-   * for CASH jobs, a negative wallet past `wallet.max_negative_partner_minor` (see R1 §4).
+   - for CASH jobs, a negative wallet past `wallet.max_negative_partner_minor` (see R1 §4).
 
 ## R4 — Ledger and wallet balances disagree
 
@@ -215,9 +215,9 @@ log line `wallet balance cache diverged from the ledger` appears.
 
 Redis holds queues, rate limits, caches, session-revocation markers and the Socket.IO adapter.
 
-* `/health/ready` reports `redis: down`; job creation still works but dispatch does not run.
-* Restore Redis first — queued BullMQ jobs are persisted in Redis (`appendonly yes`); losing them
+- `/health/ready` reports `redis: down`; job creation still works but dispatch does not run.
+- Restore Redis first — queued BullMQ jobs are persisted in Redis (`appendonly yes`); losing them
   loses in-flight dispatch waves and notification sends. Jobs stuck in `SEARCHING` are recovered
   with `POST /api/v1/admin/jobs/<id>/redispatch`.
-* `maxmemory-policy` **must** be `noeviction`. With an eviction policy Redis silently deletes queue
+- `maxmemory-policy` **must** be `noeviction`. With an eviction policy Redis silently deletes queue
   keys under pressure, which loses work with no error anywhere.

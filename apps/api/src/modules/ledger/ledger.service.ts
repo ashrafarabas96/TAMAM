@@ -23,7 +23,13 @@ import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.servi
 import { WalletService } from '../wallet/wallet.service';
 
 import { CommissionService } from './commission.service';
-import { assertBalanced, assertSupportedCurrency, platformAccountCode, settlementEntries, walletAccountCode } from './domain/ledger.rules';
+import {
+  assertBalanced,
+  assertSupportedCurrency,
+  platformAccountCode,
+  settlementEntries,
+  walletAccountCode,
+} from './domain/ledger.rules';
 
 // Declared in @tamam/shared-types so the console and the mobile apps read the same
 // shape; re-exported for the modules that already import it from this service.
@@ -67,7 +73,9 @@ export interface LedgerPostInput {
   idempotencyKey: string;
 }
 
-export type LedgerTransactionRecord = Prisma.LedgerTransactionGetPayload<{ include: { entries: true } }>;
+export type LedgerTransactionRecord = Prisma.LedgerTransactionGetPayload<{
+  include: { entries: true };
+}>;
 
 export interface LedgerAccountDto {
   id: string;
@@ -93,9 +101,15 @@ export interface LedgerTransactionDto {
   reason: string | null;
   actorId: string | null;
   createdAt: string;
-  entries: Array<{ id: string; accountId: string; accountCode: string; direction: LedgerEntryDirection; amount: Money; balanceAfter: Money }>;
+  entries: Array<{
+    id: string;
+    accountId: string;
+    accountCode: string;
+    direction: LedgerEntryDirection;
+    amount: Money;
+    balanceAfter: Money;
+  }>;
 }
-
 
 export interface LedgerTransactionFilter {
   jobId?: string;
@@ -139,11 +153,19 @@ export class LedgerService {
    * Chart-of-accounts lookup. Platform accounts are keyed `<TYPE>:<CURRENCY>`, wallet accounts
    * `WALLET:<walletId>` — both created on first use so no seeding step is required.
    */
-  async getOrCreateAccount(type: LedgerAccountType, currency: string, walletId?: string, tx?: Tx): Promise<{ id: string; code: string; currency: string }> {
+  async getOrCreateAccount(
+    type: LedgerAccountType,
+    currency: string,
+    walletId?: string,
+    tx?: Tx,
+  ): Promise<{ id: string; code: string; currency: string }> {
     assertSupportedCurrency(currency);
     const client = tx ?? this.prisma;
     const code = walletId ? walletAccountCode(walletId) : platformAccountCode(type, currency);
-    const existing = await client.ledgerAccount.findUnique({ where: { code }, select: { id: true, code: true, currency: true } });
+    const existing = await client.ledgerAccount.findUnique({
+      where: { code },
+      select: { id: true, code: true, currency: true },
+    });
     if (existing) return existing;
     try {
       return await client.ledgerAccount.create({
@@ -153,14 +175,19 @@ export class LedgerService {
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
         // Another transaction created the same account first — read it back.
-        const raced = await client.ledgerAccount.findUnique({ where: { code }, select: { id: true, code: true, currency: true } });
+        const raced = await client.ledgerAccount.findUnique({
+          where: { code },
+          select: { id: true, code: true, currency: true },
+        });
         if (raced) return raced;
       }
       throw err;
     }
   }
 
-  async listAccounts(filter: { currency?: string; type?: LedgerAccountType } = {}): Promise<LedgerAccountDto[]> {
+  async listAccounts(
+    filter: { currency?: string; type?: LedgerAccountType } = {},
+  ): Promise<LedgerAccountDto[]> {
     const rows = await this.prisma.ledgerAccount.findMany({
       where: { currency: filter.currency, type: filter.type },
       orderBy: [{ type: 'asc' }, { code: 'asc' }],
@@ -191,7 +218,10 @@ export class LedgerService {
   }
 
   private async postInTx(input: LedgerPostInput, tx: Tx): Promise<LedgerTransactionRecord> {
-    const existing = await tx.ledgerTransaction.findUnique({ where: { idempotencyKey: input.idempotencyKey }, include: { entries: true } });
+    const existing = await tx.ledgerTransaction.findUnique({
+      where: { idempotencyKey: input.idempotencyKey },
+      include: { entries: true },
+    });
     if (existing) return existing;
 
     assertSupportedCurrency(input.currency);
@@ -224,7 +254,10 @@ export class LedgerService {
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        const raced = await tx.ledgerTransaction.findUnique({ where: { idempotencyKey: input.idempotencyKey }, include: { entries: true } });
+        const raced = await tx.ledgerTransaction.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: { entries: true },
+        });
         if (raced) return raced;
       }
       throw err;
@@ -232,35 +265,72 @@ export class LedgerService {
 
     const rows = resolved.map((entry) => {
       const before = balances.get(entry.accountId) ?? 0n;
-      const after = entry.direction === LedgerEntryDirection.CREDIT ? before + entry.amountMinor : before - entry.amountMinor;
+      const after =
+        entry.direction === LedgerEntryDirection.CREDIT
+          ? before + entry.amountMinor
+          : before - entry.amountMinor;
       balances.set(entry.accountId, after);
-      return { transactionId: transaction.id, accountId: entry.accountId, direction: entry.direction, amountMinor: entry.amountMinor, balanceAfterMinor: after };
+      return {
+        transactionId: transaction.id,
+        accountId: entry.accountId,
+        direction: entry.direction,
+        amountMinor: entry.amountMinor,
+        balanceAfterMinor: after,
+      };
     });
     await tx.ledgerEntry.createMany({ data: rows });
 
     for (const entry of resolved) {
       if (!entry.walletId) continue;
-      await tx.wallet.update({ where: { id: entry.walletId }, data: { balanceMinor: balances.get(entry.accountId) ?? 0n } });
+      await tx.wallet.update({
+        where: { id: entry.walletId },
+        data: { balanceMinor: balances.get(entry.accountId) ?? 0n },
+      });
     }
 
-    this.logger.debug({ transactionId: transaction.id, type: input.type, entries: rows.length }, 'ledger transaction posted');
-    return tx.ledgerTransaction.findUniqueOrThrow({ where: { id: transaction.id }, include: { entries: true } });
+    this.logger.debug(
+      { transactionId: transaction.id, type: input.type, entries: rows.length },
+      'ledger transaction posted',
+    );
+    return tx.ledgerTransaction.findUniqueOrThrow({
+      where: { id: transaction.id },
+      include: { entries: true },
+    });
   }
 
-  private async resolveEntries(entries: LedgerPostEntry[], currency: string, tx: Tx): Promise<ResolvedEntry[]> {
+  private async resolveEntries(
+    entries: LedgerPostEntry[],
+    currency: string,
+    tx: Tx,
+  ): Promise<ResolvedEntry[]> {
     const resolved: ResolvedEntry[] = [];
     const cache = new Map<string, { id: string; code: string }>();
     for (const entry of entries) {
       const code = entry.walletId ? walletAccountCode(entry.walletId) : entry.accountCode;
-      if (!code) throw AppException.validation([{ field: 'entries', message: 'entry needs accountCode or walletId' }]);
+      if (!code)
+        throw AppException.validation([
+          { field: 'entries', message: 'entry needs accountCode or walletId' },
+        ]);
       const cached = cache.get(code);
       if (cached) {
-        resolved.push({ accountId: cached.id, accountCode: cached.code, walletId: this.walletIdFromCode(code), direction: entry.direction, amountMinor: entry.amountMinor });
+        resolved.push({
+          accountId: cached.id,
+          accountCode: cached.code,
+          walletId: this.walletIdFromCode(code),
+          direction: entry.direction,
+          amountMinor: entry.amountMinor,
+        });
         continue;
       }
       const account = await this.accountForCode(code, currency, tx);
       cache.set(code, account);
-      resolved.push({ accountId: account.id, accountCode: account.code, walletId: this.walletIdFromCode(code), direction: entry.direction, amountMinor: entry.amountMinor });
+      resolved.push({
+        accountId: account.id,
+        accountCode: account.code,
+        walletId: this.walletIdFromCode(code),
+        direction: entry.direction,
+        amountMinor: entry.amountMinor,
+      });
     }
     return resolved;
   }
@@ -270,24 +340,46 @@ export class LedgerService {
   }
 
   /** Resolves (creating if needed) the account behind a code, inferring the account type from it. */
-  private async accountForCode(code: string, currency: string, tx: Tx): Promise<{ id: string; code: string }> {
+  private async accountForCode(
+    code: string,
+    currency: string,
+    tx: Tx,
+  ): Promise<{ id: string; code: string }> {
     const walletId = this.walletIdFromCode(code);
     if (walletId) {
-      const wallet = await tx.wallet.findUnique({ where: { id: walletId }, select: { id: true, ownerType: true, currency: true } });
+      const wallet = await tx.wallet.findUnique({
+        where: { id: walletId },
+        select: { id: true, ownerType: true, currency: true },
+      });
       if (!wallet) throw AppException.notFound('Wallet', walletId);
       if (wallet.currency !== currency) {
-        throw AppException.validation([{ field: 'entries', message: `wallet ${walletId} holds ${wallet.currency}, transaction is ${currency}` }]);
+        throw AppException.validation([
+          {
+            field: 'entries',
+            message: `wallet ${walletId} holds ${wallet.currency}, transaction is ${currency}`,
+          },
+        ]);
       }
-      const type = wallet.ownerType === WalletOwnerType.PARTNER ? LedgerAccountType.PARTNER_WALLET : LedgerAccountType.CUSTOMER_WALLET;
+      const type =
+        wallet.ownerType === WalletOwnerType.PARTNER
+          ? LedgerAccountType.PARTNER_WALLET
+          : LedgerAccountType.CUSTOMER_WALLET;
       return this.getOrCreateAccount(type, currency, walletId, tx);
     }
     const [typePart, currencyPart] = code.split(':');
     const accountType = Object.values(LedgerAccountType).find((t) => t === typePart);
     if (!accountType || !currencyPart) {
-      throw AppException.validation([{ field: 'entries', message: `unknown ledger account code ${code}` }]);
+      throw AppException.validation([
+        { field: 'entries', message: `unknown ledger account code ${code}` },
+      ]);
     }
     if (currencyPart !== currency) {
-      throw AppException.validation([{ field: 'entries', message: `account ${code} does not match transaction currency ${currency}` }]);
+      throw AppException.validation([
+        {
+          field: 'entries',
+          message: `account ${code} does not match transaction currency ${currency}`,
+        },
+      ]);
     }
     return this.getOrCreateAccount(accountType, currencyPart, undefined, tx);
   }
@@ -324,27 +416,41 @@ export class LedgerService {
 
   /** Cached balance (wallets.balance_minor) — the value the apps see. */
   async walletBalance(walletId: string): Promise<bigint> {
-    const wallet = await this.prisma.wallet.findUnique({ where: { id: walletId }, select: { balanceMinor: true } });
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { id: walletId },
+      select: { balanceMinor: true },
+    });
     if (!wallet) throw AppException.notFound('Wallet', walletId);
     return wallet.balanceMinor;
   }
 
   /** Authoritative balance recomputed from the entries via `tamam_ledger_balance` (spec §56). */
   async recomputeWalletBalance(walletId: string): Promise<bigint> {
-    const account = await this.prisma.ledgerAccount.findUnique({ where: { walletId }, select: { id: true } });
+    const account = await this.prisma.ledgerAccount.findUnique({
+      where: { walletId },
+      select: { id: true },
+    });
     if (!account) return 0n;
-    const rows = await this.prisma.$queryRaw<Array<{ balance: bigint }>>`SELECT tamam_ledger_balance(${account.id}::uuid) AS balance`;
+    const rows = await this.prisma.$queryRaw<
+      Array<{ balance: bigint }>
+    >`SELECT tamam_ledger_balance(${account.id}::uuid) AS balance`;
     const balance = rows[0]?.balance;
     return balance === undefined ? 0n : BigInt(balance);
   }
 
   async verifyWallet(walletId: string): Promise<WalletIntegrityDto> {
-    const wallet = await this.prisma.wallet.findUnique({ where: { id: walletId }, select: { id: true, currency: true, balanceMinor: true } });
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { id: walletId },
+      select: { id: true, currency: true, balanceMinor: true },
+    });
     if (!wallet) throw AppException.notFound('Wallet', walletId);
     const recomputed = await this.recomputeWalletBalance(walletId);
     const matches = recomputed === wallet.balanceMinor;
     if (!matches) {
-      this.logger.error({ walletId, cached: wallet.balanceMinor.toString(), recomputed: recomputed.toString() }, 'wallet balance cache diverged from the ledger');
+      this.logger.error(
+        { walletId, cached: wallet.balanceMinor.toString(), recomputed: recomputed.toString() },
+        'wallet balance cache diverged from the ledger',
+      );
     }
     return {
       walletId: wallet.id,
@@ -359,23 +465,36 @@ export class LedgerService {
   async assertWalletIntegrity(walletId: string): Promise<void> {
     const result = await this.verifyWallet(walletId);
     if (!result.matches) {
-      throw AppException.conflict(`Wallet ${walletId} balance does not match the ledger`, ErrorCode.INTERNAL_ERROR, {
-        cached: result.cachedBalance.amount,
-        recomputed: result.recomputedBalance.amount,
-      });
+      throw AppException.conflict(
+        `Wallet ${walletId} balance does not match the ledger`,
+        ErrorCode.INTERNAL_ERROR,
+        {
+          cached: result.cachedBalance.amount,
+          recomputed: result.recomputedBalance.amount,
+        },
+      );
     }
   }
 
   /* ------------------------------------------------------------- statement */
 
-  async statement(walletId: string, cursorRaw: string | undefined, limit: number): Promise<Page<LedgerEntryDto>> {
-    const wallet = await this.prisma.wallet.findUnique({ where: { id: walletId }, select: { id: true, currency: true, ledgerAccount: { select: { id: true } } } });
+  async statement(
+    walletId: string,
+    cursorRaw: string | undefined,
+    limit: number,
+  ): Promise<Page<LedgerEntryDto>> {
+    const wallet = await this.prisma.wallet.findUnique({
+      where: { id: walletId },
+      select: { id: true, currency: true, ledgerAccount: { select: { id: true } } },
+    });
     if (!wallet) throw AppException.notFound('Wallet', walletId);
     if (!wallet.ledgerAccount) return { items: [], nextCursor: null };
     const cursor = decodeCursor(cursorRaw);
     const rows = await this.prisma.ledgerEntry.findMany({
       where: { accountId: wallet.ledgerAccount.id, ...cursorWhere(cursor) },
-      include: { transaction: { select: { id: true, type: true, description: true, jobId: true } } },
+      include: {
+        transaction: { select: { id: true, type: true, description: true, jobId: true } },
+      },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,
     });
@@ -399,7 +518,13 @@ export class LedgerService {
         ...cursorWhere(cursor),
         jobId: filter.jobId,
         type: filter.type,
-        createdAt: filter.from || filter.to ? { gte: filter.from ? new Date(filter.from) : undefined, lte: filter.to ? new Date(filter.to) : undefined } : undefined,
+        createdAt:
+          filter.from || filter.to
+            ? {
+                gte: filter.from ? new Date(filter.from) : undefined,
+                lte: filter.to ? new Date(filter.to) : undefined,
+              }
+            : undefined,
       },
       include: { entries: { include: { account: { select: { code: true } } } } },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -443,7 +568,10 @@ export class LedgerService {
   }
 
   private async settleJobInTx(jobId: string, tx: Tx): Promise<LedgerTransactionRecord | null> {
-    const existing = await tx.ledgerTransaction.findUnique({ where: { idempotencyKey: `settle:${jobId}` }, include: { entries: true } });
+    const existing = await tx.ledgerTransaction.findUnique({
+      where: { idempotencyKey: `settle:${jobId}` },
+      include: { entries: true },
+    });
     if (existing) return existing;
 
     const job = await tx.job.findUnique({
@@ -473,16 +601,25 @@ export class LedgerService {
     const promoDiscountMinor = job.promoDiscountMinor;
     const cancellationFeeMinor = job.cancellationFeeMinor;
     if (jobTotalMinor <= 0n && promoDiscountMinor <= 0n && cancellationFeeMinor <= 0n) return null;
-    if (!job.partnerId) throw AppException.conflict('Job has no partner to settle against', ErrorCode.CONFLICT);
+    if (!job.partnerId)
+      throw AppException.conflict('Job has no partner to settle against', ErrorCode.CONFLICT);
 
     const grossFareMinor = jobTotalMinor + promoDiscountMinor;
     const commissionMinor = await this.commissionFor(job, grossFareMinor, tx);
 
-    const partnerWallet = await this.wallets.getOrCreate(WalletOwnerType.PARTNER, job.partnerId, currency, tx);
+    const partnerWallet = await this.wallets.getOrCreate(
+      WalletOwnerType.PARTNER,
+      job.partnerId,
+      currency,
+      tx,
+    );
     const needsCustomerWallet =
       (job.paymentMethod === PaymentMethod.WALLET && jobTotalMinor > 0n) ||
-      (cancellationFeeMinor > 0n && (job.paymentMethod === PaymentMethod.CASH || job.paymentMethod === PaymentMethod.WALLET));
-    const customerWallet = needsCustomerWallet ? await this.wallets.getOrCreate(WalletOwnerType.CUSTOMER, job.customerId, currency, tx) : null;
+      (cancellationFeeMinor > 0n &&
+        (job.paymentMethod === PaymentMethod.CASH || job.paymentMethod === PaymentMethod.WALLET));
+    const customerWallet = needsCustomerWallet
+      ? await this.wallets.getOrCreate(WalletOwnerType.CUSTOMER, job.customerId, currency, tx)
+      : null;
 
     const plan = settlementEntries({
       jobTotalMinor,
@@ -490,7 +627,10 @@ export class LedgerService {
       paymentMethod: job.paymentMethod,
       promoDiscountMinor,
       cancellationFeeMinor,
-      partnerFeeOnCancelMinor: cancellationFeeMinor > 0n ? await this.partnerCancellationCompensation(job.type, job.zoneId, currency, tx) : 0n,
+      partnerFeeOnCancelMinor:
+        cancellationFeeMinor > 0n
+          ? await this.partnerCancellationCompensation(job.type, job.zoneId, currency, tx)
+          : 0n,
       currency,
       partnerWalletAccountCode: walletAccountCode(partnerWallet.id),
       customerWalletAccountCode: customerWallet ? walletAccountCode(customerWallet.id) : undefined,
@@ -538,19 +678,38 @@ export class LedgerService {
     tx: Tx,
   ): Promise<bigint> {
     if (job.pricingSnapshot) {
-      return percentOf(grossFareMinor, job.pricingSnapshot.commissionPercent.toNumber()) + job.pricingSnapshot.commissionFixedMinor;
+      return (
+        percentOf(grossFareMinor, job.pricingSnapshot.commissionPercent.toNumber()) +
+        job.pricingSnapshot.commissionFixedMinor
+      );
     }
     const resolved = await this.commission.resolve(
-      { jobType: job.type, categoryId: job.categoryId, zoneId: job.zoneId, partnerId: job.partnerId, at: job.completedAt ?? new Date() },
+      {
+        jobType: job.type,
+        categoryId: job.categoryId,
+        zoneId: job.zoneId,
+        partnerId: job.partnerId,
+        at: job.completedAt ?? new Date(),
+      },
       tx,
     );
     return percentOf(grossFareMinor, resolved.percent) + resolved.fixedMinor;
   }
 
   /** Most specific active cancellation policy decides what the partner keeps of the fee. */
-  private async partnerCancellationCompensation(jobType: JobType, zoneId: string, currency: string, tx: Tx): Promise<bigint> {
+  private async partnerCancellationCompensation(
+    jobType: JobType,
+    zoneId: string,
+    currency: string,
+    tx: Tx,
+  ): Promise<bigint> {
     const policies = await tx.cancellationPolicy.findMany({
-      where: { isActive: true, currency, OR: [{ jobType }, { jobType: null }], AND: [{ OR: [{ zoneId }, { zoneId: null }] }] },
+      where: {
+        isActive: true,
+        currency,
+        OR: [{ jobType }, { jobType: null }],
+        AND: [{ OR: [{ zoneId }, { zoneId: null }] }],
+      },
     });
     let best: { score: number; value: bigint } | null = null;
     for (const policy of policies) {

@@ -1,8 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { ConnectedSocket, MessageBody, type OnGatewayConnection, type OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { type JobOfferDto, type JobStatus, type LocationSample, Permission, WsEvent, WsNamespace } from '@tamam/shared-types';
+import {
+  ConnectedSocket,
+  MessageBody,
+  type OnGatewayConnection,
+  type OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import {
+  type JobOfferDto,
+  type JobStatus,
+  type LocationSample,
+  Permission,
+  WsEvent,
+  WsNamespace,
+} from '@tamam/shared-types';
 import { PinoLogger } from 'nestjs-pino';
 import type { Server, Socket } from 'socket.io';
 import { z } from 'zod';
@@ -63,7 +78,9 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /* --------------------------------------------------------- lifecycle */
   async handleConnection(socket: AuthedSocket): Promise<void> {
     const header = socket.handshake.headers.authorization;
-    const token = (socket.handshake.auth as { token?: string } | undefined)?.token ?? (header?.startsWith('Bearer ') ? header.slice(7) : undefined);
+    const token =
+      (socket.handshake.auth as { token?: string } | undefined)?.token ??
+      (header?.startsWith('Bearer ') ? header.slice(7) : undefined);
     const user = token ? await this.tokens.resolvePrincipal(token) : null;
     if (!user) {
       socket.emit(WsEvent.ERROR, { code: 'UNAUTHENTICATED' });
@@ -91,7 +108,10 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /* -------------------------------------------------------- subscribe */
   @SubscribeMessage(WsEvent.ADMIN_SUBSCRIBE_MAP)
-  async onSubscribeMap(@ConnectedSocket() socket: AuthedSocket, @MessageBody() body: unknown): Promise<unknown> {
+  async onSubscribeMap(
+    @ConnectedSocket() socket: AuthedSocket,
+    @MessageBody() body: unknown,
+  ): Promise<unknown> {
     const user = socket.data.user;
     if (!user) return { error: 'UNAUTHENTICATED' };
     if (!this.canViewMap(user)) return { error: 'FORBIDDEN' };
@@ -100,7 +120,10 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const room = parsed.data.zoneId ? zoneRoom(parsed.data.zoneId) : ALL_ROOM;
     if (parsed.data.zoneId) {
-      const zone = await this.prisma.serviceZone.findUnique({ where: { id: parsed.data.zoneId }, select: { id: true } });
+      const zone = await this.prisma.serviceZone.findUnique({
+        where: { id: parsed.data.zoneId },
+        select: { id: true },
+      });
       if (!zone) return { error: 'NOT_FOUND' };
     }
     // One room at a time: re-subscribing swaps the scope instead of accumulating rooms.
@@ -117,7 +140,11 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /* ----------------------------------------------------------- fan-out */
   @OnEvent(TrackingEvents.LOCATION)
-  async onLocation(payload: { partnerId: string; jobId: string; sample: LocationSample }): Promise<void> {
+  async onLocation(payload: {
+    partnerId: string;
+    jobId: string;
+    sample: LocationSample;
+  }): Promise<void> {
     const zoneId = await this.zoneForJob(payload.jobId);
     this.broadcast({
       kind: 'LOCATION',
@@ -125,7 +152,12 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
       jobId: payload.jobId,
       partnerId: payload.partnerId,
       at: payload.sample.timestamp,
-      payload: { lat: payload.sample.lat, lng: payload.sample.lng, heading: payload.sample.heading ?? null, speed: payload.sample.speed ?? null },
+      payload: {
+        lat: payload.sample.lat,
+        lng: payload.sample.lng,
+        heading: payload.sample.heading ?? null,
+        speed: payload.sample.speed ?? null,
+      },
     });
   }
 
@@ -138,13 +170,26 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
       jobId: payload.jobId,
       partnerId: payload.partnerId,
       at: payload.at,
-      payload: { from: payload.from, to: payload.to, jobType: payload.jobType, actorType: payload.actorType, customerId: payload.customerId },
+      payload: {
+        from: payload.from,
+        to: payload.to,
+        jobType: payload.jobType,
+        actorType: payload.actorType,
+        customerId: payload.customerId,
+      },
     });
   }
 
   /** `job.sos` is emitted by JobSafetyService — the highest-priority event on the map. */
   @OnEvent('job.sos')
-  onSos(payload: { jobId: string; alertId: string; userId: string; zoneId: string; location: { lat: number; lng: number }; status: JobStatus }): void {
+  onSos(payload: {
+    jobId: string;
+    alertId: string;
+    userId: string;
+    zoneId: string;
+    location: { lat: number; lng: number };
+    status: JobStatus;
+  }): void {
     this.rememberZone(payload.jobId, payload.zoneId);
     this.broadcast({
       kind: 'SOS',
@@ -152,7 +197,13 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
       jobId: payload.jobId,
       partnerId: null,
       at: new Date().toISOString(),
-      payload: { alertId: payload.alertId, userId: payload.userId, lat: payload.location.lat, lng: payload.location.lng, jobStatus: payload.status },
+      payload: {
+        alertId: payload.alertId,
+        userId: payload.userId,
+        lat: payload.location.lat,
+        lng: payload.location.lng,
+        jobStatus: payload.status,
+      },
     });
   }
 
@@ -166,7 +217,12 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
       jobId: payload.offer.job.id,
       partnerId: payload.partnerId,
       at: new Date().toISOString(),
-      payload: { assignmentId: payload.offer.assignmentId, wave: payload.offer.wave, expiresAt: payload.offer.expiresAt, etaToPickupSeconds: payload.offer.etaToPickupSeconds },
+      payload: {
+        assignmentId: payload.offer.assignmentId,
+        wave: payload.offer.wave,
+        expiresAt: payload.offer.expiresAt,
+        etaToPickupSeconds: payload.offer.etaToPickupSeconds,
+      },
     });
   }
 
@@ -191,7 +247,8 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private broadcast(update: AdminMapUpdate): void {
     if (!this.server) return;
     this.server.to(ALL_ROOM).emit(WsEvent.ADMIN_MAP_UPDATE, update);
-    if (update.zoneId) this.server.to(zoneRoom(update.zoneId)).emit(WsEvent.ADMIN_MAP_UPDATE, update);
+    if (update.zoneId)
+      this.server.to(zoneRoom(update.zoneId)).emit(WsEvent.ADMIN_MAP_UPDATE, update);
   }
 
   private rememberZone(jobId: string, zoneId: string): void {
@@ -203,7 +260,10 @@ export class AdminGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const cached = this.jobZones.get(jobId);
     if (cached && cached.expiresAt > Date.now()) return cached.zoneId;
     this.jobZones.delete(jobId);
-    const job = await this.prisma.job.findUnique({ where: { id: jobId }, select: { zoneId: true } });
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      select: { zoneId: true },
+    });
     if (!job) return null;
     this.rememberZone(jobId, job.zoneId);
     return job.zoneId;

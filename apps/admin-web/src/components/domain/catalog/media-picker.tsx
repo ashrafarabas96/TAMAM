@@ -29,7 +29,17 @@ export interface MediaPickerProps {
  * Upload intent → signed PUT → confirm, with optional aspect-ratio validation (banner creatives
  * must match the placement ratio from `@tamam/ui-tokens`).
  */
-export function MediaPicker({ value, onChange, purpose, previewUrl, aspectRatio, aspectTolerance = 0.06, label, className, accept = 'image/png,image/jpeg,image/webp' }: MediaPickerProps) {
+export function MediaPicker({
+  value,
+  onChange,
+  purpose,
+  previewUrl,
+  aspectRatio,
+  aspectTolerance = 0.06,
+  label,
+  className,
+  accept = 'image/png,image/jpeg,image/webp',
+}: MediaPickerProps) {
   const { t, locale } = useI18n();
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,7 +69,13 @@ export function MediaPicker({ value, onChange, purpose, previewUrl, aspectRatio,
         const { width, height } = await measure(file);
         const ratio = width / height;
         if (Math.abs(ratio - aspectRatio) / aspectRatio > aspectTolerance) {
-          toast.error(t('media.aspectMismatch'), t('media.aspectExpected', { expected: aspectRatio.toFixed(2), actual: ratio.toFixed(2) }));
+          toast.error(
+            t('media.aspectMismatch'),
+            t('media.aspectExpected', {
+              expected: aspectRatio.toFixed(2),
+              actual: ratio.toFixed(2),
+            }),
+          );
           return;
         }
       }
@@ -79,24 +95,52 @@ export function MediaPicker({ value, onChange, purpose, previewUrl, aspectRatio,
     <div className={cn('min-w-0', className)}>
       {label ? <p className="mb-1.5 text-xs font-semibold text-text-secondary">{label}</p> : null}
       <div className="relative flex items-center gap-3 rounded-md border border-dashed border-border-strong bg-surface-alt/50 p-3">
-        <div className="flex h-16 w-24 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-surface" style={aspectRatio ? { aspectRatio: String(aspectRatio) } : undefined}>
-          {preview ? <img src={preview} alt="" className="h-full w-full object-cover" /> : <ImagePlus className="h-5 w-5 text-text-tertiary" aria-hidden />}
+        <div
+          className="flex h-16 w-24 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-surface"
+          style={aspectRatio ? { aspectRatio: String(aspectRatio) } : undefined}
+        >
+          {preview ? (
+            <img src={preview} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <ImagePlus className="h-5 w-5 text-text-tertiary" aria-hidden />
+          )}
         </div>
         <div className="min-w-0 flex-1 text-xs text-text-secondary">
           <p>{value ? t('media.selected') : t('media.none')}</p>
-          {aspectRatio ? <p className="text-[11px] text-text-tertiary" dir="ltr">{t('media.ratioHint', { ratio: aspectRatio.toFixed(2) })}</p> : null}
+          {aspectRatio ? (
+            <p className="text-[11px] text-text-tertiary" dir="ltr">
+              {t('media.ratioHint', { ratio: aspectRatio.toFixed(2) })}
+            </p>
+          ) : null}
         </div>
         <div className="flex shrink-0 gap-1">
-          <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} loading={busy}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => inputRef.current?.click()}
+            loading={busy}
+          >
             {value ? t('media.replace') : t('media.upload')}
           </Button>
           {value ? (
-            <Button size="icon-sm" variant="ghost" onClick={() => { setLocalPreview(null); onChange(null, null); }} aria-label={t('common.remove')}>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              onClick={() => {
+                setLocalPreview(null);
+                onChange(null, null);
+              }}
+              aria-label={t('common.remove')}
+            >
               <X className="h-4 w-4" aria-hidden />
             </Button>
           ) : null}
         </div>
-        {busy ? <span className="absolute inset-0 flex items-center justify-center rounded-md bg-surface/70"><Loader2 className="h-5 w-5 animate-spin text-primary" aria-hidden /></span> : null}
+        {busy ? (
+          <span className="absolute inset-0 flex items-center justify-center rounded-md bg-surface/70">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" aria-hidden />
+          </span>
+        ) : null}
         <input
           ref={inputRef}
           type="file"

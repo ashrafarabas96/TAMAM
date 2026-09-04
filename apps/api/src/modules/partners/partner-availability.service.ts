@@ -6,7 +6,6 @@ import {
   DocumentStatus,
   type DocumentType,
   ErrorCode,
-  type GeoPoint,
   type HeartbeatResultDto,
   type PartnerAvailabilityDto,
   type PartnerRoleType,
@@ -24,7 +23,6 @@ import { VEHICLE_REQUIRED_ROLES } from '../vehicles/vehicles.service';
 export type { PartnerAvailabilityDto, HeartbeatResultDto } from '@tamam/shared-types';
 
 /** Current availability as the apps and the dispatcher see it. */
-
 
 const partnerInclude = {
   roles: true,
@@ -66,20 +64,37 @@ export class PartnerAvailabilityService {
    * Partner-driven status change. ONLINE is refused unless the account is approved, the
    * required documents are valid and — for driving/courier roles — an approved vehicle is active.
    */
-  async setAvailability(partnerId: string, input: SetAvailabilityInput): Promise<PartnerAvailabilityDto> {
+  async setAvailability(
+    partnerId: string,
+    input: SetAvailabilityInput,
+  ): Promise<PartnerAvailabilityDto> {
     const partner = await this.loadPartner(partnerId);
     const partnerRoles = partner.roles.filter((r) => r.isActive).map((r) => r.role);
-    const activeRoles = input.activeRoles ?? (partner.availability?.activeRoles.length ? partner.availability.activeRoles : partnerRoles);
+    const activeRoles =
+      input.activeRoles ??
+      (partner.availability?.activeRoles.length ? partner.availability.activeRoles : partnerRoles);
     const unknownRole = activeRoles.find((r) => !partnerRoles.includes(r));
-    if (unknownRole) throw AppException.validation([{ field: 'activeRoles', message: `role ${unknownRole} is not granted to this partner` }]);
+    if (unknownRole)
+      throw AppException.validation([
+        { field: 'activeRoles', message: `role ${unknownRole} is not granted to this partner` },
+      ]);
 
     let activeVehicleId = partner.activeVehicleId;
     if (input.activeVehicleId) {
       const vehicle = await this.prisma.vehicle.findFirst({
-        where: { id: input.activeVehicleId, partnerId, isActive: true, verificationStatus: VerificationStatus.APPROVED },
+        where: {
+          id: input.activeVehicleId,
+          partnerId,
+          isActive: true,
+          verificationStatus: VerificationStatus.APPROVED,
+        },
         select: { id: true },
       });
-      if (!vehicle) throw AppException.badRequest(ErrorCode.PARTNER_NOT_APPROVED, 'Select a vehicle that belongs to you and has been approved');
+      if (!vehicle)
+        throw AppException.badRequest(
+          ErrorCode.PARTNER_NOT_APPROVED,
+          'Select a vehicle that belongs to you and has been approved',
+        );
       activeVehicleId = vehicle.id;
     }
 
@@ -87,15 +102,26 @@ export class PartnerAvailabilityService {
       this.assertCanGoOnline(partner, activeRoles, activeVehicleId);
     }
     if (input.status === AvailabilityStatus.OFFLINE && partner.availability?.currentJobId) {
-      throw AppException.conflict('Finish or hand over the current job before going offline', ErrorCode.PARTNER_NOT_AVAILABLE);
+      throw AppException.conflict(
+        'Finish or hand over the current job before going offline',
+        ErrorCode.PARTNER_NOT_AVAILABLE,
+      );
     }
 
     const now = new Date();
-    const wasOnline = partner.availability?.status === AvailabilityStatus.ONLINE || partner.availability?.status === AvailabilityStatus.BUSY;
+    const wasOnline =
+      partner.availability?.status === AvailabilityStatus.ONLINE ||
+      partner.availability?.status === AvailabilityStatus.BUSY;
     const onlineSince =
-      input.status === AvailabilityStatus.OFFLINE ? null : wasOnline ? (partner.availability?.onlineSince ?? now) : now;
+      input.status === AvailabilityStatus.OFFLINE
+        ? null
+        : wasOnline
+          ? (partner.availability?.onlineSince ?? now)
+          : now;
 
-    const location = input.location ? this.validateSample(input.location, await this.trackingLimits()) : null;
+    const location = input.location
+      ? this.validateSample(input.location, await this.trackingLimits())
+      : null;
 
     await this.prisma.$transaction(async (tx) => {
       if (activeVehicleId !== partner.activeVehicleId) {
@@ -113,8 +139,21 @@ export class PartnerAvailabilityService {
         : {};
       await tx.partnerAvailability.upsert({
         where: { partnerId },
-        update: { status: input.status, activeRoles, onlineSince, lastHeartbeatAt: now, ...locationData },
-        create: { partnerId, status: input.status, activeRoles, onlineSince, lastHeartbeatAt: now, ...locationData },
+        update: {
+          status: input.status,
+          activeRoles,
+          onlineSince,
+          lastHeartbeatAt: now,
+          ...locationData,
+        },
+        create: {
+          partnerId,
+          status: input.status,
+          activeRoles,
+          onlineSince,
+          lastHeartbeatAt: now,
+          ...locationData,
+        },
       });
     });
 
@@ -130,7 +169,12 @@ export class PartnerAvailabilityService {
     const row = await this.prisma.partnerAvailability.upsert({
       where: { partnerId },
       update: { lastHeartbeatAt: now, batteryPercent: input.batteryPercent ?? null },
-      create: { partnerId, status: AvailabilityStatus.OFFLINE, lastHeartbeatAt: now, batteryPercent: input.batteryPercent ?? null },
+      create: {
+        partnerId,
+        status: AvailabilityStatus.OFFLINE,
+        lastHeartbeatAt: now,
+        batteryPercent: input.batteryPercent ?? null,
+      },
     });
 
     let locationAccepted = false;
@@ -154,7 +198,11 @@ export class PartnerAvailabilityService {
       status: row.status,
       currentJobId: row.currentJobId,
       locationAccepted,
-      heartbeatIntervalSeconds: await this.config.getNumber(row.currentJobId ? CONFIG_KEYS.TRACKING_INTERVAL_ACTIVE_S : CONFIG_KEYS.HEARTBEAT_INTERVAL_S),
+      heartbeatIntervalSeconds: await this.config.getNumber(
+        row.currentJobId
+          ? CONFIG_KEYS.TRACKING_INTERVAL_ACTIVE_S
+          : CONFIG_KEYS.HEARTBEAT_INTERVAL_S,
+      ),
       serverTime: now.toISOString(),
     };
   }
@@ -170,7 +218,11 @@ export class PartnerAvailabilityService {
       where: {
         status: { in: [AvailabilityStatus.ONLINE, AvailabilityStatus.BUSY] },
         currentJobId: null,
-        OR: [{ lastHeartbeatAt: { lt: threshold } }, { lastHeartbeatAt: null, onlineSince: { lt: threshold } }, { lastHeartbeatAt: null, onlineSince: null }],
+        OR: [
+          { lastHeartbeatAt: { lt: threshold } },
+          { lastHeartbeatAt: null, onlineSince: { lt: threshold } },
+          { lastHeartbeatAt: null, onlineSince: null },
+        ],
       },
       data: { status: AvailabilityStatus.OFFLINE, onlineSince: null },
     });
@@ -185,15 +237,28 @@ export class PartnerAvailabilityService {
     await this.prisma.partnerAvailability.update({
       where: { partnerId },
       data: jobId
-        ? { status: AvailabilityStatus.BUSY, currentJobId: jobId, onlineSince: current.onlineSince ?? now }
-        : { status: current.status === AvailabilityStatus.OFFLINE ? AvailabilityStatus.OFFLINE : AvailabilityStatus.ONLINE, currentJobId: null },
+        ? {
+            status: AvailabilityStatus.BUSY,
+            currentJobId: jobId,
+            onlineSince: current.onlineSince ?? now,
+          }
+        : {
+            status:
+              current.status === AvailabilityStatus.OFFLINE
+                ? AvailabilityStatus.OFFLINE
+                : AvailabilityStatus.ONLINE,
+            currentJobId: null,
+          },
     });
     return this.toDto(await this.loadPartner(partnerId));
   }
 
   /** Spec §135 — the server decides: stored ONLINE only counts with a fresh heartbeat. */
   async isEffectivelyOnline(partnerId: string): Promise<boolean> {
-    const row = await this.prisma.partnerAvailability.findUnique({ where: { partnerId }, select: { status: true, lastHeartbeatAt: true } });
+    const row = await this.prisma.partnerAvailability.findUnique({
+      where: { partnerId },
+      select: { status: true, lastHeartbeatAt: true },
+    });
     if (!row || row.status !== AvailabilityStatus.ONLINE || !row.lastHeartbeatAt) return false;
     const offlineAfter = await this.config.getNumber(CONFIG_KEYS.HEARTBEAT_OFFLINE_AFTER_S);
     return Date.now() - row.lastHeartbeatAt.getTime() <= offlineAfter * 1000;
@@ -202,9 +267,12 @@ export class PartnerAvailabilityService {
   /* ------------------------------------------------------------- helpers */
 
   /** Document types the partner must keep valid, derived from the categories they selected. */
-  static requiredDocumentTypes(partner: { categories: Array<{ category: { requiredDocumentTypes: DocumentType[] } }> }): DocumentType[] {
+  static requiredDocumentTypes(partner: {
+    categories: Array<{ category: { requiredDocumentTypes: DocumentType[] } }>;
+  }): DocumentType[] {
     const types = new Set<DocumentType>();
-    for (const link of partner.categories) for (const type of link.category.requiredDocumentTypes) types.add(type);
+    for (const link of partner.categories)
+      for (const type of link.category.requiredDocumentTypes) types.add(type);
     return [...types];
   }
 
@@ -220,34 +288,64 @@ export class PartnerAvailabilityService {
     const expired = new Set<DocumentType>();
     for (const doc of partner.documents) {
       if (!required.has(doc.type)) continue;
-      if (doc.status === DocumentStatus.EXPIRED || (doc.expiresAt !== null && doc.expiresAt.getTime() < at.getTime())) expired.add(doc.type);
+      if (
+        doc.status === DocumentStatus.EXPIRED ||
+        (doc.expiresAt !== null && doc.expiresAt.getTime() < at.getTime())
+      )
+        expired.add(doc.type);
     }
     return [...expired];
   }
 
-  private assertCanGoOnline(partner: PartnerRow, activeRoles: PartnerRoleType[], activeVehicleId: string | null): void {
+  private assertCanGoOnline(
+    partner: PartnerRow,
+    activeRoles: PartnerRoleType[],
+    activeVehicleId: string | null,
+  ): void {
     if (partner.verificationStatus !== VerificationStatus.APPROVED) {
-      throw AppException.forbidden('Your partner account is not approved yet', ErrorCode.PARTNER_NOT_APPROVED);
+      throw AppException.forbidden(
+        'Your partner account is not approved yet',
+        ErrorCode.PARTNER_NOT_APPROVED,
+      );
     }
     if (partner.suspendedUntil && partner.suspendedUntil.getTime() > Date.now()) {
-      throw AppException.forbidden('Your partner account is suspended', ErrorCode.PARTNER_NOT_APPROVED);
+      throw AppException.forbidden(
+        'Your partner account is suspended',
+        ErrorCode.PARTNER_NOT_APPROVED,
+      );
     }
     const expired = PartnerAvailabilityService.expiredRequiredDocuments(partner);
     if (expired.length) {
-      throw AppException.badRequest(ErrorCode.PARTNER_NOT_APPROVED, `Renew your expired documents: ${expired.join(', ')}`, { expiredDocumentTypes: expired });
+      throw AppException.badRequest(
+        ErrorCode.PARTNER_NOT_APPROVED,
+        `Renew your expired documents: ${expired.join(', ')}`,
+        { expiredDocumentTypes: expired },
+      );
     }
     if (!activeRoles.length) {
-      throw AppException.validation([{ field: 'activeRoles', message: 'choose at least one role to work as' }]);
+      throw AppException.validation([
+        { field: 'activeRoles', message: 'choose at least one role to work as' },
+      ]);
     }
     const needsVehicle = activeRoles.filter((r) => VEHICLE_REQUIRED_ROLES.includes(r));
     if (!needsVehicle.length) return;
     if (!activeVehicleId) {
-      throw AppException.badRequest(ErrorCode.PARTNER_NOT_APPROVED, `Select an approved vehicle to work as ${needsVehicle.join(', ')}`);
+      throw AppException.badRequest(
+        ErrorCode.PARTNER_NOT_APPROVED,
+        `Select an approved vehicle to work as ${needsVehicle.join(', ')}`,
+      );
     }
     // A vehicle sent with the request was already verified against the fleet; the stored one is checked here.
     const stored = partner.activeVehicle;
-    if (stored && stored.id === activeVehicleId && (!stored.isActive || stored.verificationStatus !== VerificationStatus.APPROVED)) {
-      throw AppException.badRequest(ErrorCode.PARTNER_NOT_APPROVED, 'Your active vehicle is not approved');
+    if (
+      stored &&
+      stored.id === activeVehicleId &&
+      (!stored.isActive || stored.verificationStatus !== VerificationStatus.APPROVED)
+    ) {
+      throw AppException.badRequest(
+        ErrorCode.PARTNER_NOT_APPROVED,
+        'Your active vehicle is not approved',
+      );
     }
   }
 
@@ -266,26 +364,40 @@ export class PartnerAvailabilityService {
   ): LocationSampleInput {
     const ageSeconds = Math.abs(now.getTime() - new Date(sample.timestamp).getTime()) / 1000;
     if (ageSeconds > limits.maxStaleSeconds) {
-      throw AppException.badRequest(ErrorCode.STALE_LOCATION, `Location sample is ${Math.round(ageSeconds)}s off the server clock (max ${limits.maxStaleSeconds}s)`, {
-        ageSeconds: Math.round(ageSeconds),
-        maxStaleSeconds: limits.maxStaleSeconds,
-      });
+      throw AppException.badRequest(
+        ErrorCode.STALE_LOCATION,
+        `Location sample is ${Math.round(ageSeconds)}s off the server clock (max ${limits.maxStaleSeconds}s)`,
+        {
+          ageSeconds: Math.round(ageSeconds),
+          maxStaleSeconds: limits.maxStaleSeconds,
+        },
+      );
     }
     if (sample.accuracy > limits.maxAccuracyMeters) {
-      throw AppException.validation([{ field: 'location.accuracy', message: `accuracy ${Math.round(sample.accuracy)}m exceeds the ${limits.maxAccuracyMeters}m limit` }]);
+      throw AppException.validation([
+        {
+          field: 'location.accuracy',
+          message: `accuracy ${Math.round(sample.accuracy)}m exceeds the ${limits.maxAccuracyMeters}m limit`,
+        },
+      ]);
     }
     return sample;
   }
 
   private async loadPartner(partnerId: string): Promise<PartnerRow> {
-    const partner = await this.prisma.partnerProfile.findUnique({ where: { userId: partnerId }, include: partnerInclude });
+    const partner = await this.prisma.partnerProfile.findUnique({
+      where: { userId: partnerId },
+      include: partnerInclude,
+    });
     if (!partner) throw AppException.notFound('Partner profile', partnerId);
     return partner;
   }
 
   private async toDto(partner: PartnerRow): Promise<PartnerAvailabilityDto> {
     const a = partner.availability;
-    const interval = await this.config.getNumber(a?.currentJobId ? CONFIG_KEYS.TRACKING_INTERVAL_ACTIVE_S : CONFIG_KEYS.HEARTBEAT_INTERVAL_S);
+    const interval = await this.config.getNumber(
+      a?.currentJobId ? CONFIG_KEYS.TRACKING_INTERVAL_ACTIVE_S : CONFIG_KEYS.HEARTBEAT_INTERVAL_S,
+    );
     return {
       partnerId: partner.userId,
       status: a?.status ?? AvailabilityStatus.OFFLINE,
@@ -294,7 +406,10 @@ export class PartnerAvailabilityService {
       currentJobId: a?.currentJobId ?? null,
       lastHeartbeatAt: a?.lastHeartbeatAt ? a.lastHeartbeatAt.toISOString() : null,
       lastLocationAt: a?.lastLocationAt ? a.lastLocationAt.toISOString() : null,
-      lastLocation: a && a.lat !== null && a.lng !== null ? { lat: a.lat.toNumber(), lng: a.lng.toNumber() } : null,
+      lastLocation:
+        a && a.lat !== null && a.lng !== null
+          ? { lat: a.lat.toNumber(), lng: a.lng.toNumber() }
+          : null,
       onlineSince: a?.onlineSince ? a.onlineSince.toISOString() : null,
       heartbeatIntervalSeconds: interval,
     };

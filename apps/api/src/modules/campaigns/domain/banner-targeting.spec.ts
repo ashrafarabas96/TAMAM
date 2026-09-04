@@ -70,7 +70,10 @@ describe('rolloutBucket', () => {
 
   it('gives a different bucket for a different campaign', () => {
     const other = '99999999-9999-4999-8999-999999999999';
-    const sameForAll = Array.from({ length: 50 }, (_, i) => rolloutBucket(CAMPAIGN_ID, `u${i}`) === rolloutBucket(other, `u${i}`));
+    const sameForAll = Array.from(
+      { length: 50 },
+      (_, i) => rolloutBucket(CAMPAIGN_ID, `u${i}`) === rolloutBucket(other, `u${i}`),
+    );
     expect(sameForAll.every(Boolean)).toBe(false);
   });
 });
@@ -92,12 +95,15 @@ describe('isLiveAt', () => {
     expect(isLiveAt(campaign({ endsAt: new Date('2026-03-20T00:00:00.000Z') }), NOW)).toBe(true);
   });
 
-  it.each([CampaignStatus.DRAFT, CampaignStatus.SCHEDULED, CampaignStatus.PAUSED, CampaignStatus.ENDED, CampaignStatus.ARCHIVED])(
-    'rejects status %s',
-    (status) => {
-      expect(isLiveAt(campaign({ status }), NOW)).toBe(false);
-    },
-  );
+  it.each([
+    CampaignStatus.DRAFT,
+    CampaignStatus.SCHEDULED,
+    CampaignStatus.PAUSED,
+    CampaignStatus.ENDED,
+    CampaignStatus.ARCHIVED,
+  ])('rejects status %s', (status) => {
+    expect(isLiveAt(campaign({ status }), NOW)).toBe(false);
+  });
 });
 
 describe('matchesTargeting', () => {
@@ -111,11 +117,18 @@ describe('matchesTargeting', () => {
   });
 
   it('accepts a partner viewer on a partner campaign', () => {
-    expect(matchesTargeting(campaign({ audiences: [BannerAudience.PARTNER] }), viewer({ audience: 'PARTNER' }))).toBe(true);
+    expect(
+      matchesTargeting(
+        campaign({ audiences: [BannerAudience.PARTNER] }),
+        viewer({ audience: 'PARTNER' }),
+      ),
+    ).toBe(true);
   });
 
   it('accepts every audience when the list is empty', () => {
-    expect(matchesTargeting(campaign({ audiences: [] }), viewer({ audience: 'PARTNER' }))).toBe(true);
+    expect(matchesTargeting(campaign({ audiences: [] }), viewer({ audience: 'PARTNER' }))).toBe(
+      true,
+    );
   });
 
   /* ----------------------------------------------------------------- zone */
@@ -137,20 +150,28 @@ describe('matchesTargeting', () => {
 
   /* ------------------------------------------------------------- language */
   it('matches the targeted language', () => {
-    expect(matchesTargeting(campaign({ languages: ['ar'] }), viewer({ language: 'ar' }))).toBe(true);
+    expect(matchesTargeting(campaign({ languages: ['ar'] }), viewer({ language: 'ar' }))).toBe(
+      true,
+    );
   });
 
   it('rejects another language', () => {
-    expect(matchesTargeting(campaign({ languages: ['en'] }), viewer({ language: 'ar' }))).toBe(false);
+    expect(matchesTargeting(campaign({ languages: ['en'] }), viewer({ language: 'ar' }))).toBe(
+      false,
+    );
   });
 
   /* ------------------------------------------------------------- platform */
   it('matches the targeted platform', () => {
-    expect(matchesTargeting(campaign({ platforms: ['android'] }), viewer({ platform: 'android' }))).toBe(true);
+    expect(
+      matchesTargeting(campaign({ platforms: ['android'] }), viewer({ platform: 'android' })),
+    ).toBe(true);
   });
 
   it('rejects another platform', () => {
-    expect(matchesTargeting(campaign({ platforms: ['ios'] }), viewer({ platform: 'android' }))).toBe(false);
+    expect(
+      matchesTargeting(campaign({ platforms: ['ios'] }), viewer({ platform: 'android' })),
+    ).toBe(false);
   });
 
   it('rejects an unknown platform when platforms are targeted', () => {
@@ -161,45 +182,77 @@ describe('matchesTargeting', () => {
 
   /* -------------------------------------------------------- new customers */
   it('accepts a new customer for a new-customers-only campaign', () => {
-    expect(matchesTargeting(campaign({ newCustomersOnly: true }), viewer({ isNewCustomer: true }))).toBe(true);
+    expect(
+      matchesTargeting(campaign({ newCustomersOnly: true }), viewer({ isNewCustomer: true })),
+    ).toBe(true);
   });
 
   it('rejects a returning customer for a new-customers-only campaign', () => {
-    expect(matchesTargeting(campaign({ newCustomersOnly: true }), viewer({ isNewCustomer: false }))).toBe(false);
+    expect(
+      matchesTargeting(campaign({ newCustomersOnly: true }), viewer({ isNewCustomer: false })),
+    ).toBe(false);
   });
 
   /* ------------------------------------------------------- completed jobs */
   it('rejects below minCompletedJobs', () => {
-    expect(matchesTargeting(campaign({ minCompletedJobs: 5 }), viewer({ completedJobs: 4 }))).toBe(false);
+    expect(matchesTargeting(campaign({ minCompletedJobs: 5 }), viewer({ completedJobs: 4 }))).toBe(
+      false,
+    );
   });
 
   it('accepts at minCompletedJobs', () => {
-    expect(matchesTargeting(campaign({ minCompletedJobs: 4 }), viewer({ completedJobs: 4 }))).toBe(true);
+    expect(matchesTargeting(campaign({ minCompletedJobs: 4 }), viewer({ completedJobs: 4 }))).toBe(
+      true,
+    );
   });
 
   it('rejects above maxCompletedJobs', () => {
-    expect(matchesTargeting(campaign({ maxCompletedJobs: 3 }), viewer({ completedJobs: 4 }))).toBe(false);
+    expect(matchesTargeting(campaign({ maxCompletedJobs: 3 }), viewer({ completedJobs: 4 }))).toBe(
+      false,
+    );
   });
 
   it('accepts at maxCompletedJobs', () => {
-    expect(matchesTargeting(campaign({ maxCompletedJobs: 4 }), viewer({ completedJobs: 4 }))).toBe(true);
+    expect(matchesTargeting(campaign({ maxCompletedJobs: 4 }), viewer({ completedJobs: 4 }))).toBe(
+      true,
+    );
   });
 
   it('accepts a zero-job viewer inside an explicit 0..0 band', () => {
-    expect(matchesTargeting(campaign({ minCompletedJobs: 0, maxCompletedJobs: 0 }), viewer({ completedJobs: 0 }))).toBe(true);
+    expect(
+      matchesTargeting(
+        campaign({ minCompletedJobs: 0, maxCompletedJobs: 0 }),
+        viewer({ completedJobs: 0 }),
+      ),
+    ).toBe(true);
   });
 
   /* --------------------------------------------------- service type interest */
   it('matches when the viewer used one of the targeted services', () => {
-    expect(matchesTargeting(campaign({ serviceTypeInterest: [JobType.RIDE, JobType.DELIVERY] }), viewer({ usedJobTypes: [JobType.DELIVERY] }))).toBe(true);
+    expect(
+      matchesTargeting(
+        campaign({ serviceTypeInterest: [JobType.RIDE, JobType.DELIVERY] }),
+        viewer({ usedJobTypes: [JobType.DELIVERY] }),
+      ),
+    ).toBe(true);
   });
 
   it('rejects when the viewer never used any targeted service', () => {
-    expect(matchesTargeting(campaign({ serviceTypeInterest: [JobType.HOME_SERVICE] }), viewer({ usedJobTypes: [JobType.RIDE] }))).toBe(false);
+    expect(
+      matchesTargeting(
+        campaign({ serviceTypeInterest: [JobType.HOME_SERVICE] }),
+        viewer({ usedJobTypes: [JobType.RIDE] }),
+      ),
+    ).toBe(false);
   });
 
   it('rejects a viewer with no history when a service interest is targeted', () => {
-    expect(matchesTargeting(campaign({ serviceTypeInterest: [JobType.RIDE] }), viewer({ usedJobTypes: [] }))).toBe(false);
+    expect(
+      matchesTargeting(
+        campaign({ serviceTypeInterest: [JobType.RIDE] }),
+        viewer({ usedJobTypes: [] }),
+      ),
+    ).toBe(false);
   });
 
   /* ---------------------------------------------------------------- rollout */
@@ -225,7 +278,13 @@ describe('matchesTargeting', () => {
   });
 
   it('ANDs every rule together', () => {
-    const c = campaign({ zoneIds: [ZONE_A], languages: ['ar'], platforms: ['android'], minCompletedJobs: 1, serviceTypeInterest: [JobType.RIDE] });
+    const c = campaign({
+      zoneIds: [ZONE_A],
+      languages: ['ar'],
+      platforms: ['android'],
+      minCompletedJobs: 1,
+      serviceTypeInterest: [JobType.RIDE],
+    });
     expect(matchesTargeting(c, viewer())).toBe(true);
     expect(matchesTargeting(c, viewer({ language: 'en' }))).toBe(false);
     expect(matchesTargeting(c, viewer({ zoneId: ZONE_B }))).toBe(false);

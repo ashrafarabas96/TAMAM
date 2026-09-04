@@ -4,7 +4,12 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 
-import { AccountStatusGuard, JwtAuthGuard, PermissionsGuard, RateLimitGuard } from './common/guards';
+import {
+  AccountStatusGuard,
+  JwtAuthGuard,
+  PermissionsGuard,
+  RateLimitGuard,
+} from './common/guards';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { SerializeInterceptor } from './common/interceptors/serialize.interceptor';
@@ -56,16 +61,48 @@ import { ZonesModule } from './modules/zones/zones.module';
       useFactory: (config: AppConfigService) => ({
         pinoHttp: {
           level: config.env.LOG_LEVEL,
-          transport: config.isProduction || config.isTest ? undefined : { target: 'pino-pretty', options: { singleLine: true, translateTime: 'HH:MM:ss' } },
-          genReqId: (req) => (req as { id?: string }).id ?? req.headers['x-request-id'] ?? 'unknown',
+          transport:
+            config.isProduction || config.isTest
+              ? undefined
+              : { target: 'pino-pretty', options: { singleLine: true, translateTime: 'HH:MM:ss' } },
+          genReqId: (req) =>
+            (req as { id?: string }).id ?? req.headers['x-request-id'] ?? 'unknown',
           customProps: (req) => ({ requestId: (req as { id?: string }).id }),
-          autoLogging: { ignore: (req) => (req.url ?? '').startsWith('/health') || (req.url ?? '').startsWith('/metrics') },
+          autoLogging: {
+            ignore: (req) =>
+              (req.url ?? '').startsWith('/health') || (req.url ?? '').startsWith('/metrics'),
+          },
           // Never log secrets (spec §90).
           redact: {
-            paths: ['req.headers.authorization', 'req.headers.cookie', 'req.body.code', 'req.body.password', 'req.body.currentPassword', 'req.body.newPassword', 'req.body.refreshToken', 'req.body.tripPin', 'req.body.pickupOtp', 'req.body.deliveryOtp', 'req.body.iban', 'res.headers["set-cookie"]'],
+            paths: [
+              'req.headers.authorization',
+              'req.headers.cookie',
+              'req.body.code',
+              'req.body.password',
+              'req.body.currentPassword',
+              'req.body.newPassword',
+              'req.body.refreshToken',
+              'req.body.tripPin',
+              'req.body.pickupOtp',
+              'req.body.deliveryOtp',
+              'req.body.iban',
+              'res.headers["set-cookie"]',
+            ],
             censor: '[REDACTED]',
           },
-          serializers: { req: (req: { id: string; method: string; url: string; headers: Record<string, string> }) => ({ id: req.id, method: req.method, url: req.url, userAgent: req.headers['user-agent'] }) },
+          serializers: {
+            req: (req: {
+              id: string;
+              method: string;
+              url: string;
+              headers: Record<string, string>;
+            }) => ({
+              id: req.id,
+              method: req.method,
+              url: req.url,
+              userAgent: req.headers['user-agent'],
+            }),
+          },
         },
       }),
     }),

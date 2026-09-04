@@ -44,7 +44,16 @@ interface TicketState {
   closedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  attachments: Array<{ messageId: string | null; media: { bucket: string; objectKey: string; isPublic: boolean; mediumKey: string | null; thumbnailKey: string | null } }>;
+  attachments: Array<{
+    messageId: string | null;
+    media: {
+      bucket: string;
+      objectKey: string;
+      isPublic: boolean;
+      mediumKey: string | null;
+      thumbnailKey: string | null;
+    };
+  }>;
   messages: Array<{
     id: string;
     ticketId: string;
@@ -53,7 +62,15 @@ interface TicketState {
     isInternal: boolean;
     createdAt: Date;
     author: { fullName: string | null };
-    attachments: Array<{ media: { bucket: string; objectKey: string; isPublic: boolean; mediumKey: string | null; thumbnailKey: string | null } }>;
+    attachments: Array<{
+      media: {
+        bucket: string;
+        objectKey: string;
+        isPublic: boolean;
+        mediumKey: string | null;
+        thumbnailKey: string | null;
+      };
+    }>;
   }>;
 }
 
@@ -98,7 +115,12 @@ function principal(overrides: Partial<RequestUser> = {}): RequestUser {
 }
 
 const agent = (): RequestUser =>
-  principal({ id: AGENT_ID, customerId: undefined, roles: [UserRole.SUPPORT], permissions: [Permission.SUPPORT_READ, Permission.SUPPORT_MANAGE] });
+  principal({
+    id: AGENT_ID,
+    customerId: undefined,
+    roles: [UserRole.SUPPORT],
+    permissions: [Permission.SUPPORT_READ, Permission.SUPPORT_MANAGE],
+  });
 
 function buildHarness(options: { ticket?: TicketState } = {}) {
   const ticket = options.ticket ?? ticketState();
@@ -106,7 +128,13 @@ function buildHarness(options: { ticket?: TicketState } = {}) {
   const createdTickets: Array<Record<string, unknown>> = [];
   const attachments: Array<Record<string, unknown>> = [];
 
-  const job = { id: JOB_ID, customerId: CUSTOMER_ID, partnerId: PARTNER_ID, status: JobStatus.COMPLETED, zoneId: ZONE_ID };
+  const job = {
+    id: JOB_ID,
+    customerId: CUSTOMER_ID,
+    partnerId: PARTNER_ID,
+    status: JobStatus.COMPLETED,
+    zoneId: ZONE_ID,
+  };
 
   const supportTicketCreate = jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
     createdTickets.push(data);
@@ -152,7 +180,9 @@ function buildHarness(options: { ticket?: TicketState } = {}) {
     },
     supportMessage: {
       create: supportMessageCreate,
-      findUniqueOrThrow: jest.fn(async ({ where }: { where: { id: string } }) => ticket.messages.find((m) => m.id === where.id)),
+      findUniqueOrThrow: jest.fn(async ({ where }: { where: { id: string } }) =>
+        ticket.messages.find((m) => m.id === where.id),
+      ),
     },
     supportAttachment: {
       createMany: jest.fn(async ({ data }: { data: Array<Record<string, unknown>> }) => {
@@ -162,27 +192,50 @@ function buildHarness(options: { ticket?: TicketState } = {}) {
     },
     userReport: {
       create: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
-        const row = { id: `ur-${reports.length + 1}`, status: 'OPEN', createdAt: new Date('2026-04-01T09:00:00.000Z'), ...data };
+        const row = {
+          id: `ur-${reports.length + 1}`,
+          status: 'OPEN',
+          createdAt: new Date('2026-04-01T09:00:00.000Z'),
+          ...data,
+        };
         reports.push(row);
         return row;
       }),
       findMany: jest.fn(async () => reports),
     },
-    user: { findUnique: jest.fn(async () => ({ id: AGENT_ID, accountStatus: AccountStatus.ACTIVE })) },
+    user: {
+      findUnique: jest.fn(async () => ({ id: AGENT_ID, accountStatus: AccountStatus.ACTIVE })),
+    },
     nextCounter: jest.fn(async () => 1n),
     $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
   } as unknown as PrismaService;
 
   const assertOwnedReady = jest.fn(async () => undefined);
   const media = { assertOwnedReady } as unknown as MediaService;
-  const mediaUrls = { urlFor: jest.fn(() => '/api/v1/media/key/view') } as unknown as MediaUrlService;
+  const mediaUrls = {
+    urlFor: jest.fn(() => '/api/v1/media/key/view'),
+  } as unknown as MediaUrlService;
   const notify = jest.fn(async () => undefined);
   const notifications = { notify } as unknown as NotificationsService;
   const record = jest.fn(async () => undefined);
   const audit = { record } as unknown as AuditService;
 
   const service = new SupportService(prisma, media, mediaUrls, notifications, audit);
-  return { service, ticket, reports, createdTickets, attachments, mocks: { supportTicketCreate, supportTicketUpdate, supportMessageCreate, notify, record, assertOwnedReady } };
+  return {
+    service,
+    ticket,
+    reports,
+    createdTickets,
+    attachments,
+    mocks: {
+      supportTicketCreate,
+      supportTicketUpdate,
+      supportMessageCreate,
+      notify,
+      record,
+      assertOwnedReady,
+    },
+  };
 }
 
 describe('support domain rules', () => {
@@ -197,10 +250,22 @@ describe('support domain rules', () => {
   });
 
   it('routes unsafe driving and harassment to a CRITICAL safety ticket', () => {
-    expect(routeReport('UNSAFE_DRIVING', true)).toEqual({ category: TicketCategory.SAFETY, priority: TicketPriority.CRITICAL });
-    expect(routeReport('HARASSMENT', false)).toEqual({ category: TicketCategory.SAFETY, priority: TicketPriority.CRITICAL });
-    expect(routeReport('OVERCHARGE', true)).toEqual({ category: TicketCategory.PARTNER_BEHAVIOUR, priority: TicketPriority.HIGH });
-    expect(routeReport('NO_SHOW', false)).toEqual({ category: TicketCategory.CUSTOMER_BEHAVIOUR, priority: TicketPriority.HIGH });
+    expect(routeReport('UNSAFE_DRIVING', true)).toEqual({
+      category: TicketCategory.SAFETY,
+      priority: TicketPriority.CRITICAL,
+    });
+    expect(routeReport('HARASSMENT', false)).toEqual({
+      category: TicketCategory.SAFETY,
+      priority: TicketPriority.CRITICAL,
+    });
+    expect(routeReport('OVERCHARGE', true)).toEqual({
+      category: TicketCategory.PARTNER_BEHAVIOUR,
+      priority: TicketPriority.HIGH,
+    });
+    expect(routeReport('NO_SHOW', false)).toEqual({
+      category: TicketCategory.CUSTOMER_BEHAVIOUR,
+      priority: TicketPriority.HIGH,
+    });
   });
 
   it('never lets a closed ticket move again', () => {
@@ -226,14 +291,22 @@ describe('SupportService.createTicket', () => {
 
     expect(dto.number).toMatch(/^TK-\d{4}-000001$/);
     expect(mocks.assertOwnedReady).toHaveBeenCalledWith(CUSTOMER_ID, [mediaId], ['SUPPORT']);
-    expect(createdTickets[0]).toMatchObject({ raisedByRole: UserRole.CUSTOMER, priority: TicketPriority.NORMAL });
+    expect(createdTickets[0]).toMatchObject({
+      raisedByRole: UserRole.CUSTOMER,
+      priority: TicketPriority.NORMAL,
+    });
     expect(dto.customerId).toBe(CUSTOMER_ID);
     expect(dto.partnerId).toBeNull();
   });
 
   it('refuses a ticket about a job the user cannot view', async () => {
     const { service } = buildHarness();
-    const outsider = principal({ id: AGENT_ID, customerId: AGENT_ID, roles: [UserRole.CUSTOMER], permissions: [] });
+    const outsider = principal({
+      id: AGENT_ID,
+      customerId: AGENT_ID,
+      roles: [UserRole.CUSTOMER],
+      permissions: [],
+    });
 
     await expect(
       service.createTicket(outsider, {
@@ -251,19 +324,31 @@ describe('SupportService.addMessage', () => {
   it('records the first response and puts an agent reply into WAITING_USER', async () => {
     const { service, ticket, mocks } = buildHarness();
 
-    await service.addMessage(agent(), TICKET_ID, { text: 'We are looking into it.', attachmentMediaIds: [], internal: false });
+    await service.addMessage(agent(), TICKET_ID, {
+      text: 'We are looking into it.',
+      attachmentMediaIds: [],
+      internal: false,
+    });
 
     expect(ticket.status).toBe(TicketStatus.WAITING_USER);
     expect(ticket.firstResponseAt).toBeInstanceOf(Date);
     expect(mocks.notify).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: CUSTOMER_ID, event: NotificationEvent.SUPPORT_REPLY, vars: { ticketNumber: 'TK-2604-000001' } }),
+      expect.objectContaining({
+        userId: CUSTOMER_ID,
+        event: NotificationEvent.SUPPORT_REPLY,
+        vars: { ticketNumber: 'TK-2604-000001' },
+      }),
     );
   });
 
   it('keeps an internal note invisible and does not notify the user', async () => {
     const { service, ticket, mocks } = buildHarness();
 
-    const message = await service.addMessage(agent(), TICKET_ID, { text: 'Refund pre-approved by finance.', attachmentMediaIds: [], internal: true });
+    const message = await service.addMessage(agent(), TICKET_ID, {
+      text: 'Refund pre-approved by finance.',
+      attachmentMediaIds: [],
+      internal: true,
+    });
 
     expect(message.internal).toBe(true);
     expect(ticket.status).toBe(TicketStatus.IN_PROGRESS);
@@ -274,24 +359,42 @@ describe('SupportService.addMessage', () => {
   it('ignores the internal flag when the user sets it', async () => {
     const { service } = buildHarness();
 
-    const message = await service.addMessage(principal(), TICKET_ID, { text: 'Any news?', attachmentMediaIds: [], internal: true });
+    const message = await service.addMessage(principal(), TICKET_ID, {
+      text: 'Any news?',
+      attachmentMediaIds: [],
+      internal: true,
+    });
 
     expect(message.internal).toBe(false);
     expect(message.authorRole).toBe('USER');
   });
 
   it('reopens a resolved ticket when the user replies', async () => {
-    const { service, ticket } = buildHarness({ ticket: ticketState({ status: TicketStatus.RESOLVED, resolvedAt: new Date() }) });
+    const { service, ticket } = buildHarness({
+      ticket: ticketState({ status: TicketStatus.RESOLVED, resolvedAt: new Date() }),
+    });
 
-    await service.addMessage(principal(), TICKET_ID, { text: 'This is still happening.', attachmentMediaIds: [], internal: false });
+    await service.addMessage(principal(), TICKET_ID, {
+      text: 'This is still happening.',
+      attachmentMediaIds: [],
+      internal: false,
+    });
 
     expect(ticket.status).toBe(TicketStatus.IN_PROGRESS);
   });
 
   it('refuses to write into a closed ticket', async () => {
-    const { service } = buildHarness({ ticket: ticketState({ status: TicketStatus.CLOSED, closedAt: new Date() }) });
+    const { service } = buildHarness({
+      ticket: ticketState({ status: TicketStatus.CLOSED, closedAt: new Date() }),
+    });
 
-    await expect(service.addMessage(principal(), TICKET_ID, { text: 'Hello?', attachmentMediaIds: [], internal: false })).rejects.toMatchObject({
+    await expect(
+      service.addMessage(principal(), TICKET_ID, {
+        text: 'Hello?',
+        attachmentMediaIds: [],
+        internal: false,
+      }),
+    ).rejects.toMatchObject({
       code: ErrorCode.CONFLICT,
     });
   });
@@ -300,7 +403,13 @@ describe('SupportService.addMessage', () => {
     const { service } = buildHarness();
     const stranger = principal({ id: PARTNER_ID, customerId: PARTNER_ID });
 
-    await expect(service.addMessage(stranger, TICKET_ID, { text: 'Hi', attachmentMediaIds: [], internal: false })).rejects.toMatchObject({
+    await expect(
+      service.addMessage(stranger, TICKET_ID, {
+        text: 'Hi',
+        attachmentMediaIds: [],
+        internal: false,
+      }),
+    ).rejects.toMatchObject({
       code: ErrorCode.NOT_FOUND,
     });
   });
@@ -317,7 +426,11 @@ describe('SupportService.report', () => {
       attachmentMediaIds: [],
     });
 
-    expect(createdTickets[0]).toMatchObject({ category: TicketCategory.SAFETY, priority: TicketPriority.CRITICAL, subject: 'REPORT:UNSAFE_DRIVING' });
+    expect(createdTickets[0]).toMatchObject({
+      category: TicketCategory.SAFETY,
+      priority: TicketPriority.CRITICAL,
+      subject: 'REPORT:UNSAFE_DRIVING',
+    });
     expect(result.report.reportedId).toBe(PARTNER_ID);
     expect(result.report.ticketId).toBe(TICKET_ID);
     expect(reports).toHaveLength(1);
@@ -325,33 +438,55 @@ describe('SupportService.report', () => {
 
   it('reports the customer when the partner is the reporter', async () => {
     const { service, createdTickets } = buildHarness();
-    const reportingPartner = principal({ id: PARTNER_ID, customerId: undefined, partnerId: PARTNER_ID, roles: [UserRole.PARTNER] });
+    const reportingPartner = principal({
+      id: PARTNER_ID,
+      customerId: undefined,
+      partnerId: PARTNER_ID,
+      roles: [UserRole.PARTNER],
+    });
 
-    const result = await service.report(reportingPartner, { jobId: JOB_ID, reason: 'NO_SHOW', attachmentMediaIds: [] });
+    const result = await service.report(reportingPartner, {
+      jobId: JOB_ID,
+      reason: 'NO_SHOW',
+      attachmentMediaIds: [],
+    });
 
     expect(result.report.reportedId).toBe(CUSTOMER_ID);
-    expect(createdTickets[0]).toMatchObject({ category: TicketCategory.CUSTOMER_BEHAVIOUR, raisedByRole: UserRole.PARTNER });
+    expect(createdTickets[0]).toMatchObject({
+      category: TicketCategory.CUSTOMER_BEHAVIOUR,
+      raisedByRole: UserRole.PARTNER,
+    });
   });
 });
 
 describe('SupportService.update', () => {
   it('stamps resolvedAt and writes an audit entry', async () => {
-    const { service, ticket, mocks } = buildHarness({ ticket: ticketState({ status: TicketStatus.IN_PROGRESS }) });
+    const { service, ticket, mocks } = buildHarness({
+      ticket: ticketState({ status: TicketStatus.IN_PROGRESS }),
+    });
 
     await service.update(TICKET_ID, { status: TicketStatus.RESOLVED }, agent(), 'req-1');
 
     expect(ticket.status).toBe(TicketStatus.RESOLVED);
     expect(ticket.resolvedAt).toBeInstanceOf(Date);
     expect(mocks.record).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'support_ticket.update', entity: 'support_ticket', entityId: TICKET_ID }),
+      expect.objectContaining({
+        action: 'support_ticket.update',
+        entity: 'support_ticket',
+        entityId: TICKET_ID,
+      }),
       expect.anything(),
     );
   });
 
   it('rejects an impossible transition', async () => {
-    const { service } = buildHarness({ ticket: ticketState({ status: TicketStatus.CLOSED, closedAt: new Date() }) });
+    const { service } = buildHarness({
+      ticket: ticketState({ status: TicketStatus.CLOSED, closedAt: new Date() }),
+    });
 
-    await expect(service.update(TICKET_ID, { status: TicketStatus.OPEN }, agent(), 'req-2')).rejects.toMatchObject({
+    await expect(
+      service.update(TICKET_ID, { status: TicketStatus.OPEN }, agent(), 'req-2'),
+    ).rejects.toMatchObject({
       code: ErrorCode.INVALID_STATE_TRANSITION,
     });
   });

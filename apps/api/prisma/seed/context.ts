@@ -35,7 +35,9 @@ export class SeedSummary {
 
   render(): string {
     const width = Math.max(...[...this.counters.keys()].map((k) => k.length), 10);
-    const rows = [...this.counters.entries()].map(([label, value]) => `  ${label.padEnd(width)}  ${String(value).padStart(6)}`);
+    const rows = [...this.counters.entries()].map(
+      ([label, value]) => `  ${label.padEnd(width)}  ${String(value).padStart(6)}`,
+    );
     return [...rows, '', ...this.notes.map((n) => `  • ${n}`)].join('\n');
   }
 }

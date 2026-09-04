@@ -16,7 +16,8 @@ export function decodeCursor(cursor?: string | null): CursorPayload | null {
   if (!cursor) return null;
   try {
     const parsed = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')) as CursorPayload;
-    if (typeof parsed.createdAt !== 'string' || typeof parsed.id !== 'string') throw new Error('bad cursor');
+    if (typeof parsed.createdAt !== 'string' || typeof parsed.id !== 'string')
+      throw new Error('bad cursor');
     if (Number.isNaN(Date.parse(parsed.createdAt))) throw new Error('bad cursor');
     return parsed;
   } catch {
@@ -25,13 +26,20 @@ export function decodeCursor(cursor?: string | null): CursorPayload | null {
 }
 
 /** Builds a page from `limit + 1` rows fetched in (createdAt desc, id desc) order. */
-export function buildPage<T extends { id: string; createdAt: Date }, R>(rows: T[], limit: number, map: (row: T) => R): Page<R> {
+export function buildPage<T extends { id: string; createdAt: Date }, R>(
+  rows: T[],
+  limit: number,
+  map: (row: T) => R,
+): Page<R> {
   const hasMore = rows.length > limit;
   const slice = hasMore ? rows.slice(0, limit) : rows;
   const last = slice[slice.length - 1];
   return {
     items: slice.map(map),
-    nextCursor: hasMore && last ? encodeCursor({ createdAt: last.createdAt.toISOString(), id: last.id }) : null,
+    nextCursor:
+      hasMore && last
+        ? encodeCursor({ createdAt: last.createdAt.toISOString(), id: last.id })
+        : null,
   };
 }
 

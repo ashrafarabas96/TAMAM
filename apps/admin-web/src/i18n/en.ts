@@ -17,7 +17,8 @@ export const en = {
   'account.passwordChanged': 'Password changed',
   'account.passwordChangedHint': 'Sign in again with the new password.',
   'account.passwordHint': 'You will be signed out on every device after the change.',
-  'account.passwordRules': 'At least 12 characters with an uppercase letter, a lowercase letter and a digit.',
+  'account.passwordRules':
+    'At least 12 characters with an uppercase letter, a lowercase letter and a digit.',
   'account.platform': 'Platform',
   'account.profile': 'Profile',
   'account.revoke': 'Revoke',
@@ -103,7 +104,8 @@ export const en = {
   'campaigns.priority': 'Priority',
   'campaigns.priorityHint': 'Higher priority is shown first inside a placement.',
   'campaigns.publishedAt': 'Published',
-  'campaigns.reuploadRequired': 'The API returns signed image URLs, not media ids — re-upload both creatives before saving.',
+  'campaigns.reuploadRequired':
+    'The API returns signed image URLs, not media ids — re-upload both creatives before saving.',
   'campaigns.reviewHint': 'Exactly how the banners will render in the apps.',
   'campaigns.rolloutHint': 'Deterministic per user id.',
   'campaigns.rolloutPercent': 'Rollout %',
@@ -313,7 +315,7 @@ export const en = {
   'dispatch.respondedAt': 'Responded',
   'dispatch.score': 'Score',
   'dispatch.sent': 'sent',
-  'dispatch.subtitle': 'Jobs that need a dispatcher\'s attention, refreshed every 15 seconds.',
+  'dispatch.subtitle': "Jobs that need a dispatcher's attention, refreshed every 15 seconds.",
   'dispatch.title': 'Dispatcher console',
   'dispatch.waiting': 'Waiting',
   'dispatch.wave': 'Wave',
@@ -618,7 +620,8 @@ export const en = {
   'errorCode.FEATURE_DISABLED': 'This feature is disabled.',
   'errorCode.FORBIDDEN': 'You do not have permission for this action.',
   'errorCode.IDEMPOTENCY_KEY_REQUIRED': 'This action requires an idempotency key.',
-  'errorCode.IDEMPOTENCY_KEY_REUSED': 'This idempotency key was already used with a different payload.',
+  'errorCode.IDEMPOTENCY_KEY_REUSED':
+    'This idempotency key was already used with a different payload.',
   'errorCode.INSUFFICIENT_WALLET_BALANCE': 'Insufficient wallet balance.',
   'errorCode.INTERNAL_ERROR': 'Something went wrong on the server.',
   'errorCode.INVALID_STATE_TRANSITION': 'That status change is not allowed from the current state.',
@@ -701,7 +704,8 @@ export const en = {
   /* ---- jobs ---- */
   'jobs.activeQuote': 'Active quote',
   'jobs.adminTransition': 'Force status change',
-  'jobs.adminTransitionHint': 'Current status: {status}. Only transitions the state machine allows for an admin are listed.',
+  'jobs.adminTransitionHint':
+    'Current status: {status}. Only transitions the state machine allows for an admin are listed.',
   'jobs.allJobs': 'All jobs',
   'jobs.arrivedAt': 'Arrived',
   'jobs.assignments': 'Assignments',
@@ -783,7 +787,8 @@ export const en = {
   'liveMap.title': 'Live map',
   /* ---- login ---- */
   'login.failed': 'Sign-in failed. Check your credentials.',
-  'login.heroSubtitle': 'Live map, dispatch, catalog, pricing, campaigns and finance — Arabic-first.',
+  'login.heroSubtitle':
+    'Live map, dispatch, catalog, pricing, campaigns and finance — Arabic-first.',
   'login.heroTitle': 'One console for every TAMAM operation.',
   'login.password': 'Password',
   'login.securityNote': 'Access is permission-scoped and every action is audited.',
@@ -924,7 +929,8 @@ export const en = {
   'pricing.freeWaitingMinutes': 'Free waiting (min)',
   'pricing.gracePeriod': 'Grace period (s)',
   'pricing.homeServiceRule': 'Home service pricing',
-  'pricing.homeServiceRuleHint': 'Inspection fee and urgency surcharges; the quote carries the rest.',
+  'pricing.homeServiceRuleHint':
+    'Inspection fee and urgency surcharges; the quote carries the rest.',
   'pricing.inspectionWaived': 'Inspection fee waived when the quote is approved',
   'pricing.minimumFare': 'Minimum fare',
   'pricing.multiplier': 'Multiplier',
@@ -949,7 +955,8 @@ export const en = {
   'pricing.resetRuleDefaults': 'Reset rule fields to defaults',
   'pricing.rideRule': 'Ride pricing',
   'pricing.rideRuleHint': 'Base + distance + time with a minimum fare.',
-  'pricing.ruleDialogHint': 'The rule shape is validated against the job type by the shared schema.',
+  'pricing.ruleDialogHint':
+    'The rule shape is validated against the job type by the shared schema.',
   'pricing.ruleJson': 'Rule',
   'pricing.ruleSaved': 'Rule saved',
   'pricing.rules': 'Rules',
@@ -1074,7 +1081,8 @@ export const en = {
   'services.categories': 'Categories',
   'services.category': 'Category',
   'services.categoryCreated': 'Category created',
-  'services.categoryHint': 'Everything a customer can order and what a partner must have to serve it.',
+  'services.categoryHint':
+    'Everything a customer can order and what a partner must have to serve it.',
   'services.categoryUpdated': 'Category updated',
   'services.code': 'Code',
   'services.codeHint': 'UPPER_SNAKE, stable across releases.',
@@ -1114,7 +1122,8 @@ export const en = {
   'services.options': 'Options',
   'services.packageCategories': 'Package categories',
   'services.pricingFields': 'Prices',
-  'services.pricingFieldsHint': 'Only the fields matching the pricing method are used by the engine.',
+  'services.pricingFieldsHint':
+    'Only the fields matching the pricing method are used by the engine.',
   'services.pricingMethod': 'Pricing method',
   'services.prohibited': 'Prohibited',
   'services.requiredDocuments': 'Required documents',
@@ -1245,7 +1254,8 @@ export const en = {
   'zones.operatingHoursHint': 'Times are interpreted in the zone timezone.',
   'zones.polygon': 'Polygon',
   'zones.polygonEditor': 'Polygon editor',
-  'zones.polygonHint': 'Click to add a vertex, drag a vertex to move it. The ring closes automatically.',
+  'zones.polygonHint':
+    'Click to add a vertex, drag a vertex to move it. The ring closes automatically.',
   'zones.rules': 'Service rules',
   'zones.subtitle': 'Polygons, operating hours and per-zone service rules.',
   'zones.timezone': 'Timezone',

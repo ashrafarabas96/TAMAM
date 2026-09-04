@@ -60,14 +60,20 @@ export function emptyCounters(): RiskCounters {
 }
 
 /** Runs every rule and returns the findings, highest score first. */
-export function evaluateRiskRules(counters: RiskCounters, thresholds: RiskThresholds): RiskFinding[] {
+export function evaluateRiskRules(
+  counters: RiskCounters,
+  thresholds: RiskThresholds,
+): RiskFinding[] {
   const findings: RiskFinding[] = [];
 
   if (counters.cancellationsToday > thresholds.maxCancellationsPerDay) {
     findings.push({
       signal: RiskSignal.EXCESSIVE_CANCELLATIONS,
       score: ratioScore(counters.cancellationsToday, thresholds.maxCancellationsPerDay),
-      details: { cancellationsToday: counters.cancellationsToday, threshold: thresholds.maxCancellationsPerDay },
+      details: {
+        cancellationsToday: counters.cancellationsToday,
+        threshold: thresholds.maxCancellationsPerDay,
+      },
     });
   }
 
@@ -75,7 +81,10 @@ export function evaluateRiskRules(counters: RiskCounters, thresholds: RiskThresh
     findings.push({
       signal: RiskSignal.REPEATED_FAILED_PAYMENTS,
       score: ratioScore(counters.failedPaymentsToday, thresholds.maxFailedPaymentsPerDay),
-      details: { failedPaymentsToday: counters.failedPaymentsToday, threshold: thresholds.maxFailedPaymentsPerDay },
+      details: {
+        failedPaymentsToday: counters.failedPaymentsToday,
+        threshold: thresholds.maxFailedPaymentsPerDay,
+      },
     });
   }
 
@@ -83,15 +92,24 @@ export function evaluateRiskRules(counters: RiskCounters, thresholds: RiskThresh
     findings.push({
       signal: RiskSignal.PROMO_ABUSE,
       score: ratioScore(counters.promoRedemptionsToday, thresholds.maxPromoRedemptionsPerDay),
-      details: { promoRedemptionsToday: counters.promoRedemptionsToday, threshold: thresholds.maxPromoRedemptionsPerDay },
+      details: {
+        promoRedemptionsToday: counters.promoRedemptionsToday,
+        threshold: thresholds.maxPromoRedemptionsPerDay,
+      },
     });
   }
 
-  if (counters.maxObservedSpeedKmh !== null && counters.maxObservedSpeedKmh > thresholds.maxSpeedKmh) {
+  if (
+    counters.maxObservedSpeedKmh !== null &&
+    counters.maxObservedSpeedKmh > thresholds.maxSpeedKmh
+  ) {
     findings.push({
       signal: RiskSignal.IMPOSSIBLE_GPS_MOVEMENT,
       score: ratioScore(counters.maxObservedSpeedKmh, thresholds.maxSpeedKmh),
-      details: { observedKmh: Math.round(counters.maxObservedSpeedKmh), threshold: thresholds.maxSpeedKmh },
+      details: {
+        observedKmh: Math.round(counters.maxObservedSpeedKmh),
+        threshold: thresholds.maxSpeedKmh,
+      },
     });
   }
 
@@ -99,7 +117,10 @@ export function evaluateRiskRules(counters: RiskCounters, thresholds: RiskThresh
     findings.push({
       signal: RiskSignal.MULTIPLE_ACCOUNTS,
       score: ratioScore(counters.accountsOnDevice, MULTIPLE_ACCOUNTS_DEVICE_THRESHOLD),
-      details: { accountsOnDevice: counters.accountsOnDevice, threshold: MULTIPLE_ACCOUNTS_DEVICE_THRESHOLD },
+      details: {
+        accountsOnDevice: counters.accountsOnDevice,
+        threshold: MULTIPLE_ACCOUNTS_DEVICE_THRESHOLD,
+      },
     });
   }
 
@@ -107,7 +128,10 @@ export function evaluateRiskRules(counters: RiskCounters, thresholds: RiskThresh
     findings.push({
       signal: RiskSignal.UNUSUAL_REFERRAL_BEHAVIOUR,
       score: ratioScore(counters.referralsFromSameDevice, UNUSUAL_REFERRAL_THRESHOLD),
-      details: { referralsFromSameDevice: counters.referralsFromSameDevice, threshold: UNUSUAL_REFERRAL_THRESHOLD },
+      details: {
+        referralsFromSameDevice: counters.referralsFromSameDevice,
+        threshold: UNUSUAL_REFERRAL_THRESHOLD,
+      },
     });
   }
 

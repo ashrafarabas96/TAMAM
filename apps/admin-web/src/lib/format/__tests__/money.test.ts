@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMinor, formatMoney, formatNumber, formatPercent, majorToMinor, minorToMajor } from '../money';
+import {
+  formatMinor,
+  formatMoney,
+  formatNumber,
+  formatPercent,
+  majorToMinor,
+  minorToMajor,
+} from '../money';
 
 describe('money formatting', () => {
   it('renders ILS with two fraction digits from minor units', () => {
@@ -22,7 +29,9 @@ describe('money formatting', () => {
   });
 
   it('shows an explicit sign when asked', () => {
-    expect(formatMoney({ amount: 500, currency: 'ILS' }, { locale: 'en', signed: true })).toContain('+');
+    expect(formatMoney({ amount: 500, currency: 'ILS' }, { locale: 'en', signed: true })).toContain(
+      '+',
+    );
     expect(formatMoney({ amount: -500, currency: 'ILS' }, { locale: 'en' })).toContain('-');
   });
 

@@ -33,7 +33,9 @@ describe('DataTable', () => {
   });
 
   it('shows the empty state with a custom title when there are no rows', () => {
-    renderWithProviders(<DataTable columns={columns} rows={[]} rowKey={(r) => r.id} emptyTitle="No zones yet" />);
+    renderWithProviders(
+      <DataTable columns={columns} rows={[]} rowKey={(r) => r.id} emptyTitle="No zones yet" />,
+    );
     expect(screen.getByText('No zones yet')).toBeInTheDocument();
     expect(screen.queryByText('Ramallah')).not.toBeInTheDocument();
   });
@@ -46,8 +48,20 @@ describe('DataTable', () => {
 
   it('renders an error state with the api error code and retries', async () => {
     const onRetry = vi.fn();
-    const error = new ApiError(500, { code: 'INTERNAL_ERROR', message: 'boom', requestId: 'req-9' }, 'req-9');
-    renderWithProviders(<DataTable columns={columns} rows={[]} rowKey={(r) => r.id} error={error} onRetry={onRetry} />);
+    const error = new ApiError(
+      500,
+      { code: 'INTERNAL_ERROR', message: 'boom', requestId: 'req-9' },
+      'req-9',
+    );
+    renderWithProviders(
+      <DataTable
+        columns={columns}
+        rows={[]}
+        rowKey={(r) => r.id}
+        error={error}
+        onRetry={onRetry}
+      />,
+    );
     expect(screen.getByRole('alert')).toHaveTextContent('req-9');
     await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(onRetry).toHaveBeenCalledTimes(1);
@@ -55,14 +69,24 @@ describe('DataTable', () => {
 
   it('loads the next keyset page on demand', async () => {
     const onLoadMore = vi.fn();
-    renderWithProviders(<DataTable columns={columns} rows={rows} rowKey={(r) => r.id} hasMore onLoadMore={onLoadMore} />);
+    renderWithProviders(
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(r) => r.id}
+        hasMore
+        onLoadMore={onLoadMore}
+      />,
+    );
     await userEvent.click(screen.getByTestId('load-more'));
     expect(onLoadMore).toHaveBeenCalledTimes(1);
   });
 
   it('activates a row with the keyboard as well as the mouse', async () => {
     const onRowClick = vi.fn();
-    renderWithProviders(<DataTable columns={columns} rows={rows} rowKey={(r) => r.id} onRowClick={onRowClick} />);
+    renderWithProviders(
+      <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} onRowClick={onRowClick} />,
+    );
     await userEvent.click(screen.getByText('Ramallah'));
     expect(onRowClick).toHaveBeenCalledWith(rows[0]);
     await userEvent.tab();

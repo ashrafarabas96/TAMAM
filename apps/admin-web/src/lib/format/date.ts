@@ -9,7 +9,8 @@ export type DateInput = string | number | Date | null | undefined;
 
 export function toDate(value: DateInput): Date | null {
   if (value === null || value === undefined || value === '') return null;
-  const date = typeof value === 'string' ? parseISO(value) : value instanceof Date ? value : new Date(value);
+  const date =
+    typeof value === 'string' ? parseISO(value) : value instanceof Date ? value : new Date(value);
   return isValid(date) ? date : null;
 }
 
@@ -18,8 +19,15 @@ interface DateFormatOptions {
   timeZone?: string;
 }
 
-function intl(locale: 'ar' | 'en', timeZone: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
-  return new Intl.DateTimeFormat(`${LOCALE_TAGS[locale]}-u-nu-latn-ca-gregory`, { timeZone, ...options });
+function intl(
+  locale: 'ar' | 'en',
+  timeZone: string,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat {
+  return new Intl.DateTimeFormat(`${LOCALE_TAGS[locale]}-u-nu-latn-ca-gregory`, {
+    timeZone,
+    ...options,
+  });
 }
 
 /** `12/03/2026 14:05` in the platform timezone (Asia/Jerusalem by default). */
@@ -39,20 +47,32 @@ export function formatDateTime(value: DateInput, options: DateFormatOptions = {}
 export function formatDate(value: DateInput, options: DateFormatOptions = {}): string {
   const date = toDate(value);
   if (!date) return '—';
-  return intl(options.locale ?? 'ar', options.timeZone ?? DEFAULT_TIMEZONE, { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+  return intl(options.locale ?? 'ar', options.timeZone ?? DEFAULT_TIMEZONE, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
 }
 
 export function formatTime(value: DateInput, options: DateFormatOptions = {}): string {
   const date = toDate(value);
   if (!date) return '—';
-  return intl(options.locale ?? 'ar', options.timeZone ?? DEFAULT_TIMEZONE, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(date);
+  return intl(options.locale ?? 'ar', options.timeZone ?? DEFAULT_TIMEZONE, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(date);
 }
 
 /** "5 minutes ago" / "منذ 5 دقائق". */
 export function formatRelative(value: DateInput, locale: 'ar' | 'en' = 'ar'): string {
   const date = toDate(value);
   if (!date) return '—';
-  return formatDistanceToNowStrict(date, { addSuffix: true, locale: locale === 'ar' ? arLocale : enUS });
+  return formatDistanceToNowStrict(date, {
+    addSuffix: true,
+    locale: locale === 'ar' ? arLocale : enUS,
+  });
 }
 
 /** Seconds → `1h 05m` / `4m 12s`. */
@@ -71,17 +91,43 @@ export function formatDuration(totalSeconds: number | null | undefined): string 
 export function toDateTimeLocalValue(value: DateInput, timeZone = DEFAULT_TIMEZONE): string {
   const date = toDate(value);
   if (!date) return '';
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(date);
-  const get = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? '00';
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((p) => p.type === type)?.value ?? '00';
   const hour = get('hour') === '24' ? '00' : get('hour');
   return `${get('year')}-${get('month')}-${get('day')}T${hour}:${get('minute')}`;
 }
 
 /** Offset (minutes) of `timeZone` at the given UTC instant, e.g. 180 for Asia/Jerusalem in summer. */
 export function timeZoneOffsetMinutes(utc: Date, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }).formatToParts(utc);
-  const read = (type: Intl.DateTimeFormatPartTypes): number => Number(parts.find((p) => p.type === type)?.value ?? '0');
-  const asUtc = Date.UTC(read('year'), read('month') - 1, read('day'), read('hour'), read('minute'), read('second'));
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+  }).formatToParts(utc);
+  const read = (type: Intl.DateTimeFormatPartTypes): number =>
+    Number(parts.find((p) => p.type === type)?.value ?? '0');
+  const asUtc = Date.UTC(
+    read('year'),
+    read('month') - 1,
+    read('day'),
+    read('hour'),
+    read('minute'),
+    read('second'),
+  );
   return Math.round((asUtc - utc.getTime()) / 60_000);
 }
 

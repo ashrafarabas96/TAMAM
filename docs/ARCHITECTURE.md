@@ -36,16 +36,16 @@
 
 ### 1.1 Non-negotiable principles (from the master prompt)
 
-| Principle | How it is enforced |
-| --- | --- |
-| Server is the source of truth | Mobile/Admin never compute fares, commission, eligibility or state transitions. All of it lives in `apps/api/src/modules/**/domain`. |
-| Universal Job Engine | One `jobs` table and one `JobStateMachine` for RIDE / DELIVERY / HOME_SERVICE; type-specific behaviour is a **strategy** (`RideStrategy`, `DeliveryStrategy`, `HomeServiceStrategy`). |
+| Principle                      | How it is enforced                                                                                                                                                                     |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Server is the source of truth  | Mobile/Admin never compute fares, commission, eligibility or state transitions. All of it lives in `apps/api/src/modules/**/domain`.                                                   |
+| Universal Job Engine           | One `jobs` table and one `JobStateMachine` for RIDE / DELIVERY / HOME_SERVICE; type-specific behaviour is a **strategy** (`RideStrategy`, `DeliveryStrategy`, `HomeServiceStrategy`).  |
 | Configuration over hard-coding | Service catalog, zones, pricing, commission, cancellation, dispatch waves, feature flags and banners are database rows edited from Admin with validated bounds (`CONFIG_DEFINITIONS`). |
-| Money is exact | BIGINT minor units + ISO currency; double-entry ledger; wallet balance is a cache guarded by a DB trigger; every financial op is idempotent. |
-| Explicit state transitions | `JOB_TRANSITIONS` (shared-types) is the only legal transition table; each transition writes an immutable `job_events` row. |
-| Least privilege | Permissions (not roles) guard every endpoint; object-level authorization (`JobPolicy`, `ChatPolicy`, …) on every sensitive resource; admin map & tracking are permission-scoped. |
-| Provider abstraction | `MapsProvider`, `SmsProvider`, `PushProvider`, `PaymentProvider`, `StorageProvider`, `EmailProvider` interfaces with swappable implementations. |
-| Observability | Structured JSON logs (pino) with `requestId`, Prometheus metrics, health endpoints, error tracking hook, audit log. |
+| Money is exact                 | BIGINT minor units + ISO currency; double-entry ledger; wallet balance is a cache guarded by a DB trigger; every financial op is idempotent.                                           |
+| Explicit state transitions     | `JOB_TRANSITIONS` (shared-types) is the only legal transition table; each transition writes an immutable `job_events` row.                                                             |
+| Least privilege                | Permissions (not roles) guard every endpoint; object-level authorization (`JobPolicy`, `ChatPolicy`, …) on every sensitive resource; admin map & tracking are permission-scoped.       |
+| Provider abstraction           | `MapsProvider`, `SmsProvider`, `PushProvider`, `PaymentProvider`, `StorageProvider`, `EmailProvider` interfaces with swappable implementations.                                        |
+| Observability                  | Structured JSON logs (pino) with `requestId`, Prometheus metrics, health endpoints, error tracking hook, audit log.                                                                    |
 
 ## 2. Repository layout
 
@@ -75,38 +75,38 @@ Shared enums/DTOs are **never** duplicated by hand: TS consumers import `@tamam/
 
 ### 3.1 Module map (`apps/api/src/modules`)
 
-| Module | Responsibility | Depends on |
-| --- | --- | --- |
-| `auth` | Phone OTP, admin email+password (argon2id), JWT access (15 min) + rotating refresh (30 d) with family reuse-detection, device sessions, logout current/all, revocation | users, notifications(sms), config |
-| `users` | User entity, multi-role assignment, profile, push tokens, account status | audit |
-| `rbac` | Roles, permissions, `PermissionsGuard`, `@RequirePermission`, object policies | users |
-| `customers` | Customer profile, saved places, favorites, order history, reorder | catalog, jobs |
-| `partners` | Onboarding (7 steps, resumable), roles, skills, categories, zones, documents, availability/heartbeat, approval workflow, earnings | media, zones, wallet |
-| `vehicles` | Vehicle types (admin), vehicles, photos, documents | partners, media |
-| `catalog` | Service types, categories, subcategories, options, package categories, dynamic form definitions, Arabic search (pg_trgm) | zones, media |
-| `zones` | PostGIS polygons, zone lookup, service/vehicle rules, operating hours, validation on job creation | — |
-| `jobs` | **Universal Job Engine**: creation, `JobStateMachine`, strategies, stops, media, PIN/OTP, timeline, share links, SOS, cancellation policy | pricing, dispatch, zones, catalog, payments, notifications |
-| `dispatch` | Candidate search (PostGIS `ST_DWithin`), scoring, waves (BullMQ delayed jobs), offers, **atomic accept** (`SELECT … FOR UPDATE` + partial unique index + Redis lock), manual assign/reassign, timeouts | jobs, partners, tracking |
-| `tracking` | Socket.IO gateway (`/tracking`), location validation (stale/impossible/accuracy), adaptive intervals, geofence arrival, ETA, retention job | jobs, maps |
-| `pricing` | Rule resolution (zone → vehicle/category → global), estimates (Redis TTL), snapshots, surge, urgency, promo application, final fare, cancellation fee | zones, catalog, promotions, config |
-| `quotes` | Inspection → quote → approval/rejection → change orders, immutable revisions | jobs |
-| `payments` | `PaymentProvider` abstraction (CASH, WALLET, CARD/EXTERNAL via gateway adapters), idempotency, webhooks (signature, dedupe, retry), refunds | wallet, ledger |
-| `wallet` | Customer/partner wallets, top-ups, withdrawals, bank accounts, statements (from ledger) | ledger |
-| `ledger` | Double-entry accounts/transactions/entries, balance recomputation, commission engine, settlement on job completion | config |
-| `promotions` | Promo codes (all rule types), redemption reservation/release, referral programme, fraud checks | jobs, ledger |
-| `campaigns` | **Promotional banners**: campaigns, creatives per language, placements, targeting, scheduling, frequency caps, feed API, impression/click ingestion, attribution, daily stats | media, zones, customers |
-| `notifications` | Unified service, templates AR/EN, channels (push/in-app/SMS/email) behind providers, preferences, broadcast | users, queue |
-| `chat` | Job-scoped chat (customer ↔ assigned partner), delivery/read receipts, rate limits, Socket.IO `/chat` | jobs, media |
-| `ratings` | Bidirectional reviews, integrity rules, aggregate updates | jobs |
-| `support` | Tickets, messages (internal notes), attachments, user reports, SLA timestamps | media |
-| `disputes` | Dispute lifecycle, evidence, decisions → refund + partner adjustment via ledger | payments, ledger |
-| `media` | Upload intents (signed PUT), MIME/extension/size validation, EXIF stripping, thumbnails, signed GET URLs, malware-scan hook | storage provider |
-| `admin` | Ops dashboard, live map (bbox/zone), dispatcher console, customer/partner management, reports & exports (CSV/XLSX), search | most modules (read) |
-| `config` | System configs with bounds, feature flags with rollout rules, cached in Redis, change audit | audit |
-| `audit` | Append-only audit log writer + query API | — |
-| `analytics` | Product events ingestion, KPI materialisation, dashboards data | — |
-| `risk` | Rule-based signals, restrictions (user/partner/device), enforcement hooks | jobs, promotions, payments |
-| `health` | `/health/live`, `/health/ready` (DB, Redis, storage), Prometheus `/metrics` | — |
+| Module          | Responsibility                                                                                                                                                                                         | Depends on                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `auth`          | Phone OTP, admin email+password (argon2id), JWT access (15 min) + rotating refresh (30 d) with family reuse-detection, device sessions, logout current/all, revocation                                 | users, notifications(sms), config                          |
+| `users`         | User entity, multi-role assignment, profile, push tokens, account status                                                                                                                               | audit                                                      |
+| `rbac`          | Roles, permissions, `PermissionsGuard`, `@RequirePermission`, object policies                                                                                                                          | users                                                      |
+| `customers`     | Customer profile, saved places, favorites, order history, reorder                                                                                                                                      | catalog, jobs                                              |
+| `partners`      | Onboarding (7 steps, resumable), roles, skills, categories, zones, documents, availability/heartbeat, approval workflow, earnings                                                                      | media, zones, wallet                                       |
+| `vehicles`      | Vehicle types (admin), vehicles, photos, documents                                                                                                                                                     | partners, media                                            |
+| `catalog`       | Service types, categories, subcategories, options, package categories, dynamic form definitions, Arabic search (pg_trgm)                                                                               | zones, media                                               |
+| `zones`         | PostGIS polygons, zone lookup, service/vehicle rules, operating hours, validation on job creation                                                                                                      | —                                                          |
+| `jobs`          | **Universal Job Engine**: creation, `JobStateMachine`, strategies, stops, media, PIN/OTP, timeline, share links, SOS, cancellation policy                                                              | pricing, dispatch, zones, catalog, payments, notifications |
+| `dispatch`      | Candidate search (PostGIS `ST_DWithin`), scoring, waves (BullMQ delayed jobs), offers, **atomic accept** (`SELECT … FOR UPDATE` + partial unique index + Redis lock), manual assign/reassign, timeouts | jobs, partners, tracking                                   |
+| `tracking`      | Socket.IO gateway (`/tracking`), location validation (stale/impossible/accuracy), adaptive intervals, geofence arrival, ETA, retention job                                                             | jobs, maps                                                 |
+| `pricing`       | Rule resolution (zone → vehicle/category → global), estimates (Redis TTL), snapshots, surge, urgency, promo application, final fare, cancellation fee                                                  | zones, catalog, promotions, config                         |
+| `quotes`        | Inspection → quote → approval/rejection → change orders, immutable revisions                                                                                                                           | jobs                                                       |
+| `payments`      | `PaymentProvider` abstraction (CASH, WALLET, CARD/EXTERNAL via gateway adapters), idempotency, webhooks (signature, dedupe, retry), refunds                                                            | wallet, ledger                                             |
+| `wallet`        | Customer/partner wallets, top-ups, withdrawals, bank accounts, statements (from ledger)                                                                                                                | ledger                                                     |
+| `ledger`        | Double-entry accounts/transactions/entries, balance recomputation, commission engine, settlement on job completion                                                                                     | config                                                     |
+| `promotions`    | Promo codes (all rule types), redemption reservation/release, referral programme, fraud checks                                                                                                         | jobs, ledger                                               |
+| `campaigns`     | **Promotional banners**: campaigns, creatives per language, placements, targeting, scheduling, frequency caps, feed API, impression/click ingestion, attribution, daily stats                          | media, zones, customers                                    |
+| `notifications` | Unified service, templates AR/EN, channels (push/in-app/SMS/email) behind providers, preferences, broadcast                                                                                            | users, queue                                               |
+| `chat`          | Job-scoped chat (customer ↔ assigned partner), delivery/read receipts, rate limits, Socket.IO `/chat`                                                                                                  | jobs, media                                                |
+| `ratings`       | Bidirectional reviews, integrity rules, aggregate updates                                                                                                                                              | jobs                                                       |
+| `support`       | Tickets, messages (internal notes), attachments, user reports, SLA timestamps                                                                                                                          | media                                                      |
+| `disputes`      | Dispute lifecycle, evidence, decisions → refund + partner adjustment via ledger                                                                                                                        | payments, ledger                                           |
+| `media`         | Upload intents (signed PUT), MIME/extension/size validation, EXIF stripping, thumbnails, signed GET URLs, malware-scan hook                                                                            | storage provider                                           |
+| `admin`         | Ops dashboard, live map (bbox/zone), dispatcher console, customer/partner management, reports & exports (CSV/XLSX), search                                                                             | most modules (read)                                        |
+| `config`        | System configs with bounds, feature flags with rollout rules, cached in Redis, change audit                                                                                                            | audit                                                      |
+| `audit`         | Append-only audit log writer + query API                                                                                                                                                               | —                                                          |
+| `analytics`     | Product events ingestion, KPI materialisation, dashboards data                                                                                                                                         | —                                                          |
+| `risk`          | Rule-based signals, restrictions (user/partner/device), enforcement hooks                                                                                                                              | jobs, promotions, payments                                 |
+| `health`        | `/health/live`, `/health/ready` (DB, Redis, storage), Prometheus `/metrics`                                                                                                                            | —                                                          |
 
 ### 3.2 Layering inside a module
 
@@ -132,30 +132,30 @@ Socket.IO namespaces `/tracking`, `/jobs`, `/chat`, `/admin` with JWT handshake 
 
 ### 3.5 Background processing (BullMQ)
 
-| Queue | Jobs |
-| --- | --- |
-| `dispatch` | `wave` (delayed per wave), `offer-expired`, `dispatch-timeout`, `scheduled-job-kickoff` |
-| `notifications` | `send` (per channel, retries with backoff) |
-| `jobs` | `waiting-customer-timeout`, `auto-confirm-work`, `quote-response-timeout`, `share-link-expiry` |
-| `finance` | `settle-job`, `process-withdrawal`, `webhook-process` |
-| `media` | `process-image` (EXIF strip, thumbnails), `scan` |
-| `maintenance` | `expire-otps`, `expire-documents` + reminders, `tracking-retention`, `banner-stats-rollup`, `daily-kpis`, `heartbeat-sweep`, `campaign-scheduler` |
+| Queue           | Jobs                                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dispatch`      | `wave` (delayed per wave), `offer-expired`, `dispatch-timeout`, `scheduled-job-kickoff`                                                           |
+| `notifications` | `send` (per channel, retries with backoff)                                                                                                        |
+| `jobs`          | `waiting-customer-timeout`, `auto-confirm-work`, `quote-response-timeout`, `share-link-expiry`                                                    |
+| `finance`       | `settle-job`, `process-withdrawal`, `webhook-process`                                                                                             |
+| `media`         | `process-image` (EXIF strip, thumbnails), `scan`                                                                                                  |
+| `maintenance`   | `expire-otps`, `expire-documents` + reminders, `tracking-retention`, `banner-stats-rollup`, `daily-kpis`, `heartbeat-sweep`, `campaign-scheduler` |
 
 ### 3.6 Concurrency & consistency
 
-* Job assignment: `SELECT … FOR UPDATE` on the job row inside a transaction, status re-check, single `UPDATE job_assignments SET status='ACCEPTED' WHERE id=? AND status='OFFERED'`, and the DB partial unique index `uq_job_assignments_one_accepted` makes a second accept impossible even under a bug. A Redis lock (`lock:job:<id>`, 5 s) short-circuits the hot path.
-* Optimistic concurrency: `jobs.version`, `payments.version`; clients send `version`, server compares → `VERSION_CONFLICT`.
-* Idempotency: `Idempotency-Key` header stored in `idempotency_keys` with request hash; replayed response on retry, `IDEMPOTENCY_KEY_REUSED` on mismatch.
-* Ledger: all entries of a transaction inserted in one DB transaction; deferred constraint trigger asserts balance.
+- Job assignment: `SELECT … FOR UPDATE` on the job row inside a transaction, status re-check, single `UPDATE job_assignments SET status='ACCEPTED' WHERE id=? AND status='OFFERED'`, and the DB partial unique index `uq_job_assignments_one_accepted` makes a second accept impossible even under a bug. A Redis lock (`lock:job:<id>`, 5 s) short-circuits the hot path.
+- Optimistic concurrency: `jobs.version`, `payments.version`; clients send `version`, server compares → `VERSION_CONFLICT`.
+- Idempotency: `Idempotency-Key` header stored in `idempotency_keys` with request hash; replayed response on retry, `IDEMPOTENCY_KEY_REUSED` on mismatch.
+- Ledger: all entries of a transaction inserted in one DB transaction; deferred constraint trigger asserts balance.
 
 ## 4. Mobile apps (Flutter)
 
-* **Architecture**: Clean Architecture + feature-first modules (`features/<feature>/{data,domain,presentation}`), Riverpod 2 (`Notifier`/`AsyncNotifier`, no codegen), `go_router` with typed routes, `dio` with auth interceptor (token refresh with single-flight), `flutter_secure_storage` for tokens, `flutter_map` behind `MapView` abstraction, `socket_io_client` for real-time, `geolocator` + `flutter_background_service` (partner app only, with OS-compliant foreground service).
-* **Identity**: generated `tamam_tokens.dart` (purple `#5D3EBC`, yellow `#FFD300`, soft grey canvas `#F5F4FA`, white 16 px cards, yellow primary CTA with dark-purple text, purple app bar, bottom navigation with active-yellow indicator), `TamamTheme` light/dark, Cairo (Arabic) + Inter (Latin) fonts.
-* **Localization**: ARB files `app_ar.arb` (default) + `app_en.arb`, RTL-first layouts, locale-aware numerals, currency and dates (`intl`).
-* **Offline**: connectivity banner, cached catalog/feeds, safe retry (idempotent creates only), server-sync on reconnect (never trusts stale local state).
-* **Promotional banners**: `BannerCarousel` (hero, auto-play 4.5 s, parallax, page dots, skeleton, RTL-aware), `InlineBanner`, `PlacementBanner` widgets fed by `GET /banners/feed?placement=…`, impression tracking via `VisibilityDetector` (≥ 50 % visible for ≥ 1 s), batched event upload, deep-link/promo/category/URL actions, frequency-cap aware.
-* **Screens with mandatory states**: loading, empty, error+retry, offline — enforced by a shared `AsyncView` widget.
+- **Architecture**: Clean Architecture + feature-first modules (`features/<feature>/{data,domain,presentation}`), Riverpod 2 (`Notifier`/`AsyncNotifier`, no codegen), `go_router` with typed routes, `dio` with auth interceptor (token refresh with single-flight), `flutter_secure_storage` for tokens, `flutter_map` behind `MapView` abstraction, `socket_io_client` for real-time, `geolocator` + `flutter_background_service` (partner app only, with OS-compliant foreground service).
+- **Identity**: generated `tamam_tokens.dart` (purple `#5D3EBC`, yellow `#FFD300`, soft grey canvas `#F5F4FA`, white 16 px cards, yellow primary CTA with dark-purple text, purple app bar, bottom navigation with active-yellow indicator), `TamamTheme` light/dark, Cairo (Arabic) + Inter (Latin) fonts.
+- **Localization**: ARB files `app_ar.arb` (default) + `app_en.arb`, RTL-first layouts, locale-aware numerals, currency and dates (`intl`).
+- **Offline**: connectivity banner, cached catalog/feeds, safe retry (idempotent creates only), server-sync on reconnect (never trusts stale local state).
+- **Promotional banners**: `BannerCarousel` (hero, auto-play 4.5 s, parallax, page dots, skeleton, RTL-aware), `InlineBanner`, `PlacementBanner` widgets fed by `GET /banners/feed?placement=…`, impression tracking via `VisibilityDetector` (≥ 50 % visible for ≥ 1 s), batched event upload, deep-link/promo/category/URL actions, frequency-cap aware.
+- **Screens with mandatory states**: loading, empty, error+retry, offline — enforced by a shared `AsyncView` widget.
 
 ## 5. Admin web (Next.js)
 

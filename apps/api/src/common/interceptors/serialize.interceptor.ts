@@ -1,4 +1,9 @@
-import { type CallHandler, type ExecutionContext, Injectable, type NestInterceptor } from '@nestjs/common';
+import {
+  type CallHandler,
+  type ExecutionContext,
+  Injectable,
+  type NestInterceptor,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { type Observable, map } from 'rxjs';
 
@@ -11,7 +16,8 @@ const MAX_SAFE = BigInt(Number.MAX_SAFE_INTEGER);
 export function toJsonSafe(value: unknown): unknown {
   if (value === null || value === undefined) return value;
   if (typeof value === 'bigint') {
-    if (value > MAX_SAFE || value < -MAX_SAFE) throw new Error('BigInt exceeds JS safe integer range');
+    if (value > MAX_SAFE || value < -MAX_SAFE)
+      throw new Error('BigInt exceeds JS safe integer range');
     return Number(value);
   }
   if (value instanceof Date) return value.toISOString();

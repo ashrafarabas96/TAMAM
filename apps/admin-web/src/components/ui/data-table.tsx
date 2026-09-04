@@ -50,7 +50,27 @@ const alignClass = { start: 'text-start', end: 'text-end', center: 'text-center'
  * Generic list table: sticky header, skeleton loading, error with retry, empty state and a
  * "load more" footer for cursor-paginated endpoints. Rows can be clickable.
  */
-export function DataTable<T>({ columns, rows, rowKey, isLoading = false, error, onRetry, emptyTitle, emptyDescription, emptyAction, hasMore = false, onLoadMore, isLoadingMore = false, onRowClick, rowClassName, maxHeight = '70vh', className, caption, footer, dense = false }: DataTableProps<T>) {
+export function DataTable<T>({
+  columns,
+  rows,
+  rowKey,
+  isLoading = false,
+  error,
+  onRetry,
+  emptyTitle,
+  emptyDescription,
+  emptyAction,
+  hasMore = false,
+  onLoadMore,
+  isLoadingMore = false,
+  onRowClick,
+  rowClassName,
+  maxHeight = '70vh',
+  className,
+  caption,
+  footer,
+  dense = false,
+}: DataTableProps<T>) {
   const t = useT();
   const cellPadding = dense ? 'px-3 py-2' : 'px-4 py-3';
 
@@ -62,7 +82,17 @@ export function DataTable<T>({ columns, rows, rowKey, isLoading = false, error, 
           <thead className="sticky top-0 z-10 bg-surface-alt text-[11px] font-semibold uppercase tracking-wide text-text-secondary shadow-[inset_0_-1px_0_var(--c-border)]">
             <tr>
               {columns.map((col) => (
-                <th key={col.key} scope="col" className={cn(cellPadding, 'whitespace-nowrap font-semibold', alignClass[col.align ?? 'start'], col.headerClassName)} style={col.width ? { width: col.width } : undefined}>
+                <th
+                  key={col.key}
+                  scope="col"
+                  className={cn(
+                    cellPadding,
+                    'whitespace-nowrap font-semibold',
+                    alignClass[col.align ?? 'start'],
+                    col.headerClassName,
+                  )}
+                  style={col.width ? { width: col.width } : undefined}
+                >
                   {col.header}
                 </th>
               ))}
@@ -71,7 +101,11 @@ export function DataTable<T>({ columns, rows, rowKey, isLoading = false, error, 
           <tbody>
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="border-b border-border last:border-0" aria-hidden>
+                  <tr
+                    key={`skeleton-${i}`}
+                    className="border-b border-border last:border-0"
+                    aria-hidden
+                  >
                     {columns.map((col) => (
                       <td key={col.key} className={cellPadding}>
                         <Skeleton className="h-4 w-full max-w-[160px]" />
@@ -84,7 +118,11 @@ export function DataTable<T>({ columns, rows, rowKey, isLoading = false, error, 
               ? rows.map((row, index) => (
                   <tr
                     key={rowKey(row)}
-                    className={cn('border-b border-border last:border-0 transition-colors', onRowClick && 'cursor-pointer hover:bg-surface-brand-soft/60', rowClassName?.(row))}
+                    className={cn(
+                      'border-b border-border last:border-0 transition-colors',
+                      onRowClick && 'cursor-pointer hover:bg-surface-brand-soft/60',
+                      rowClassName?.(row),
+                    )}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
                     tabIndex={onRowClick ? 0 : undefined}
                     onKeyDown={
@@ -99,7 +137,15 @@ export function DataTable<T>({ columns, rows, rowKey, isLoading = false, error, 
                     }
                   >
                     {columns.map((col) => (
-                      <td key={col.key} className={cn(cellPadding, 'align-middle', alignClass[col.align ?? 'start'], col.className)}>
+                      <td
+                        key={col.key}
+                        className={cn(
+                          cellPadding,
+                          'align-middle',
+                          alignClass[col.align ?? 'start'],
+                          col.className,
+                        )}
+                      >
                         {col.cell(row, index)}
                       </td>
                     ))}
@@ -109,13 +155,25 @@ export function DataTable<T>({ columns, rows, rowKey, isLoading = false, error, 
           </tbody>
         </table>
         {!isLoading && error ? <ErrorState error={error} onRetry={onRetry} /> : null}
-        {!isLoading && !error && rows.length === 0 ? <EmptyState title={emptyTitle ?? t('common.emptyTitle')} description={emptyDescription ?? t('common.emptyDescription')} action={emptyAction} /> : null}
+        {!isLoading && !error && rows.length === 0 ? (
+          <EmptyState
+            title={emptyTitle ?? t('common.emptyTitle')}
+            description={emptyDescription ?? t('common.emptyDescription')}
+            action={emptyAction}
+          />
+        ) : null}
       </div>
       {footer || (!isLoading && !error && (hasMore || rows.length > 0)) ? (
         <div className="flex items-center justify-between gap-3 border-t border-border bg-surface-alt/60 px-4 py-2 text-xs text-text-secondary">
           <span>{footer ?? t('common.rowsShown', { count: rows.length })}</span>
           {hasMore && onLoadMore ? (
-            <Button variant="outline" size="sm" onClick={onLoadMore} loading={isLoadingMore} data-testid="load-more">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLoadMore}
+              loading={isLoadingMore}
+              data-testid="load-more"
+            >
               {t('common.loadMore')}
             </Button>
           ) : null}

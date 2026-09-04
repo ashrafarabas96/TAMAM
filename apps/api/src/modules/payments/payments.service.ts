@@ -9,7 +9,6 @@ import {
   LedgerAccountType,
   LedgerEntryDirection,
   LedgerTransactionType,
-  type Money,
   NotificationEvent,
   type Page,
   type PaymentDto,
@@ -28,7 +27,10 @@ import type { RequestUser } from '../../common/types/request-user';
 import { buildPage, cursorWhere, decodeCursor } from '../../common/utils/cursor';
 import { formatMajor, toMoney } from '../../common/utils/money';
 import { PrismaService, type Tx } from '../../infrastructure/prisma/prisma.service';
-import { PAYMENT_GATEWAY, type PaymentGatewayProvider } from '../../infrastructure/providers/payment-gateway/payment-gateway.provider';
+import {
+  PAYMENT_GATEWAY,
+  type PaymentGatewayProvider,
+} from '../../infrastructure/providers/payment-gateway/payment-gateway.provider';
 import { FINANCE_JOBS, QUEUES } from '../../infrastructure/queue/queue.constants';
 import { AuditService } from '../audit/audit.service';
 import { JobPolicy } from '../jobs/domain/job-policy';
@@ -56,7 +58,6 @@ export interface CaptureResult {
   /** 3-D Secure / redirect URL the customer must open before the charge can capture. */
   actionUrl: string | null;
 }
-
 
 export interface PaymentListFilter {
   jobId?: string;
@@ -172,92 +173,174 @@ export class PaymentsService {
    * payment returns unchanged, and settlement/receipt creation are idempotent too.
    */
   async captureForJob(jobId: string): Promise<CaptureResult> {
-    const job = await this.prisma.job.findUnique({ where: { id: jobId }, select: captureJobSelect });
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      select: captureJobSelect,
+    });
     if (!job) throw AppException.notFound('Job', jobId);
 
     const payment = await this.ensurePayment(job);
-    if (payment.status === PaymentStatus.CAPTURED) return { payment: this.toDto(payment), actionUrl: null };
-    if (payment.status === PaymentStatus.REFUNDED || payment.status === PaymentStatus.PARTIALLY_REFUNDED) {
+    if (payment.status === PaymentStatus.CAPTURED)
+      return { payment: this.toDto(payment), actionUrl: null };
+    if (
+      payment.status === PaymentStatus.REFUNDED ||
+      payment.status === PaymentStatus.PARTIALLY_REFUNDED
+    ) {
       throw AppException.conflict('This payment was already refunded', ErrorCode.CONFLICT);
     }
-    if (payment.status === PaymentStatus.CANCELLED) throw AppException.conflict('This payment was cancelled', ErrorCode.CONFLICT);
+    if (payment.status === PaymentStatus.CANCELLED)
+      throw AppException.conflict('This payment was cancelled', ErrorCode.CONFLICT);
 
     const amountMinor = job.finalTotalMinor ?? job.estimatedTotalMinor ?? payment.amountMinor;
-    if (amountMinor < 0n) throw AppException.validation([{ field: 'finalTotalMinor', message: 'job total cannot be negative' }]);
+    if (amountMinor < 0n)
+      throw AppException.validation([
+        { field: 'finalTotalMinor', message: 'job total cannot be negative' },
+      ]);
 
     if (payment.method === PaymentMethod.CASH) {
       // The partner collected the money in person; the ledger books the cash movement.
-      return { payment: await this.completeCapture(job, payment, amountMinor, payment.providerRef), actionUrl: null };
+      return {
+        payment: await this.completeCapture(job, payment, amountMinor, payment.providerRef),
+        actionUrl: null,
+      };
     }
 
     if (payment.method === PaymentMethod.WALLET) {
-      const wallet = await this.wallets.getOrCreate(WalletOwnerType.CUSTOMER, job.customerId, job.currency);
+      const wallet = await this.wallets.getOrCreate(
+        WalletOwnerType.CUSTOMER,
+        job.customerId,
+        job.currency,
+      );
       const balance = await this.ledger.walletBalance(wallet.id);
       if (balance < amountMinor) {
-        await this.markFailed(job, payment, 'insufficient_balance', 'Wallet balance is lower than the amount due');
-        throw AppException.badRequest(ErrorCode.INSUFFICIENT_WALLET_BALANCE, 'Wallet balance is lower than the amount due');
+        await this.markFailed(
+          job,
+          payment,
+          'insufficient_balance',
+          'Wallet balance is lower than the amount due',
+        );
+        throw AppException.badRequest(
+          ErrorCode.INSUFFICIENT_WALLET_BALANCE,
+          'Wallet balance is lower than the amount due',
+        );
       }
-      return { payment: await this.completeCapture(job, payment, amountMinor, payment.providerRef), actionUrl: null };
+      return {
+        payment: await this.completeCapture(job, payment, amountMinor, payment.providerRef),
+        actionUrl: null,
+      };
     }
 
     return this.captureViaGateway(job, payment, amountMinor);
   }
 
   private async ensurePayment(job: CaptureJob): Promise<PaymentRow> {
-    const existing = await this.prisma.payment.findUnique({ where: { idempotencyKey: `job:${job.id}:charge` } });
+    const existing = await this.prisma.payment.findUnique({
+      where: { idempotencyKey: `job:${job.id}:charge` },
+    });
     if (existing) return existing;
     return this.prisma.$transaction((tx) =>
-      this.createForJob({ id: job.id, customerId: job.customerId, currency: job.currency, paymentMethod: job.paymentMethod, estimatedTotalMinor: job.estimatedTotalMinor }, tx),
+      this.createForJob(
+        {
+          id: job.id,
+          customerId: job.customerId,
+          currency: job.currency,
+          paymentMethod: job.paymentMethod,
+          estimatedTotalMinor: job.estimatedTotalMinor,
+        },
+        tx,
+      ),
     );
   }
 
-  private async captureViaGateway(job: CaptureJob, payment: PaymentRow, amountMinor: bigint): Promise<CaptureResult> {
+  private async captureViaGateway(
+    job: CaptureJob,
+    payment: PaymentRow,
+    amountMinor: bigint,
+  ): Promise<CaptureResult> {
     const idempotencyKey = `capture:${payment.id}:${amountMinor}`;
-    const authorized = payment.providerRef && payment.status === PaymentStatus.AUTHORIZED
-      ? { status: 'AUTHORIZED' as const, providerRef: payment.providerRef }
-      : await this.attempt(payment, 'AUTHORIZE', () =>
-          this.gateway.authorize({
-            paymentId: payment.id,
-            amountMinor,
-            currency: job.currency,
-            customerId: job.customerId,
-            description: `TAMAM job ${job.number}`,
-            idempotencyKey,
-          }),
-        );
+    const authorized =
+      payment.providerRef && payment.status === PaymentStatus.AUTHORIZED
+        ? { status: 'AUTHORIZED' as const, providerRef: payment.providerRef }
+        : await this.attempt(payment, 'AUTHORIZE', () =>
+            this.gateway.authorize({
+              paymentId: payment.id,
+              amountMinor,
+              currency: job.currency,
+              customerId: job.customerId,
+              description: `TAMAM job ${job.number}`,
+              idempotencyKey,
+            }),
+          );
 
     if (authorized.status === 'REQUIRES_ACTION') {
       const updated = await this.prisma.payment.update({
         where: { id: payment.id },
-        data: { status: PaymentStatus.PENDING, providerRef: authorized.providerRef, amountMinor, version: { increment: 1 } },
+        data: {
+          status: PaymentStatus.PENDING,
+          providerRef: authorized.providerRef,
+          amountMinor,
+          version: { increment: 1 },
+        },
       });
       return { payment: this.toDto(updated), actionUrl: authorized.actionUrl ?? null };
     }
     if (authorized.status === 'FAILED') {
-      await this.markFailed(job, payment, authorized.failureCode ?? 'authorization_failed', authorized.failureMessage ?? 'Authorization was declined', authorized.providerRef);
-      throw AppException.badRequest(ErrorCode.PAYMENT_FAILED, authorized.failureMessage ?? 'Authorization was declined');
+      await this.markFailed(
+        job,
+        payment,
+        authorized.failureCode ?? 'authorization_failed',
+        authorized.failureMessage ?? 'Authorization was declined',
+        authorized.providerRef,
+      );
+      throw AppException.badRequest(
+        ErrorCode.PAYMENT_FAILED,
+        authorized.failureMessage ?? 'Authorization was declined',
+      );
     }
 
     const captured =
       authorized.status === 'CAPTURED'
         ? authorized
-        : await this.attempt(payment, 'CAPTURE', () => this.gateway.capture(authorized.providerRef ?? payment.id, amountMinor, idempotencyKey));
+        : await this.attempt(payment, 'CAPTURE', () =>
+            this.gateway.capture(authorized.providerRef ?? payment.id, amountMinor, idempotencyKey),
+          );
 
     if (captured.status !== 'CAPTURED') {
-      await this.markFailed(job, payment, captured.failureCode ?? 'capture_failed', captured.failureMessage ?? 'Capture was declined', captured.providerRef);
-      throw AppException.badRequest(ErrorCode.PAYMENT_FAILED, captured.failureMessage ?? 'Capture was declined');
+      await this.markFailed(
+        job,
+        payment,
+        captured.failureCode ?? 'capture_failed',
+        captured.failureMessage ?? 'Capture was declined',
+        captured.providerRef,
+      );
+      throw AppException.badRequest(
+        ErrorCode.PAYMENT_FAILED,
+        captured.failureMessage ?? 'Capture was declined',
+      );
     }
-    return { payment: await this.completeCapture(job, payment, amountMinor, captured.providerRef), actionUrl: null };
+    return {
+      payment: await this.completeCapture(job, payment, amountMinor, captured.providerRef),
+      actionUrl: null,
+    };
   }
 
   /** Runs one provider call, timing it and storing the outcome as a `payment_attempts` row. */
-  private async attempt<T extends { status: string; providerRef: string | null; failureCode?: string; failureMessage?: string; actionUrl?: string }>(
+  private async attempt<
+    T extends {
+      status: string;
+      providerRef: string | null;
+      failureCode?: string;
+      failureMessage?: string;
+      actionUrl?: string;
+    },
+  >(
     payment: PaymentRow,
     action: 'AUTHORIZE' | 'CAPTURE' | 'REFUND',
     call: () => Promise<T>,
   ): Promise<T> {
     const startedAt = Date.now();
-    const attemptNumber = (await this.prisma.paymentAttempt.count({ where: { paymentId: payment.id } })) + 1;
+    const attemptNumber =
+      (await this.prisma.paymentAttempt.count({ where: { paymentId: payment.id } })) + 1;
     try {
       const result = await call();
       await this.prisma.paymentAttempt.create({
@@ -294,10 +377,19 @@ export class PaymentsService {
    * Marks the payment captured, settles the job into the ledger and issues the receipt — all in
    * one ledger transaction so money and paperwork can never diverge.
    */
-  private async completeCapture(job: CaptureJob, payment: PaymentRow, amountMinor: bigint, providerRef: string | null): Promise<PaymentDto> {
+  private async completeCapture(
+    job: CaptureJob,
+    payment: PaymentRow,
+    amountMinor: bigint,
+    providerRef: string | null,
+  ): Promise<PaymentDto> {
     const updated = await this.prisma.withLedgerWrite(async (tx) => {
       const result = await tx.payment.updateMany({
-        where: { id: payment.id, version: payment.version, status: { not: PaymentStatus.CAPTURED } },
+        where: {
+          id: payment.id,
+          version: payment.version,
+          status: { not: PaymentStatus.CAPTURED },
+        },
         data: {
           status: PaymentStatus.CAPTURED,
           amountMinor,
@@ -328,15 +420,37 @@ export class PaymentsService {
         data: { jobId: job.id, paymentId: updated.id },
         jobId: job.id,
       });
-      this.events.emit('payment.captured', { jobId: job.id, paymentId: updated.id, amountMinor, method: updated.method });
+      this.events.emit('payment.captured', {
+        jobId: job.id,
+        paymentId: updated.id,
+        amountMinor,
+        method: updated.method,
+      });
     }
     return this.toDto(updated);
   }
 
-  private async markFailed(job: CaptureJob, payment: PaymentRow, code: string, message: string, providerRef?: string | null): Promise<void> {
+  private async markFailed(
+    job: CaptureJob,
+    payment: PaymentRow,
+    code: string,
+    message: string,
+    providerRef?: string | null,
+  ): Promise<void> {
     await this.prisma.payment.updateMany({
-      where: { id: payment.id, status: { notIn: [PaymentStatus.CAPTURED, PaymentStatus.REFUNDED, PaymentStatus.PARTIALLY_REFUNDED] } },
-      data: { status: PaymentStatus.FAILED, failureCode: code.slice(0, 60), failureReason: message.slice(0, 300), providerRef: providerRef ?? payment.providerRef, version: { increment: 1 } },
+      where: {
+        id: payment.id,
+        status: {
+          notIn: [PaymentStatus.CAPTURED, PaymentStatus.REFUNDED, PaymentStatus.PARTIALLY_REFUNDED],
+        },
+      },
+      data: {
+        status: PaymentStatus.FAILED,
+        failureCode: code.slice(0, 60),
+        failureReason: message.slice(0, 300),
+        providerRef: providerRef ?? payment.providerRef,
+        version: { increment: 1 },
+      },
     });
     this.metrics.paymentFailures.inc({ method: payment.method, code });
     await this.notifications.notify({
@@ -347,12 +461,20 @@ export class PaymentsService {
       jobId: job.id,
       priority: 'high',
     });
-    this.events.emit('payment.failed', { jobId: job.id, paymentId: payment.id, method: payment.method, code });
+    this.events.emit('payment.failed', {
+      jobId: job.id,
+      paymentId: payment.id,
+      method: payment.method,
+      code,
+    });
   }
 
   /** `RC-YYMM-NNNNNN`, one per job (spec §53). */
   private async issueReceipt(job: CaptureJob, amountMinor: bigint, tx: Tx): Promise<void> {
-    const existing = await tx.receipt.findUnique({ where: { jobId: job.id }, select: { id: true } });
+    const existing = await tx.receipt.findUnique({
+      where: { jobId: job.id },
+      select: { id: true },
+    });
     if (existing) return;
     const sequence = await this.prisma.nextCounter('receipt_number', tx);
     const now = new Date();
@@ -375,18 +497,32 @@ export class PaymentsService {
     });
   }
 
-  private async serviceTypeName(code: CaptureJob['type'], tx: Tx): Promise<{ ar: string; en: string }> {
-    const serviceType = await tx.serviceType.findUnique({ where: { code }, select: { nameAr: true, nameEn: true } });
-    return serviceType ? { ar: serviceType.nameAr, en: serviceType.nameEn } : { ar: code, en: code };
+  private async serviceTypeName(
+    code: CaptureJob['type'],
+    tx: Tx,
+  ): Promise<{ ar: string; en: string }> {
+    const serviceType = await tx.serviceType.findUnique({
+      where: { code },
+      select: { nameAr: true, nameEn: true },
+    });
+    return serviceType
+      ? { ar: serviceType.nameAr, en: serviceType.nameEn }
+      : { ar: code, en: code };
   }
 
   /* ------------------------------------------------------------------ reads */
 
   async getForJob(jobId: string, user: RequestUser): Promise<PaymentDto> {
-    const job = await this.prisma.job.findUnique({ where: { id: jobId }, select: { id: true, customerId: true, partnerId: true, status: true, zoneId: true } });
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      select: { id: true, customerId: true, partnerId: true, status: true, zoneId: true },
+    });
     if (!job) throw AppException.notFound('Job', jobId);
     if (!JobPolicy.canView(user, job)) throw AppException.notFound('Job', jobId); // 404, not 403: don't leak existence (spec §88)
-    const payment = await this.prisma.payment.findFirst({ where: { jobId }, orderBy: { createdAt: 'desc' } });
+    const payment = await this.prisma.payment.findFirst({
+      where: { jobId },
+      orderBy: { createdAt: 'desc' },
+    });
     if (!payment) throw AppException.notFound('Payment for job', jobId);
     return this.toDto(payment);
   }
@@ -400,7 +536,13 @@ export class PaymentsService {
         customerId: filter.customerId,
         status: filter.status,
         method: filter.method,
-        createdAt: filter.from || filter.to ? { gte: filter.from ? new Date(filter.from) : undefined, lte: filter.to ? new Date(filter.to) : undefined } : undefined,
+        createdAt:
+          filter.from || filter.to
+            ? {
+                gte: filter.from ? new Date(filter.from) : undefined,
+                lte: filter.to ? new Date(filter.to) : undefined,
+              }
+            : undefined,
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: filter.limit + 1,
@@ -422,7 +564,13 @@ export class PaymentsService {
         paymentId: filter.paymentId,
         status: filter.status,
         disputeId: filter.disputeId,
-        createdAt: filter.from || filter.to ? { gte: filter.from ? new Date(filter.from) : undefined, lte: filter.to ? new Date(filter.to) : undefined } : undefined,
+        createdAt:
+          filter.from || filter.to
+            ? {
+                gte: filter.from ? new Date(filter.from) : undefined,
+                lte: filter.to ? new Date(filter.to) : undefined,
+              }
+            : undefined,
       },
       include: { payment: { select: { jobId: true } } },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -437,19 +585,34 @@ export class PaymentsService {
    * Full or partial refund (spec §54). Cash and wallet payments are refunded into the customer
    * wallet; gateway payments go back through the provider. Never exceeds what was captured.
    */
-  async refund(input: IssueRefundInput, actor: RequestUser, requestId: string | null = null): Promise<RefundDto> {
-    const payment = await this.prisma.payment.findUnique({ where: { id: input.paymentId }, include: { job: { select: { id: true, number: true, customerId: true, currency: true } } } });
+  async refund(
+    input: IssueRefundInput,
+    actor: RequestUser,
+    requestId: string | null = null,
+  ): Promise<RefundDto> {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: input.paymentId },
+      include: { job: { select: { id: true, number: true, customerId: true, currency: true } } },
+    });
     if (!payment) throw AppException.notFound('Payment', input.paymentId);
-    if (payment.status !== PaymentStatus.CAPTURED && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
+    if (
+      payment.status !== PaymentStatus.CAPTURED &&
+      payment.status !== PaymentStatus.PARTIALLY_REFUNDED
+    ) {
       throw AppException.conflict('Only captured payments can be refunded', ErrorCode.CONFLICT);
     }
     const amountMinor = BigInt(input.amountMinor);
     const remaining = payment.capturedMinor - payment.refundedMinor;
     if (amountMinor > remaining) {
-      throw AppException.validation([{ field: 'amountMinor', message: `at most ${remaining} can still be refunded` }]);
+      throw AppException.validation([
+        { field: 'amountMinor', message: `at most ${remaining} can still be refunded` },
+      ]);
     }
     if (input.disputeId) {
-      const dispute = await this.prisma.dispute.findUnique({ where: { id: input.disputeId }, select: { id: true } });
+      const dispute = await this.prisma.dispute.findUnique({
+        where: { id: input.disputeId },
+        select: { id: true },
+      });
       if (!dispute) throw AppException.notFound('Dispute', input.disputeId);
     }
 
@@ -465,16 +628,25 @@ export class PaymentsService {
       },
     });
 
-    const viaWallet = payment.method === PaymentMethod.CASH || payment.method === PaymentMethod.WALLET;
+    const viaWallet =
+      payment.method === PaymentMethod.CASH || payment.method === PaymentMethod.WALLET;
     let providerRef: string | null = null;
     if (!viaWallet) {
-      const result = await this.attempt(payment, 'REFUND', () => this.gateway.refund(payment.providerRef ?? payment.id, amountMinor, refund.idempotencyKey));
+      const result = await this.attempt(payment, 'REFUND', () =>
+        this.gateway.refund(payment.providerRef ?? payment.id, amountMinor, refund.idempotencyKey),
+      );
       if (result.status !== 'CAPTURED' && result.status !== 'AUTHORIZED') {
         const failed = await this.prisma.refund.update({
           where: { id: refund.id },
-          data: { status: RefundStatus.FAILED, failureReason: (result.failureMessage ?? 'provider refused the refund').slice(0, 300) },
+          data: {
+            status: RefundStatus.FAILED,
+            failureReason: (result.failureMessage ?? 'provider refused the refund').slice(0, 300),
+          },
         });
-        this.metrics.paymentFailures.inc({ method: payment.method, code: result.failureCode ?? 'refund_failed' });
+        this.metrics.paymentFailures.inc({
+          method: payment.method,
+          code: result.failureCode ?? 'refund_failed',
+        });
         await this.audit.record({
           actorId: actor.id,
           action: 'refund.failed',
@@ -490,12 +662,37 @@ export class PaymentsService {
     }
 
     const processed = await this.prisma.withLedgerWrite(async (tx) => {
-      const wallet = viaWallet ? await this.wallets.getOrCreate(WalletOwnerType.CUSTOMER, payment.job.customerId, payment.currency, tx) : null;
+      const wallet = viaWallet
+        ? await this.wallets.getOrCreate(
+            WalletOwnerType.CUSTOMER,
+            payment.job.customerId,
+            payment.currency,
+            tx,
+          )
+        : null;
       const entries = wallet
-        ? refundEntries({ amountMinor, currency: payment.currency, customerWalletAccountCode: `WALLET:${wallet.id}` })
+        ? refundEntries({
+            amountMinor,
+            currency: payment.currency,
+            customerWalletAccountCode: `WALLET:${wallet.id}`,
+          })
         : [
-            { accountCode: platformAccountCode(LedgerAccountType.PLATFORM_REFUND_EXPENSE, payment.currency), direction: LedgerEntryDirection.DEBIT, amountMinor },
-            { accountCode: platformAccountCode(LedgerAccountType.PLATFORM_GATEWAY_CLEARING, payment.currency), direction: LedgerEntryDirection.CREDIT, amountMinor },
+            {
+              accountCode: platformAccountCode(
+                LedgerAccountType.PLATFORM_REFUND_EXPENSE,
+                payment.currency,
+              ),
+              direction: LedgerEntryDirection.DEBIT,
+              amountMinor,
+            },
+            {
+              accountCode: platformAccountCode(
+                LedgerAccountType.PLATFORM_GATEWAY_CLEARING,
+                payment.currency,
+              ),
+              direction: LedgerEntryDirection.CREDIT,
+              amountMinor,
+            },
           ];
       const transaction = await this.ledger.post(
         {
@@ -517,11 +714,23 @@ export class PaymentsService {
       const refundedMinor = payment.refundedMinor + amountMinor;
       await tx.payment.update({
         where: { id: payment.id },
-        data: { refundedMinor, status: refundedMinor >= payment.capturedMinor ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED, version: { increment: 1 } },
+        data: {
+          refundedMinor,
+          status:
+            refundedMinor >= payment.capturedMinor
+              ? PaymentStatus.REFUNDED
+              : PaymentStatus.PARTIALLY_REFUNDED,
+          version: { increment: 1 },
+        },
       });
       const updatedRefund = await tx.refund.update({
         where: { id: refund.id },
-        data: { status: RefundStatus.PROCESSED, providerRef, processedAt: new Date(), ledgerTransactionId: transaction.id },
+        data: {
+          status: RefundStatus.PROCESSED,
+          providerRef,
+          processedAt: new Date(),
+          ledgerTransactionId: transaction.id,
+        },
       });
       await this.audit.record(
         {
@@ -529,7 +738,12 @@ export class PaymentsService {
           action: 'refund.issue',
           entity: 'refund',
           entityId: refund.id,
-          newValue: { paymentId: payment.id, jobId: payment.jobId, amountMinor: input.amountMinor, disputeId: input.disputeId ?? null },
+          newValue: {
+            paymentId: payment.id,
+            jobId: payment.jobId,
+            amountMinor: input.amountMinor,
+            disputeId: input.disputeId ?? null,
+          },
           reason: input.reason,
           requestId,
         },
@@ -538,7 +752,10 @@ export class PaymentsService {
       return updatedRefund;
     });
 
-    this.logger.info({ refundId: processed.id, paymentId: payment.id, amountMinor: amountMinor.toString() }, 'refund processed');
+    this.logger.info(
+      { refundId: processed.id, paymentId: payment.id, amountMinor: amountMinor.toString() },
+      'refund processed',
+    );
     return this.toRefundDto(processed, payment.jobId);
   }
 
@@ -548,12 +765,20 @@ export class PaymentsService {
    * Stores every inbound event before doing anything with it and processes it exactly once
    * (spec §54). Signature verification happens inside the provider adapter.
    */
-  async handleWebhook(provider: string, rawBody: Buffer | undefined, headers: Record<string, string | string[] | undefined>): Promise<WebhookAck> {
+  async handleWebhook(
+    provider: string,
+    rawBody: Buffer | undefined,
+    headers: Record<string, string | string[] | undefined>,
+  ): Promise<WebhookAck> {
     if (provider !== this.gateway.name) throw AppException.notFound('Payment provider', provider);
-    if (!rawBody || !rawBody.length) throw AppException.badRequest(ErrorCode.VALIDATION_FAILED, 'Empty webhook body');
+    if (!rawBody || !rawBody.length)
+      throw AppException.badRequest(ErrorCode.VALIDATION_FAILED, 'Empty webhook body');
 
     const event = this.gateway.parseWebhook(rawBody, headers);
-    const existing = await this.prisma.webhookEvent.findUnique({ where: { provider_eventId: { provider, eventId: event.eventId } }, select: { id: true } });
+    const existing = await this.prisma.webhookEvent.findUnique({
+      where: { provider_eventId: { provider, eventId: event.eventId } },
+      select: { id: true },
+    });
     if (existing) {
       this.logger.info({ provider, eventId: event.eventId }, 'duplicate webhook ignored');
       return { received: true, duplicate: true };
@@ -566,12 +791,23 @@ export class PaymentsService {
     };
     try {
       const stored = await this.prisma.webhookEvent.create({
-        data: { provider, eventId: event.eventId, eventType: event.type, payload: payload as unknown as Prisma.InputJsonValue, signatureOk: true },
+        data: {
+          provider,
+          eventId: event.eventId,
+          eventType: event.type,
+          payload: payload as unknown as Prisma.InputJsonValue,
+          signatureOk: true,
+        },
       });
-      await this.queue.add(FINANCE_JOBS.PROCESS_WEBHOOK, { webhookEventId: stored.id }, { attempts: 5, backoff: { type: 'exponential', delay: 5000 } });
+      await this.queue.add(
+        FINANCE_JOBS.PROCESS_WEBHOOK,
+        { webhookEventId: stored.id },
+        { attempts: 5, backoff: { type: 'exponential', delay: 5000 } },
+      );
       return { received: true, duplicate: false };
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') return { received: true, duplicate: true };
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002')
+        return { received: true, duplicate: true };
       throw err;
     }
   }
@@ -598,11 +834,17 @@ export class PaymentsService {
         default:
           this.logger.warn({ webhookEventId, type: event.eventType }, 'unhandled webhook type');
       }
-      await this.prisma.webhookEvent.update({ where: { id: webhookEventId }, data: { processedAt: new Date(), attempts: { increment: 1 }, lastError: null } });
+      await this.prisma.webhookEvent.update({
+        where: { id: webhookEventId },
+        data: { processedAt: new Date(), attempts: { increment: 1 }, lastError: null },
+      });
     } catch (err) {
       await this.prisma.webhookEvent.update({
         where: { id: webhookEventId },
-        data: { attempts: { increment: 1 }, lastError: (err instanceof Error ? err.message : 'processing failed').slice(0, 500) },
+        data: {
+          attempts: { increment: 1 },
+          lastError: (err instanceof Error ? err.message : 'processing failed').slice(0, 500),
+        },
       });
       throw err;
     }
@@ -610,45 +852,83 @@ export class PaymentsService {
 
   private async findPaymentByRef(providerRef: string | null): Promise<PaymentRow | null> {
     if (!providerRef) return null;
-    return this.prisma.payment.findFirst({ where: { providerRef }, orderBy: { createdAt: 'desc' } });
+    return this.prisma.payment.findFirst({
+      where: { providerRef },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   private async applyCapturedWebhook(payload: StoredWebhookPayload): Promise<void> {
     const payment = await this.findPaymentByRef(payload.providerRef);
     if (!payment) {
-      this.logger.warn({ providerRef: payload.providerRef }, 'webhook references an unknown payment');
+      this.logger.warn(
+        { providerRef: payload.providerRef },
+        'webhook references an unknown payment',
+      );
       return;
     }
     if (payment.status === PaymentStatus.CAPTURED) return;
-    const job = await this.prisma.job.findUnique({ where: { id: payment.jobId }, select: captureJobSelect });
+    const job = await this.prisma.job.findUnique({
+      where: { id: payment.jobId },
+      select: captureJobSelect,
+    });
     if (!job) throw AppException.notFound('Job', payment.jobId);
-    const amountMinor = payload.amountMinor !== null ? BigInt(payload.amountMinor) : (job.finalTotalMinor ?? payment.amountMinor);
-    await this.completeCapture(job, payment, amountMinor, payment.providerRef ?? payload.providerRef);
+    const amountMinor =
+      payload.amountMinor !== null
+        ? BigInt(payload.amountMinor)
+        : (job.finalTotalMinor ?? payment.amountMinor);
+    await this.completeCapture(
+      job,
+      payment,
+      amountMinor,
+      payment.providerRef ?? payload.providerRef,
+    );
   }
 
   private async applyFailedWebhook(payload: StoredWebhookPayload): Promise<void> {
     const payment = await this.findPaymentByRef(payload.providerRef);
     if (!payment) return;
     if (payment.status === PaymentStatus.CAPTURED) return;
-    const job = await this.prisma.job.findUnique({ where: { id: payment.jobId }, select: captureJobSelect });
+    const job = await this.prisma.job.findUnique({
+      where: { id: payment.jobId },
+      select: captureJobSelect,
+    });
     if (!job) throw AppException.notFound('Job', payment.jobId);
-    await this.markFailed(job, payment, 'provider_failed', 'The provider reported a failed payment', payload.providerRef);
+    await this.markFailed(
+      job,
+      payment,
+      'provider_failed',
+      'The provider reported a failed payment',
+      payload.providerRef,
+    );
   }
 
   private async applyRefundWebhook(type: string, payload: StoredWebhookPayload): Promise<void> {
     if (!payload.providerRef) return;
-    const refund = await this.prisma.refund.findFirst({ where: { providerRef: payload.providerRef }, orderBy: { createdAt: 'desc' } });
+    const refund = await this.prisma.refund.findFirst({
+      where: { providerRef: payload.providerRef },
+      orderBy: { createdAt: 'desc' },
+    });
     if (!refund) {
-      this.logger.warn({ providerRef: payload.providerRef }, 'webhook references an unknown refund');
+      this.logger.warn(
+        { providerRef: payload.providerRef },
+        'webhook references an unknown refund',
+      );
       return;
     }
     if (type === 'refund.processed') {
       if (refund.status === RefundStatus.PROCESSED) return;
-      await this.prisma.refund.update({ where: { id: refund.id }, data: { status: RefundStatus.PROCESSED, processedAt: new Date() } });
+      await this.prisma.refund.update({
+        where: { id: refund.id },
+        data: { status: RefundStatus.PROCESSED, processedAt: new Date() },
+      });
       return;
     }
     if (refund.status === RefundStatus.FAILED) return;
-    await this.prisma.refund.update({ where: { id: refund.id }, data: { status: RefundStatus.FAILED, failureReason: 'The provider reported a failed refund' } });
+    await this.prisma.refund.update({
+      where: { id: refund.id },
+      data: { status: RefundStatus.FAILED, failureReason: 'The provider reported a failed refund' },
+    });
   }
 
   /* --------------------------------------------------------------- mapping */

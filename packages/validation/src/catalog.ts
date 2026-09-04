@@ -1,8 +1,23 @@
 import { z } from 'zod';
 
-import { DocumentType, DynamicFieldType, JobType, JobUrgency, PartnerRoleType, PricingMethod } from '@tamam/shared-types';
+import {
+  DocumentType,
+  DynamicFieldType,
+  JobType,
+  JobUrgency,
+  PartnerRoleType,
+  PricingMethod,
+} from '@tamam/shared-types';
 
-import { hexColorSchema, localizedTextSchema, moneySchema, optionalLocalizedTextSchema, slugSchema, timeHHmmSchema, uuidSchema } from './common';
+import {
+  hexColorSchema,
+  localizedTextSchema,
+  moneySchema,
+  optionalLocalizedTextSchema,
+  slugSchema,
+  timeHHmmSchema,
+  uuidSchema,
+} from './common';
 
 export const dynamicFieldSchema = z.object({
   key: z.string().regex(/^[a-z][a-z0-9_]{1,40}$/),
@@ -10,7 +25,10 @@ export const dynamicFieldSchema = z.object({
   label: localizedTextSchema,
   placeholder: localizedTextSchema.optional(),
   required: z.boolean().default(false),
-  options: z.array(z.object({ value: z.string().max(60), label: localizedTextSchema })).max(50).optional(),
+  options: z
+    .array(z.object({ value: z.string().max(60), label: localizedTextSchema }))
+    .max(50)
+    .optional(),
   min: z.number().optional(),
   max: z.number().optional(),
   maxItems: z.number().int().min(1).max(20).optional(),
@@ -67,7 +85,13 @@ export const upsertServiceSubcategorySchema = z.object({
   iconMediaId: uuidSchema.nullable().optional(),
   fixedPrice: moneySchema.nullable().optional(),
   startingFrom: moneySchema.nullable().optional(),
-  estimatedDurationMin: z.number().int().min(5).max(24 * 60).nullable().optional(),
+  estimatedDurationMin: z
+    .number()
+    .int()
+    .min(5)
+    .max(24 * 60)
+    .nullable()
+    .optional(),
   sortOrder: z.number().int().min(0).default(0),
   isActive: z.boolean().default(true),
 });

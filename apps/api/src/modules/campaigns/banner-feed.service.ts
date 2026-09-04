@@ -20,7 +20,12 @@ import { SystemConfigService } from '../config/system-config.service';
 import { MediaUrlService } from '../media/media-url.service';
 import { ZonesService } from '../zones/zones.service';
 
-import { type CandidateBanner, type CandidateCampaign, PLACEMENT_LIMITS, bannerMediaSelect } from './campaigns.types';
+import {
+  type CandidateBanner,
+  type CandidateCampaign,
+  PLACEMENT_LIMITS,
+  bannerMediaSelect,
+} from './campaigns.types';
 import {
   ANONYMOUS_VIEWER_ID,
   type BannerViewer,
@@ -32,11 +37,14 @@ import {
 import { signBannerToken } from './domain/banner-token';
 
 /** Redis key holding the candidate campaigns of one placement (targeting is applied after the cache). */
-export const candidatesKey = (placement: BannerPlacement): string => `banners:candidates:${placement}`;
+export const candidatesKey = (placement: BannerPlacement): string =>
+  `banners:candidates:${placement}`;
 /** Redis key holding today's impression count of one user for one campaign (frequency capping). */
-export const frequencyKey = (userId: string, campaignId: string, day: string): string => `banners:freq:${userId}:${campaignId}:${day}`;
+export const frequencyKey = (userId: string, campaignId: string, day: string): string =>
+  `banners:freq:${userId}:${campaignId}:${day}`;
 /** Redis key of the resolved viewer profile (completed jobs / service history). */
-const viewerKey = (userId: string, audience: string): string => `banners:viewer:${userId}:${audience}`;
+const viewerKey = (userId: string, audience: string): string =>
+  `banners:viewer:${userId}:${audience}`;
 
 const VIEWER_CACHE_S = 120;
 /**
@@ -92,13 +100,20 @@ export class BannerFeedService {
    * @param language falls back for signed-out viewers (the app's `Accept-Language`); an
    * authenticated user's stored preference always wins.
    */
-  async getFeed(user: RequestUser | null, query: BannerFeedQueryInput, language?: 'ar' | 'en'): Promise<BannerFeedDto> {
+  async getFeed(
+    user: RequestUser | null,
+    query: BannerFeedQueryInput,
+    language?: 'ar' | 'en',
+  ): Promise<BannerFeedDto> {
     const now = new Date();
     const cacheSeconds = await this.systemConfig.getNumber(CONFIG_KEYS.BANNER_FEED_CACHE_S);
     const cacheUntil = new Date(now.getTime() + cacheSeconds * 1000).toISOString();
 
     const zoneId = await this.resolveZoneId(query);
-    const enabled = await this.systemConfig.isEnabled(FEATURE_FLAGS.PROMO_BANNERS, { userId: user?.id, zoneId });
+    const enabled = await this.systemConfig.isEnabled(FEATURE_FLAGS.PROMO_BANNERS, {
+      userId: user?.id,
+      zoneId,
+    });
     if (!enabled) return { placement: query.placement, banners: [], cacheUntil };
 
     // The partner app only ever asks for PARTNER_HOME, so the placement carries the audience.
@@ -115,7 +130,10 @@ export class BannerFeedService {
       usedJobTypes: profile.usedJobTypes,
     };
 
-    const banners = await this.buildForViewer(viewer, query.placement, { applyFrequencyCap: true, requireLive: true });
+    const banners = await this.buildForViewer(viewer, query.placement, {
+      applyFrequencyCap: true,
+      requireLive: true,
+    });
     return { placement: query.placement, banners, cacheUntil };
   }
 
@@ -123,7 +141,11 @@ export class BannerFeedService {
    * Core feed builder — also used by the admin targeting preview.
    * Ordering: priority desc, sortOrder asc, id (stable), capped at the placement's maxItems.
    */
-  async buildForViewer(viewer: BannerViewer, placement: BannerPlacement, options: FeedBuildOptions): Promise<BannerDto[]> {
+  async buildForViewer(
+    viewer: BannerViewer,
+    placement: BannerPlacement,
+    options: FeedBuildOptions,
+  ): Promise<BannerDto[]> {
     const now = new Date();
     const loadOptions: CandidateLoadOptions = {
       ...(options.statuses ? { statuses: options.statuses } : {}),
@@ -137,22 +159,33 @@ export class BannerFeedService {
       return matchesTargeting(targetable, viewer);
     });
 
-    const allowed = options.applyFrequencyCap ? await this.applyFrequencyCap(eligible, viewer, now) : eligible;
+    const allowed = options.applyFrequencyCap
+      ? await this.applyFrequencyCap(eligible, viewer, now)
+      : eligible;
 
     const rows = allowed
-      .flatMap((campaign) => campaign.banners.filter((b) => b.isActive).map((banner) => ({ campaign, banner })))
+      .flatMap((campaign) =>
+        campaign.banners.filter((b) => b.isActive).map((banner) => ({ campaign, banner })),
+      )
       .sort((a, b) => compareBannerOrder(a.banner, b.banner));
 
     const limit = PLACEMENT_LIMITS[placement];
     const cacheSeconds = await this.systemConfig.getNumber(CONFIG_KEYS.BANNER_FEED_CACHE_S);
     const exp = Math.floor(now.getTime() / 1000) + cacheSeconds + TOKEN_GRACE_S;
 
-    return rows.slice(0, limit).map(({ campaign, banner }) => this.toBannerDto(banner, campaign.id, viewer.userId, exp));
+    return rows
+      .slice(0, limit)
+      .map(({ campaign, banner }) => this.toBannerDto(banner, campaign.id, viewer.userId, exp));
   }
 
   /* ------------------------------------------------------------ mapping */
 
-  toBannerDto(banner: CandidateBanner, campaignId: string, subject: string, exp: number): BannerDto {
+  toBannerDto(
+    banner: CandidateBanner,
+    campaignId: string,
+    subject: string,
+    exp: number,
+  ): BannerDto {
     return {
       id: banner.id,
       campaignId,
@@ -171,7 +204,10 @@ export class BannerFeedService {
       actionType: banner.actionType,
       actionValue: banner.actionValue,
       priority: banner.priority,
-      trackingToken: signBannerToken({ bannerId: banner.id, campaignId, subject, exp }, this.config.env.OTP_PEPPER),
+      trackingToken: signBannerToken(
+        { bannerId: banner.id, campaignId, subject, exp },
+        this.config.env.OTP_PEPPER,
+      ),
     };
   }
 
@@ -184,9 +220,13 @@ export class BannerFeedService {
   /* ---------------------------------------------------------- candidates */
 
   /** Loads the campaigns that own at least one active banner for the placement. */
-  async loadCandidates(placement: BannerPlacement, options: CandidateLoadOptions = {}): Promise<CandidateCampaign[]> {
+  async loadCandidates(
+    placement: BannerPlacement,
+    options: CandidateLoadOptions = {},
+  ): Promise<CandidateCampaign[]> {
     const statuses = options.statuses ?? [CampaignStatus.ACTIVE];
-    const cacheable = !options.bypassCache && statuses.length === 1 && statuses[0] === CampaignStatus.ACTIVE;
+    const cacheable =
+      !options.bypassCache && statuses.length === 1 && statuses[0] === CampaignStatus.ACTIVE;
 
     if (cacheable) {
       const cached = await this.redis.getJson<CandidateCampaign[]>(candidatesKey(placement));
@@ -202,7 +242,10 @@ export class BannerFeedService {
         banners: {
           where: { placement, isActive: true },
           orderBy: [{ priority: 'desc' }, { sortOrder: 'asc' }],
-          include: { imageAr: { select: bannerMediaSelect }, imageEn: { select: bannerMediaSelect } },
+          include: {
+            imageAr: { select: bannerMediaSelect },
+            imageEn: { select: bannerMediaSelect },
+          },
         },
       },
       orderBy: [{ startsAt: 'desc' }, { id: 'desc' }],
@@ -266,8 +309,14 @@ export class BannerFeedService {
    * `banner_events` so a Redis eviction can never silently reset a cap. Anonymous viewers have no
    * durable identity, so caps do not apply to them.
    */
-  private async applyFrequencyCap(campaigns: CandidateCampaign[], viewer: BannerViewer, now: Date): Promise<CandidateCampaign[]> {
-    const capped = campaigns.filter((c) => c.frequencyCapPerDay !== null && c.frequencyCapPerDay > 0);
+  private async applyFrequencyCap(
+    campaigns: CandidateCampaign[],
+    viewer: BannerViewer,
+    now: Date,
+  ): Promise<CandidateCampaign[]> {
+    const capped = campaigns.filter(
+      (c) => c.frequencyCapPerDay !== null && c.frequencyCapPerDay > 0,
+    );
     if (!capped.length || viewer.userId === ANONYMOUS_VIEWER_ID) return campaigns;
 
     const day = utcDayKey(now);
@@ -284,10 +333,17 @@ export class BannerFeedService {
     });
 
     if (missing.length) {
-      const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const dayStart = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+      );
       const grouped = await this.prisma.bannerEvent.groupBy({
         by: ['campaignId'],
-        where: { userId: viewer.userId, campaignId: { in: missing }, type: BannerEventType.IMPRESSION, occurredAt: { gte: dayStart } },
+        where: {
+          userId: viewer.userId,
+          campaignId: { in: missing },
+          type: BannerEventType.IMPRESSION,
+          occurredAt: { gte: dayStart },
+        },
         _count: { _all: true },
       });
       const fromDb = new Map<string, number>(grouped.map((g) => [g.campaignId, g._count._all]));
@@ -295,7 +351,12 @@ export class BannerFeedService {
       for (const campaignId of missing) {
         const value = fromDb.get(campaignId) ?? 0;
         counts.set(campaignId, value);
-        await this.redis.client.set(frequencyKey(viewer.userId, campaignId, day), String(value), 'EX', ttl);
+        await this.redis.client.set(
+          frequencyKey(viewer.userId, campaignId, day),
+          String(value),
+          'EX',
+          ttl,
+        );
       }
     }
 
@@ -316,7 +377,10 @@ export class BannerFeedService {
   }
 
   /** Completed-job counts and service history drive the behavioural targeting rules. */
-  async viewerProfile(user: RequestUser | null, audience: 'CUSTOMER' | 'PARTNER'): Promise<ViewerProfile> {
+  async viewerProfile(
+    user: RequestUser | null,
+    audience: 'CUSTOMER' | 'PARTNER',
+  ): Promise<ViewerProfile> {
     if (!user) return { completedJobs: 0, isNewCustomer: true, usedJobTypes: [] };
 
     const cached = await this.redis.getJson<ViewerProfile>(viewerKey(user.id, audience));
@@ -325,7 +389,10 @@ export class BannerFeedService {
     let profile: ViewerProfile;
     if (audience === 'PARTNER') {
       const [partner, types] = await Promise.all([
-        this.prisma.partnerProfile.findUnique({ where: { userId: user.id }, select: { completedJobs: true, createdAt: true } }),
+        this.prisma.partnerProfile.findUnique({
+          where: { userId: user.id },
+          select: { completedJobs: true, createdAt: true },
+        }),
         this.prisma.job.groupBy({ by: ['type'], where: { partnerId: user.id } }),
       ]);
       profile = {
@@ -335,7 +402,10 @@ export class BannerFeedService {
       };
     } else {
       const [customer, types] = await Promise.all([
-        this.prisma.customerProfile.findUnique({ where: { userId: user.id }, select: { completedJobs: true, firstJobAt: true } }),
+        this.prisma.customerProfile.findUnique({
+          where: { userId: user.id },
+          select: { completedJobs: true, firstJobAt: true },
+        }),
         this.prisma.job.groupBy({ by: ['type'], where: { customerId: user.id } }),
       ]);
       profile = {

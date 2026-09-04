@@ -38,7 +38,11 @@ export const mediaUploadIntentSchema = z.object({
   ]),
   kind: z.enum(['IMAGE', 'VIDEO', 'AUDIO', 'DOCUMENT']),
   mimeType: z.string().regex(/^[a-z]+\/[a-z0-9.+-]+$/i),
-  sizeBytes: z.number().int().min(1).max(200 * 1024 * 1024),
+  sizeBytes: z
+    .number()
+    .int()
+    .min(1)
+    .max(200 * 1024 * 1024),
   originalFilename: z.string().trim().max(200).optional(),
 });
 

@@ -56,7 +56,13 @@ function withMedia(documents: DocumentFixture[]) {
     expiryNotifiedAt: null,
     createdAt: new Date('2024-02-01T00:00:00.000Z'),
     updatedAt: new Date('2024-02-01T00:00:00.000Z'),
-    media: { bucket: 'private', objectKey: `partner_document/${d.id}.pdf`, isPublic: false, mediumKey: null, thumbnailKey: null },
+    media: {
+      bucket: 'private',
+      objectKey: `partner_document/${d.id}.pdf`,
+      isPublic: false,
+      mediumKey: null,
+      thumbnailKey: null,
+    },
   }));
 }
 
@@ -89,7 +95,10 @@ function partnerFixture(options: PartnerFixtureOptions = {}) {
     verificationStatus: options.verificationStatus ?? VerificationStatus.DRAFT,
     suspendedUntil: options.suspendedUntil ?? null,
     onboardingStep: options.onboardingStep ?? PARTNER_ONBOARDING_STEPS.ZONES,
-    dateOfBirth: options.dateOfBirth === undefined ? new Date('1990-05-01T00:00:00.000Z') : options.dateOfBirth,
+    dateOfBirth:
+      options.dateOfBirth === undefined
+        ? new Date('1990-05-01T00:00:00.000Z')
+        : options.dateOfBirth,
     nationalIdEnc: options.nationalIdEnc === undefined ? 'enc:national-id' : options.nationalIdEnc,
     city: options.city === undefined ? 'Ramallah' : options.city,
     yearsOfExperience: 5,
@@ -110,7 +119,12 @@ function partnerFixture(options: PartnerFixtureOptions = {}) {
       currency: 'ILS',
       profileImage: null,
     },
-    roles: roles.map((role) => ({ partnerId: PARTNER_ID, role, isActive: true, createdAt: new Date() })),
+    roles: roles.map((role) => ({
+      partnerId: PARTNER_ID,
+      role,
+      isActive: true,
+      createdAt: new Date(),
+    })),
     skills: [{ partnerId: PARTNER_ID, skill: 'plumbing', createdAt: new Date() }],
     categories: categoryIds.map((categoryId) => ({
       categoryId,
@@ -140,11 +154,18 @@ function partnerFixture(options: PartnerFixtureOptions = {}) {
       ? {
           id: activeVehicleId,
           isActive: true,
-          verificationStatus: options.activeVehicleApproved === false ? VerificationStatus.PENDING : VerificationStatus.APPROVED,
+          verificationStatus:
+            options.activeVehicleApproved === false
+              ? VerificationStatus.PENDING
+              : VerificationStatus.APPROVED,
         }
       : null,
     wallet: { balanceMinor: 12500n, currency: 'ILS' },
-    documents: options.documents ?? withMedia([{ id: 'doc-1', type: DocumentType.ID, status: DocumentStatus.APPROVED, expiresAt: null }]),
+    documents:
+      options.documents ??
+      withMedia([
+        { id: 'doc-1', type: DocumentType.ID, status: DocumentStatus.APPROVED, expiresAt: null },
+      ]),
   };
 }
 
@@ -202,7 +223,9 @@ describe('PartnersService.submitForReview', () => {
     const partner = partnerFixture({
       roles: [PartnerRoleType.DRIVER],
       requiredDocumentTypes: [DocumentType.ID, DocumentType.DRIVING_LICENSE],
-      documents: withMedia([{ id: 'doc-1', type: DocumentType.ID, status: DocumentStatus.APPROVED, expiresAt: null }]),
+      documents: withMedia([
+        { id: 'doc-1', type: DocumentType.ID, status: DocumentStatus.APPROVED, expiresAt: null },
+      ]),
       zoneIds: [],
     });
     const prisma = {
@@ -211,12 +234,15 @@ describe('PartnersService.submitForReview', () => {
     };
     const service = buildService(prisma);
 
-    await expect(service.submitForReview(PARTNER_ID, '2025-01')).rejects.toMatchObject({ code: ErrorCode.VALIDATION_FAILED });
+    await expect(service.submitForReview(PARTNER_ID, '2025-01')).rejects.toMatchObject({
+      code: ErrorCode.VALIDATION_FAILED,
+    });
     try {
       await service.submitForReview(PARTNER_ID, '2025-01');
       throw new Error('expected submitForReview to throw');
     } catch (err) {
-      const details = (err as { details?: Array<{ field: string; message: string }> }).details ?? [];
+      const details =
+        (err as { details?: Array<{ field: string; message: string }> }).details ?? [];
       const fields = details.map((d) => d.field);
       expect(fields).toContain('documents');
       expect(fields).toContain('vehicle');
@@ -228,7 +254,12 @@ describe('PartnersService.submitForReview', () => {
   it('rejects a file whose required document has expired', async () => {
     const partner = partnerFixture({
       documents: withMedia([
-        { id: 'doc-1', type: DocumentType.ID, status: DocumentStatus.APPROVED, expiresAt: new Date('2020-01-01T00:00:00.000Z') },
+        {
+          id: 'doc-1',
+          type: DocumentType.ID,
+          status: DocumentStatus.APPROVED,
+          expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+        },
       ]),
     });
     const prisma = {
@@ -237,7 +268,9 @@ describe('PartnersService.submitForReview', () => {
     };
     const service = buildService(prisma);
 
-    await expect(service.submitForReview(PARTNER_ID, '2025-01')).rejects.toMatchObject({ code: ErrorCode.VALIDATION_FAILED });
+    await expect(service.submitForReview(PARTNER_ID, '2025-01')).rejects.toMatchObject({
+      code: ErrorCode.VALIDATION_FAILED,
+    });
     expect(prisma.partnerProfile.update).not.toHaveBeenCalled();
   });
 
@@ -249,7 +282,9 @@ describe('PartnersService.submitForReview', () => {
     };
     const service = buildService(prisma);
 
-    await expect(service.submitForReview(PARTNER_ID, '2025-01')).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
+    await expect(service.submitForReview(PARTNER_ID, '2025-01')).rejects.toMatchObject({
+      code: ErrorCode.CONFLICT,
+    });
   });
 
   it('refuses to resubmit an approved file', async () => {
@@ -260,7 +295,9 @@ describe('PartnersService.submitForReview', () => {
     };
     const service = buildService(prisma);
 
-    await expect(service.submitForReview(PARTNER_ID, '2025-01')).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
+    await expect(service.submitForReview(PARTNER_ID, '2025-01')).rejects.toMatchObject({
+      code: ErrorCode.CONFLICT,
+    });
   });
 });
 
@@ -270,7 +307,12 @@ describe('PartnerAvailabilityService', () => {
 
   type AvailabilityUpsertArgs = {
     where: { partnerId: string };
-    update: { status?: string; onlineSince?: Date | null; lastHeartbeatAt?: Date; batteryPercent?: number | null };
+    update: {
+      status?: string;
+      onlineSince?: Date | null;
+      lastHeartbeatAt?: Date;
+      batteryPercent?: number | null;
+    };
     create: Record<string, unknown>;
   };
 
@@ -282,8 +324,16 @@ describe('PartnerAvailabilityService', () => {
     const update = jest.fn(async () => partner.availability);
     return {
       mock: {
-        partnerProfile: { findUnique: jest.fn(async () => partner), update: jest.fn(async () => partner) },
-        partnerAvailability: { upsert, update, updateMany: jest.fn(async () => ({ count: 3 })), findUnique: jest.fn(async () => partner.availability) },
+        partnerProfile: {
+          findUnique: jest.fn(async () => partner),
+          update: jest.fn(async () => partner),
+        },
+        partnerAvailability: {
+          upsert,
+          update,
+          updateMany: jest.fn(async () => ({ count: 3 })),
+          findUnique: jest.fn(async () => partner.availability),
+        },
         vehicle: { findFirst: jest.fn(async () => ({ id: VEHICLE_ID })) },
         $transaction: jest.fn(async (cb: (tx: unknown) => Promise<unknown>) =>
           cb({
@@ -302,7 +352,9 @@ describe('PartnerAvailabilityService', () => {
     const { mock } = prismaFor(partner);
     const service = buildService(mock);
 
-    await expect(service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.ONLINE })).rejects.toMatchObject({
+    await expect(
+      service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.ONLINE }),
+    ).rejects.toMatchObject({
       code: ErrorCode.PARTNER_NOT_APPROVED,
     });
   });
@@ -311,13 +363,20 @@ describe('PartnerAvailabilityService', () => {
     const partner = partnerFixture({
       verificationStatus: VerificationStatus.APPROVED,
       documents: withMedia([
-        { id: 'doc-1', type: DocumentType.ID, status: DocumentStatus.APPROVED, expiresAt: new Date('2020-01-01T00:00:00.000Z') },
+        {
+          id: 'doc-1',
+          type: DocumentType.ID,
+          status: DocumentStatus.APPROVED,
+          expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+        },
       ]),
     });
     const { mock } = prismaFor(partner);
     const service = buildService(mock);
 
-    await expect(service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.ONLINE })).rejects.toMatchObject({
+    await expect(
+      service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.ONLINE }),
+    ).rejects.toMatchObject({
       code: ErrorCode.PARTNER_NOT_APPROVED,
     });
   });
@@ -331,13 +390,19 @@ describe('PartnerAvailabilityService', () => {
     const { mock } = prismaFor(partner);
     const service = buildService(mock);
 
-    await expect(service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.ONLINE })).rejects.toMatchObject({
+    await expect(
+      service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.ONLINE }),
+    ).rejects.toMatchObject({
       code: ErrorCode.PARTNER_NOT_APPROVED,
     });
   });
 
   it('lets an approved partner with a valid file go ONLINE', async () => {
-    const partner = partnerFixture({ verificationStatus: VerificationStatus.APPROVED, roles: [PartnerRoleType.DRIVER], activeVehicleId: VEHICLE_ID });
+    const partner = partnerFixture({
+      verificationStatus: VerificationStatus.APPROVED,
+      roles: [PartnerRoleType.DRIVER],
+      activeVehicleId: VEHICLE_ID,
+    });
     const { mock, upsert } = prismaFor(partner);
     const service = buildService(mock);
 
@@ -359,29 +424,45 @@ describe('PartnerAvailabilityService', () => {
     const { mock } = prismaFor(partner);
     const service = buildService(mock);
 
-    await expect(service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.OFFLINE })).rejects.toMatchObject({
+    await expect(
+      service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.OFFLINE }),
+    ).rejects.toMatchObject({
       code: ErrorCode.PARTNER_NOT_AVAILABLE,
     });
   });
 
   it('rejects an activeRole the partner does not hold', async () => {
-    const partner = partnerFixture({ verificationStatus: VerificationStatus.APPROVED, roles: [PartnerRoleType.TECHNICIAN] });
+    const partner = partnerFixture({
+      verificationStatus: VerificationStatus.APPROVED,
+      roles: [PartnerRoleType.TECHNICIAN],
+    });
     const { mock } = prismaFor(partner);
     const service = buildService(mock);
 
     await expect(
-      service.setAvailability(PARTNER_ID, { status: AvailabilityStatus.OFFLINE, activeRoles: [PartnerRoleType.DRIVER] }),
+      service.setAvailability(PARTNER_ID, {
+        status: AvailabilityStatus.OFFLINE,
+        activeRoles: [PartnerRoleType.DRIVER],
+      }),
     ).rejects.toMatchObject({ code: ErrorCode.VALIDATION_FAILED });
   });
 
   it('records the heartbeat and rejects a stale location sample', async () => {
-    const partner = partnerFixture({ verificationStatus: VerificationStatus.APPROVED, availabilityStatus: AvailabilityStatus.ONLINE });
+    const partner = partnerFixture({
+      verificationStatus: VerificationStatus.APPROVED,
+      availabilityStatus: AvailabilityStatus.ONLINE,
+    });
     const { mock, upsert, update } = prismaFor(partner);
     const service = buildService(mock);
 
     await expect(
       service.heartbeat(PARTNER_ID, {
-        location: { lat: 31.9, lng: 35.2, accuracy: 10, timestamp: new Date(Date.now() - 600_000).toISOString() },
+        location: {
+          lat: 31.9,
+          lng: 35.2,
+          accuracy: 10,
+          timestamp: new Date(Date.now() - 600_000).toISOString(),
+        },
       }),
     ).rejects.toMatchObject({ code: ErrorCode.STALE_LOCATION });
     // The heartbeat itself is stored first so a bad GPS fix never drops the partner offline.
@@ -390,7 +471,10 @@ describe('PartnerAvailabilityService', () => {
   });
 
   it('rejects a location sample whose accuracy is worse than the configured limit', async () => {
-    const partner = partnerFixture({ verificationStatus: VerificationStatus.APPROVED, availabilityStatus: AvailabilityStatus.ONLINE });
+    const partner = partnerFixture({
+      verificationStatus: VerificationStatus.APPROVED,
+      availabilityStatus: AvailabilityStatus.ONLINE,
+    });
     const { mock } = prismaFor(partner);
     const service = buildService(mock);
 
@@ -402,12 +486,22 @@ describe('PartnerAvailabilityService', () => {
   });
 
   it('stores a fresh, accurate location sample', async () => {
-    const partner = partnerFixture({ verificationStatus: VerificationStatus.APPROVED, availabilityStatus: AvailabilityStatus.ONLINE });
+    const partner = partnerFixture({
+      verificationStatus: VerificationStatus.APPROVED,
+      availabilityStatus: AvailabilityStatus.ONLINE,
+    });
     const { mock, update } = prismaFor(partner);
     const service = buildService(mock);
 
     const result = await service.heartbeat(PARTNER_ID, {
-      location: { lat: 31.9, lng: 35.2, accuracy: 12, heading: 90, speed: 8, timestamp: new Date().toISOString() },
+      location: {
+        lat: 31.9,
+        lng: 35.2,
+        accuracy: 12,
+        heading: 90,
+        speed: 8,
+        timestamp: new Date().toISOString(),
+      },
       batteryPercent: 77,
     });
 
@@ -447,8 +541,7 @@ describe('PartnerAvailabilityService', () => {
 
     await expect(service.markOfflineStale()).resolves.toBe(3);
     const call = (mock.partnerAvailability.updateMany as jest.Mock).mock.calls[0]?.[0] as
-      | { where: { currentJobId: string | null }; data: { status: string } }
-      | undefined;
+      { where: { currentJobId: string | null }; data: { status: string } } | undefined;
     expect(call?.where.currentJobId).toBeNull();
     expect(call?.data.status).toBe(AvailabilityStatus.OFFLINE);
   });

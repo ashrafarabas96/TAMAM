@@ -89,7 +89,11 @@ export const JobType = {
 } as const;
 export type JobType = (typeof JobType)[keyof typeof JobType];
 
-export const V1_JOB_TYPES: readonly JobType[] = [JobType.RIDE, JobType.DELIVERY, JobType.HOME_SERVICE];
+export const V1_JOB_TYPES: readonly JobType[] = [
+  JobType.RIDE,
+  JobType.DELIVERY,
+  JobType.HOME_SERVICE,
+];
 
 /**
  * Unified Job status. Ride/Delivery use the mobility subset; Home Service adds the
@@ -158,10 +162,20 @@ export type JobUrgency = (typeof JobUrgency)[keyof typeof JobUrgency];
 export const SchedulingMode = { NOW: 'NOW', SCHEDULED: 'SCHEDULED' } as const;
 export type SchedulingMode = (typeof SchedulingMode)[keyof typeof SchedulingMode];
 
-export const JobStopKind = { PICKUP: 'PICKUP', DROPOFF: 'DROPOFF', WAYPOINT: 'WAYPOINT', SERVICE_LOCATION: 'SERVICE_LOCATION' } as const;
+export const JobStopKind = {
+  PICKUP: 'PICKUP',
+  DROPOFF: 'DROPOFF',
+  WAYPOINT: 'WAYPOINT',
+  SERVICE_LOCATION: 'SERVICE_LOCATION',
+} as const;
 export type JobStopKind = (typeof JobStopKind)[keyof typeof JobStopKind];
 
-export const JobActorType = { CUSTOMER: 'CUSTOMER', PARTNER: 'PARTNER', ADMIN: 'ADMIN', SYSTEM: 'SYSTEM' } as const;
+export const JobActorType = {
+  CUSTOMER: 'CUSTOMER',
+  PARTNER: 'PARTNER',
+  ADMIN: 'ADMIN',
+  SYSTEM: 'SYSTEM',
+} as const;
 export type JobActorType = (typeof JobActorType)[keyof typeof JobActorType];
 
 export const AssignmentStatus = {
@@ -174,7 +188,12 @@ export const AssignmentStatus = {
 } as const;
 export type AssignmentStatus = (typeof AssignmentStatus)[keyof typeof AssignmentStatus];
 
-export const CancellationActor = { CUSTOMER: 'CUSTOMER', PARTNER: 'PARTNER', ADMIN: 'ADMIN', SYSTEM: 'SYSTEM' } as const;
+export const CancellationActor = {
+  CUSTOMER: 'CUSTOMER',
+  PARTNER: 'PARTNER',
+  ADMIN: 'ADMIN',
+  SYSTEM: 'SYSTEM',
+} as const;
 export type CancellationActor = (typeof CancellationActor)[keyof typeof CancellationActor];
 
 /* ----------------------------------------------------------------- quotes */
@@ -244,10 +263,19 @@ export const PaymentStatus = {
 } as const;
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
 
-export const RefundStatus = { PENDING: 'PENDING', PROCESSED: 'PROCESSED', FAILED: 'FAILED', REJECTED: 'REJECTED' } as const;
+export const RefundStatus = {
+  PENDING: 'PENDING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED',
+  REJECTED: 'REJECTED',
+} as const;
 export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus];
 
-export const WalletOwnerType = { CUSTOMER: 'CUSTOMER', PARTNER: 'PARTNER', PLATFORM: 'PLATFORM' } as const;
+export const WalletOwnerType = {
+  CUSTOMER: 'CUSTOMER',
+  PARTNER: 'PARTNER',
+  PLATFORM: 'PLATFORM',
+} as const;
 export type WalletOwnerType = (typeof WalletOwnerType)[keyof typeof WalletOwnerType];
 
 export const LedgerAccountType = {
@@ -280,9 +308,15 @@ export const LedgerTransactionType = {
   MANUAL_ADJUSTMENT: 'MANUAL_ADJUSTMENT',
   DISPUTE_SETTLEMENT: 'DISPUTE_SETTLEMENT',
 } as const;
-export type LedgerTransactionType = (typeof LedgerTransactionType)[keyof typeof LedgerTransactionType];
+export type LedgerTransactionType =
+  (typeof LedgerTransactionType)[keyof typeof LedgerTransactionType];
 
-export const WithdrawalStatus = { REQUESTED: 'REQUESTED', APPROVED: 'APPROVED', PAID: 'PAID', REJECTED: 'REJECTED' } as const;
+export const WithdrawalStatus = {
+  REQUESTED: 'REQUESTED',
+  APPROVED: 'APPROVED',
+  PAID: 'PAID',
+  REJECTED: 'REJECTED',
+} as const;
 export type WithdrawalStatus = (typeof WithdrawalStatus)[keyof typeof WithdrawalStatus];
 
 /* -------------------------------------------------------------- promotions */
@@ -300,7 +334,12 @@ export const CommissionScope = {
 export type CommissionScope = (typeof CommissionScope)[keyof typeof CommissionScope];
 
 /* ------------------------------------------------------------ notifications */
-export const NotificationChannel = { PUSH: 'PUSH', IN_APP: 'IN_APP', SMS: 'SMS', EMAIL: 'EMAIL' } as const;
+export const NotificationChannel = {
+  PUSH: 'PUSH',
+  IN_APP: 'IN_APP',
+  SMS: 'SMS',
+  EMAIL: 'EMAIL',
+} as const;
 export type NotificationChannel = (typeof NotificationChannel)[keyof typeof NotificationChannel];
 
 export const NotificationEvent = {
@@ -329,11 +368,22 @@ export const NotificationEvent = {
 } as const;
 export type NotificationEvent = (typeof NotificationEvent)[keyof typeof NotificationEvent];
 
-export const NotificationStatus = { QUEUED: 'QUEUED', SENT: 'SENT', DELIVERED: 'DELIVERED', READ: 'READ', FAILED: 'FAILED' } as const;
+export const NotificationStatus = {
+  QUEUED: 'QUEUED',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  READ: 'READ',
+  FAILED: 'FAILED',
+} as const;
 export type NotificationStatus = (typeof NotificationStatus)[keyof typeof NotificationStatus];
 
 /* ------------------------------------------------------------------- chat */
-export const MessageType = { TEXT: 'TEXT', IMAGE: 'IMAGE', LOCATION: 'LOCATION', SYSTEM: 'SYSTEM' } as const;
+export const MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  LOCATION: 'LOCATION',
+  SYSTEM: 'SYSTEM',
+} as const;
 export type MessageType = (typeof MessageType)[keyof typeof MessageType];
 
 /* ---------------------------------------------------------------- support */
@@ -349,7 +399,12 @@ export const TicketCategory = {
 } as const;
 export type TicketCategory = (typeof TicketCategory)[keyof typeof TicketCategory];
 
-export const TicketPriority = { LOW: 'LOW', NORMAL: 'NORMAL', HIGH: 'HIGH', CRITICAL: 'CRITICAL' } as const;
+export const TicketPriority = {
+  LOW: 'LOW',
+  NORMAL: 'NORMAL',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL',
+} as const;
 export type TicketPriority = (typeof TicketPriority)[keyof typeof TicketPriority];
 
 export const TicketStatus = {
@@ -404,7 +459,11 @@ export const BannerActionType = {
 } as const;
 export type BannerActionType = (typeof BannerActionType)[keyof typeof BannerActionType];
 
-export const BannerEventType = { IMPRESSION: 'IMPRESSION', CLICK: 'CLICK', DISMISS: 'DISMISS' } as const;
+export const BannerEventType = {
+  IMPRESSION: 'IMPRESSION',
+  CLICK: 'CLICK',
+  DISMISS: 'DISMISS',
+} as const;
 export type BannerEventType = (typeof BannerEventType)[keyof typeof BannerEventType];
 
 /* ------------------------------------------------------------------- risk */
@@ -418,8 +477,13 @@ export const RiskSignal = {
 } as const;
 export type RiskSignal = (typeof RiskSignal)[keyof typeof RiskSignal];
 
-export const RestrictionTargetType = { USER: 'USER', PARTNER: 'PARTNER', DEVICE: 'DEVICE' } as const;
-export type RestrictionTargetType = (typeof RestrictionTargetType)[keyof typeof RestrictionTargetType];
+export const RestrictionTargetType = {
+  USER: 'USER',
+  PARTNER: 'PARTNER',
+  DEVICE: 'DEVICE',
+} as const;
+export type RestrictionTargetType =
+  (typeof RestrictionTargetType)[keyof typeof RestrictionTargetType];
 
 /** Mirrors the `restriction_kind` enum in schema.prisma. */
 export const RestrictionKind = {
@@ -432,7 +496,12 @@ export const RestrictionKind = {
 export type RestrictionKind = (typeof RestrictionKind)[keyof typeof RestrictionKind];
 
 /* ------------------------------------------------------------------ media */
-export const MediaKind = { IMAGE: 'IMAGE', VIDEO: 'VIDEO', AUDIO: 'AUDIO', DOCUMENT: 'DOCUMENT' } as const;
+export const MediaKind = {
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  DOCUMENT: 'DOCUMENT',
+} as const;
 export type MediaKind = (typeof MediaKind)[keyof typeof MediaKind];
 
 export const MediaPurpose = {
@@ -462,7 +531,14 @@ export type MediaStatus = (typeof MediaStatus)[keyof typeof MediaStatus];
 
 /* ---------------------------------------------------------------- banners */
 /** Theme keys defined in `packages/ui-tokens/tokens.json` under `banner.themes`. */
-export const BANNER_THEMES = ['purple', 'yellow', 'dark', 'light', 'gradientPurple', 'gradientSunset'] as const;
+export const BANNER_THEMES = [
+  'purple',
+  'yellow',
+  'dark',
+  'light',
+  'gradientPurple',
+  'gradientSunset',
+] as const;
 export type BannerTheme = (typeof BANNER_THEMES)[number];
 
 /* ---------------------------------------------------------------- currency */

@@ -43,7 +43,11 @@ export function isTokenFresh(): boolean {
 /** Asks the session route for a token, forcing a refresh-token rotation when `force` is set. */
 export async function fetchSessionToken(force = false): Promise<TokenResponse | null> {
   try {
-    const response = await fetch(`/api/session/token${force ? '?force=1' : ''}`, { method: 'GET', credentials: 'same-origin', cache: 'no-store' });
+    const response = await fetch(`/api/session/token${force ? '?force=1' : ''}`, {
+      method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store',
+    });
     if (!response.ok) return null;
     return (await response.json()) as TokenResponse;
   } catch {

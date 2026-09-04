@@ -10,7 +10,13 @@ import {
 } from '@tamam/validation';
 import { z } from 'zod';
 
-import { AllowRestricted, CurrentUser, RequireRole, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  CurrentUser,
+  RequireRole,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -43,12 +49,19 @@ export class CustomersController {
   }
 
   @Post('customers/me/places')
-  createPlace(@CurrentUser() user: RequestUser, @ZodBody(upsertSavedPlaceSchema) input: UpsertSavedPlaceInput) {
+  createPlace(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(upsertSavedPlaceSchema) input: UpsertSavedPlaceInput,
+  ) {
     return this.customers.upsertPlace(user.id, input);
   }
 
   @Put('customers/me/places/:id')
-  updatePlace(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string, @ZodBody(upsertSavedPlaceSchema) input: UpsertSavedPlaceInput) {
+  updatePlace(
+    @CurrentUser() user: RequestUser,
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(upsertSavedPlaceSchema) input: UpsertSavedPlaceInput,
+  ) {
     return this.customers.updatePlace(user.id, id, input);
   }
 
@@ -67,12 +80,18 @@ export class CustomersController {
   }
 
   @Post('customers/me/favorites')
-  addFavorite(@CurrentUser() user: RequestUser, @ZodBody(favoriteServiceSchema) input: FavoriteServiceBody) {
+  addFavorite(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(favoriteServiceSchema) input: FavoriteServiceBody,
+  ) {
     return this.customers.addFavorite(user.id, input.categoryId);
   }
 
   @Delete('customers/me/favorites/:categoryId')
-  removeFavorite(@CurrentUser() user: RequestUser, @Param('categoryId', UuidPipe) categoryId: string) {
+  removeFavorite(
+    @CurrentUser() user: RequestUser,
+    @Param('categoryId', UuidPipe) categoryId: string,
+  ) {
     return this.customers.removeFavorite(user.id, categoryId);
   }
 
@@ -86,7 +105,10 @@ export class CustomersController {
 
   @Get('customers/me/jobs')
   @AllowRestricted()
-  jobs(@CurrentUser() user: RequestUser, @ZodQuery(customerJobsQuerySchema) query: CustomerJobsQuery) {
+  jobs(
+    @CurrentUser() user: RequestUser,
+    @ZodQuery(customerJobsQuerySchema) query: CustomerJobsQuery,
+  ) {
     return this.customers.listJobs(user.id, query);
   }
 

@@ -20,7 +20,11 @@ export const dayMs = 86_400_000;
  * the warning window, and not warned about yet. Rejected/expired documents are skipped — their
  * owner already has a different message.
  */
-export function documentsToWarn(documents: ExpiringDocument[], now: Date, warningDays = DOCUMENT_EXPIRY_WARNING_DAYS): ExpiringDocument[] {
+export function documentsToWarn(
+  documents: ExpiringDocument[],
+  now: Date,
+  warningDays = DOCUMENT_EXPIRY_WARNING_DAYS,
+): ExpiringDocument[] {
   const horizon = now.getTime() + warningDays * dayMs;
   return documents.filter(
     (doc) =>
@@ -34,7 +38,13 @@ export function documentsToWarn(documents: ExpiringDocument[], now: Date, warnin
 
 /** Documents whose expiry date has passed and that are not flagged EXPIRED yet. */
 export function documentsToExpire(documents: ExpiringDocument[], now: Date): ExpiringDocument[] {
-  return documents.filter((doc) => doc.expiresAt !== null && doc.expiresAt.getTime() < now.getTime() && doc.status !== 'EXPIRED' && doc.status !== 'REJECTED');
+  return documents.filter(
+    (doc) =>
+      doc.expiresAt !== null &&
+      doc.expiresAt.getTime() < now.getTime() &&
+      doc.status !== 'EXPIRED' &&
+      doc.status !== 'REJECTED',
+  );
 }
 
 /** Whole days left before a document lapses (never negative) — used in the notification text. */

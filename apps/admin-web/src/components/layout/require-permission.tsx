@@ -8,7 +8,15 @@ import { ForbiddenState } from '@/components/ui/states';
 import { useSession } from '@/lib/auth/session-context';
 
 /** Renders children only when the staff user holds ANY of the permissions; otherwise a 403 state. */
-export function RequirePermission({ anyOf, children, fallback }: { anyOf: readonly Permission[]; children: ReactNode; fallback?: ReactNode }) {
+export function RequirePermission({
+  anyOf,
+  children,
+  fallback,
+}: {
+  anyOf: readonly Permission[];
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
   const { status, permissions } = useSession();
   if (status === 'loading') return null;
   if (!permissions.canAny(...anyOf)) return <>{fallback ?? <ForbiddenState />}</>;

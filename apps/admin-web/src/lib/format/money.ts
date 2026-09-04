@@ -1,10 +1,18 @@
-import { CURRENCY_MINOR_UNITS, type CurrencyCode, DEFAULT_CURRENCY, type Money, SUPPORTED_CURRENCIES } from '@tamam/shared-types';
+import {
+  CURRENCY_MINOR_UNITS,
+  type CurrencyCode,
+  DEFAULT_CURRENCY,
+  type Money,
+  SUPPORTED_CURRENCIES,
+} from '@tamam/shared-types';
 
 const LOCALE_TAGS: Record<'ar' | 'en', string> = { ar: 'ar-PS', en: 'en-US' };
 
-const fractionDigits = (currency: CurrencyCode): number => Math.round(Math.log10(CURRENCY_MINOR_UNITS[currency]));
+const fractionDigits = (currency: CurrencyCode): number =>
+  Math.round(Math.log10(CURRENCY_MINOR_UNITS[currency]));
 
-export const isSupportedCurrency = (value: string): value is CurrencyCode => (SUPPORTED_CURRENCIES as readonly string[]).includes(value);
+export const isSupportedCurrency = (value: string): value is CurrencyCode =>
+  (SUPPORTED_CURRENCIES as readonly string[]).includes(value);
 
 /** Integer minor units → major units as a JS number (display only; never send this back to the API). */
 export function minorToMajor(amountMinor: number, currency: CurrencyCode): number {
@@ -28,9 +36,14 @@ export interface FormatMoneyOptions {
  * Formats `{ amount, currency }` (minor units) with `Intl.NumberFormat`. ILS shows two decimals,
  * JOD three. Arabic output uses Latin digits so IDs, money and phone numbers stay copy-pasteable.
  */
-export function formatMoney(money: Money | { amount: number; currency: string } | null | undefined, options: FormatMoneyOptions = {}): string {
+export function formatMoney(
+  money: Money | { amount: number; currency: string } | null | undefined,
+  options: FormatMoneyOptions = {},
+): string {
   if (!money) return '—';
-  const currency: CurrencyCode = isSupportedCurrency(money.currency) ? money.currency : DEFAULT_CURRENCY;
+  const currency: CurrencyCode = isSupportedCurrency(money.currency)
+    ? money.currency
+    : DEFAULT_CURRENCY;
   const locale = options.locale ?? 'ar';
   const digits = fractionDigits(currency);
   const value = minorToMajor(money.amount, currency);
@@ -45,17 +58,34 @@ export function formatMoney(money: Money | { amount: number; currency: string } 
   return formatter.format(value).replace(/ /g, ' ');
 }
 
-export function formatMinor(amountMinor: number | bigint | null | undefined, currency: string, options?: FormatMoneyOptions): string {
+export function formatMinor(
+  amountMinor: number | bigint | null | undefined,
+  currency: string,
+  options?: FormatMoneyOptions,
+): string {
   if (amountMinor === null || amountMinor === undefined) return '—';
   return formatMoney({ amount: Number(amountMinor), currency }, options);
 }
 
-export function formatPercent(value: number | null | undefined, locale: 'ar' | 'en' = 'ar', digits = 1): string {
+export function formatPercent(
+  value: number | null | undefined,
+  locale: 'ar' | 'en' = 'ar',
+  digits = 1,
+): string {
   if (value === null || value === undefined || Number.isNaN(value)) return '—';
-  return new Intl.NumberFormat(`${LOCALE_TAGS[locale]}-u-nu-latn`, { style: 'percent', maximumFractionDigits: digits }).format(value);
+  return new Intl.NumberFormat(`${LOCALE_TAGS[locale]}-u-nu-latn`, {
+    style: 'percent',
+    maximumFractionDigits: digits,
+  }).format(value);
 }
 
-export function formatNumber(value: number | null | undefined, locale: 'ar' | 'en' = 'ar', digits = 0): string {
+export function formatNumber(
+  value: number | null | undefined,
+  locale: 'ar' | 'en' = 'ar',
+  digits = 0,
+): string {
   if (value === null || value === undefined || Number.isNaN(value)) return '—';
-  return new Intl.NumberFormat(`${LOCALE_TAGS[locale]}-u-nu-latn`, { maximumFractionDigits: digits }).format(value);
+  return new Intl.NumberFormat(`${LOCALE_TAGS[locale]}-u-nu-latn`, {
+    maximumFractionDigits: digits,
+  }).format(value);
 }

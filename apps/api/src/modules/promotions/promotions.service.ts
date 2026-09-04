@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { ErrorCode, type JobType, type Money, type Page, PaymentMethod, type PromoType } from '@tamam/shared-types';
+import {
+  ErrorCode,
+  type JobType,
+  type Money,
+  type Page,
+  PaymentMethod,
+  type PromoType,
+} from '@tamam/shared-types';
 import type { ApplyPromoInput, UpsertPromoCodeInput } from '@tamam/validation';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -94,7 +101,11 @@ export interface PromoListFilter {
   limit: number;
 }
 
-const promoInclude = { categories: true, zones: true, users: true } satisfies Prisma.PromoCodeInclude;
+const promoInclude = {
+  categories: true,
+  zones: true,
+  users: true,
+} satisfies Prisma.PromoCodeInclude;
 type PromoRow = Prisma.PromoCodeGetPayload<{ include: typeof promoInclude }>;
 
 /**
@@ -114,12 +125,21 @@ export class PromotionsService {
 
   /** Validates a code for one customer and order, returning the discount it would give. */
   async evaluate(code: string, ctx: EvaluatePromoContext): Promise<PromoEvaluationResult> {
-    const promo = await this.prisma.promoCode.findUnique({ where: { code: code.trim().toUpperCase() }, include: promoInclude });
-    if (!promo) throw AppException.badRequest(ErrorCode.PROMO_INVALID, 'This promo code does not exist');
+    const promo = await this.prisma.promoCode.findUnique({
+      where: { code: code.trim().toUpperCase() },
+      include: promoInclude,
+    });
+    if (!promo)
+      throw AppException.badRequest(ErrorCode.PROMO_INVALID, 'This promo code does not exist');
 
     const [userRedemptions, customer] = await Promise.all([
-      this.prisma.promoRedemption.count({ where: { promoCodeId: promo.id, customerId: ctx.userId, releasedAt: null } }),
-      this.prisma.customerProfile.findUnique({ where: { userId: ctx.userId }, select: { completedJobs: true, firstJobAt: true } }),
+      this.prisma.promoRedemption.count({
+        where: { promoCodeId: promo.id, customerId: ctx.userId, releasedAt: null },
+      }),
+      this.prisma.customerProfile.findUnique({
+        where: { userId: ctx.userId },
+        select: { completedJobs: true, firstJobAt: true },
+      }),
     ]);
     if (!customer) throw AppException.notFound('Customer profile', ctx.userId);
 
@@ -135,20 +155,33 @@ export class PromotionsService {
       userRedemptions,
       now: ctx.now ?? new Date(),
     });
-    if (!result.ok) throw AppException.badRequest(result.code, 'This promo code cannot be used for this order');
+    if (!result.ok)
+      throw AppException.badRequest(result.code, 'This promo code cannot be used for this order');
 
-    return { promoCodeId: promo.id, code: promo.code, discountMinor: result.discountMinor, currency: promo.currency };
+    return {
+      promoCodeId: promo.id,
+      code: promo.code,
+      discountMinor: result.discountMinor,
+      currency: promo.currency,
+    };
   }
 
   /**
    * Discount preview for a cached fare estimate — what the customer sees before confirming.
    * The estimate expires with its Redis key, after which the customer must re-estimate.
    */
-  async previewForEstimate(userId: string, input: ApplyPromoInput, paymentMethod?: PaymentMethod): Promise<PromoPreviewDto> {
+  async previewForEstimate(
+    userId: string,
+    input: ApplyPromoInput,
+    paymentMethod?: PaymentMethod,
+  ): Promise<PromoPreviewDto> {
     const estimate = await this.redis.getJson<CachedEstimate>(`estimate:${input.estimateId}`);
     if (!estimate) throw AppException.notFound('Estimate', input.estimateId);
     const subtotalMinor = BigInt(Math.trunc(Number(estimate.subtotalMinor)));
-    if (subtotalMinor < 0n) throw AppException.validation([{ field: 'estimateId', message: 'estimate has no usable total' }]);
+    if (subtotalMinor < 0n)
+      throw AppException.validation([
+        { field: 'estimateId', message: 'estimate has no usable total' },
+      ]);
 
     const result = await this.evaluate(input.code, {
       userId,
@@ -174,18 +207,34 @@ export class PromotionsService {
    * Reserves the redemption for a job. The usage counter is incremented with the limit check in
    * the same statement, so a burst of concurrent orders can never overshoot `usageLimit`.
    */
-  async reserve(jobId: string, promoCodeId: string, customerId: string, discountMinor: bigint, currency: string, tx: Tx): Promise<void> {
-    const existing = await tx.promoRedemption.findUnique({ where: { jobId }, select: { id: true } });
+  async reserve(
+    jobId: string,
+    promoCodeId: string,
+    customerId: string,
+    discountMinor: bigint,
+    currency: string,
+    tx: Tx,
+  ): Promise<void> {
+    const existing = await tx.promoRedemption.findUnique({
+      where: { jobId },
+      select: { id: true },
+    });
     if (existing) return;
 
     const claimed = await tx.$executeRaw`
       UPDATE promo_codes
       SET usage_count = usage_count + 1, updated_at = now()
       WHERE id = ${promoCodeId}::uuid AND (usage_limit IS NULL OR usage_count < usage_limit)`;
-    if (claimed === 0) throw AppException.badRequest(ErrorCode.PROMO_USAGE_EXCEEDED, 'This promo code has been fully redeemed');
+    if (claimed === 0)
+      throw AppException.badRequest(
+        ErrorCode.PROMO_USAGE_EXCEEDED,
+        'This promo code has been fully redeemed',
+      );
 
     try {
-      await tx.promoRedemption.create({ data: { promoCodeId, customerId, jobId, discountMinor, currency } });
+      await tx.promoRedemption.create({
+        data: { promoCodeId, customerId, jobId, discountMinor, currency },
+      });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
         // Another request reserved the same job first — give the counter back.
@@ -202,9 +251,15 @@ export class PromotionsService {
       await this.prisma.$transaction((t) => this.release(jobId, t));
       return;
     }
-    const redemption = await tx.promoRedemption.findUnique({ where: { jobId }, select: { id: true, promoCodeId: true, releasedAt: true } });
+    const redemption = await tx.promoRedemption.findUnique({
+      where: { jobId },
+      select: { id: true, promoCodeId: true, releasedAt: true },
+    });
     if (!redemption || redemption.releasedAt) return;
-    const released = await tx.promoRedemption.updateMany({ where: { id: redemption.id, releasedAt: null }, data: { releasedAt: new Date() } });
+    const released = await tx.promoRedemption.updateMany({
+      where: { id: redemption.id, releasedAt: null },
+      data: { releasedAt: new Date() },
+    });
     if (released.count === 0) return;
     await tx.$executeRaw`UPDATE promo_codes SET usage_count = GREATEST(usage_count - 1, 0), updated_at = now() WHERE id = ${redemption.promoCodeId}::uuid`;
     this.logger.info({ jobId, promoCodeId: redemption.promoCodeId }, 'promo redemption released');
@@ -237,7 +292,12 @@ export class PromotionsService {
    * Creates or updates a code. Without `id` the (unique) code string identifies the row, so
    * re-posting the same code edits it instead of failing on the unique index.
    */
-  async upsert(input: UpsertPromoCodeInput, actorId: string, requestId: string | null, id?: string): Promise<PromoCodeDto> {
+  async upsert(
+    input: UpsertPromoCodeInput,
+    actorId: string,
+    requestId: string | null,
+    id?: string,
+  ): Promise<PromoCodeDto> {
     const code = input.code.toUpperCase();
     const row = await this.prisma.$transaction(async (tx) => {
       const before = id
@@ -252,7 +312,10 @@ export class PromotionsService {
         description: input.description ?? null,
         type: input.type,
         value: new Prisma.Decimal(input.value),
-        maxDiscountMinor: input.maxDiscountMinor === undefined || input.maxDiscountMinor === null ? null : BigInt(input.maxDiscountMinor),
+        maxDiscountMinor:
+          input.maxDiscountMinor === undefined || input.maxDiscountMinor === null
+            ? null
+            : BigInt(input.maxDiscountMinor),
         minOrderMinor: BigInt(input.minOrderMinor),
         currency: input.currency,
         startsAt: new Date(input.startsAt),
@@ -272,13 +335,19 @@ export class PromotionsService {
       await tx.promoCodeZone.deleteMany({ where: { promoCodeId: promo.id } });
       await tx.promoCodeUser.deleteMany({ where: { promoCodeId: promo.id } });
       if (input.categoryIds.length) {
-        await tx.promoCodeCategory.createMany({ data: input.categoryIds.map((categoryId) => ({ promoCodeId: promo.id, categoryId })) });
+        await tx.promoCodeCategory.createMany({
+          data: input.categoryIds.map((categoryId) => ({ promoCodeId: promo.id, categoryId })),
+        });
       }
       if (input.zoneIds.length) {
-        await tx.promoCodeZone.createMany({ data: input.zoneIds.map((zoneId) => ({ promoCodeId: promo.id, zoneId })) });
+        await tx.promoCodeZone.createMany({
+          data: input.zoneIds.map((zoneId) => ({ promoCodeId: promo.id, zoneId })),
+        });
       }
       if (input.userIds.length) {
-        await tx.promoCodeUser.createMany({ data: input.userIds.map((userId) => ({ promoCodeId: promo.id, userId })) });
+        await tx.promoCodeUser.createMany({
+          data: input.userIds.map((userId) => ({ promoCodeId: promo.id, userId })),
+        });
       }
 
       await this.audit.record(
@@ -287,8 +356,20 @@ export class PromotionsService {
           action: before ? 'promo_code.update' : 'promo_code.create',
           entity: 'promo_code',
           entityId: promo.id,
-          oldValue: before ? { isActive: before.isActive, value: before.value.toString(), usageLimit: before.usageLimit } : null,
-          newValue: { code, type: input.type, value: input.value, isActive: input.isActive, usageLimit: input.usageLimit ?? null },
+          oldValue: before
+            ? {
+                isActive: before.isActive,
+                value: before.value.toString(),
+                usageLimit: before.usageLimit,
+              }
+            : null,
+          newValue: {
+            code,
+            type: input.type,
+            value: input.value,
+            isActive: input.isActive,
+            usageLimit: input.usageLimit ?? null,
+          },
           requestId,
         },
         tx,
@@ -299,13 +380,22 @@ export class PromotionsService {
   }
 
   async stats(promoCodeId: string): Promise<PromoStatsDto> {
-    const promo = await this.prisma.promoCode.findUnique({ where: { id: promoCodeId }, select: { id: true, code: true, currency: true, usageCount: true, usageLimit: true } });
+    const promo = await this.prisma.promoCode.findUnique({
+      where: { id: promoCodeId },
+      select: { id: true, code: true, currency: true, usageCount: true, usageLimit: true },
+    });
     if (!promo) throw AppException.notFound('Promo code', promoCodeId);
     const [redemptions, released, totals, customers] = await Promise.all([
       this.prisma.promoRedemption.count({ where: { promoCodeId } }),
       this.prisma.promoRedemption.count({ where: { promoCodeId, releasedAt: { not: null } } }),
-      this.prisma.promoRedemption.aggregate({ where: { promoCodeId, releasedAt: null }, _sum: { discountMinor: true } }),
-      this.prisma.promoRedemption.groupBy({ by: ['customerId'], where: { promoCodeId, releasedAt: null } }),
+      this.prisma.promoRedemption.aggregate({
+        where: { promoCodeId, releasedAt: null },
+        _sum: { discountMinor: true },
+      }),
+      this.prisma.promoRedemption.groupBy({
+        by: ['customerId'],
+        where: { promoCodeId, releasedAt: null },
+      }),
     ]);
     return {
       promoCodeId: promo.id,
@@ -352,7 +442,8 @@ export class PromotionsService {
       description: promo.description,
       type: promo.type,
       value: promo.value.toNumber(),
-      maxDiscount: promo.maxDiscountMinor === null ? null : toMoney(promo.maxDiscountMinor, promo.currency),
+      maxDiscount:
+        promo.maxDiscountMinor === null ? null : toMoney(promo.maxDiscountMinor, promo.currency),
       minOrder: toMoney(promo.minOrderMinor, promo.currency),
       currency: promo.currency,
       startsAt: promo.startsAt.toISOString(),

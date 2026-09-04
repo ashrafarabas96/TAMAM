@@ -40,9 +40,33 @@ interface ZoneSeed {
 }
 
 const ZONES: ZoneSeed[] = [
-  { code: 'RAMALLAH', nameAr: 'رام الله والبيرة', nameEn: 'Ramallah & Al-Bireh', city: 'Ramallah', lat: 31.9038, lng: 35.2034, radiiKm: [4.6, 5.4, 6.1, 5.8, 4.9, 4.2, 4.7, 5.6, 6.3, 5.9, 5.1, 4.4] },
-  { code: 'NABLUS', nameAr: 'نابلس', nameEn: 'Nablus', city: 'Nablus', lat: 32.2211, lng: 35.2544, radiiKm: [5.2, 4.6, 4.1, 4.8, 5.7, 6.4, 6.0, 5.2, 4.5, 4.0, 4.6, 5.5] },
-  { code: 'HEBRON', nameAr: 'الخليل', nameEn: 'Hebron', city: 'Hebron', lat: 31.5326, lng: 35.0998, radiiKm: [5.8, 6.4, 6.0, 5.3, 4.7, 4.3, 4.8, 5.5, 6.2, 6.5, 5.9, 5.1] },
+  {
+    code: 'RAMALLAH',
+    nameAr: 'رام الله والبيرة',
+    nameEn: 'Ramallah & Al-Bireh',
+    city: 'Ramallah',
+    lat: 31.9038,
+    lng: 35.2034,
+    radiiKm: [4.6, 5.4, 6.1, 5.8, 4.9, 4.2, 4.7, 5.6, 6.3, 5.9, 5.1, 4.4],
+  },
+  {
+    code: 'NABLUS',
+    nameAr: 'نابلس',
+    nameEn: 'Nablus',
+    city: 'Nablus',
+    lat: 32.2211,
+    lng: 35.2544,
+    radiiKm: [5.2, 4.6, 4.1, 4.8, 5.7, 6.4, 6.0, 5.2, 4.5, 4.0, 4.6, 5.5],
+  },
+  {
+    code: 'HEBRON',
+    nameAr: 'الخليل',
+    nameEn: 'Hebron',
+    city: 'Hebron',
+    lat: 31.5326,
+    lng: 35.0998,
+    radiiKm: [5.8, 6.4, 6.0, 5.3, 4.7, 4.3, 4.8, 5.5, 6.2, 6.5, 5.9, 5.1],
+  },
 ];
 
 /** 06:00 → midnight every day. `closesAt` is exclusive and '00:00' is the next midnight,
@@ -69,13 +93,23 @@ export async function seedZones(ctx: SeedContext): Promise<ZoneSeedResult> {
       centerLng: new Prisma.Decimal(zone.lng),
       isActive: true,
     };
-    const row = await prisma.serviceZone.upsert({ where: { code: zone.code }, update: data, create: { code: zone.code, ...data } });
+    const row = await prisma.serviceZone.upsert({
+      where: { code: zone.code },
+      update: data,
+      create: { code: zone.code, ...data },
+    });
     zoneIds.set(zone.code, row.id);
     centers.set(zone.code, { lat: zone.lat, lng: zone.lng });
 
     await prisma.zoneOperatingHours.deleteMany({ where: { zoneId: row.id, ruleId: null } });
     await prisma.zoneOperatingHours.createMany({
-      data: Array.from({ length: 7 }, (_, dayOfWeek) => ({ zoneId: row.id, dayOfWeek, opensAt: OPENS_AT, closesAt: CLOSES_AT, isClosed: false })),
+      data: Array.from({ length: 7 }, (_, dayOfWeek) => ({
+        zoneId: row.id,
+        dayOfWeek,
+        opensAt: OPENS_AT,
+        closesAt: CLOSES_AT,
+        isClosed: false,
+      })),
     });
   }
 

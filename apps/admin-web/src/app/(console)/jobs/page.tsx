@@ -42,4 +42,3 @@ function JobsScreen() {
     </div>
   );
 }
-

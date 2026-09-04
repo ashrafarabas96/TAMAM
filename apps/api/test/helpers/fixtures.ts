@@ -16,15 +16,31 @@ export interface DriverFixture {
 
 export async function createDriverFixture(
   api: TestApp,
-  options: { phone: string; fullName: string; plate: string; zoneCode?: string; vehicleTypeCode?: string },
+  options: {
+    phone: string;
+    fullName: string;
+    plate: string;
+    zoneCode?: string;
+    vehicleTypeCode?: string;
+  },
 ): Promise<DriverFixture> {
-  const zone = await api.prisma.serviceZone.findUniqueOrThrow({ where: { code: options.zoneCode ?? 'RAMALLAH' } });
-  const vehicleType = await api.prisma.vehicleType.findUniqueOrThrow({ where: { code: options.vehicleTypeCode ?? 'ECONOMY' } });
+  const zone = await api.prisma.serviceZone.findUniqueOrThrow({
+    where: { code: options.zoneCode ?? 'RAMALLAH' },
+  });
+  const vehicleType = await api.prisma.vehicleType.findUniqueOrThrow({
+    where: { code: options.vehicleTypeCode ?? 'ECONOMY' },
+  });
 
   const user = await api.prisma.user.upsert({
     where: { phone: options.phone },
     update: { fullName: options.fullName, accountStatus: 'ACTIVE', deletedAt: null },
-    create: { phone: options.phone, fullName: options.fullName, language: 'ar', phoneVerifiedAt: new Date(), notificationPreference: { create: {} } },
+    create: {
+      phone: options.phone,
+      fullName: options.fullName,
+      language: 'ar',
+      phoneVerifiedAt: new Date(),
+      notificationPreference: { create: {} },
+    },
   });
   await api.prisma.userRoleAssignment.upsert({
     where: { userId_role: { userId: user.id, role: 'PARTNER' } },
@@ -34,7 +50,13 @@ export async function createDriverFixture(
   await api.prisma.partnerProfile.upsert({
     where: { userId: user.id },
     update: { verificationStatus: 'APPROVED', suspendedUntil: null },
-    create: { userId: user.id, verificationStatus: 'APPROVED', onboardingStep: 6, acceptedTermsVersion: '1.0', city: zone.city },
+    create: {
+      userId: user.id,
+      verificationStatus: 'APPROVED',
+      onboardingStep: 6,
+      acceptedTermsVersion: '1.0',
+      city: zone.city,
+    },
   });
   await api.prisma.partnerRole.upsert({
     where: { partnerId_role: { partnerId: user.id, role: 'DRIVER' } },
@@ -66,7 +88,10 @@ export async function createDriverFixture(
       verifiedAt: new Date(),
     },
   });
-  await api.prisma.partnerProfile.update({ where: { userId: user.id }, data: { activeVehicleId: vehicle.id } });
+  await api.prisma.partnerProfile.update({
+    where: { userId: user.id },
+    data: { activeVehicleId: vehicle.id },
+  });
   await api.prisma.partnerAvailability.upsert({
     where: { partnerId: user.id },
     update: { status: 'OFFLINE', currentJobId: null, onlineSince: null },
@@ -76,11 +101,20 @@ export async function createDriverFixture(
   return { userId: user.id, phone: options.phone, vehicleId: vehicle.id };
 }
 
-export async function createCustomerFixture(api: TestApp, options: { phone: string; fullName: string }): Promise<{ userId: string; phone: string }> {
+export async function createCustomerFixture(
+  api: TestApp,
+  options: { phone: string; fullName: string },
+): Promise<{ userId: string; phone: string }> {
   const user = await api.prisma.user.upsert({
     where: { phone: options.phone },
     update: { fullName: options.fullName, accountStatus: 'ACTIVE', deletedAt: null },
-    create: { phone: options.phone, fullName: options.fullName, language: 'ar', phoneVerifiedAt: new Date(), notificationPreference: { create: {} } },
+    create: {
+      phone: options.phone,
+      fullName: options.fullName,
+      language: 'ar',
+      phoneVerifiedAt: new Date(),
+      notificationPreference: { create: {} },
+    },
   });
   await api.prisma.userRoleAssignment.upsert({
     where: { userId_role: { userId: user.id, role: 'CUSTOMER' } },
@@ -89,7 +123,12 @@ export async function createCustomerFixture(api: TestApp, options: { phone: stri
   });
   const existing = await api.prisma.customerProfile.findUnique({ where: { userId: user.id } });
   if (!existing) {
-    await api.prisma.customerProfile.create({ data: { userId: user.id, referralCode: randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase() } });
+    await api.prisma.customerProfile.create({
+      data: {
+        userId: user.id,
+        referralCode: randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase(),
+      },
+    });
   }
   return { userId: user.id, phone: options.phone };
 }

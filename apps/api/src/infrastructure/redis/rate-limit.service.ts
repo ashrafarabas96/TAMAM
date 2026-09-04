@@ -32,8 +32,19 @@ export class RateLimitService {
   constructor(private readonly redis: RedisService) {}
 
   async hit(key: string, limit: number, windowSeconds: number): Promise<RateLimitResult> {
-    const res = (await this.redis.client.eval(SCRIPT, 1, `rl:${key}`, Date.now(), windowSeconds, limit)) as [number, number, number];
-    return { allowed: res[0] === 1, remaining: Number(res[1]), retryAfterSeconds: Math.max(1, Number(res[2])) };
+    const res = (await this.redis.client.eval(
+      SCRIPT,
+      1,
+      `rl:${key}`,
+      Date.now(),
+      windowSeconds,
+      limit,
+    )) as [number, number, number];
+    return {
+      allowed: res[0] === 1,
+      remaining: Number(res[1]),
+      retryAfterSeconds: Math.max(1, Number(res[2])),
+    };
   }
 
   /** Read-only check (no increment) — used by OTP resend cooldown display. */

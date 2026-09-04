@@ -30,7 +30,9 @@ describe('permissions helper', () => {
   });
 
   it('answers can / canAny / canAll', () => {
-    const checker = createPermissionChecker(new Set([Permission.JOBS_READ_ALL, Permission.PARTNERS_READ]));
+    const checker = createPermissionChecker(
+      new Set([Permission.JOBS_READ_ALL, Permission.PARTNERS_READ]),
+    );
     expect(checker.can(Permission.JOBS_READ_ALL)).toBe(true);
     expect(checker.can(Permission.JOBS_CANCEL)).toBe(false);
     expect(checker.canAny(Permission.JOBS_CANCEL, Permission.PARTNERS_READ)).toBe(true);

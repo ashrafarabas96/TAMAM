@@ -4,7 +4,13 @@ import type { RequestUser } from '../../common/types/request-user';
 import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { SystemConfigService } from '../config/system-config.service';
 
-import { RatingDirection, aggregateDelta, averageOf, editableUntilFrom, normaliseTags } from './domain/rating-tags';
+import {
+  RatingDirection,
+  aggregateDelta,
+  averageOf,
+  editableUntilFrom,
+  normaliseTags,
+} from './domain/rating-tags';
 import { RatingsService } from './ratings.service';
 
 const JOB_ID = '11111111-1111-4111-8111-111111111111';
@@ -44,10 +50,21 @@ function customer(overrides: Partial<RequestUser> = {}): RequestUser {
 }
 
 function partner(): RequestUser {
-  return customer({ id: PARTNER_ID, roles: [UserRole.PARTNER], customerId: undefined, partnerId: PARTNER_ID });
+  return customer({
+    id: PARTNER_ID,
+    roles: [UserRole.PARTNER],
+    customerId: undefined,
+    partnerId: PARTNER_ID,
+  });
 }
 
-function buildHarness(options: { jobStatus?: JobStatus; existing?: ReviewRowState | null; editWindowHours?: number } = {}) {
+function buildHarness(
+  options: {
+    jobStatus?: JobStatus;
+    existing?: ReviewRowState | null;
+    editWindowHours?: number;
+  } = {},
+) {
   const partnerProfile = { userId: PARTNER_ID, ratingSum: 45, ratingCount: 10 };
   const customerProfile = { userId: CUSTOMER_ID, ratingSum: 8, ratingCount: 2 };
   const reviews: ReviewRowState[] = options.existing ? [options.existing] : [];
@@ -80,37 +97,53 @@ function buildHarness(options: { jobStatus?: JobStatus; existing?: ReviewRowStat
 
   // Prisma returns a detached row per call; returning the stored object itself would let an
   // update retroactively change what an earlier findUnique appeared to read.
-  const reviewUpdate = jest.fn(async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
-    const index = reviews.findIndex((r) => r.id === where.id);
-    if (index === -1) throw new Error('review not found');
-    const updated: ReviewRowState = {
-      ...reviews[index]!,
-      rating: Number(data.rating),
-      tags: data.tags as string[],
-      comment: (data.comment as string | null) ?? null,
-    };
-    reviews[index] = updated;
-    return { ...updated };
-  });
+  const reviewUpdate = jest.fn(
+    async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
+      const index = reviews.findIndex((r) => r.id === where.id);
+      if (index === -1) throw new Error('review not found');
+      const updated: ReviewRowState = {
+        ...reviews[index]!,
+        rating: Number(data.rating),
+        tags: data.tags as string[],
+        comment: (data.comment as string | null) ?? null,
+      };
+      reviews[index] = updated;
+      return { ...updated };
+    },
+  );
 
-  const partnerUpdate = jest.fn(async ({ data }: { data: { ratingSum: { increment: number }; ratingCount: { increment: number } } }) => {
-    partnerProfile.ratingSum += data.ratingSum.increment;
-    partnerProfile.ratingCount += data.ratingCount.increment;
-    return partnerProfile;
-  });
-  const customerUpdate = jest.fn(async ({ data }: { data: { ratingSum: { increment: number }; ratingCount: { increment: number } } }) => {
-    customerProfile.ratingSum += data.ratingSum.increment;
-    customerProfile.ratingCount += data.ratingCount.increment;
-    return customerProfile;
-  });
+  const partnerUpdate = jest.fn(
+    async ({
+      data,
+    }: {
+      data: { ratingSum: { increment: number }; ratingCount: { increment: number } };
+    }) => {
+      partnerProfile.ratingSum += data.ratingSum.increment;
+      partnerProfile.ratingCount += data.ratingCount.increment;
+      return partnerProfile;
+    },
+  );
+  const customerUpdate = jest.fn(
+    async ({
+      data,
+    }: {
+      data: { ratingSum: { increment: number }; ratingCount: { increment: number } };
+    }) => {
+      customerProfile.ratingSum += data.ratingSum.increment;
+      customerProfile.ratingCount += data.ratingCount.increment;
+      return customerProfile;
+    },
+  );
 
   const prisma = {
     job: { findUnique: jest.fn(async () => job) },
     review: {
-      findUnique: jest.fn(async ({ where }: { where: { jobId_direction: { direction: RatingDirection } } }) => {
-        const row = reviews.find((r) => r.direction === where.jobId_direction.direction);
-        return row ? { ...row } : null;
-      }),
+      findUnique: jest.fn(
+        async ({ where }: { where: { jobId_direction: { direction: RatingDirection } } }) => {
+          const row = reviews.find((r) => r.direction === where.jobId_direction.direction);
+          return row ? { ...row } : null;
+        },
+      ),
       findMany: jest.fn(async () => reviews),
       create: reviewCreate,
       update: reviewUpdate,
@@ -126,7 +159,13 @@ function buildHarness(options: { jobStatus?: JobStatus; existing?: ReviewRowStat
   const systemConfig = { getNumber } as unknown as SystemConfigService;
 
   const service = new RatingsService(prisma, systemConfig);
-  return { service, reviews, partnerProfile, customerProfile, mocks: { reviewCreate, reviewUpdate, partnerUpdate, customerUpdate } };
+  return {
+    service,
+    reviews,
+    partnerProfile,
+    customerProfile,
+    mocks: { reviewCreate, reviewUpdate, partnerUpdate, customerUpdate },
+  };
 }
 
 describe('rating domain rules', () => {
@@ -143,7 +182,9 @@ describe('rating domain rules', () => {
   });
 
   it('rejects tags outside the whitelist for the direction', () => {
-    expect(normaliseTags(RatingDirection.CUSTOMER_TO_PARTNER, ['punctual', 'PUNCTUAL'])).toEqual(['PUNCTUAL']);
+    expect(normaliseTags(RatingDirection.CUSTOMER_TO_PARTNER, ['punctual', 'PUNCTUAL'])).toEqual([
+      'PUNCTUAL',
+    ]);
     expect(() => normaliseTags(RatingDirection.PARTNER_TO_CUSTOMER, ['CLEAN_VEHICLE'])).toThrow();
     expect(() => normaliseTags(RatingDirection.CUSTOMER_TO_PARTNER, ['WRONG_ADDRESS'])).toThrow();
   });
@@ -158,22 +199,35 @@ describe('RatingsService.rate', () => {
   it('refuses to rate a job that is not COMPLETED', async () => {
     const { service } = buildHarness({ jobStatus: JobStatus.IN_PROGRESS });
 
-    await expect(service.rate(customer(), JOB_ID, { rating: 5, tags: [] })).rejects.toMatchObject({ code: ErrorCode.RATING_NOT_ALLOWED });
+    await expect(service.rate(customer(), JOB_ID, { rating: 5, tags: [] })).rejects.toMatchObject({
+      code: ErrorCode.RATING_NOT_ALLOWED,
+    });
   });
 
   it('refuses a rater who is neither the customer nor the assigned partner', async () => {
     const { service } = buildHarness();
     const outsider = customer({ id: OUTSIDER_ID, customerId: OUTSIDER_ID });
 
-    await expect(service.rate(outsider, JOB_ID, { rating: 5, tags: [] })).rejects.toMatchObject({ code: ErrorCode.FORBIDDEN });
+    await expect(service.rate(outsider, JOB_ID, { rating: 5, tags: [] })).rejects.toMatchObject({
+      code: ErrorCode.FORBIDDEN,
+    });
   });
 
   it('creates a customer→partner review and adds it to the partner aggregate', async () => {
     const { service, partnerProfile } = buildHarness();
 
-    const review = await service.rate(customer(), JOB_ID, { rating: 4, tags: ['PUNCTUAL', 'POLITE'], comment: 'Great trip' });
+    const review = await service.rate(customer(), JOB_ID, {
+      rating: 4,
+      tags: ['PUNCTUAL', 'POLITE'],
+      comment: 'Great trip',
+    });
 
-    expect(review).toMatchObject({ direction: RatingDirection.CUSTOMER_TO_PARTNER, rateeId: PARTNER_ID, rating: 4, tags: ['PUNCTUAL', 'POLITE'] });
+    expect(review).toMatchObject({
+      direction: RatingDirection.CUSTOMER_TO_PARTNER,
+      rateeId: PARTNER_ID,
+      rating: 4,
+      tags: ['PUNCTUAL', 'POLITE'],
+    });
     expect(partnerProfile).toEqual({ userId: PARTNER_ID, ratingSum: 49, ratingCount: 11 });
     expect(averageOf(partnerProfile.ratingSum, partnerProfile.ratingCount)).toBe(4.45);
   });
@@ -227,7 +281,9 @@ describe('RatingsService.rate', () => {
       },
     });
 
-    await expect(service.rate(customer(), JOB_ID, { rating: 1, tags: [] })).rejects.toMatchObject({ code: ErrorCode.RATING_NOT_ALLOWED });
+    await expect(service.rate(customer(), JOB_ID, { rating: 1, tags: [] })).rejects.toMatchObject({
+      code: ErrorCode.RATING_NOT_ALLOWED,
+    });
     expect(mocks.reviewUpdate).not.toHaveBeenCalled();
     expect(partnerProfile).toEqual({ userId: PARTNER_ID, ratingSum: 45, ratingCount: 10 });
   });
@@ -239,7 +295,12 @@ describe('RatingsService.summary', () => {
 
     const summary = await service.summary(PARTNER_ID);
 
-    expect(summary).toEqual({ userId: PARTNER_ID, average: 4.5, count: 10, tagCounts: { PUNCTUAL: 7 } });
+    expect(summary).toEqual({
+      userId: PARTNER_ID,
+      average: 4.5,
+      count: 10,
+      tagCounts: { PUNCTUAL: 7 },
+    });
   });
 });
 

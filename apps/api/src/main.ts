@@ -13,14 +13,22 @@ import { AppConfigService } from './config';
 import { RedisIoAdapter } from './infrastructure/websockets/redis-io.adapter';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true, rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+    rawBody: true,
+  });
   const logger = app.get(Logger);
   app.useLogger(logger);
   const config = app.get(AppConfigService);
 
   app.set('trust proxy', config.env.TRUST_PROXY ? 1 : false);
   app.disable('x-powered-by');
-  app.use(helmet({ contentSecurityPolicy: config.isProduction ? undefined : false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: config.isProduction ? undefined : false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   app.enableCors({
     origin: (origin, cb) => {
       // Mobile apps send no Origin; browsers (admin) must match the allowlist.
@@ -29,8 +37,23 @@ async function bootstrap(): Promise<void> {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'X-Request-Id', 'X-Device-Id', 'X-App-Version', 'Accept-Language', 'X-Timezone'],
-    exposedHeaders: ['X-Request-Id', 'Retry-After', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'Idempotent-Replayed'],
+    allowedHeaders: [
+      'Authorization',
+      'Content-Type',
+      'Idempotency-Key',
+      'X-Request-Id',
+      'X-Device-Id',
+      'X-App-Version',
+      'Accept-Language',
+      'X-Timezone',
+    ],
+    exposedHeaders: [
+      'X-Request-Id',
+      'Retry-After',
+      'X-RateLimit-Limit',
+      'X-RateLimit-Remaining',
+      'Idempotent-Replayed',
+    ],
     maxAge: 600,
   });
   app.setGlobalPrefix(API_PREFIX, { exclude: ['health/live', 'health/ready', 'metrics'] });
@@ -49,7 +72,9 @@ async function bootstrap(): Promise<void> {
       .setVersion('1.0')
       .addBearerAuth()
       .build();
-    SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, doc), { swaggerOptions: { persistAuthorization: true } });
+    SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, doc), {
+      swaggerOptions: { persistAuthorization: true },
+    });
   }
 
   await app.listen(config.env.PORT, '0.0.0.0');

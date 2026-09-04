@@ -10,7 +10,9 @@ const bool = z
  */
 export const envSchema = z
   .object({
-    NODE_ENV: z.enum(['local', 'development', 'staging', 'production', 'test']).default('development'),
+    NODE_ENV: z
+      .enum(['local', 'development', 'staging', 'production', 'test'])
+      .default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
     API_BASE_URL: z.string().url().default('http://localhost:3000'),
     LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
@@ -69,22 +71,64 @@ export const envSchema = z
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === 'production') {
       const weak = (v: string) => /change-me|test-|example|localhost/i.test(v);
-      for (const key of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'OTP_PEPPER', 'ENCRYPTION_KEY'] as const) {
-        if (weak(env[key])) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [key], message: `${key} uses a development placeholder — refuse to start in production` });
+      for (const key of [
+        'JWT_ACCESS_SECRET',
+        'JWT_REFRESH_SECRET',
+        'OTP_PEPPER',
+        'ENCRYPTION_KEY',
+      ] as const) {
+        if (weak(env[key]))
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [key],
+            message: `${key} uses a development placeholder — refuse to start in production`,
+          });
       }
-      if (env.SMS_PROVIDER === 'console') ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['SMS_PROVIDER'], message: 'console SMS provider is not allowed in production' });
-      if (env.PAYMENT_GATEWAY_PROVIDER === 'mock') ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['PAYMENT_GATEWAY_PROVIDER'], message: 'mock gateway is not allowed in production' });
-      if (env.LOG_LEVEL === 'trace' || env.LOG_LEVEL === 'debug') ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['LOG_LEVEL'], message: 'debug logging is not allowed in production' });
-      if (!env.API_BASE_URL.startsWith('https://')) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['API_BASE_URL'], message: 'HTTPS only in production' });
+      if (env.SMS_PROVIDER === 'console')
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['SMS_PROVIDER'],
+          message: 'console SMS provider is not allowed in production',
+        });
+      if (env.PAYMENT_GATEWAY_PROVIDER === 'mock')
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['PAYMENT_GATEWAY_PROVIDER'],
+          message: 'mock gateway is not allowed in production',
+        });
+      if (env.LOG_LEVEL === 'trace' || env.LOG_LEVEL === 'debug')
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['LOG_LEVEL'],
+          message: 'debug logging is not allowed in production',
+        });
+      if (!env.API_BASE_URL.startsWith('https://'))
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['API_BASE_URL'],
+          message: 'HTTPS only in production',
+        });
     }
     if (env.SMS_PROVIDER === 'http' && (!env.SMS_HTTP_URL || !env.SMS_HTTP_TOKEN)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['SMS_HTTP_URL'], message: 'SMS_HTTP_URL and SMS_HTTP_TOKEN are required for the http SMS provider' });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['SMS_HTTP_URL'],
+        message: 'SMS_HTTP_URL and SMS_HTTP_TOKEN are required for the http SMS provider',
+      });
     }
     if (env.MAPS_PROVIDER === 'google' && !env.GOOGLE_MAPS_API_KEY) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['GOOGLE_MAPS_API_KEY'], message: 'required when MAPS_PROVIDER=google' });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['GOOGLE_MAPS_API_KEY'],
+        message: 'required when MAPS_PROVIDER=google',
+      });
     }
     if (env.PUSH_PROVIDER === 'fcm' && !env.FCM_SERVICE_ACCOUNT_JSON) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['FCM_SERVICE_ACCOUNT_JSON'], message: 'required when PUSH_PROVIDER=fcm' });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['FCM_SERVICE_ACCOUNT_JSON'],
+        message: 'required when PUSH_PROVIDER=fcm',
+      });
     }
   });
 
@@ -112,7 +156,9 @@ function stripBlankEnv(raw: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
 export function parseEnv(raw: NodeJS.ProcessEnv): Env {
   const result = envSchema.safeParse(stripBlankEnv(raw));
   if (!result.success) {
-    const lines = result.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
+    const lines = result.error.issues
+      .map((i) => `  - ${i.path.join('.')}: ${i.message}`)
+      .join('\n');
     throw new Error(`Invalid environment configuration:\n${lines}`);
   }
   return result.data;

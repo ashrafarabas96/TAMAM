@@ -60,30 +60,68 @@ describe('AdminSearchService', () => {
   it('gives a SUPER_ADMIN every group without listing permissions', async () => {
     const result = await service.search({ q: 'sara' }, principal([], true));
 
-    expect(Object.keys(result).sort()).toEqual(['customers', 'disputes', 'jobs', 'partners', 'payments', 'query', 'tickets', 'vehicles']);
+    expect(Object.keys(result).sort()).toEqual([
+      'customers',
+      'disputes',
+      'jobs',
+      'partners',
+      'payments',
+      'query',
+      'tickets',
+      'vehicles',
+    ]);
     expect(prisma.user.findMany).toHaveBeenCalledTimes(2); // customers + partners
   });
 
   it('searches jobs by number, and by both parties’ phone numbers', async () => {
     prisma.job.findMany.mockResolvedValue([
-      { id: 'j1', number: 'TM-2609-000001', type: 'RIDE', status: 'COMPLETED', customerId: 'c1', partnerId: 'p1', zoneId: 'z1', createdAt: NOW },
+      {
+        id: 'j1',
+        number: 'TM-2609-000001',
+        type: 'RIDE',
+        status: 'COMPLETED',
+        customerId: 'c1',
+        partnerId: 'p1',
+        zoneId: 'z1',
+        createdAt: NOW,
+      },
     ]);
 
-    const result = await service.search({ q: 'tm-2609-000001' }, principal([Permission.JOBS_READ_ALL]));
+    const result = await service.search(
+      { q: 'tm-2609-000001' },
+      principal([Permission.JOBS_READ_ALL]),
+    );
 
     expect(result.jobs).toEqual([
-      { id: 'j1', number: 'TM-2609-000001', type: 'RIDE', status: 'COMPLETED', customerId: 'c1', partnerId: 'p1', zoneId: 'z1', createdAt: NOW.toISOString() },
+      {
+        id: 'j1',
+        number: 'TM-2609-000001',
+        type: 'RIDE',
+        status: 'COMPLETED',
+        customerId: 'c1',
+        partnerId: 'p1',
+        zoneId: 'z1',
+        createdAt: NOW.toISOString(),
+      },
     ]);
-    const where = prisma.job.findMany.mock.calls[0]?.[0].where as { OR: Array<Record<string, unknown>> };
+    const where = prisma.job.findMany.mock.calls[0]?.[0].where as {
+      OR: Array<Record<string, unknown>>;
+    };
     // The query is upper-cased for job numbers and kept verbatim for phone matching.
     expect(where.OR).toContainEqual({ number: { contains: 'TM-2609-000001' } });
-    expect(where.OR).toContainEqual({ customer: { user: { phone: { contains: 'tm-2609-000001' } } } });
-    expect(where.OR).toContainEqual({ partner: { user: { phone: { contains: 'tm-2609-000001' } } } });
+    expect(where.OR).toContainEqual({
+      customer: { user: { phone: { contains: 'tm-2609-000001' } } },
+    });
+    expect(where.OR).toContainEqual({
+      partner: { user: { phone: { contains: 'tm-2609-000001' } } },
+    });
   });
 
   it('adds an id lookup only when the query is a UUID', async () => {
     await service.search({ q: 'not-a-uuid' }, principal([Permission.JOBS_READ_ALL]));
-    let where = prisma.job.findMany.mock.calls[0]?.[0].where as { OR: Array<Record<string, unknown>> };
+    let where = prisma.job.findMany.mock.calls[0]?.[0].where as {
+      OR: Array<Record<string, unknown>>;
+    };
     expect(where.OR.some((c) => 'id' in c)).toBe(false);
 
     prisma.job.findMany.mockClear();
@@ -96,7 +134,9 @@ describe('AdminSearchService', () => {
   it('normalises vehicle plates before matching', async () => {
     await service.search({ q: '12-34 567' }, principal([Permission.PARTNERS_READ]));
 
-    const where = prisma.vehicle.findMany.mock.calls[0]?.[0].where as { OR: Array<Record<string, unknown>> };
+    const where = prisma.vehicle.findMany.mock.calls[0]?.[0].where as {
+      OR: Array<Record<string, unknown>>;
+    };
     expect(where.OR).toContainEqual({ plateNormalized: { contains: '1234567' } });
   });
 
@@ -115,13 +155,31 @@ describe('AdminSearchService', () => {
     const result = await service.search({ q: '0599000002' }, principal([Permission.PARTNERS_READ]));
 
     expect(result.partners).toEqual([
-      { id: 'u1', fullName: 'محمد خليل', phone: '+970599000002', accountStatus: 'ACTIVE', createdAt: NOW.toISOString(), verificationStatus: 'APPROVED', availability: 'ONLINE' },
+      {
+        id: 'u1',
+        fullName: 'محمد خليل',
+        phone: '+970599000002',
+        accountStatus: 'ACTIVE',
+        createdAt: NOW.toISOString(),
+        verificationStatus: 'APPROVED',
+        availability: 'ONLINE',
+      },
     ]);
   });
 
   it('serialises payment amounts as numbers, never BigInt', async () => {
     prisma.payment.findMany.mockResolvedValue([
-      { id: 'pay1', jobId: 'j1', status: 'CAPTURED', method: 'CASH', provider: 'cash', providerRef: null, amountMinor: 2350n, currency: 'ILS', createdAt: NOW },
+      {
+        id: 'pay1',
+        jobId: 'j1',
+        status: 'CAPTURED',
+        method: 'CASH',
+        provider: 'cash',
+        providerRef: null,
+        amountMinor: 2350n,
+        currency: 'ILS',
+        createdAt: NOW,
+      },
     ]);
 
     const result = await service.search({ q: 'pay' }, principal([Permission.PAYMENTS_READ]));
@@ -133,7 +191,14 @@ describe('AdminSearchService', () => {
   it('caps every group so one query cannot scan the platform', async () => {
     await service.search({ q: 'a' + 'b'.repeat(10) }, principal([], true));
 
-    for (const call of [prisma.job.findMany, prisma.user.findMany, prisma.vehicle.findMany, prisma.payment.findMany, prisma.supportTicket.findMany, prisma.dispute.findMany]) {
+    for (const call of [
+      prisma.job.findMany,
+      prisma.user.findMany,
+      prisma.vehicle.findMany,
+      prisma.payment.findMany,
+      prisma.supportTicket.findMany,
+      prisma.dispute.findMany,
+    ]) {
       expect(call.mock.calls[0]?.[0].take).toBe(10);
     }
   });

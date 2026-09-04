@@ -15,7 +15,16 @@ import {
 } from '@tamam/validation';
 import { z } from 'zod';
 
-import { Audited, CurrentUser, RateLimit, RequestId, RequireAnyPermission, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  Audited,
+  CurrentUser,
+  RateLimit,
+  RequestId,
+  RequireAnyPermission,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -59,16 +68,29 @@ export class AdminController {
 
   /* ------------------------------------------------------------ search */
   @Get('admin/search')
-  @RequireAnyPermission(Permission.JOBS_READ_ALL, Permission.CUSTOMERS_READ, Permission.PARTNERS_READ, Permission.PAYMENTS_READ, Permission.SUPPORT_READ, Permission.DISPUTES_READ)
+  @RequireAnyPermission(
+    Permission.JOBS_READ_ALL,
+    Permission.CUSTOMERS_READ,
+    Permission.PARTNERS_READ,
+    Permission.PAYMENTS_READ,
+    Permission.SUPPORT_READ,
+    Permission.DISPUTES_READ,
+  )
   @RateLimit({ name: 'admin-search', limit: 120, windowSeconds: 60, keyBy: 'user' })
-  globalSearch(@ZodQuery(adminSearchSchema) query: AdminSearchInput, @CurrentUser() user: RequestUser) {
+  globalSearch(
+    @ZodQuery(adminSearchSchema) query: AdminSearchInput,
+    @CurrentUser() user: RequestUser,
+  ) {
     return this.search.search(query, user);
   }
 
   /* -------------------------------------------------------- dispatcher */
   @Get('admin/dispatch/console')
   @RequirePermission(Permission.JOBS_READ_ALL)
-  dispatchConsole(@ZodQuery(dispatcherJobsFilterSchema) query: DispatcherJobsFilterInput, @CurrentUser() user: RequestUser) {
+  dispatchConsole(
+    @ZodQuery(dispatcherJobsFilterSchema) query: DispatcherJobsFilterInput,
+    @CurrentUser() user: RequestUser,
+  ) {
     return this.dispatcher.console(query, user);
   }
 
@@ -94,13 +116,22 @@ export class AdminController {
   @Post('admin/staff')
   @RequirePermission(Permission.ADMIN_USERS_MANAGE)
   @Audited({ action: 'admin_user.create', entity: 'user', sensitive: true })
-  createStaff(@ZodBody(createAdminUserSchema) input: CreateAdminUserInput, @CurrentUser() actor: RequestUser, @RequestId() requestId: string) {
+  createStaff(
+    @ZodBody(createAdminUserSchema) input: CreateAdminUserInput,
+    @CurrentUser() actor: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.staff.create(input, actor, requestId);
   }
 
   @Patch('admin/staff/:id/roles')
   @RequirePermission(Permission.ROLES_MANAGE)
-  @Audited({ action: 'admin_user.roles_update', entity: 'user', entityIdFrom: 'id', sensitive: true })
+  @Audited({
+    action: 'admin_user.roles_update',
+    entity: 'user',
+    entityIdFrom: 'id',
+    sensitive: true,
+  })
   updateStaffRoles(
     @Param('id', UuidPipe) id: string,
     @ZodBody(updateAdminRolesSchema) input: UpdateAdminRolesInput,
@@ -118,8 +149,18 @@ export class AdminController {
   @HttpCode(HttpStatus.OK)
   @RequirePermission(Permission.ADMIN_USERS_MANAGE)
   @RateLimit({ name: 'admin-password-reset', limit: 10, windowSeconds: 3600, keyBy: 'user' })
-  @Audited({ action: 'admin_user.password_reset', entity: 'user', entityIdFrom: 'id', sensitive: true })
-  resetStaffPassword(@Param('id', UuidPipe) id: string, @ZodBody(reasonSchema) body: ReasonBody, @CurrentUser() actor: RequestUser, @RequestId() requestId: string) {
+  @Audited({
+    action: 'admin_user.password_reset',
+    entity: 'user',
+    entityIdFrom: 'id',
+    sensitive: true,
+  })
+  resetStaffPassword(
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(reasonSchema) body: ReasonBody,
+    @CurrentUser() actor: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.staff.resetPassword(id, actor, body.reason, requestId);
   }
 

@@ -1,6 +1,11 @@
 import { Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { type SendMessageInput, markReadSchema, pageRequestSchema, sendMessageSchema } from '@tamam/validation';
+import {
+  type SendMessageInput,
+  markReadSchema,
+  pageRequestSchema,
+  sendMessageSchema,
+} from '@tamam/validation';
 import { z } from 'zod';
 
 import { AllowRestricted, CurrentUser, ZodBody, ZodQuery } from '../../common/decorators';
@@ -25,20 +30,32 @@ export class ChatController {
 
   @Get('jobs/:id/chat/messages')
   @AllowRestricted()
-  listMessages(@Param('id', UuidPipe) jobId: string, @CurrentUser() user: RequestUser, @ZodQuery(pageRequestSchema) query: PageQuery) {
+  listMessages(
+    @Param('id', UuidPipe) jobId: string,
+    @CurrentUser() user: RequestUser,
+    @ZodQuery(pageRequestSchema) query: PageQuery,
+  ) {
     return this.chat.listMessages(user, jobId, query.cursor, query.limit);
   }
 
   @Post('jobs/:id/chat/messages')
   @AllowRestricted()
-  send(@Param('id', UuidPipe) jobId: string, @CurrentUser() user: RequestUser, @ZodBody(sendMessageSchema) input: SendMessageInput) {
+  send(
+    @Param('id', UuidPipe) jobId: string,
+    @CurrentUser() user: RequestUser,
+    @ZodBody(sendMessageSchema) input: SendMessageInput,
+  ) {
     return this.chat.send(user, jobId, input);
   }
 
   @Post('jobs/:id/chat/read')
   @HttpCode(200)
   @AllowRestricted()
-  markRead(@Param('id', UuidPipe) jobId: string, @CurrentUser() user: RequestUser, @ZodBody(markReadSchema) input: MarkReadBody) {
+  markRead(
+    @Param('id', UuidPipe) jobId: string,
+    @CurrentUser() user: RequestUser,
+    @ZodBody(markReadSchema) input: MarkReadBody,
+  ) {
     return this.chat.markRead(user, jobId, input.upToMessageId);
   }
 }

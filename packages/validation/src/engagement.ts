@@ -15,10 +15,20 @@ import {
   TicketStatus,
 } from '@tamam/shared-types';
 
-import { geoPointSchema, isoDateTimeSchema, languageSchema, localizedTextSchema, pageRequestSchema, uuidSchema } from './common';
+import {
+  geoPointSchema,
+  isoDateTimeSchema,
+  languageSchema,
+  localizedTextSchema,
+  pageRequestSchema,
+  uuidSchema,
+} from './common';
 
 /* ------------------------------------------------------------- banners */
-const optionalLocalized = z.object({ ar: z.string().trim().max(120), en: z.string().trim().max(120) }).nullable().optional();
+const optionalLocalized = z
+  .object({ ar: z.string().trim().max(120), en: z.string().trim().max(120) })
+  .nullable()
+  .optional();
 
 export const bannerCreativeSchema = z.object({
   headline: optionalLocalized,
@@ -43,16 +53,40 @@ export const bannerSchema = z
   })
   .superRefine((b, ctx) => {
     if (b.actionType !== 'NONE' && !b.actionValue) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'actionValue is required for this actionType', path: ['actionValue'] });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'actionValue is required for this actionType',
+        path: ['actionValue'],
+      });
     }
     if (b.actionType === 'EXTERNAL_URL' && b.actionValue && !/^https:\/\//.test(b.actionValue)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'External URLs must use https://', path: ['actionValue'] });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'External URLs must use https://',
+        path: ['actionValue'],
+      });
     }
-    if (b.actionType === 'DEEP_LINK' && b.actionValue && !/^tamam:\/\/[a-z0-9/_\-?=&.%]+$/i.test(b.actionValue)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Deep links must use the tamam:// scheme', path: ['actionValue'] });
+    if (
+      b.actionType === 'DEEP_LINK' &&
+      b.actionValue &&
+      !/^tamam:\/\/[a-z0-9/_\-?=&.%]+$/i.test(b.actionValue)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Deep links must use the tamam:// scheme',
+        path: ['actionValue'],
+      });
     }
-    if (b.actionType === 'SERVICE_CATEGORY' && b.actionValue && !z.string().uuid().safeParse(b.actionValue).success) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'actionValue must be a category id', path: ['actionValue'] });
+    if (
+      b.actionType === 'SERVICE_CATEGORY' &&
+      b.actionValue &&
+      !z.string().uuid().safeParse(b.actionValue).success
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'actionValue must be a category id',
+        path: ['actionValue'],
+      });
     }
   });
 
@@ -78,7 +112,10 @@ export const upsertCampaignSchema = z
     frequencyCapPerDay: z.number().int().min(1).max(50).nullable().optional(),
     banners: z.array(bannerSchema).min(1).max(12),
   })
-  .refine((c) => !c.endsAt || new Date(c.endsAt) > new Date(c.startsAt), { message: 'endsAt must be after startsAt', path: ['endsAt'] });
+  .refine((c) => !c.endsAt || new Date(c.endsAt) > new Date(c.startsAt), {
+    message: 'endsAt must be after startsAt',
+    path: ['endsAt'],
+  });
 
 export const campaignStatusActionSchema = z.object({
   action: z.enum(['PUBLISH', 'PAUSE', 'RESUME', 'END', 'ARCHIVE']),
@@ -154,9 +191,16 @@ export const sendMessageSchema = z
     clientMessageId: z.string().min(8).max(64),
   })
   .superRefine((m, ctx) => {
-    if (m.type === 'TEXT' && !m.text) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'text required', path: ['text'] });
-    if (m.type === 'IMAGE' && !m.mediaId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'mediaId required', path: ['mediaId'] });
-    if (m.type === 'LOCATION' && !m.location) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'location required', path: ['location'] });
+    if (m.type === 'TEXT' && !m.text)
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'text required', path: ['text'] });
+    if (m.type === 'IMAGE' && !m.mediaId)
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'mediaId required', path: ['mediaId'] });
+    if (m.type === 'LOCATION' && !m.location)
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'location required',
+        path: ['location'],
+      });
   });
 
 export const markReadSchema = z.object({ upToMessageId: uuidSchema });
@@ -186,7 +230,17 @@ export const updateTicketSchema = z.object({
 
 export const reportSchema = z.object({
   jobId: uuidSchema,
-  reason: z.enum(['UNSAFE_DRIVING', 'RUDE_BEHAVIOUR', 'WRONG_ROUTE', 'OVERCHARGE', 'DAMAGE', 'HARASSMENT', 'NO_SHOW', 'FRAUD', 'OTHER']),
+  reason: z.enum([
+    'UNSAFE_DRIVING',
+    'RUDE_BEHAVIOUR',
+    'WRONG_ROUTE',
+    'OVERCHARGE',
+    'DAMAGE',
+    'HARASSMENT',
+    'NO_SHOW',
+    'FRAUD',
+    'OTHER',
+  ]),
   description: z.string().trim().max(2000).optional(),
   attachmentMediaIds: z.array(uuidSchema).max(6).default([]),
 });
@@ -194,7 +248,16 @@ export const reportSchema = z.object({
 /* ------------------------------------------------------------- disputes */
 export const openDisputeSchema = z.object({
   jobId: uuidSchema,
-  reason: z.enum(['NOT_COMPLETED', 'POOR_QUALITY', 'OVERCHARGED', 'DAMAGE', 'ITEM_MISSING', 'PARTNER_MISCONDUCT', 'CUSTOMER_MISCONDUCT', 'OTHER']),
+  reason: z.enum([
+    'NOT_COMPLETED',
+    'POOR_QUALITY',
+    'OVERCHARGED',
+    'DAMAGE',
+    'ITEM_MISSING',
+    'PARTNER_MISCONDUCT',
+    'CUSTOMER_MISCONDUCT',
+    'OTHER',
+  ]),
   description: z.string().trim().min(10).max(3000),
   requestedRefundMinor: z.number().int().min(0).optional(),
   evidenceMediaIds: z.array(uuidSchema).max(10).default([]),

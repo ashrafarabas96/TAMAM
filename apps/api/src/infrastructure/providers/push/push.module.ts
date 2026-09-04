@@ -12,7 +12,10 @@ import { PUSH_PROVIDER } from './push.provider';
     {
       provide: PUSH_PROVIDER,
       inject: [AppConfigService, PinoLogger],
-      useFactory: (config: AppConfigService, logger: PinoLogger) => (config.env.PUSH_PROVIDER === 'fcm' ? new FcmPushProvider(config, logger) : new ConsolePushProvider(logger)),
+      useFactory: (config: AppConfigService, logger: PinoLogger) =>
+        config.env.PUSH_PROVIDER === 'fcm'
+          ? new FcmPushProvider(config, logger)
+          : new ConsolePushProvider(logger),
     },
   ],
   exports: [PUSH_PROVIDER],

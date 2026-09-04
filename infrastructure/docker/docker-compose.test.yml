@@ -23,7 +23,8 @@ services:
     # tmpfs: the test database is disposable and this makes the suite noticeably faster.
     tmpfs:
       - /var/lib/postgresql/data
-    command: ['postgres', '-c', 'fsync=off', '-c', 'synchronous_commit=off', '-c', 'full_page_writes=off']
+    command:
+      ['postgres', '-c', 'fsync=off', '-c', 'synchronous_commit=off', '-c', 'full_page_writes=off']
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U tamam -d tamam_test']
       interval: 3s

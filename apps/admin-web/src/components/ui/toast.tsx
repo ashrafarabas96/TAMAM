@@ -38,7 +38,10 @@ const icons: Record<ToastTone, ReactNode> = {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const { t, errorMessage } = useI18n();
   const [items, setItems] = useState<ToastItem[]>([]);
-  const dismiss = useCallback((id: number) => setItems((prev) => prev.filter((i) => i.id !== id)), []);
+  const dismiss = useCallback(
+    (id: number) => setItems((prev) => prev.filter((i) => i.id !== id)),
+    [],
+  );
   const toast = useCallback<ToastApi['toast']>((input) => {
     counter += 1;
     const item: ToastItem = { id: counter, tone: input.tone ?? 'info', title: input.title };
@@ -49,15 +52,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const api = useMemo<ToastApi>(
     () => ({
       toast,
-      success: (title, description) => toast({ tone: 'success', title, ...(description ? { description } : {}) }),
-      error: (title, description) => toast({ tone: 'error', title, ...(description ? { description } : {}) }),
+      success: (title, description) =>
+        toast({ tone: 'success', title, ...(description ? { description } : {}) }),
+      error: (title, description) =>
+        toast({ tone: 'error', title, ...(description ? { description } : {}) }),
       fromError: (error, title) => {
         if (isApiError(error)) {
           const fieldSummary = error.fieldErrors.map((f) => `${f.field}: ${f.message}`).join(' · ');
-          toast({ tone: 'error', title: title ?? t('errors.requestFailed'), description: `${errorMessage(error.code, error.message)}${fieldSummary ? ` — ${fieldSummary}` : ''} (${error.requestId})` });
+          toast({
+            tone: 'error',
+            title: title ?? t('errors.requestFailed'),
+            description: `${errorMessage(error.code, error.message)}${fieldSummary ? ` — ${fieldSummary}` : ''} (${error.requestId})`,
+          });
           return;
         }
-        toast({ tone: 'error', title: title ?? t('errors.requestFailed'), description: error instanceof Error ? error.message : t('errors.unknown') });
+        toast({
+          tone: 'error',
+          title: title ?? t('errors.requestFailed'),
+          description: error instanceof Error ? error.message : t('errors.unknown'),
+        });
       },
     }),
     [toast, t, errorMessage],
@@ -71,14 +84,30 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <ToastPrimitive.Root
             key={item.id}
             onOpenChange={(open) => !open && dismiss(item.id)}
-            className={cn('flex items-start gap-3 rounded-lg border bg-surface p-4 shadow-floating animate-slide-up', item.tone === 'error' ? 'border-danger/40' : item.tone === 'success' ? 'border-success/40' : 'border-border')}
+            className={cn(
+              'flex items-start gap-3 rounded-lg border bg-surface p-4 shadow-floating animate-slide-up',
+              item.tone === 'error'
+                ? 'border-danger/40'
+                : item.tone === 'success'
+                  ? 'border-success/40'
+                  : 'border-border',
+            )}
           >
             {icons[item.tone]}
             <div className="min-w-0 flex-1">
-              <ToastPrimitive.Title className="text-sm font-semibold text-text-primary">{item.title}</ToastPrimitive.Title>
-              {item.description ? <ToastPrimitive.Description className="mt-0.5 break-words text-xs text-text-secondary">{item.description}</ToastPrimitive.Description> : null}
+              <ToastPrimitive.Title className="text-sm font-semibold text-text-primary">
+                {item.title}
+              </ToastPrimitive.Title>
+              {item.description ? (
+                <ToastPrimitive.Description className="mt-0.5 break-words text-xs text-text-secondary">
+                  {item.description}
+                </ToastPrimitive.Description>
+              ) : null}
             </div>
-            <ToastPrimitive.Close className="rounded-sm p-1 text-text-tertiary hover:text-text-primary" aria-label={t('common.close')}>
+            <ToastPrimitive.Close
+              className="rounded-sm p-1 text-text-tertiary hover:text-text-primary"
+              aria-label={t('common.close')}
+            >
               <X className="h-4 w-4" aria-hidden />
             </ToastPrimitive.Close>
           </ToastPrimitive.Root>

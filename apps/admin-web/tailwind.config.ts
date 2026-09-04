@@ -38,19 +38,52 @@ const config: Config = {
           'on-brand': 'var(--c-textOnBrand)',
           'on-accent': 'var(--c-textOnAccent)',
         },
-        primary: { DEFAULT: 'var(--c-primary)', hover: 'var(--c-primaryHover)', pressed: 'var(--c-primaryPressed)' },
-        accent: { DEFAULT: 'var(--c-accent)', hover: 'var(--c-accentHover)', pressed: 'var(--c-accentPressed)' },
+        primary: {
+          DEFAULT: 'var(--c-primary)',
+          hover: 'var(--c-primaryHover)',
+          pressed: 'var(--c-primaryPressed)',
+        },
+        accent: {
+          DEFAULT: 'var(--c-accent)',
+          hover: 'var(--c-accentHover)',
+          pressed: 'var(--c-accentPressed)',
+        },
         overlay: 'var(--c-overlay)',
         skeleton: 'var(--c-skeleton)',
-        map: { route: 'var(--c-mapRoute)', pickup: 'var(--c-mapPickup)', destination: 'var(--c-mapDestination)' },
+        map: {
+          route: 'var(--c-mapRoute)',
+          pickup: 'var(--c-mapPickup)',
+          destination: 'var(--c-mapDestination)',
+        },
         purple: { ...scale('purple', Object.keys(purple)) },
         yellow: { ...scale('yellow', Object.keys(yellow)) },
         neutral: { ...scale('neutral', Object.keys(neutral)) },
-        success: { DEFAULT: semantic.success.base, soft: semantic.success.soft, strong: semantic.success.strong },
-        warning: { DEFAULT: semantic.warning.base, soft: semantic.warning.soft, strong: semantic.warning.strong },
-        danger: { DEFAULT: semantic.danger.base, soft: semantic.danger.soft, strong: semantic.danger.strong },
-        info: { DEFAULT: semantic.info.base, soft: semantic.info.soft, strong: semantic.info.strong },
-        service: { ride: service.ride, delivery: service.delivery, home: service.homeService, urgent: service.urgent },
+        success: {
+          DEFAULT: semantic.success.base,
+          soft: semantic.success.soft,
+          strong: semantic.success.strong,
+        },
+        warning: {
+          DEFAULT: semantic.warning.base,
+          soft: semantic.warning.soft,
+          strong: semantic.warning.strong,
+        },
+        danger: {
+          DEFAULT: semantic.danger.base,
+          soft: semantic.danger.soft,
+          strong: semantic.danger.strong,
+        },
+        info: {
+          DEFAULT: semantic.info.base,
+          soft: semantic.info.soft,
+          strong: semantic.info.strong,
+        },
+        service: {
+          ride: service.ride,
+          delivery: service.delivery,
+          home: service.homeService,
+          urgent: service.urgent,
+        },
       },
       borderRadius: {
         xs: 'var(--radius-xs)',
@@ -87,8 +120,14 @@ const config: Config = {
       },
       keyframes: {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
-        'slide-up': { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-        'slide-in-end': { from: { transform: 'translateX(var(--slide-in-from))' }, to: { transform: 'translateX(0)' } },
+        'slide-up': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'slide-in-end': {
+          from: { transform: 'translateX(var(--slide-in-from))' },
+          to: { transform: 'translateX(0)' },
+        },
         shimmer: { from: { backgroundPosition: '200% 0' }, to: { backgroundPosition: '-200% 0' } },
       },
       animation: {

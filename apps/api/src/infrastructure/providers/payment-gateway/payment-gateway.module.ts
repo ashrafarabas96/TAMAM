@@ -15,7 +15,10 @@ import { PAYMENT_GATEWAY } from './payment-gateway.provider';
     {
       provide: PAYMENT_GATEWAY,
       inject: [AppConfigService],
-      useFactory: (config: AppConfigService) => (config.env.PAYMENT_GATEWAY_PROVIDER === 'mock' ? new MockGatewayProvider(config) : new NoneGatewayProvider()),
+      useFactory: (config: AppConfigService) =>
+        config.env.PAYMENT_GATEWAY_PROVIDER === 'mock'
+          ? new MockGatewayProvider(config)
+          : new NoneGatewayProvider(),
     },
   ],
   exports: [PAYMENT_GATEWAY],

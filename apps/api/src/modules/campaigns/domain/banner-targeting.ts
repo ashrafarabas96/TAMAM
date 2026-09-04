@@ -61,7 +61,10 @@ export function rolloutBucket(campaignId: string, userId: string): number {
 }
 
 /** A campaign is live when it is ACTIVE and `now` falls inside its schedule. */
-export function isLiveAt(campaign: Pick<TargetableCampaign, 'status' | 'startsAt' | 'endsAt'>, now: Date): boolean {
+export function isLiveAt(
+  campaign: Pick<TargetableCampaign, 'status' | 'startsAt' | 'endsAt'>,
+  now: Date,
+): boolean {
   if (campaign.status !== CampaignStatus.ACTIVE) return false;
   if (campaign.startsAt.getTime() > now.getTime()) return false;
   if (campaign.endsAt && campaign.endsAt.getTime() <= now.getTime()) return false;
@@ -73,7 +76,8 @@ export function isLiveAt(campaign: Pick<TargetableCampaign, 'status' | 'startsAt
  * an empty list always means "no restriction on this dimension".
  */
 export function matchesTargeting(campaign: TargetableCampaign, viewer: BannerViewer): boolean {
-  if (campaign.audiences.length && !campaign.audiences.includes(viewer.audience as BannerAudience)) return false;
+  if (campaign.audiences.length && !campaign.audiences.includes(viewer.audience as BannerAudience))
+    return false;
 
   if (campaign.zoneIds.length) {
     if (!viewer.zoneId || !campaign.zoneIds.includes(viewer.zoneId)) return false;
@@ -87,8 +91,10 @@ export function matchesTargeting(campaign: TargetableCampaign, viewer: BannerVie
 
   if (campaign.newCustomersOnly && !viewer.isNewCustomer) return false;
 
-  if (campaign.minCompletedJobs !== null && viewer.completedJobs < campaign.minCompletedJobs) return false;
-  if (campaign.maxCompletedJobs !== null && viewer.completedJobs > campaign.maxCompletedJobs) return false;
+  if (campaign.minCompletedJobs !== null && viewer.completedJobs < campaign.minCompletedJobs)
+    return false;
+  if (campaign.maxCompletedJobs !== null && viewer.completedJobs > campaign.maxCompletedJobs)
+    return false;
 
   if (campaign.serviceTypeInterest.length) {
     const used = new Set<JobType>(viewer.usedJobTypes);

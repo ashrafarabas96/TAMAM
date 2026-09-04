@@ -8,7 +8,14 @@ import { LOCALE_COOKIE_NAME } from '@/lib/env';
 import { ar } from './ar';
 import { en } from './en';
 import { localeDirection } from './locale';
-import type { Dictionary, EnumGroup, Locale, TFunction, TranslateParams, TranslationKey } from './types';
+import type {
+  Dictionary,
+  EnumGroup,
+  Locale,
+  TFunction,
+  TranslateParams,
+  TranslationKey,
+} from './types';
 
 export type { EnumGroup, Locale, TFunction, TranslationKey } from './types';
 export { localeDirection } from './locale';
@@ -17,7 +24,9 @@ const dictionaries: Record<Locale, Dictionary> = { ar, en };
 
 function interpolate(template: string, params?: TranslateParams): string {
   if (!params) return template;
-  return template.replace(/\{(\w+)\}/g, (_, name: string) => (name in params ? String(params[name]) : `{${name}}`));
+  return template.replace(/\{(\w+)\}/g, (_, name: string) =>
+    name in params ? String(params[name]) : `{${name}}`,
+  );
 }
 
 export function translate(locale: Locale, key: TranslationKey, params?: TranslateParams): string {
@@ -33,7 +42,11 @@ export function translateOptional(locale: Locale, key: string): string | null {
 }
 
 /** Label for an enum value; falls back to the raw value so a new enum member never renders empty. */
-export function translateEnum(locale: Locale, group: EnumGroup, value: string | null | undefined): string {
+export function translateEnum(
+  locale: Locale,
+  group: EnumGroup,
+  value: string | null | undefined,
+): string {
   if (value === null || value === undefined || value === '') return '—';
   const key = `enum.${group}.${value}` as TranslationKey;
   const dictionary = dictionaries[locale];
@@ -57,7 +70,10 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 export function I18nProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
   const router = useRouter();
   const t = useCallback<TFunction>((key, params) => translate(locale, key, params), [locale]);
-  const enumLabel = useCallback((group: EnumGroup, value: string | null | undefined) => translateEnum(locale, group, value), [locale]);
+  const enumLabel = useCallback(
+    (group: EnumGroup, value: string | null | undefined) => translateEnum(locale, group, value),
+    [locale],
+  );
   const localized = useCallback(
     (text: { ar: string; en: string } | null | undefined) => {
       if (!text) return '—';
@@ -66,7 +82,10 @@ export function I18nProvider({ locale, children }: { locale: Locale; children: R
     },
     [locale],
   );
-  const errorMessage = useCallback((code: string, fallback: string) => translateOptional(locale, `errorCode.${code}`) ?? fallback, [locale]);
+  const errorMessage = useCallback(
+    (code: string, fallback: string) => translateOptional(locale, `errorCode.${code}`) ?? fallback,
+    [locale],
+  );
   const setLocale = useCallback(
     (next: Locale) => {
       document.cookie = `${LOCALE_COOKIE_NAME}=${next}; path=/; max-age=31536000; samesite=lax`;
@@ -76,7 +95,18 @@ export function I18nProvider({ locale, children }: { locale: Locale; children: R
     },
     [router],
   );
-  const value = useMemo<I18nContextValue>(() => ({ locale, dir: localeDirection(locale), t, enumLabel, errorMessage, localized, setLocale }), [locale, t, enumLabel, errorMessage, localized, setLocale]);
+  const value = useMemo<I18nContextValue>(
+    () => ({
+      locale,
+      dir: localeDirection(locale),
+      t,
+      enumLabel,
+      errorMessage,
+      localized,
+      setLocale,
+    }),
+    [locale, t, enumLabel, errorMessage, localized, setLocale],
+  );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 

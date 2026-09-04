@@ -16,8 +16,20 @@ interface CursorListOptions<T> {
 }
 
 /** Keyset ("load more") pagination over `{ items, nextCursor }` responses. */
-export function useCursorList<T>({ queryKey, fetchPage, enabled = true, refetchInterval = false, staleTime }: CursorListOptions<T>) {
-  const query = useInfiniteQuery<Page<T>, ApiError, { pages: Page<T>[]; pageParams: unknown[] }, QueryKey, string | undefined>({
+export function useCursorList<T>({
+  queryKey,
+  fetchPage,
+  enabled = true,
+  refetchInterval = false,
+  staleTime,
+}: CursorListOptions<T>) {
+  const query = useInfiniteQuery<
+    Page<T>,
+    ApiError,
+    { pages: Page<T>[]; pageParams: unknown[] },
+    QueryKey,
+    string | undefined
+  >({
     queryKey,
     queryFn: ({ pageParam }) => fetchPage(pageParam),
     initialPageParam: undefined,

@@ -53,10 +53,16 @@ export class BannerEventsService {
    * invalid or expired tokens, tokens belonging to another user, and events already recorded
    * for the same (banner, viewer, type, minute).
    */
-  async ingest(user: RequestUser | null, batch: BannerEventBatchInput, platform: BannerEventPlatform): Promise<BannerEventIngestResult> {
+  async ingest(
+    user: RequestUser | null,
+    batch: BannerEventBatchInput,
+    platform: BannerEventPlatform,
+  ): Promise<BannerEventIngestResult> {
     const now = new Date();
     const pepper = this.config.env.OTP_PEPPER;
-    const attributionWindowH = await this.systemConfig.getNumber(CONFIG_KEYS.BANNER_ATTRIBUTION_WINDOW_H);
+    const attributionWindowH = await this.systemConfig.getNumber(
+      CONFIG_KEYS.BANNER_ATTRIBUTION_WINDOW_H,
+    );
 
     const rows: Prisma.BannerEventCreateManyInput[] = [];
     const seen = new Set<string>();
@@ -66,12 +72,18 @@ export class BannerEventsService {
     for (const event of batch.events) {
       const payload = verifyBannerToken(event.trackingToken, pepper, now);
       if (!payload) {
-        this.logger.warn({ placement: event.placement, type: event.type }, 'banner event rejected: invalid or expired tracking token');
+        this.logger.warn(
+          { placement: event.placement, type: event.type },
+          'banner event rejected: invalid or expired tracking token',
+        );
         continue;
       }
       // A token issued for one user may never be replayed by another.
       if (user && payload.subject !== ANONYMOUS_VIEWER_ID && payload.subject !== user.id) {
-        this.logger.warn({ bannerId: payload.bannerId, userId: user.id }, 'banner event rejected: tracking token belongs to another user');
+        this.logger.warn(
+          { bannerId: payload.bannerId, userId: user.id },
+          'banner event rejected: tracking token belongs to another user',
+        );
         continue;
       }
 
@@ -94,14 +106,16 @@ export class BannerEventsService {
         occurredAt,
       });
 
-      if (event.type === 'CLICK') clicks.push({ campaignId: payload.campaignId, bannerId: payload.bannerId });
+      if (event.type === 'CLICK')
+        clicks.push({ campaignId: payload.campaignId, bannerId: payload.bannerId });
       if (event.type === 'IMPRESSION') impressions.push({ campaignId: payload.campaignId });
     }
 
     if (!rows.length) return { accepted: 0, rejected: batch.events.length };
 
     const created = await this.prisma.bannerEvent.createMany({ data: rows, skipDuplicates: true });
-    for (const row of rows) this.metrics.bannerEvents.inc({ type: row.type, placement: row.placement });
+    for (const row of rows)
+      this.metrics.bannerEvents.inc({ type: row.type, placement: row.placement });
 
     if (user) {
       if (created.count === rows.length) {
@@ -115,7 +129,11 @@ export class BannerEventsService {
     }
 
     for (const click of clicks) {
-      this.events.emit('banner.clicked', { userId: user?.id ?? null, campaignId: click.campaignId, bannerId: click.bannerId });
+      this.events.emit('banner.clicked', {
+        userId: user?.id ?? null,
+        campaignId: click.campaignId,
+        bannerId: click.bannerId,
+      });
     }
 
     return { accepted: created.count, rejected: batch.events.length - created.count };
@@ -125,12 +143,17 @@ export class BannerEventsService {
    * Keeps the per-user/per-campaign impression counters the feed reads when enforcing
    * `frequencyCapPerDay`. Buckets are UTC days and expire at the next UTC midnight.
    */
-  private async bumpFrequencyCounters(userId: string, impressions: Array<{ campaignId: string }>, now: Date): Promise<void> {
+  private async bumpFrequencyCounters(
+    userId: string,
+    impressions: Array<{ campaignId: string }>,
+    now: Date,
+  ): Promise<void> {
     if (!impressions.length) return;
     const day = utcDayKey(now);
     const ttl = secondsUntilNextUtcDay(now);
     const perCampaign = new Map<string, number>();
-    for (const i of impressions) perCampaign.set(i.campaignId, (perCampaign.get(i.campaignId) ?? 0) + 1);
+    for (const i of impressions)
+      perCampaign.set(i.campaignId, (perCampaign.get(i.campaignId) ?? 0) + 1);
 
     const pipeline = this.redis.client.pipeline();
     for (const [campaignId, count] of perCampaign) {
@@ -142,10 +165,16 @@ export class BannerEventsService {
   }
 
   /** Drops the cached counters so the next feed read recomputes them from `banner_events`. */
-  private async resetFrequencyCounters(userId: string, impressions: Array<{ campaignId: string }>, now: Date): Promise<void> {
+  private async resetFrequencyCounters(
+    userId: string,
+    impressions: Array<{ campaignId: string }>,
+    now: Date,
+  ): Promise<void> {
     if (!impressions.length) return;
     const day = utcDayKey(now);
-    const keys = [...new Set(impressions.map((i) => i.campaignId))].map((campaignId) => frequencyKey(userId, campaignId, day));
+    const keys = [...new Set(impressions.map((i) => i.campaignId))].map((campaignId) =>
+      frequencyKey(userId, campaignId, day),
+    );
     await this.redis.del(...keys);
   }
 
@@ -153,15 +182,29 @@ export class BannerEventsService {
    * Remembers the last campaign a user clicked so `BannerAttributionService` can stamp the next
    * job they create. The key expires after `banners.attribution_window_h`.
    */
-  private async recordClickAttribution(userId: string, clicks: Array<{ campaignId: string }>, windowHours: number): Promise<void> {
+  private async recordClickAttribution(
+    userId: string,
+    clicks: Array<{ campaignId: string }>,
+    windowHours: number,
+  ): Promise<void> {
     const last = clicks[clicks.length - 1];
     if (!last) return;
-    await this.redis.client.set(attributionKey(userId), last.campaignId, 'EX', Math.max(1, Math.round(windowHours * 3600)));
+    await this.redis.client.set(
+      attributionKey(userId),
+      last.campaignId,
+      'EX',
+      Math.max(1, Math.round(windowHours * 3600)),
+    );
   }
 }
 
 /** `<bannerId>:<userId|sessionId>:<type>:<yyyymmddhhmm>` — one event per viewer, per type, per minute. */
-export function buildDedupeKey(bannerId: string, viewerKey: string, type: BannerEventType, occurredAt: Date): string {
+export function buildDedupeKey(
+  bannerId: string,
+  viewerKey: string,
+  type: BannerEventType,
+  occurredAt: Date,
+): string {
   const minute = [
     occurredAt.getUTCFullYear(),
     String(occurredAt.getUTCMonth() + 1).padStart(2, '0'),

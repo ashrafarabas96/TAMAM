@@ -11,7 +11,10 @@
     "./css": "./dist/tokens.css",
     "./json": "./tokens.json"
   },
-  "files": ["dist", "tokens.json"],
+  "files": [
+    "dist",
+    "tokens.json"
+  ],
   "scripts": {
     "generate": "node scripts/generate.mjs",
     "build": "node scripts/generate.mjs",

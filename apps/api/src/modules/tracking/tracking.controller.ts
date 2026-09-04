@@ -1,9 +1,22 @@
 import { Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { type LocationSample, Permission } from '@tamam/shared-types';
-import { type LiveMapQueryInput, type LocationBatchInput, liveMapQuerySchema, locationBatchSchema } from '@tamam/validation';
+import {
+  type LiveMapQueryInput,
+  type LocationBatchInput,
+  liveMapQuerySchema,
+  locationBatchSchema,
+} from '@tamam/validation';
 
-import { AllowRestricted, CurrentUser, RateLimit, RequirePermission, RequireRole, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  CurrentUser,
+  RateLimit,
+  RequirePermission,
+  RequireRole,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { AppException } from '../../common/errors/app.exception';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
@@ -27,7 +40,11 @@ export class TrackingController {
   @RateLimit({ name: 'location-rest', limit: 120, windowSeconds: 60, keyBy: 'user' })
   push(@CurrentUser() user: RequestUser, @ZodBody(locationBatchSchema) input: LocationBatchInput) {
     if (!user.partnerId) throw AppException.forbidden();
-    return this.tracking.ingestForPartner(user.partnerId, input.samples as LocationSample[], input.jobId);
+    return this.tracking.ingestForPartner(
+      user.partnerId,
+      input.samples as LocationSample[],
+      input.jobId,
+    );
   }
 
   /** Polling fallback for customers: partner position + ETA for an active job. */
@@ -35,8 +52,16 @@ export class TrackingController {
   @AllowRestricted()
   async jobLocation(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string) {
     const job = await this.jobs.getForUser(id, user);
-    const location = job.partnerId ? await this.tracking.latestPartnerLocation(job.partnerId) : null;
-    return { jobId: job.id, status: job.status, location, etaToPickupSeconds: job.etaToPickupSeconds, etaToDestinationSeconds: job.etaToDestinationSeconds };
+    const location = job.partnerId
+      ? await this.tracking.latestPartnerLocation(job.partnerId)
+      : null;
+    return {
+      jobId: job.id,
+      status: job.status,
+      location,
+      etaToPickupSeconds: job.etaToPickupSeconds,
+      etaToDestinationSeconds: job.etaToDestinationSeconds,
+    };
   }
 
   @Get('jobs/:id/path')

@@ -18,7 +18,10 @@ export class MediaController {
   @Post('upload-intents')
   @AllowRestricted()
   @RateLimit({ name: 'media-intent', limit: 60, windowSeconds: 600, keyBy: 'user' })
-  intent(@CurrentUser() user: RequestUser, @ZodBody(mediaUploadIntentSchema) input: MediaUploadIntentInput) {
+  intent(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(mediaUploadIntentSchema) input: MediaUploadIntentInput,
+  ) {
     return this.media.createUploadIntent(user, input);
   }
 

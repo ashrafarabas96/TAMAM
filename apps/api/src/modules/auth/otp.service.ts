@@ -28,7 +28,13 @@ export class OtpService {
     @Inject(SMS_PROVIDER) private readonly sms: SmsProvider,
   ) {}
 
-  async request(phone: string, audience: 'CUSTOMER' | 'PARTNER', language: 'ar' | 'en', ip: string | null, deviceId: string | null): Promise<RequestOtpResponse> {
+  async request(
+    phone: string,
+    audience: 'CUSTOMER' | 'PARTNER',
+    language: 'ar' | 'en',
+    ip: string | null,
+    deviceId: string | null,
+  ): Promise<RequestOtpResponse> {
     const [length, ttl, maxAttempts, cooldown, maxPerHour] = await Promise.all([
       this.sysConfig.getNumber(CONFIG_KEYS.OTP_LENGTH),
       this.sysConfig.getNumber(CONFIG_KEYS.OTP_TTL_S),
@@ -38,11 +44,19 @@ export class OtpService {
     ]);
 
     // Resend cooldown
-    const last = await this.prisma.otpRequest.findFirst({ where: { phone, consumedAt: null }, orderBy: { createdAt: 'desc' } });
+    const last = await this.prisma.otpRequest.findFirst({
+      where: { phone, consumedAt: null },
+      orderBy: { createdAt: 'desc' },
+    });
     if (last) {
       const elapsed = (Date.now() - last.createdAt.getTime()) / 1000;
       if (elapsed < cooldown) {
-        throw new AppException(ErrorCode.OTP_RESEND_COOLDOWN, 'Please wait before requesting another code', 429, { retryAfterSeconds: Math.ceil(cooldown - elapsed) });
+        throw new AppException(
+          ErrorCode.OTP_RESEND_COOLDOWN,
+          'Please wait before requesting another code',
+          429,
+          { retryAfterSeconds: Math.ceil(cooldown - elapsed) },
+        );
       }
     }
     // Hourly cap per phone + per IP
@@ -56,11 +70,27 @@ export class OtpService {
     const code = randomDigits(length);
     const expiresAt = addSeconds(new Date(), ttl);
     await this.prisma.$transaction(async (tx) => {
-      await tx.otpRequest.updateMany({ where: { phone, consumedAt: null }, data: { consumedAt: new Date() } }); // invalidate previous
-      await tx.otpRequest.create({ data: { phone, codeHash: hmacHash(code, this.config.env.OTP_PEPPER), audience, maxAttempts, expiresAt, ipAddress: ip, deviceId } });
+      await tx.otpRequest.updateMany({
+        where: { phone, consumedAt: null },
+        data: { consumedAt: new Date() },
+      }); // invalidate previous
+      await tx.otpRequest.create({
+        data: {
+          phone,
+          codeHash: hmacHash(code, this.config.env.OTP_PEPPER),
+          audience,
+          maxAttempts,
+          expiresAt,
+          ipAddress: ip,
+          deviceId,
+        },
+      });
     });
 
-    const body = await this.templates.render('OTP_CODE', 'SMS', language, { code, minutes: String(Math.round(ttl / 60)) });
+    const body = await this.templates.render('OTP_CODE', 'SMS', language, {
+      code,
+      minutes: String(Math.round(ttl / 60)),
+    });
     try {
       await this.sms.send({ to: phone, body: body.body, category: 'OTP' });
     } catch (err) {
@@ -68,26 +98,54 @@ export class OtpService {
       throw AppException.external('sms', 'Could not send verification code. Try again shortly.');
     }
 
-    return { resendAfterSeconds: cooldown, expiresInSeconds: ttl, ...(this.config.isProduction || this.sms.name !== 'console' ? {} : { devCode: code }) };
+    return {
+      resendAfterSeconds: cooldown,
+      expiresInSeconds: ttl,
+      ...(this.config.isProduction || this.sms.name !== 'console' ? {} : { devCode: code }),
+    };
   }
 
   /** Verifies and consumes the latest active code. Throws typed errors; increments attempts on failure. */
   async verify(phone: string, code: string): Promise<{ audience: 'CUSTOMER' | 'PARTNER' }> {
-    const otp = await this.prisma.otpRequest.findFirst({ where: { phone, consumedAt: null }, orderBy: { createdAt: 'desc' } });
+    const otp = await this.prisma.otpRequest.findFirst({
+      where: { phone, consumedAt: null },
+      orderBy: { createdAt: 'desc' },
+    });
     if (!otp) throw new AppException(ErrorCode.OTP_INVALID, 'Invalid or expired code', 400);
-    if (otp.expiresAt < new Date()) throw new AppException(ErrorCode.OTP_EXPIRED, 'Code expired — request a new one', 400);
-    if (otp.attempts >= otp.maxAttempts) throw new AppException(ErrorCode.OTP_TOO_MANY_ATTEMPTS, 'Too many attempts — request a new code', 429);
+    if (otp.expiresAt < new Date())
+      throw new AppException(ErrorCode.OTP_EXPIRED, 'Code expired — request a new one', 400);
+    if (otp.attempts >= otp.maxAttempts)
+      throw new AppException(
+        ErrorCode.OTP_TOO_MANY_ATTEMPTS,
+        'Too many attempts — request a new code',
+        429,
+      );
 
     const ok = safeEqual(otp.codeHash, hmacHash(code, this.config.env.OTP_PEPPER));
     if (!ok) {
-      const updated = await this.prisma.otpRequest.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
+      const updated = await this.prisma.otpRequest.update({
+        where: { id: otp.id },
+        data: { attempts: { increment: 1 } },
+      });
       if (updated.attempts >= updated.maxAttempts) {
-        await this.prisma.otpRequest.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
-        throw new AppException(ErrorCode.OTP_TOO_MANY_ATTEMPTS, 'Too many attempts — request a new code', 429);
+        await this.prisma.otpRequest.update({
+          where: { id: otp.id },
+          data: { consumedAt: new Date() },
+        });
+        throw new AppException(
+          ErrorCode.OTP_TOO_MANY_ATTEMPTS,
+          'Too many attempts — request a new code',
+          429,
+        );
       }
-      throw new AppException(ErrorCode.OTP_INVALID, 'Invalid code', 400, { attemptsLeft: updated.maxAttempts - updated.attempts });
+      throw new AppException(ErrorCode.OTP_INVALID, 'Invalid code', 400, {
+        attemptsLeft: updated.maxAttempts - updated.attempts,
+      });
     }
-    await this.prisma.otpRequest.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
+    await this.prisma.otpRequest.update({
+      where: { id: otp.id },
+      data: { consumedAt: new Date() },
+    });
     return { audience: otp.audience as 'CUSTOMER' | 'PARTNER' };
   }
 }

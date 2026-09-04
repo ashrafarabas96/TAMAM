@@ -147,11 +147,17 @@ export class TestApp {
   }
 
   /* ------------------------------------------------------------- logins */
-  loginCustomer(phone: string = SEED.customerPhone, deviceId = 'e2e-customer-device'): Promise<AuthContext> {
+  loginCustomer(
+    phone: string = SEED.customerPhone,
+    deviceId = 'e2e-customer-device',
+  ): Promise<AuthContext> {
     return this.loginWithOtp(phone, 'CUSTOMER', deviceId);
   }
 
-  loginPartner(phone: string = SEED.driverPhone, deviceId = 'e2e-partner-device'): Promise<AuthContext> {
+  loginPartner(
+    phone: string = SEED.driverPhone,
+    deviceId = 'e2e-partner-device',
+  ): Promise<AuthContext> {
     return this.loginWithOtp(phone, 'PARTNER', deviceId);
   }
 
@@ -159,7 +165,11 @@ export class TestApp {
    * Real OTP round-trip: the console SMS provider returns the code as `devCode`, so the test
    * exercises exactly the endpoints the apps call. Results are cached per phone + audience.
    */
-  private async loginWithOtp(phone: string, audience: 'CUSTOMER' | 'PARTNER', deviceId: string): Promise<AuthContext> {
+  private async loginWithOtp(
+    phone: string,
+    audience: 'CUSTOMER' | 'PARTNER',
+    deviceId: string,
+  ): Promise<AuthContext> {
     const cacheKey = `${audience}:${phone}`;
     const cached = this.tokenCache.get(cacheKey);
     if (cached) return cached;
@@ -168,13 +178,25 @@ export class TestApp {
     await this.prisma.otpRequest.deleteMany({ where: { phone } });
     await this.resetRateLimits();
 
-    const requested = await this.request().post(this.url('auth/otp/request')).send({ phone, audience, language: 'ar' }).expect(200);
+    const requested = await this.request()
+      .post(this.url('auth/otp/request'))
+      .send({ phone, audience, language: 'ar' })
+      .expect(200);
     const devCode = (requested.body as { devCode?: string }).devCode;
-    if (!devCode) throw new Error('The console SMS provider did not return devCode — set SMS_PROVIDER=console for tests');
+    if (!devCode)
+      throw new Error(
+        'The console SMS provider did not return devCode — set SMS_PROVIDER=console for tests',
+      );
 
     const verified = await this.request()
       .post(this.url('auth/otp/verify'))
-      .send({ phone, code: devCode, audience, language: 'ar', device: { deviceId, platform: 'android', appVersion: 'e2e' } })
+      .send({
+        phone,
+        code: devCode,
+        audience,
+        language: 'ar',
+        device: { deviceId, platform: 'android', appVersion: 'e2e' },
+      })
       .expect(200);
 
     const session = verified.body as AuthSession;
@@ -189,7 +211,11 @@ export class TestApp {
     return ctx;
   }
 
-  async loginAdmin(email: string = SEED.adminEmail, password: string = SEED.adminPassword, deviceId = 'e2e-admin-device'): Promise<AuthContext> {
+  async loginAdmin(
+    email: string = SEED.adminEmail,
+    password: string = SEED.adminPassword,
+    deviceId = 'e2e-admin-device',
+  ): Promise<AuthContext> {
     const cacheKey = `ADMIN:${email}`;
     const cached = this.tokenCache.get(cacheKey);
     if (cached) return cached;
@@ -220,15 +246,21 @@ export class TestApp {
 
   /* ------------------------------------------------------------ cleanup */
   async truncateOperationalTables(): Promise<void> {
-    await this.prisma.$executeRawUnsafe(`TRUNCATE TABLE ${OPERATIONAL_TABLES.map((t) => `"${t}"`).join(', ')} RESTART IDENTITY CASCADE`);
+    await this.prisma.$executeRawUnsafe(
+      `TRUNCATE TABLE ${OPERATIONAL_TABLES.map((t) => `"${t}"`).join(', ')} RESTART IDENTITY CASCADE`,
+    );
     // Restore the availability row every partner is expected to have.
     await this.prisma.$executeRawUnsafe(`
       INSERT INTO partner_availability (partner_id, status, active_roles, updated_at)
       SELECT user_id, 'OFFLINE'::availability_status, ARRAY[]::partner_role_type[], now() FROM partner_profiles
       ON CONFLICT (partner_id) DO NOTHING`);
     // Reset the cached counters the seeded profiles carry.
-    await this.prisma.$executeRawUnsafe(`UPDATE customer_profiles SET completed_jobs = 0, cancelled_jobs = 0, rating_sum = 0, rating_count = 0, first_job_at = NULL`);
-    await this.prisma.$executeRawUnsafe(`UPDATE partner_profiles SET completed_jobs = 0, cancelled_jobs = 0, rating_sum = 0, rating_count = 0, offers_received = 0, offers_accepted = 0, penalty_points = 0`);
+    await this.prisma.$executeRawUnsafe(
+      `UPDATE customer_profiles SET completed_jobs = 0, cancelled_jobs = 0, rating_sum = 0, rating_count = 0, first_job_at = NULL`,
+    );
+    await this.prisma.$executeRawUnsafe(
+      `UPDATE partner_profiles SET completed_jobs = 0, cancelled_jobs = 0, rating_sum = 0, rating_count = 0, offers_received = 0, offers_accepted = 0, penalty_points = 0`,
+    );
     await this.prisma.$executeRawUnsafe(`UPDATE promo_codes SET usage_count = 0`);
     await this.resetRateLimits();
     await this.redis.del(...(await this.redis.client.keys('estimate:*')));
@@ -250,7 +282,10 @@ let databaseReady = false;
 function ensureDatabase(): void {
   if (databaseReady) return;
   const migrationsDir = resolve(API_ROOT, 'prisma/migrations');
-  if (!existsSync(migrationsDir) || readdirSync(migrationsDir).filter((f) => !f.endsWith('.toml')).length === 0) {
+  if (
+    !existsSync(migrationsDir) ||
+    readdirSync(migrationsDir).filter((f) => !f.endsWith('.toml')).length === 0
+  ) {
     run('bash', [resolve(REPO_ROOT, 'scripts/db/create-init-migration.sh')], REPO_ROOT);
   }
   run('pnpm', ['exec', 'prisma', 'migrate', 'deploy'], API_ROOT);
@@ -259,13 +294,20 @@ function ensureDatabase(): void {
 }
 
 function run(command: string, args: string[], cwd: string): void {
-  execFileSync(command, args, { cwd, stdio: process.env.E2E_VERBOSE ? 'inherit' : 'pipe', env: process.env });
+  execFileSync(command, args, {
+    cwd,
+    stdio: process.env.E2E_VERBOSE ? 'inherit' : 'pipe',
+    env: process.env,
+  });
 }
 
 /* ------------------------------------------------------------------ utils */
 
 /** Polls `probe` until it returns a truthy value or the timeout elapses. */
-export async function waitFor<T>(probe: () => Promise<T | null | undefined | false>, options: { timeoutMs?: number; intervalMs?: number; label?: string } = {}): Promise<T> {
+export async function waitFor<T>(
+  probe: () => Promise<T | null | undefined | false>,
+  options: { timeoutMs?: number; intervalMs?: number; label?: string } = {},
+): Promise<T> {
   const timeoutMs = options.timeoutMs ?? 15_000;
   const intervalMs = options.intervalMs ?? 250;
   const deadline = Date.now() + timeoutMs;
@@ -275,7 +317,9 @@ export async function waitFor<T>(probe: () => Promise<T | null | undefined | fal
     if (last) return last as T;
     await sleep(intervalMs);
   }
-  throw new Error(`waitFor timed out after ${timeoutMs} ms${options.label ? `: ${options.label}` : ''}`);
+  throw new Error(
+    `waitFor timed out after ${timeoutMs} ms${options.label ? `: ${options.label}` : ''}`,
+  );
 }
 
 export const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -284,7 +328,11 @@ export const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeou
 export const nowIso = (): string => new Date().toISOString();
 
 /** A location sample near the Ramallah zone centre. */
-export function sampleAt(lat: number, lng: number, accuracy = 8): { lat: number; lng: number; accuracy: number; timestamp: string } {
+export function sampleAt(
+  lat: number,
+  lng: number,
+  accuracy = 8,
+): { lat: number; lng: number; accuracy: number; timestamp: string } {
   return { lat, lng, accuracy, timestamp: nowIso() };
 }
 

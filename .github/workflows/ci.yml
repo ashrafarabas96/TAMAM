@@ -38,8 +38,7 @@ jobs:
       - run: pnpm tokens:generate
       - run: pnpm --filter @tamam/api exec prisma generate
       - run: pnpm lint
-      # `pnpm format:check` is intentionally not run yet: the existing sources predate the
-      # printWidth:100 Prettier config, so enabling it needs its own formatting commit first.
+      - run: pnpm format:check
 
   # ------------------------------------------------------------- typecheck
   typecheck:

@@ -1,4 +1,11 @@
-import { DOCUMENT_EXPIRY_WARNING_DAYS, type ExpiringDocument, dayMs, daysUntil, documentsToExpire, documentsToWarn } from './document-expiry';
+import {
+  DOCUMENT_EXPIRY_WARNING_DAYS,
+  type ExpiringDocument,
+  dayMs,
+  daysUntil,
+  documentsToExpire,
+  documentsToWarn,
+} from './document-expiry';
 
 const NOW = new Date('2026-09-03T12:00:00.000Z');
 const inDays = (days: number): Date => new Date(NOW.getTime() + days * dayMs);
@@ -29,7 +36,9 @@ describe('document expiry rules', () => {
     });
 
     it('never warns twice — expiryNotifiedAt is the idempotency marker', () => {
-      expect(documentsToWarn([doc({ expiryNotifiedAt: new Date('2026-09-01T00:00:00.000Z') })], NOW)).toEqual([]);
+      expect(
+        documentsToWarn([doc({ expiryNotifiedAt: new Date('2026-09-01T00:00:00.000Z') })], NOW),
+      ).toEqual([]);
     });
 
     it('ignores documents without an expiry date', () => {
@@ -43,7 +52,9 @@ describe('document expiry rules', () => {
     });
 
     it('warns about pending documents too — they still block going online once lapsed', () => {
-      expect(documentsToWarn([doc({ status: 'PENDING', expiresAt: inDays(4) })], NOW)).toHaveLength(1);
+      expect(documentsToWarn([doc({ status: 'PENDING', expiresAt: inDays(4) })], NOW)).toHaveLength(
+        1,
+      );
     });
 
     it('honours a custom warning window', () => {
@@ -63,11 +74,15 @@ describe('document expiry rules', () => {
     });
 
     it('is idempotent: already EXPIRED rows are not re-flagged', () => {
-      expect(documentsToExpire([doc({ status: 'EXPIRED', expiresAt: inDays(-3) })], NOW)).toEqual([]);
+      expect(documentsToExpire([doc({ status: 'EXPIRED', expiresAt: inDays(-3) })], NOW)).toEqual(
+        [],
+      );
     });
 
     it('does not resurrect rejected documents', () => {
-      expect(documentsToExpire([doc({ status: 'REJECTED', expiresAt: inDays(-3) })], NOW)).toEqual([]);
+      expect(documentsToExpire([doc({ status: 'REJECTED', expiresAt: inDays(-3) })], NOW)).toEqual(
+        [],
+      );
     });
 
     it('ignores documents without an expiry date', () => {

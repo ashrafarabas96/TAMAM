@@ -16,16 +16,28 @@ export class AccountStatusGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<Request & { user?: RequestUser }>();
     const user = req.user;
     if (!user) return true; // public route or unauthenticated (handled by JwtAuthGuard)
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     if (isPublic) return true;
 
     if (user.accountStatus === AccountStatus.SUSPENDED) {
-      throw AppException.forbidden('Your account is suspended. Contact support.', ErrorCode.ACCOUNT_SUSPENDED);
+      throw AppException.forbidden(
+        'Your account is suspended. Contact support.',
+        ErrorCode.ACCOUNT_SUSPENDED,
+      );
     }
     if (user.accountStatus === AccountStatus.RESTRICTED) {
-      const allowed = this.reflector.getAllAndOverride<boolean>(ALLOW_RESTRICTED_KEY, [context.getHandler(), context.getClass()]);
+      const allowed = this.reflector.getAllAndOverride<boolean>(ALLOW_RESTRICTED_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]);
       if (!allowed && req.method !== 'GET') {
-        throw AppException.forbidden('Your account is restricted from this action. Contact support.', ErrorCode.ACCOUNT_RESTRICTED);
+        throw AppException.forbidden(
+          'Your account is restricted from this action. Contact support.',
+          ErrorCode.ACCOUNT_RESTRICTED,
+        );
       }
     }
     return true;

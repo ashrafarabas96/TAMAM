@@ -25,12 +25,18 @@ function signature(payload: string, pepper: string): string {
 }
 
 export function signBannerToken(payload: BannerTokenPayload, pepper: string): string {
-  const body = [payload.bannerId, payload.campaignId, payload.subject, String(payload.exp)].join(SEPARATOR);
+  const body = [payload.bannerId, payload.campaignId, payload.subject, String(payload.exp)].join(
+    SEPARATOR,
+  );
   return Buffer.from(`${body}${SEPARATOR}${signature(body, pepper)}`, 'utf8').toString('base64url');
 }
 
 /** Returns the payload when the signature is valid and the token has not expired, otherwise null. */
-export function verifyBannerToken(token: string, pepper: string, now: Date): BannerTokenPayload | null {
+export function verifyBannerToken(
+  token: string,
+  pepper: string,
+  now: Date,
+): BannerTokenPayload | null {
   let decoded: string;
   try {
     decoded = Buffer.from(token, 'base64url').toString('utf8');

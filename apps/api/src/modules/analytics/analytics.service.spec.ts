@@ -3,7 +3,13 @@ import type { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { RedisService } from '../../infrastructure/redis/redis.service';
 import type { SystemConfigService } from '../config/system-config.service';
 
-import { AnalyticsService, isTrackedEvent, stripPii, zonedDateKey, zonedDayRange } from './analytics.service';
+import {
+  AnalyticsService,
+  isTrackedEvent,
+  stripPii,
+  zonedDateKey,
+  zonedDayRange,
+} from './analytics.service';
 
 const USER_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -56,22 +62,44 @@ describe('isTrackedEvent', () => {
 
 describe('stripPii', () => {
   it('removes phone, email, name and token keys', () => {
-    expect(stripPii({ phone: '+970599123456', email: 'a@b.c', fullName: 'Sara', accessToken: 'x', categoryId: 'cat-1' })).toEqual({ categoryId: 'cat-1' });
+    expect(
+      stripPii({
+        phone: '+970599123456',
+        email: 'a@b.c',
+        fullName: 'Sara',
+        accessToken: 'x',
+        categoryId: 'cat-1',
+      }),
+    ).toEqual({ categoryId: 'cat-1' });
   });
 
   it('is case-insensitive and matches substrings', () => {
-    expect(stripPii({ PhoneNumber: '1', userEmail: '2', first_name: '3', refresh_token: '4', keep: 'yes' })).toEqual({ keep: 'yes' });
+    expect(
+      stripPii({
+        PhoneNumber: '1',
+        userEmail: '2',
+        first_name: '3',
+        refresh_token: '4',
+        keep: 'yes',
+      }),
+    ).toEqual({ keep: 'yes' });
   });
 
   it('strips nested objects and arrays too', () => {
-    expect(stripPii({ context: { name: 'Sara', screen: 'home' }, items: [{ email: 'x', sku: 'a' }] })).toEqual({
+    expect(
+      stripPii({ context: { name: 'Sara', screen: 'home' }, items: [{ email: 'x', sku: 'a' }] }),
+    ).toEqual({
       context: { screen: 'home' },
       items: [{ sku: 'a' }],
     });
   });
 
   it('leaves primitive values untouched', () => {
-    expect(stripPii({ count: 3, ok: true, label: 'ride' })).toEqual({ count: 3, ok: true, label: 'ride' });
+    expect(stripPii({ count: 3, ok: true, label: 'ride' })).toEqual({
+      count: 3,
+      ok: true,
+      label: 'ride',
+    });
   });
 
   it('stops recursing past the depth limit instead of looping forever', () => {
@@ -101,31 +129,63 @@ describe('AnalyticsService.track', () => {
 
   it('strips PII from props before writing', async () => {
     const h = harness();
-    await h.service.track(user(), [{ name: 'search_performed', occurredAt: '2026-05-20T10:00:00.000Z', props: { query: 'plumber', phone: '+970599123456' } }], 'android', null);
+    await h.service.track(
+      user(),
+      [
+        {
+          name: 'search_performed',
+          occurredAt: '2026-05-20T10:00:00.000Z',
+          props: { query: 'plumber', phone: '+970599123456' },
+        },
+      ],
+      'android',
+      null,
+    );
     const rows = h.createMany.mock.calls[0]?.[0].data as Array<{ props?: Record<string, unknown> }>;
     expect(rows[0]?.props).toEqual({ query: 'plumber' });
   });
 
   it('falls back to the authenticated session id and truncates long platform strings', async () => {
     const h = harness();
-    await h.service.track(user(), [{ name: 'app_opened', occurredAt: '2026-05-20T10:00:00.000Z' }], 'a-very-long-platform-value', null);
-    const rows = h.createMany.mock.calls[0]?.[0].data as Array<{ sessionId: string | null; platform: string | null }>;
+    await h.service.track(
+      user(),
+      [{ name: 'app_opened', occurredAt: '2026-05-20T10:00:00.000Z' }],
+      'a-very-long-platform-value',
+      null,
+    );
+    const rows = h.createMany.mock.calls[0]?.[0].data as Array<{
+      sessionId: string | null;
+      platform: string | null;
+    }>;
     expect(rows[0]?.sessionId).toBe('session-1');
     expect(rows[0]?.platform).toHaveLength(10);
   });
 
   it('accepts anonymous events', async () => {
     const h = harness();
-    const result = await h.service.track(null, [{ name: 'app_opened', occurredAt: '2026-05-20T10:00:00.000Z', sessionId: 'anon-session-1' }], 'web', null);
+    const result = await h.service.track(
+      null,
+      [{ name: 'app_opened', occurredAt: '2026-05-20T10:00:00.000Z', sessionId: 'anon-session-1' }],
+      'web',
+      null,
+    );
     expect(result.accepted).toBe(1);
-    const rows = h.createMany.mock.calls[0]?.[0].data as Array<{ userId: string | null; sessionId: string | null }>;
+    const rows = h.createMany.mock.calls[0]?.[0].data as Array<{
+      userId: string | null;
+      sessionId: string | null;
+    }>;
     expect(rows[0]?.userId).toBeNull();
     expect(rows[0]?.sessionId).toBe('anon-session-1');
   });
 
   it('never touches the database when every event is dropped', async () => {
     const h = harness();
-    const result = await h.service.track(user(), [{ name: 'nope', occurredAt: '2026-05-20T10:00:00.000Z' }], null, null);
+    const result = await h.service.track(
+      user(),
+      [{ name: 'nope', occurredAt: '2026-05-20T10:00:00.000Z' }],
+      null,
+      null,
+    );
     expect(result).toEqual({ accepted: 0, rejected: 1 });
     expect(h.createMany).not.toHaveBeenCalled();
   });

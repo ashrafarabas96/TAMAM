@@ -27,15 +27,25 @@ export const partnerDocumentUploadSchema = z.object({
   type: z.nativeEnum(DocumentType),
   number: z.string().trim().max(60).optional(),
   mediaId: uuidSchema,
-  issuedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  expiresAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  issuedAt: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  expiresAt: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 
 export const partnerVehicleSchema = z.object({
   vehicleTypeId: uuidSchema,
   brand: z.string().trim().min(1).max(40),
   model: z.string().trim().min(1).max(40),
-  year: z.number().int().min(1990).max(new Date().getUTCFullYear() + 1),
+  year: z
+    .number()
+    .int()
+    .min(1990)
+    .max(new Date().getUTCFullYear() + 1),
   color: z.string().trim().min(2).max(30),
   plate: z.string().trim().min(2).max(20),
   seats: z.number().int().min(1).max(60),
@@ -69,14 +79,19 @@ export const locationBatchSchema = z.object({
 });
 
 /* -------------------------------------------------------------- admin */
-export const reviewDocumentSchema = z.object({
-  decision: z.enum(['APPROVE', 'REJECT']),
-  rejectionReason: z.string().trim().min(3).max(500).optional(),
-  expiresAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-}).refine((v) => v.decision === 'APPROVE' || !!v.rejectionReason, {
-  message: 'rejectionReason is required when rejecting',
-  path: ['rejectionReason'],
-});
+export const reviewDocumentSchema = z
+  .object({
+    decision: z.enum(['APPROVE', 'REJECT']),
+    rejectionReason: z.string().trim().min(3).max(500).optional(),
+    expiresAt: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+  })
+  .refine((v) => v.decision === 'APPROVE' || !!v.rejectionReason, {
+    message: 'rejectionReason is required when rejecting',
+    path: ['rejectionReason'],
+  });
 
 export const partnerDecisionSchema = z.object({
   decision: z.enum(['APPROVE', 'REJECT', 'SUSPEND', 'REINSTATE']),

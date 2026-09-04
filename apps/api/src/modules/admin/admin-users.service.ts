@@ -2,7 +2,12 @@ import { randomInt } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
 import { ADMIN_ROLES, type Page, type UserDto, UserRole } from '@tamam/shared-types';
-import type { AccountStatusActionInput, CreateAdminUserInput, PageRequestInput, UpdateAdminRolesInput } from '@tamam/validation';
+import type {
+  AccountStatusActionInput,
+  CreateAdminUserInput,
+  PageRequestInput,
+  UpdateAdminRolesInput,
+} from '@tamam/validation';
 
 import { AppException } from '../../common/errors/app.exception';
 import type { RequestUser } from '../../common/types/request-user';
@@ -81,7 +86,9 @@ export class AdminUsersService {
   ) {}
 
   /* --------------------------------------------------------------- read */
-  async list(filter: PageRequestInput & { q?: string; role?: UserRole }): Promise<Page<StaffUserDto>> {
+  async list(
+    filter: PageRequestInput & { q?: string; role?: UserRole },
+  ): Promise<Page<StaffUserDto>> {
     const cursor = decodeCursor(filter.cursor);
     const rows = await this.prisma.user.findMany({
       where: {
@@ -89,7 +96,13 @@ export class AdminUsersService {
         deletedAt: null,
         roles: { some: { role: filter.role ?? { in: [...ADMIN_ROLES] } } },
         ...(filter.q
-          ? { OR: [{ fullName: { contains: filter.q, mode: 'insensitive' as const } }, { email: { contains: filter.q, mode: 'insensitive' as const } }, { phone: { contains: filter.q } }] }
+          ? {
+              OR: [
+                { fullName: { contains: filter.q, mode: 'insensitive' as const } },
+                { email: { contains: filter.q, mode: 'insensitive' as const } },
+                { phone: { contains: filter.q } },
+              ],
+            }
           : {}),
       },
       include: { ...staffInclude, adminCredential: true },
@@ -100,7 +113,10 @@ export class AdminUsersService {
   }
 
   async get(id: string): Promise<StaffUserDto> {
-    const row = await this.prisma.user.findUnique({ where: { id }, include: { ...staffInclude, adminCredential: true } });
+    const row = await this.prisma.user.findUnique({
+      where: { id },
+      include: { ...staffInclude, adminCredential: true },
+    });
     if (!row || row.deletedAt) throw AppException.notFound('Staff user', id);
     this.assertStaff(row.roles.map((r) => r.role));
     return this.toStaffDto(row);
@@ -112,9 +128,16 @@ export class AdminUsersService {
    * A phone number is mandatory — `users.phone` is a NOT NULL UNIQUE column and a fabricated
    * placeholder would collide and break OTP recovery, so the request is rejected instead.
    */
-  async create(input: CreateAdminUserInput, actor: RequestUser, requestId: string | null): Promise<StaffUserDto> {
+  async create(
+    input: CreateAdminUserInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<StaffUserDto> {
     const roles = this.assertAssignableRoles(input.roles, actor);
-    if (!input.phone) throw AppException.validation([{ field: 'phone', message: 'a phone number is required for staff accounts' }]);
+    if (!input.phone)
+      throw AppException.validation([
+        { field: 'phone', message: 'a phone number is required for staff accounts' },
+      ]);
     const phone = normalizePhone(input.phone);
     const email = input.email.trim().toLowerCase();
 
@@ -124,7 +147,8 @@ export class AdminUsersService {
       this.prisma.adminCredential.findUnique({ where: { email }, select: { userId: true } }),
     ]);
     if (phoneClash) throw AppException.conflict('A user with this phone number already exists');
-    if (emailClash || credentialClash) throw AppException.conflict('A user with this email already exists');
+    if (emailClash || credentialClash)
+      throw AppException.conflict('A user with this email already exists');
 
     const passwordHash = await AuthService.hashPassword(input.temporaryPassword);
     const roleIds = await this.adminRoleIds(roles);
@@ -138,7 +162,13 @@ export class AdminUsersService {
           phoneVerifiedAt: null,
           notificationPreference: { create: {} },
           adminCredential: { create: { email, passwordHash, mustChangePassword: true } },
-          roles: { create: roles.map((role) => ({ role, adminRoleId: roleIds.get(role) ?? null, grantedBy: actor.id })) },
+          roles: {
+            create: roles.map((role) => ({
+              role,
+              adminRoleId: roleIds.get(role) ?? null,
+              grantedBy: actor.id,
+            })),
+          },
         },
       });
       await this.audit.record(
@@ -159,19 +189,33 @@ export class AdminUsersService {
   }
 
   /* -------------------------------------------------------------- roles */
-  async updateRoles(targetId: string, input: UpdateAdminRolesInput, actor: RequestUser, requestId: string | null): Promise<StaffUserDto> {
-    const target = await this.prisma.user.findUnique({ where: { id: targetId }, include: { roles: true } });
+  async updateRoles(
+    targetId: string,
+    input: UpdateAdminRolesInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<StaffUserDto> {
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetId },
+      include: { roles: true },
+    });
     if (!target || target.deletedAt) throw AppException.notFound('Staff user', targetId);
     const before = target.roles.map((r) => r.role);
     this.assertStaff(before);
     const next = this.assertAssignableRoles(input.roles, actor);
 
     // Nobody may drop their own SUPER_ADMIN — that is how an installation locks itself out (spec §142).
-    if (targetId === actor.id && before.includes(UserRole.SUPER_ADMIN) && !next.includes(UserRole.SUPER_ADMIN)) {
+    if (
+      targetId === actor.id &&
+      before.includes(UserRole.SUPER_ADMIN) &&
+      !next.includes(UserRole.SUPER_ADMIN)
+    ) {
       throw AppException.forbidden('You cannot remove your own SUPER_ADMIN role');
     }
     if (before.includes(UserRole.SUPER_ADMIN) && !next.includes(UserRole.SUPER_ADMIN)) {
-      const remaining = await this.prisma.userRoleAssignment.count({ where: { role: UserRole.SUPER_ADMIN, userId: { not: targetId }, user: { deletedAt: null } } });
+      const remaining = await this.prisma.userRoleAssignment.count({
+        where: { role: UserRole.SUPER_ADMIN, userId: { not: targetId }, user: { deletedAt: null } },
+      });
       if (remaining === 0) throw AppException.conflict('At least one SUPER_ADMIN must remain');
     }
 
@@ -180,16 +224,32 @@ export class AdminUsersService {
     const keep = before.filter((r) => r === UserRole.CUSTOMER || r === UserRole.PARTNER);
 
     await this.prisma.$transaction(async (tx: Tx) => {
-      await tx.userRoleAssignment.deleteMany({ where: { userId: targetId, role: { notIn: keep } } });
+      await tx.userRoleAssignment.deleteMany({
+        where: { userId: targetId, role: { notIn: keep } },
+      });
       for (const role of next) {
         await tx.userRoleAssignment.upsert({
           where: { userId_role: { userId: targetId, role } },
           update: { adminRoleId: roleIds.get(role) ?? null, grantedBy: actor.id },
-          create: { userId: targetId, role, adminRoleId: roleIds.get(role) ?? null, grantedBy: actor.id },
+          create: {
+            userId: targetId,
+            role,
+            adminRoleId: roleIds.get(role) ?? null,
+            grantedBy: actor.id,
+          },
         });
       }
       await this.audit.record(
-        { actorId: actor.id, action: 'admin_user.roles_update', entity: 'user', entityId: targetId, oldValue: { roles: before }, newValue: { roles: next }, reason: input.reason, requestId },
+        {
+          actorId: actor.id,
+          action: 'admin_user.roles_update',
+          entity: 'user',
+          entityId: targetId,
+          oldValue: { roles: before },
+          newValue: { roles: next },
+          reason: input.reason,
+          requestId,
+        },
         tx,
       );
     });
@@ -198,8 +258,16 @@ export class AdminUsersService {
   }
 
   /* ---------------------------------------------------------- passwords */
-  async resetPassword(targetId: string, actor: RequestUser, reason: string, requestId: string | null): Promise<TemporaryPasswordResult> {
-    const credential = await this.prisma.adminCredential.findUnique({ where: { userId: targetId }, include: { user: { include: { roles: true } } } });
+  async resetPassword(
+    targetId: string,
+    actor: RequestUser,
+    reason: string,
+    requestId: string | null,
+  ): Promise<TemporaryPasswordResult> {
+    const credential = await this.prisma.adminCredential.findUnique({
+      where: { userId: targetId },
+      include: { user: { include: { roles: true } } },
+    });
     if (!credential) throw AppException.notFound('Admin credential', targetId);
     this.assertStaff(credential.user.roles.map((r) => r.role));
     if (credential.user.roles.some((r) => r.role === UserRole.SUPER_ADMIN) && !actor.isSuperAdmin) {
@@ -211,21 +279,52 @@ export class AdminUsersService {
     await this.prisma.$transaction(async (tx: Tx) => {
       await tx.adminCredential.update({
         where: { userId: targetId },
-        data: { passwordHash, mustChangePassword: true, failedAttempts: 0, lockedUntil: null, passwordChangedAt: new Date() },
+        data: {
+          passwordHash,
+          mustChangePassword: true,
+          failedAttempts: 0,
+          lockedUntil: null,
+          passwordChangedAt: new Date(),
+        },
       });
-      await this.audit.record({ actorId: actor.id, action: 'admin_user.password_reset', entity: 'user', entityId: targetId, reason, requestId }, tx);
+      await this.audit.record(
+        {
+          actorId: actor.id,
+          action: 'admin_user.password_reset',
+          entity: 'user',
+          entityId: targetId,
+          reason,
+          requestId,
+        },
+        tx,
+      );
     });
     const revokedSessions = await this.sessions.revokeAll(targetId, 'admin_password_reset');
     await this.tokens.invalidatePrincipalCache(targetId);
-    return { userId: targetId, email: credential.email, temporaryPassword, mustChangePassword: true, revokedSessions };
+    return {
+      userId: targetId,
+      email: credential.email,
+      temporaryPassword,
+      mustChangePassword: true,
+      revokedSessions,
+    };
   }
 
   /* ------------------------------------------------------------- status */
-  async changeStatus(targetId: string, input: AccountStatusActionInput, actor: RequestUser, requestId: string | null): Promise<UserDto> {
-    const target = await this.prisma.user.findUnique({ where: { id: targetId }, include: { roles: true } });
+  async changeStatus(
+    targetId: string,
+    input: AccountStatusActionInput,
+    actor: RequestUser,
+    requestId: string | null,
+  ): Promise<UserDto> {
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetId },
+      include: { roles: true },
+    });
     if (!target) throw AppException.notFound('Staff user', targetId);
     this.assertStaff(target.roles.map((r) => r.role));
-    if (targetId === actor.id) throw AppException.forbidden('You cannot change your own account status');
+    if (targetId === actor.id)
+      throw AppException.forbidden('You cannot change your own account status');
     const dto = await this.users.changeAccountStatus(targetId, input, actor.id, requestId);
     await this.tokens.invalidatePrincipalCache(targetId);
     return dto;
@@ -233,28 +332,49 @@ export class AdminUsersService {
 
   /* ------------------------------------------------------------ helpers */
   private assertStaff(roles: UserRole[]): void {
-    if (!roles.some((r) => (ADMIN_ROLES as readonly UserRole[]).includes(r))) throw AppException.notFound('Staff user');
+    if (!roles.some((r) => (ADMIN_ROLES as readonly UserRole[]).includes(r)))
+      throw AppException.notFound('Staff user');
   }
 
   private assertAssignableRoles(roles: UserRole[], actor: RequestUser): UserRole[] {
     const unique = [...new Set(roles)];
     const invalid = unique.filter((r) => !(ADMIN_ROLES as readonly UserRole[]).includes(r));
-    if (invalid.length) throw AppException.validation([{ field: 'roles', message: `not staff roles: ${invalid.join(', ')}` }]);
-    if (unique.includes(UserRole.SUPER_ADMIN) && !actor.isSuperAdmin) throw AppException.forbidden('Only a SUPER_ADMIN can grant SUPER_ADMIN');
+    if (invalid.length)
+      throw AppException.validation([
+        { field: 'roles', message: `not staff roles: ${invalid.join(', ')}` },
+      ]);
+    if (unique.includes(UserRole.SUPER_ADMIN) && !actor.isSuperAdmin)
+      throw AppException.forbidden('Only a SUPER_ADMIN can grant SUPER_ADMIN');
     return unique;
   }
 
   /** Maps role names to `admin_roles.id` so `user_roles.admin_role_id` carries the permission bundle. */
   private async adminRoleIds(roles: UserRole[]): Promise<Map<UserRole, string>> {
-    const rows = await this.prisma.adminRole.findMany({ where: { name: { in: roles } }, select: { id: true, name: true } });
+    const rows = await this.prisma.adminRole.findMany({
+      where: { name: { in: roles } },
+      select: { id: true, name: true },
+    });
     const map = new Map<UserRole, string>();
     for (const row of rows) map.set(row.name as UserRole, row.id);
     const missing = roles.filter((r) => !map.has(r));
-    if (missing.length) throw AppException.internal(`admin_roles rows are missing for: ${missing.join(', ')} — RbacService.seedCatalogue did not run`);
+    if (missing.length)
+      throw AppException.internal(
+        `admin_roles rows are missing for: ${missing.join(', ')} — RbacService.seedCatalogue did not run`,
+      );
     return map;
   }
 
-  private toStaffDto(row: Parameters<UsersService['toDto']>[0] & { adminCredential: { email: string; mustChangePassword: boolean; lockedUntil: Date | null; passwordChangedAt: Date | null } | null; lastLoginAt: Date | null }): StaffUserDto {
+  private toStaffDto(
+    row: Parameters<UsersService['toDto']>[0] & {
+      adminCredential: {
+        email: string;
+        mustChangePassword: boolean;
+        lockedUntil: Date | null;
+        passwordChangedAt: Date | null;
+      } | null;
+      lastLoginAt: Date | null;
+    },
+  ): StaffUserDto {
     return {
       user: this.users.toDto(row),
       email: row.adminCredential?.email ?? null,

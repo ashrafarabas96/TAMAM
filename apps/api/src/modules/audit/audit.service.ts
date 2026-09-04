@@ -36,7 +36,8 @@ export class AuditService {
     if (Array.isArray(value)) return value.map((v) => AuditService.redact(v));
     if (value && typeof value === 'object') {
       const out: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = REDACT_KEYS.test(k) ? '[REDACTED]' : AuditService.redact(v);
+      for (const [k, v] of Object.entries(value as Record<string, unknown>))
+        out[k] = REDACT_KEYS.test(k) ? '[REDACTED]' : AuditService.redact(v);
       return out;
     }
     return value;
@@ -52,8 +53,14 @@ export class AuditService {
           action: entry.action,
           entity: entry.entity,
           entityId: entry.entityId ?? null,
-          oldValue: entry.oldValue === undefined ? undefined : (AuditService.redact(entry.oldValue) as Prisma.InputJsonValue),
-          newValue: entry.newValue === undefined ? undefined : (AuditService.redact(entry.newValue) as Prisma.InputJsonValue),
+          oldValue:
+            entry.oldValue === undefined
+              ? undefined
+              : (AuditService.redact(entry.oldValue) as Prisma.InputJsonValue),
+          newValue:
+            entry.newValue === undefined
+              ? undefined
+              : (AuditService.redact(entry.newValue) as Prisma.InputJsonValue),
           reason: entry.reason ?? null,
           ip: entry.ip ?? null,
           userAgent: entry.userAgent ?? null,
@@ -76,7 +83,13 @@ export class AuditService {
         entity: filter.entity,
         entityId: filter.entityId,
         action: filter.action ? { startsWith: filter.action } : undefined,
-        createdAt: filter.from || filter.to ? { gte: filter.from ? new Date(filter.from) : undefined, lte: filter.to ? new Date(filter.to) : undefined } : undefined,
+        createdAt:
+          filter.from || filter.to
+            ? {
+                gte: filter.from ? new Date(filter.from) : undefined,
+                lte: filter.to ? new Date(filter.to) : undefined,
+              }
+            : undefined,
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: filter.limit + 1,

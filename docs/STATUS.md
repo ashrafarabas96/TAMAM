@@ -6,17 +6,17 @@ _Last updated: 2026-09-03 (end of session 1 — cloud sandbox without package-re
 
 ## 0. Environment facts that shaped session 1
 
-* The first session ran in a cloud sandbox whose network policy blocked `registry.npmjs.org`, `pub.dev`, `storage.googleapis.com` and `archive.ubuntu.com`. Therefore **nothing could be installed, compiled or executed** (no NestJS, Prisma, Next.js, Flutter, PostGIS).
-* Everything below marked **written / unverified** was authored carefully but has **not** been compiled or tested. The first task of the next session (with a *Trusted* or *Full* network environment) is section 3 below.
-* Locally available for verification in that sandbox: Node 22, pnpm 10, TypeScript 5 (global), PostgreSQL 16 (without PostGIS), Redis.
+- The first session ran in a cloud sandbox whose network policy blocked `registry.npmjs.org`, `pub.dev`, `storage.googleapis.com` and `archive.ubuntu.com`. Therefore **nothing could be installed, compiled or executed** (no NestJS, Prisma, Next.js, Flutter, PostGIS).
+- Everything below marked **written / unverified** was authored carefully but has **not** been compiled or tested. The first task of the next session (with a _Trusted_ or _Full_ network environment) is section 3 below.
+- Locally available for verification in that sandbox: Node 22, pnpm 10, TypeScript 5 (global), PostgreSQL 16 (without PostGIS), Redis.
 
 ## 0.1 Product requirements captured from the owner (session 1)
 
-* Full specification: `docs/MASTER_DEVELOPMENT_PROMPT_TAMAM.pdf` (93 pages, 210 sections) — **read it completely before writing code**; it is the minimum bar, not a suggestion.
-* Visual identity must closely resemble the Turkish **Getir** app: primary purple `#5D3EBC`, accent yellow `#FFD300`, light grey canvas, white rounded cards (12–16 px), purple app bar, yellow primary CTA with dark-purple text, bottom navigation, dark-mode support. Tokens already encoded in `packages/ui-tokens/tokens.json`.
-* **Promotional banners inside the apps**, admin-managed with high production quality: hero carousel on the customer home, inline banners between sections, category-top banners, checkout/tracking promos, partner-home banners; targeting (zones, language, platform, new customers, job counts, service interest, % rollout), scheduling, frequency caps, deep-link/URL/promo/category actions, impression + click + conversion analytics. Schema (`campaigns`, `banners`, `banner_events`, `banner_daily_stats`), DTOs and zod schemas already exist.
-* Launch region: **Palestine**, currency **ILS** (multi-currency supported: ILS/USD/JOD), Arabic-first (RTL) with English; seed zones Ramallah, Nablus, Hebron; timezone Asia/Jerusalem.
-* No prototypes, no mock APIs, no TODO/FIXME, no hard-coded prices/permissions — production-ready only (spec §0, §200).
+- Full specification: `docs/MASTER_DEVELOPMENT_PROMPT_TAMAM.pdf` (93 pages, 210 sections) — **read it completely before writing code**; it is the minimum bar, not a suggestion.
+- Visual identity must closely resemble the Turkish **Getir** app: primary purple `#5D3EBC`, accent yellow `#FFD300`, light grey canvas, white rounded cards (12–16 px), purple app bar, yellow primary CTA with dark-purple text, bottom navigation, dark-mode support. Tokens already encoded in `packages/ui-tokens/tokens.json`.
+- **Promotional banners inside the apps**, admin-managed with high production quality: hero carousel on the customer home, inline banners between sections, category-top banners, checkout/tracking promos, partner-home banners; targeting (zones, language, platform, new customers, job counts, service interest, % rollout), scheduling, frequency caps, deep-link/URL/promo/category actions, impression + click + conversion analytics. Schema (`campaigns`, `banners`, `banner_events`, `banner_daily_stats`), DTOs and zod schemas already exist.
+- Launch region: **Palestine**, currency **ILS** (multi-currency supported: ILS/USD/JOD), Arabic-first (RTL) with English; seed zones Ramallah, Nablus, Hebron; timezone Asia/Jerusalem.
+- No prototypes, no mock APIs, no TODO/FIXME, no hard-coded prices/permissions — production-ready only (spec §0, §200).
 
 ## 0.2 Resume prompt for the next session
 
@@ -26,44 +26,44 @@ Paste this as the first message of the new Cowork session (with the `tamam` fold
 
 ## 1. What exists (by path)
 
-| Path | State | Notes |
-| --- | --- | --- |
-| `package.json`, `pnpm-workspace.yaml`, `.gitignore`, `.prettierrc`, `.editorconfig` | ✅ written | pnpm workspace root |
-| `packages/config` | ✅ written | base tsconfig + eslint |
-| `packages/ui-tokens` | ✅ **verified** (generator ran) | `tokens.json` Getir-style identity; `scripts/generate.mjs` emits `dist/tokens.ts`, `dist/tokens.css`, and Dart tokens into both Flutter apps |
-| `packages/shared-types/src/*` | ✅ written / unverified | enums, permissions & default role bundles, `JOB_TRANSITIONS` state machine, API envelope & WS events, DTOs, config keys + bounds, feature flags |
-| `packages/validation/src/*` | ✅ written / unverified | zod schemas for auth, jobs, catalog, partners, money, engagement (banners!), admin, customer + vitest suite |
-| `apps/api/prisma/schema.prisma` | ✅ written / unverified (`prisma validate` pending) | 96 models — full ERD |
-| `apps/api/prisma/sql/001_postgis_triggers_and_integrity.sql` | ✅ written | PostGIS triggers, GIST, partial unique race guard, immutability & wallet triggers, helper functions |
-| `scripts/db/create-init-migration.sh` | ✅ written | generates init migration from schema (no DB needed) + appends SQL |
-| `docs/ARCHITECTURE.md`, `docs/DATABASE.md`, `docs/IMPLEMENTATION_ROADMAP.md` | ✅ written | Phase 1 deliverables |
-| `apps/api/src/**` | see section 2 | |
-| `apps/admin-web/**` | see section 2 | |
-| `apps/customer-mobile/**`, `apps/partner-mobile/**` | see section 2 | |
+| Path                                                                                | State                                               | Notes                                                                                                                                           |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`, `pnpm-workspace.yaml`, `.gitignore`, `.prettierrc`, `.editorconfig` | ✅ written                                          | pnpm workspace root                                                                                                                             |
+| `packages/config`                                                                   | ✅ written                                          | base tsconfig + eslint                                                                                                                          |
+| `packages/ui-tokens`                                                                | ✅ **verified** (generator ran)                     | `tokens.json` Getir-style identity; `scripts/generate.mjs` emits `dist/tokens.ts`, `dist/tokens.css`, and Dart tokens into both Flutter apps    |
+| `packages/shared-types/src/*`                                                       | ✅ written / unverified                             | enums, permissions & default role bundles, `JOB_TRANSITIONS` state machine, API envelope & WS events, DTOs, config keys + bounds, feature flags |
+| `packages/validation/src/*`                                                         | ✅ written / unverified                             | zod schemas for auth, jobs, catalog, partners, money, engagement (banners!), admin, customer + vitest suite                                     |
+| `apps/api/prisma/schema.prisma`                                                     | ✅ written / unverified (`prisma validate` pending) | 96 models — full ERD                                                                                                                            |
+| `apps/api/prisma/sql/001_postgis_triggers_and_integrity.sql`                        | ✅ written                                          | PostGIS triggers, GIST, partial unique race guard, immutability & wallet triggers, helper functions                                             |
+| `scripts/db/create-init-migration.sh`                                               | ✅ written                                          | generates init migration from schema (no DB needed) + appends SQL                                                                               |
+| `docs/ARCHITECTURE.md`, `docs/DATABASE.md`, `docs/IMPLEMENTATION_ROADMAP.md`        | ✅ written                                          | Phase 1 deliverables                                                                                                                            |
+| `apps/api/src/**`                                                                   | see section 2                                       |                                                                                                                                                 |
+| `apps/admin-web/**`                                                                 | see section 2                                       |                                                                                                                                                 |
+| `apps/customer-mobile/**`, `apps/partner-mobile/**`                                 | see section 2                                       |                                                                                                                                                 |
 
 ## 2. Module status matrix
 
 Status values: **Implemented** (written + executed here), **Written-Unverified** (code complete,
 never compiled), **Partial**, **Blocked**, **Not Implemented**.
 
-| Area | Status | Detail |
-| --- | --- | --- |
-| Design tokens / identity (`packages/ui-tokens`) | Implemented | generator executed; emits TS, CSS and Dart |
-| Dart contracts generator (`scripts/generate-dart-contracts.mjs`) | Implemented | executed; 48 enums + API constants into both apps |
-| Shared types & validation | Written-Unverified | one vocabulary for all four apps |
-| Prisma schema (96 models) + PostGIS/integrity SQL | Written-Unverified | `prisma validate` pending |
-| API: bootstrap, config, logging, errors, health, metrics | Written-Unverified | |
-| API: auth (OTP, rotating refresh, sessions), RBAC, users | Written-Unverified | |
-| API: catalog, zones, partners, vehicles, customers | Written-Unverified | |
-| API: jobs engine, pricing, dispatch, tracking, quotes | Written-Unverified | core engine, authored directly |
-| API: payments, wallet, ledger, promotions, campaigns/banners | Written-Unverified | double-entry ledger with DB-enforced immutability |
-| API: notifications, chat, ratings, support, disputes, media, admin, config, audit, analytics, risk, maintenance | Written-Unverified | 32 modules, 31 controllers, 313 routes |
-| Admin web (`apps/admin-web`, 164 files) | Written-Unverified | 29 permission-gated pages incl. the campaign/banner manager |
-| Customer app (`apps/customer-mobile`, 151 Dart files) | Written-Unverified | all services, banner surfaces, live tracking |
-| Partner app (`apps/partner-mobile`, 182 Dart files) | Written-Unverified | onboarding → offer → job → quote → earnings, background location |
-| Infrastructure (docker compose, Dockerfiles, CI) | Written-Unverified | blocked on a lockfile until `pnpm install` runs |
-| Tests (31 files: unit specs + 6 e2e suites) | Written-Unverified | never executed |
-| Compile / migrate / seed / test run | **Not Implemented** | blocked by network policy — section 3 below |
+| Area                                                                                                            | Status              | Detail                                                           |
+| --------------------------------------------------------------------------------------------------------------- | ------------------- | ---------------------------------------------------------------- |
+| Design tokens / identity (`packages/ui-tokens`)                                                                 | Implemented         | generator executed; emits TS, CSS and Dart                       |
+| Dart contracts generator (`scripts/generate-dart-contracts.mjs`)                                                | Implemented         | executed; 48 enums + API constants into both apps                |
+| Shared types & validation                                                                                       | Written-Unverified  | one vocabulary for all four apps                                 |
+| Prisma schema (96 models) + PostGIS/integrity SQL                                                               | Written-Unverified  | `prisma validate` pending                                        |
+| API: bootstrap, config, logging, errors, health, metrics                                                        | Written-Unverified  |                                                                  |
+| API: auth (OTP, rotating refresh, sessions), RBAC, users                                                        | Written-Unverified  |                                                                  |
+| API: catalog, zones, partners, vehicles, customers                                                              | Written-Unverified  |                                                                  |
+| API: jobs engine, pricing, dispatch, tracking, quotes                                                           | Written-Unverified  | core engine, authored directly                                   |
+| API: payments, wallet, ledger, promotions, campaigns/banners                                                    | Written-Unverified  | double-entry ledger with DB-enforced immutability                |
+| API: notifications, chat, ratings, support, disputes, media, admin, config, audit, analytics, risk, maintenance | Written-Unverified  | 32 modules, 31 controllers, 313 routes                           |
+| Admin web (`apps/admin-web`, 164 files)                                                                         | Written-Unverified  | 29 permission-gated pages incl. the campaign/banner manager      |
+| Customer app (`apps/customer-mobile`, 151 Dart files)                                                           | Written-Unverified  | all services, banner surfaces, live tracking                     |
+| Partner app (`apps/partner-mobile`, 182 Dart files)                                                             | Written-Unverified  | onboarding → offer → job → quote → earnings, background location |
+| Infrastructure (docker compose, Dockerfiles, CI)                                                                | Written-Unverified  | blocked on a lockfile until `pnpm install` runs                  |
+| Tests (31 files: unit specs + 6 e2e suites)                                                                     | Written-Unverified  | never executed                                                   |
+| Compile / migrate / seed / test run                                                                             | **Not Implemented** | blocked by network policy — section 3 below                      |
 
 ## 3. Next session — exact bring-up procedure
 
@@ -110,11 +110,11 @@ Fix root causes only; never delete a test or loosen a type to make something pas
 
 ## 4. Decisions log
 
-| Decision | Rationale |
-| --- | --- |
-| Prisma + raw SQL for PostGIS | Type-safe client for 95 % of queries; geo queries via `$queryRaw`; geography columns trigger-synced from lat/lng so `create()` works |
-| Money as BIGINT minor units (serialised as JS number ≤ 2^53) | Spec §50; avoids Decimal libs in clients |
-| Riverpod without codegen, manual JSON mapping in Flutter | Fewer generated-code failure points while the toolchain was unavailable; can migrate to freezed later |
-| `flutter_map` (OSM/MapLibre tiles) behind `MapView` | No API key needed to run; Google Maps adapter can be swapped in one file |
-| Banners = admin-managed campaigns (no third-party ad SDK) | User decision; full control over creative quality, targeting and analytics |
-| Launch region Palestine, ILS, Arabic-first | User decision; multi-currency supported by design |
+| Decision                                                     | Rationale                                                                                                                            |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Prisma + raw SQL for PostGIS                                 | Type-safe client for 95 % of queries; geo queries via `$queryRaw`; geography columns trigger-synced from lat/lng so `create()` works |
+| Money as BIGINT minor units (serialised as JS number ≤ 2^53) | Spec §50; avoids Decimal libs in clients                                                                                             |
+| Riverpod without codegen, manual JSON mapping in Flutter     | Fewer generated-code failure points while the toolchain was unavailable; can migrate to freezed later                                |
+| `flutter_map` (OSM/MapLibre tiles) behind `MapView`          | No API key needed to run; Google Maps adapter can be swapped in one file                                                             |
+| Banners = admin-managed campaigns (no third-party ad SDK)    | User decision; full control over creative quality, targeting and analytics                                                           |
+| Launch region Palestine, ILS, Arabic-first                   | User decision; multi-currency supported by design                                                                                    |

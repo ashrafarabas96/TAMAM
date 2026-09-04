@@ -13,7 +13,17 @@ import {
 } from '@tamam/validation';
 import { z } from 'zod';
 
-import { AllowRestricted, Audited, CurrentUser, Idempotent, RateLimit, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  AllowRestricted,
+  Audited,
+  CurrentUser,
+  Idempotent,
+  RateLimit,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -63,12 +73,20 @@ export class DisputesController {
   }
 
   @Post('disputes/:id/messages')
-  addMessage(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string, @ZodBody(disputeMessageSchema) input: DisputeMessageInput) {
+  addMessage(
+    @CurrentUser() user: RequestUser,
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(disputeMessageSchema) input: DisputeMessageInput,
+  ) {
     return this.disputes.addMessage(user, id, input);
   }
 
   @Post('disputes/:id/evidence')
-  addEvidence(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string, @ZodBody(addEvidenceSchema) body: AddEvidenceBody) {
+  addEvidence(
+    @CurrentUser() user: RequestUser,
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(addEvidenceSchema) body: AddEvidenceBody,
+  ) {
     return this.disputes.addEvidence(user, id, body.evidenceMediaIds);
   }
 
@@ -88,7 +106,11 @@ export class DisputesController {
 
   @Post('admin/disputes/:id/messages')
   @RequirePermission(Permission.DISPUTES_READ)
-  agentMessage(@CurrentUser() actor: RequestUser, @Param('id', UuidPipe) id: string, @ZodBody(disputeMessageSchema) input: DisputeMessageInput) {
+  agentMessage(
+    @CurrentUser() actor: RequestUser,
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(disputeMessageSchema) input: DisputeMessageInput,
+  ) {
     return this.disputes.addMessage(actor, id, input);
   }
 

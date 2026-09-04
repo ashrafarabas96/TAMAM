@@ -13,7 +13,9 @@ import { OsrmMapsProvider } from './osrm-maps.provider';
       provide: MAPS_PROVIDER,
       inject: [AppConfigService, PinoLogger],
       useFactory: (config: AppConfigService, logger: PinoLogger) =>
-        config.env.MAPS_PROVIDER === 'google' ? new GoogleMapsProvider(config) : new OsrmMapsProvider(config, logger),
+        config.env.MAPS_PROVIDER === 'google'
+          ? new GoogleMapsProvider(config)
+          : new OsrmMapsProvider(config, logger),
     },
   ],
   exports: [MAPS_PROVIDER],

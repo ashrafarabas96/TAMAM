@@ -30,7 +30,15 @@ import { queryKeys } from '@/lib/query-keys';
 import { useZoneOptions } from '@/lib/query/reference-data';
 import { useEnumOptions } from '@/lib/query/use-enum-options';
 
-const GROUPS: ReportQueryInput['groupBy'][] = ['day', 'week', 'month', 'zone', 'jobType', 'partner', 'paymentMethod'];
+const GROUPS: ReportQueryInput['groupBy'][] = [
+  'day',
+  'week',
+  'month',
+  'zone',
+  'jobType',
+  'partner',
+  'paymentMethod',
+];
 
 export default function ReportsPage() {
   return (
@@ -51,7 +59,11 @@ function ReportsScreen() {
   const [jobType, setJobType] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [exporting, setExporting] = useState<'csv' | 'xlsx' | null>(null);
-  const jobTypes = useEnumOptions('jobType', [JobType.RIDE, JobType.DELIVERY, JobType.HOME_SERVICE], t('common.all'));
+  const jobTypes = useEnumOptions(
+    'jobType',
+    [JobType.RIDE, JobType.DELIVERY, JobType.HOME_SERVICE],
+    t('common.all'),
+  );
   const methods = useEnumOptions('paymentMethod', PaymentMethod, t('common.all'));
 
   const query = useMemo(
@@ -65,7 +77,11 @@ function ReportsScreen() {
     }),
     [from, to, groupBy, zoneId, jobType, paymentMethod],
   );
-  const report = useQuery({ queryKey: queryKeys.reports(query), queryFn: () => analyticsApi.report(query), staleTime: 60_000 });
+  const report = useQuery({
+    queryKey: queryKeys.reports(query),
+    queryFn: () => analyticsApi.report(query),
+    staleTime: 60_000,
+  });
 
   const download = async (format: 'csv' | 'xlsx') => {
     setExporting(format);
@@ -87,17 +103,58 @@ function ReportsScreen() {
     }
   };
 
-  const labelFor = (key: string): string => (groupBy === 'zone' ? zones.nameOf(key) : groupBy === 'jobType' ? enumLabel('jobType', key) : groupBy === 'paymentMethod' ? enumLabel('paymentMethod', key) : key);
+  const labelFor = (key: string): string =>
+    groupBy === 'zone'
+      ? zones.nameOf(key)
+      : groupBy === 'jobType'
+        ? enumLabel('jobType', key)
+        : groupBy === 'paymentMethod'
+          ? enumLabel('paymentMethod', key)
+          : key;
   const columns: Column<ReportRow>[] = [
-    { key: 'key', header: t('reports.group'), cell: (r) => <span className="font-medium">{labelFor(r.key)}</span> },
-    { key: 'jobs', header: t('reports.jobs'), align: 'end', cell: (r) => <span className="tabular">{formatNumber(r.jobs, locale)}</span> },
-    { key: 'completed', header: t('reports.completed'), align: 'end', cell: (r) => <span className="tabular">{formatNumber(r.completed, locale)}</span> },
-    { key: 'cancelled', header: t('reports.cancelled'), align: 'end', cell: (r) => <span className="tabular text-danger">{formatNumber(r.cancelled, locale)}</span> },
+    {
+      key: 'key',
+      header: t('reports.group'),
+      cell: (r) => <span className="font-medium">{labelFor(r.key)}</span>,
+    },
+    {
+      key: 'jobs',
+      header: t('reports.jobs'),
+      align: 'end',
+      cell: (r) => <span className="tabular">{formatNumber(r.jobs, locale)}</span>,
+    },
+    {
+      key: 'completed',
+      header: t('reports.completed'),
+      align: 'end',
+      cell: (r) => <span className="tabular">{formatNumber(r.completed, locale)}</span>,
+    },
+    {
+      key: 'cancelled',
+      header: t('reports.cancelled'),
+      align: 'end',
+      cell: (r) => <span className="tabular text-danger">{formatNumber(r.cancelled, locale)}</span>,
+    },
     { key: 'gmv', header: t('reports.gmv'), align: 'end', cell: (r) => <Money value={r.gmv} /> },
-    { key: 'revenue', header: t('reports.revenue'), align: 'end', cell: (r) => <Money value={r.revenue} /> },
-    { key: 'avgFare', header: t('reports.avgFare'), align: 'end', cell: (r) => <Money value={r.avgFare} /> },
+    {
+      key: 'revenue',
+      header: t('reports.revenue'),
+      align: 'end',
+      cell: (r) => <Money value={r.revenue} />,
+    },
+    {
+      key: 'avgFare',
+      header: t('reports.avgFare'),
+      align: 'end',
+      cell: (r) => <Money value={r.avgFare} />,
+    },
   ];
-  const chartData = (report.data?.rows ?? []).map((r) => ({ key: labelFor(r.key), completed: r.completed, cancelled: r.cancelled, gmv: r.gmv.amount }));
+  const chartData = (report.data?.rows ?? []).map((r) => ({
+    key: labelFor(r.key),
+    completed: r.completed,
+    cancelled: r.cancelled,
+    gmv: r.gmv.amount,
+  }));
 
   return (
     <div className="space-y-4">
@@ -106,35 +163,87 @@ function ReportsScreen() {
         description={t('reports.subtitle')}
         actions={
           <Can anyOf={[Permission.REPORTS_EXPORT]}>
-            <Button size="sm" variant="outline" loading={exporting === 'csv'} onClick={() => void download('csv')}><Download className="h-4 w-4" aria-hidden />CSV</Button>
-            <Button size="sm" variant="outline" loading={exporting === 'xlsx'} onClick={() => void download('xlsx')}><Download className="h-4 w-4" aria-hidden />XLSX</Button>
+            <Button
+              size="sm"
+              variant="outline"
+              loading={exporting === 'csv'}
+              onClick={() => void download('csv')}
+            >
+              <Download className="h-4 w-4" aria-hidden />
+              CSV
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              loading={exporting === 'xlsx'}
+              onClick={() => void download('xlsx')}
+            >
+              <Download className="h-4 w-4" aria-hidden />
+              XLSX
+            </Button>
           </Can>
         }
       />
       <FilterBar>
         <div>
           <Label htmlFor="from">{t('common.from')}</Label>
-          <Input id="from" type="datetime-local" dir="ltr" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <Input
+            id="from"
+            type="datetime-local"
+            dir="ltr"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="to">{t('common.to')}</Label>
-          <Input id="to" type="datetime-local" dir="ltr" value={to} onChange={(e) => setTo(e.target.value)} />
+          <Input
+            id="to"
+            type="datetime-local"
+            dir="ltr"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="groupBy">{t('reports.groupBy')}</Label>
-          <Select id="groupBy" value={groupBy} onValueChange={(v) => setGroupBy(v as ReportQueryInput['groupBy'])} options={GROUPS.map((g) => ({ value: g, label: enumLabel('reportGroupBy', g) }))} aria-label={t('reports.groupBy')} />
+          <Select
+            id="groupBy"
+            value={groupBy}
+            onValueChange={(v) => setGroupBy(v as ReportQueryInput['groupBy'])}
+            options={GROUPS.map((g) => ({ value: g, label: enumLabel('reportGroupBy', g) }))}
+            aria-label={t('reports.groupBy')}
+          />
         </div>
         <div>
           <Label htmlFor="zone">{t('common.zone')}</Label>
-          <Select id="zone" value={zoneId} onValueChange={setZoneId} options={zones.options} aria-label={t('common.zone')} />
+          <Select
+            id="zone"
+            value={zoneId}
+            onValueChange={setZoneId}
+            options={zones.options}
+            aria-label={t('common.zone')}
+          />
         </div>
         <div>
           <Label htmlFor="jobType">{t('common.jobType')}</Label>
-          <Select id="jobType" value={jobType} onValueChange={setJobType} options={jobTypes} aria-label={t('common.jobType')} />
+          <Select
+            id="jobType"
+            value={jobType}
+            onValueChange={setJobType}
+            options={jobTypes}
+            aria-label={t('common.jobType')}
+          />
         </div>
         <div>
           <Label htmlFor="method">{t('jobs.paymentMethod')}</Label>
-          <Select id="method" value={paymentMethod} onValueChange={setPaymentMethod} options={methods} aria-label={t('jobs.paymentMethod')} />
+          <Select
+            id="method"
+            value={paymentMethod}
+            onValueChange={setPaymentMethod}
+            options={methods}
+            aria-label={t('jobs.paymentMethod')}
+          />
         </div>
       </FilterBar>
       {report.isPending ? (
@@ -144,9 +253,26 @@ function ReportsScreen() {
       ) : (
         <>
           <Card title={t('reports.chartTitle')}>
-            <BarsChart data={chartData} xKey="key" series={[{ key: 'completed', label: t('reports.completed'), slot: 0 }, { key: 'cancelled', label: t('reports.cancelled'), slot: 3 }]} tableCaption={t('reports.chartTitle')} />
+            <BarsChart
+              data={chartData}
+              xKey="key"
+              series={[
+                { key: 'completed', label: t('reports.completed'), slot: 0 },
+                { key: 'cancelled', label: t('reports.cancelled'), slot: 3 },
+              ]}
+              tableCaption={t('reports.chartTitle')}
+            />
           </Card>
-          <DataTable columns={columns} rows={report.data.rows} rowKey={(r) => r.key} emptyTitle={t('reports.empty')} footer={t('reports.footer', { currency: report.data.currency, count: report.data.rows.length })} />
+          <DataTable
+            columns={columns}
+            rows={report.data.rows}
+            rowKey={(r) => r.key}
+            emptyTitle={t('reports.empty')}
+            footer={t('reports.footer', {
+              currency: report.data.currency,
+              count: report.data.rows.length,
+            })}
+          />
         </>
       )}
     </div>

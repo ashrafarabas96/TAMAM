@@ -28,7 +28,11 @@ export class RbacController {
 
   @Put('roles')
   @RequirePermission(Permission.ROLES_MANAGE)
-  upsert(@ZodBody(upsertRoleSchema) input: UpsertRoleInput, @CurrentUser() user: RequestUser, @RequestId() requestId: string) {
+  upsert(
+    @ZodBody(upsertRoleSchema) input: UpsertRoleInput,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.rbac.upsertRole(input, user.id, requestId);
   }
 }

@@ -82,31 +82,46 @@ export class PartnersController {
 
   @Post('partners/onboarding/personal')
   @RequireRole('PARTNER')
-  personal(@CurrentUser() user: RequestUser, @ZodBody(partnerOnboardingPersonalSchema) input: PartnerOnboardingPersonalInput) {
+  personal(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(partnerOnboardingPersonalSchema) input: PartnerOnboardingPersonalInput,
+  ) {
     return this.partners.savePersonal(user.id, input);
   }
 
   @Post('partners/onboarding/roles')
   @RequireRole('PARTNER')
-  roles(@CurrentUser() user: RequestUser, @ZodBody(partnerOnboardingRolesSchema) input: PartnerOnboardingRolesInput) {
+  roles(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(partnerOnboardingRolesSchema) input: PartnerOnboardingRolesInput,
+  ) {
     return this.partners.saveRoles(user.id, input);
   }
 
   @Post('partners/onboarding/skills')
   @RequireRole('PARTNER')
-  skills(@CurrentUser() user: RequestUser, @ZodBody(partnerOnboardingSkillsSchema) input: PartnerOnboardingSkillsInput) {
+  skills(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(partnerOnboardingSkillsSchema) input: PartnerOnboardingSkillsInput,
+  ) {
     return this.partners.saveSkills(user.id, input);
   }
 
   @Post('partners/onboarding/documents')
   @RequireRole('PARTNER')
-  onboardingDocument(@CurrentUser() user: RequestUser, @ZodBody(partnerDocumentUploadSchema) input: PartnerDocumentUploadInput) {
+  onboardingDocument(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(partnerDocumentUploadSchema) input: PartnerDocumentUploadInput,
+  ) {
     return this.partners.addDocument(user.id, input);
   }
 
   @Post('partners/onboarding/vehicle')
   @RequireRole('PARTNER')
-  onboardingVehicle(@CurrentUser() user: RequestUser, @ZodBody(partnerVehicleSchema) input: PartnerVehicleInput) {
+  onboardingVehicle(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(partnerVehicleSchema) input: PartnerVehicleInput,
+  ) {
     return this.partners.saveVehicle(user.id, input);
   }
 
@@ -119,7 +134,10 @@ export class PartnersController {
   @Post('partners/onboarding/submit')
   @RequireRole('PARTNER')
   @RateLimit({ name: 'partner.submit', limit: 5, windowSeconds: 3600, keyBy: 'user' })
-  submit(@CurrentUser() user: RequestUser, @ZodBody(partnerSubmitForReviewSchema) input: { acceptedTermsVersion: string }) {
+  submit(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(partnerSubmitForReviewSchema) input: { acceptedTermsVersion: string },
+  ) {
     return this.partners.submitForReview(user.id, input.acceptedTermsVersion);
   }
 
@@ -141,7 +159,10 @@ export class PartnersController {
 
   @Post('partners/me/documents')
   @RequireRole('PARTNER')
-  addDocument(@CurrentUser() user: RequestUser, @ZodBody(partnerDocumentUploadSchema) input: PartnerDocumentUploadInput) {
+  addDocument(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(partnerDocumentUploadSchema) input: PartnerDocumentUploadInput,
+  ) {
     return this.partners.addDocument(user.id, input);
   }
 
@@ -154,7 +175,10 @@ export class PartnersController {
 
   @Put('partners/me/availability')
   @RequireRole('PARTNER')
-  setAvailability(@CurrentUser() user: RequestUser, @ZodBody(setAvailabilitySchema) input: SetAvailabilityInput) {
+  setAvailability(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(setAvailabilitySchema) input: SetAvailabilityInput,
+  ) {
     return this.availability.setAvailability(user.id, input);
   }
 
@@ -168,7 +192,10 @@ export class PartnersController {
   @Get('partners/me/jobs')
   @RequireRole('PARTNER')
   @AllowRestricted()
-  jobs(@CurrentUser() user: RequestUser, @ZodQuery(partnerJobsQuerySchema) query: PartnerJobsQuery) {
+  jobs(
+    @CurrentUser() user: RequestUser,
+    @ZodQuery(partnerJobsQuerySchema) query: PartnerJobsQuery,
+  ) {
     return this.partners.listJobs(user.id, query);
   }
 
@@ -181,7 +208,10 @@ export class PartnersController {
 
   @Post('partners/me/bank-accounts')
   @RequireRole('PARTNER')
-  addBankAccount(@CurrentUser() user: RequestUser, @ZodBody(addBankAccountSchema) input: AddBankAccountBody) {
+  addBankAccount(
+    @CurrentUser() user: RequestUser,
+    @ZodBody(addBankAccountSchema) input: AddBankAccountBody,
+  ) {
     return this.partners.addBankAccount(user.id, input);
   }
 

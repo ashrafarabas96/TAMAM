@@ -59,7 +59,6 @@ export interface TrackResult {
   rejected: number;
 }
 
-
 export interface ReportRow {
   key: string;
   jobs: number;
@@ -87,7 +86,8 @@ export interface ExportedReport {
 /* ---------------------------------------------------------------- helpers */
 
 const ALLOWED_EVENTS = new Set<string>(ANALYTICS_EVENT_NAMES);
-export const isTrackedEvent = (name: string): name is AnalyticsEventName => ALLOWED_EVENTS.has(name);
+export const isTrackedEvent = (name: string): name is AnalyticsEventName =>
+  ALLOWED_EVENTS.has(name);
 
 /** Property keys that may carry personal data — never persisted with the event (spec §90, §117). */
 const PII_KEY = /(phone|e?mail|name|token)/i;
@@ -96,7 +96,8 @@ const MAX_PROPS_KEYS = 40;
 
 /** Recursively removes PII-looking keys from a props object. Values themselves are untouched. */
 export function stripPii(value: unknown, depth = 0): unknown {
-  if (Array.isArray(value)) return depth >= MAX_PROPS_DEPTH ? [] : value.slice(0, 50).map((v) => stripPii(v, depth + 1));
+  if (Array.isArray(value))
+    return depth >= MAX_PROPS_DEPTH ? [] : value.slice(0, 50).map((v) => stripPii(v, depth + 1));
   if (value && typeof value === 'object') {
     if (depth >= MAX_PROPS_DEPTH) return {};
     const out: Record<string, unknown> = {};
@@ -142,7 +143,12 @@ export function zonedDayRange(at: Date, timeZone: string): { start: Date; end: D
 
 /** `YYYY-MM-DD` of the calendar day containing `at` in `timeZone`. */
 export function zonedDateKey(at: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(at);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(at);
 }
 
 const OPS_CACHE_KEY = 'analytics:ops-dashboard';
@@ -193,7 +199,12 @@ export class AnalyticsService {
    * Bulk-ingests client events. Unknown event names are dropped (the whitelist is the contract,
    * not the client) and PII-looking props keys are stripped before the row is written.
    */
-  async track(user: RequestUser | null, events: TrackEventInput[], platform: string | null, appVersion: string | null): Promise<TrackResult> {
+  async track(
+    user: RequestUser | null,
+    events: TrackEventInput[],
+    platform: string | null,
+    appVersion: string | null,
+  ): Promise<TrackResult> {
     const rows: Prisma.AnalyticsEventCreateManyInput[] = [];
     for (const event of events) {
       if (!isTrackedEvent(event.name)) continue;
@@ -244,21 +255,47 @@ export class AnalyticsService {
     ] = await Promise.all([
       this.prisma.job.count({ where: { status: { in: [...ACTIVE_JOB_STATUSES] } } }),
       this.prisma.job.count({ where: { status: JobStatus.SEARCHING } }),
-      this.prisma.job.count({ where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } } }),
-      this.prisma.job.count({ where: { status: JobStatus.CANCELLED, cancelledAt: { gte: start, lt: end } } }),
-      this.prisma.partnerAvailability.count({ where: { status: 'ONLINE', lastHeartbeatAt: { gte: heartbeatCutoff } } }),
-      this.prisma.partnerAvailability.count({ where: { status: 'ONLINE', lastHeartbeatAt: { gte: heartbeatCutoff }, currentJobId: null } }),
-      this.prisma.job.aggregate({ _sum: { finalTotalMinor: true }, where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } } }),
+      this.prisma.job.count({
+        where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } },
+      }),
+      this.prisma.job.count({
+        where: { status: JobStatus.CANCELLED, cancelledAt: { gte: start, lt: end } },
+      }),
+      this.prisma.partnerAvailability.count({
+        where: { status: 'ONLINE', lastHeartbeatAt: { gte: heartbeatCutoff } },
+      }),
+      this.prisma.partnerAvailability.count({
+        where: { status: 'ONLINE', lastHeartbeatAt: { gte: heartbeatCutoff }, currentJobId: null },
+      }),
+      this.prisma.job.aggregate({
+        _sum: { finalTotalMinor: true },
+        where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } },
+      }),
       this.platformRevenueBetween(start, end),
-      this.prisma.supportTicket.count({ where: { status: { in: ['OPEN', 'IN_PROGRESS', 'WAITING_USER'] } } }),
+      this.prisma.supportTicket.count({
+        where: { status: { in: ['OPEN', 'IN_PROGRESS', 'WAITING_USER'] } },
+      }),
       this.avgDispatchSeconds(start, end),
-      this.prisma.job.aggregate({ _avg: { etaToPickupSeconds: true }, where: { assignedAt: { gte: start, lt: end } } }),
-      this.prisma.job.groupBy({ by: ['type'], where: { status: { in: [...ACTIVE_JOB_STATUSES] } }, _count: { _all: true } }),
-      this.prisma.job.groupBy({ by: ['type'], where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } }, _count: { _all: true } }),
+      this.prisma.job.aggregate({
+        _avg: { etaToPickupSeconds: true },
+        where: { assignedAt: { gte: start, lt: end } },
+      }),
+      this.prisma.job.groupBy({
+        by: ['type'],
+        where: { status: { in: [...ACTIVE_JOB_STATUSES] } },
+        _count: { _all: true },
+      }),
+      this.prisma.job.groupBy({
+        by: ['type'],
+        where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } },
+        _count: { _all: true },
+      }),
     ]);
 
     const activeMap = new Map<string, number>(activeByType.map((r) => [r.type, r._count._all]));
-    const completedMap = new Map<string, number>(completedByType.map((r) => [r.type, r._count._all]));
+    const completedMap = new Map<string, number>(
+      completedByType.map((r) => [r.type, r._count._all]),
+    );
 
     const dto: OpsDashboardDto = {
       activeJobs,
@@ -271,8 +308,15 @@ export class AnalyticsService {
       platformRevenueToday: toMoney(platformRevenueMinor, this.currency),
       openSupportTickets,
       averageDispatchSeconds: dispatchAvg,
-      averagePickupEtaSeconds: pickupEtaAvg._avg.etaToPickupSeconds === null ? null : Math.round(pickupEtaAvg._avg.etaToPickupSeconds),
-      byJobType: V1_JOB_TYPES.map((type) => ({ type, active: activeMap.get(type) ?? 0, completedToday: completedMap.get(type) ?? 0 })),
+      averagePickupEtaSeconds:
+        pickupEtaAvg._avg.etaToPickupSeconds === null
+          ? null
+          : Math.round(pickupEtaAvg._avg.etaToPickupSeconds),
+      byJobType: V1_JOB_TYPES.map((type) => ({
+        type,
+        active: activeMap.get(type) ?? 0,
+        completedToday: completedMap.get(type) ?? 0,
+      })),
       generatedAt: now.toISOString(),
     };
 
@@ -297,28 +341,60 @@ export class AnalyticsService {
     // parts of `start` (which land on the previous day for any timezone ahead of UTC).
     const dayKey = new Date(`${zonedDateKey(date, this.timezone)}T00:00:00.000Z`);
 
-    const [jobsCreated, jobsCompleted, jobsCancelled, gmv, platformRevenueMinor, dispatchAvg, pickupEtaAvg, durationAvg, activeCustomers, repeatCustomers, activePartners] =
-      await Promise.all([
-        this.prisma.job.count({ where: { createdAt: { gte: start, lt: end } } }),
-        this.prisma.job.count({ where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } } }),
-        this.prisma.job.count({ where: { status: JobStatus.CANCELLED, cancelledAt: { gte: start, lt: end } } }),
-        this.prisma.job.aggregate({ _sum: { finalTotalMinor: true }, where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } } }),
-        this.platformRevenueBetween(start, end),
-        this.avgDispatchSeconds(start, end),
-        this.prisma.job.aggregate({ _avg: { etaToPickupSeconds: true }, where: { assignedAt: { gte: start, lt: end } } }),
-        this.prisma.job.aggregate({ _avg: { actualDurationSeconds: true, durationSeconds: true }, where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } } }),
-        this.distinctCount(Prisma.sql`SELECT COUNT(DISTINCT customer_id)::int AS count FROM jobs WHERE created_at >= ${start} AND created_at < ${end}`),
-        this.distinctCount(Prisma.sql`
+    const [
+      jobsCreated,
+      jobsCompleted,
+      jobsCancelled,
+      gmv,
+      platformRevenueMinor,
+      dispatchAvg,
+      pickupEtaAvg,
+      durationAvg,
+      activeCustomers,
+      repeatCustomers,
+      activePartners,
+    ] = await Promise.all([
+      this.prisma.job.count({ where: { createdAt: { gte: start, lt: end } } }),
+      this.prisma.job.count({
+        where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } },
+      }),
+      this.prisma.job.count({
+        where: { status: JobStatus.CANCELLED, cancelledAt: { gte: start, lt: end } },
+      }),
+      this.prisma.job.aggregate({
+        _sum: { finalTotalMinor: true },
+        where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } },
+      }),
+      this.platformRevenueBetween(start, end),
+      this.avgDispatchSeconds(start, end),
+      this.prisma.job.aggregate({
+        _avg: { etaToPickupSeconds: true },
+        where: { assignedAt: { gte: start, lt: end } },
+      }),
+      this.prisma.job.aggregate({
+        _avg: { actualDurationSeconds: true, durationSeconds: true },
+        where: { status: JobStatus.COMPLETED, completedAt: { gte: start, lt: end } },
+      }),
+      this.distinctCount(
+        Prisma.sql`SELECT COUNT(DISTINCT customer_id)::int AS count FROM jobs WHERE created_at >= ${start} AND created_at < ${end}`,
+      ),
+      this.distinctCount(Prisma.sql`
           SELECT COUNT(*)::int AS count FROM (
             SELECT j.customer_id FROM jobs j WHERE j.created_at >= ${start} AND j.created_at < ${end} GROUP BY 1
           ) d
           JOIN customer_profiles cp ON cp.user_id = d.customer_id
           WHERE cp.completed_jobs >= 2`),
-        this.distinctCount(Prisma.sql`SELECT COUNT(DISTINCT partner_id)::int AS count FROM jobs WHERE partner_id IS NOT NULL AND created_at >= ${start} AND created_at < ${end}`),
-      ]);
+      this.distinctCount(
+        Prisma.sql`SELECT COUNT(DISTINCT partner_id)::int AS count FROM jobs WHERE partner_id IS NOT NULL AND created_at >= ${start} AND created_at < ${end}`,
+      ),
+    ]);
 
-    const avgDuration = durationAvg._avg.actualDurationSeconds ?? durationAvg._avg.durationSeconds ?? 0;
-    const utilization = activePartners > 0 ? Math.min(1, Math.max(0, (jobsCompleted * avgDuration) / (activePartners * 86_400))) : null;
+    const avgDuration =
+      durationAvg._avg.actualDurationSeconds ?? durationAvg._avg.durationSeconds ?? 0;
+    const utilization =
+      activePartners > 0
+        ? Math.min(1, Math.max(0, (jobsCompleted * avgDuration) / (activePartners * 86_400)))
+        : null;
 
     const row = await this.prisma.dailyKpi.upsert({
       where: { date: dayKey },
@@ -331,11 +407,15 @@ export class AnalyticsService {
         gmvMinor: gmv._sum.finalTotalMinor ?? 0n,
         platformRevenueMinor,
         avgDispatchSeconds: dispatchAvg,
-        avgPickupEtaSeconds: pickupEtaAvg._avg.etaToPickupSeconds === null ? null : Math.round(pickupEtaAvg._avg.etaToPickupSeconds),
+        avgPickupEtaSeconds:
+          pickupEtaAvg._avg.etaToPickupSeconds === null
+            ? null
+            : Math.round(pickupEtaAvg._avg.etaToPickupSeconds),
         activeCustomers,
         repeatCustomers,
         activePartners,
-        partnerUtilization: utilization === null ? null : new Prisma.Decimal(utilization.toFixed(4)),
+        partnerUtilization:
+          utilization === null ? null : new Prisma.Decimal(utilization.toFixed(4)),
         currency: this.currency,
       },
       update: {
@@ -345,11 +425,15 @@ export class AnalyticsService {
         gmvMinor: gmv._sum.finalTotalMinor ?? 0n,
         platformRevenueMinor,
         avgDispatchSeconds: dispatchAvg,
-        avgPickupEtaSeconds: pickupEtaAvg._avg.etaToPickupSeconds === null ? null : Math.round(pickupEtaAvg._avg.etaToPickupSeconds),
+        avgPickupEtaSeconds:
+          pickupEtaAvg._avg.etaToPickupSeconds === null
+            ? null
+            : Math.round(pickupEtaAvg._avg.etaToPickupSeconds),
         activeCustomers,
         repeatCustomers,
         activePartners,
-        partnerUtilization: utilization === null ? null : new Prisma.Decimal(utilization.toFixed(4)),
+        partnerUtilization:
+          utilization === null ? null : new Prisma.Decimal(utilization.toFixed(4)),
         currency: this.currency,
         computedAt: new Date(),
       },
@@ -374,11 +458,15 @@ export class AnalyticsService {
     const to = new Date(query.to);
     const bucket = this.bucketExpression(query.groupBy);
 
-    const conditions: Prisma.Sql[] = [Prisma.sql`j.created_at >= ${from}`, Prisma.sql`j.created_at < ${to}`];
+    const conditions: Prisma.Sql[] = [
+      Prisma.sql`j.created_at >= ${from}`,
+      Prisma.sql`j.created_at < ${to}`,
+    ];
     if (query.zoneId) conditions.push(Prisma.sql`j.zone_id = ${query.zoneId}::uuid`);
     if (query.jobType) conditions.push(Prisma.sql`j.type = ${query.jobType}::job_type`);
     if (query.partnerId) conditions.push(Prisma.sql`j.partner_id = ${query.partnerId}::uuid`);
-    if (query.paymentMethod) conditions.push(Prisma.sql`j.payment_method = ${query.paymentMethod}::payment_method`);
+    if (query.paymentMethod)
+      conditions.push(Prisma.sql`j.payment_method = ${query.paymentMethod}::payment_method`);
 
     const rows = await this.prisma.$queryRaw<ReportSqlRow[]>`
       SELECT ${bucket} AS bucket,
@@ -427,13 +515,33 @@ export class AnalyticsService {
     }
     const result = await this.report(query);
     const stamp = result.from.slice(0, 10);
-    const header = ['key', 'jobs', 'completed', 'cancelled', `gmv_${result.currency}`, `revenue_${result.currency}`, `avg_fare_${result.currency}`];
-    const body = result.rows.map((r) => [r.key, r.jobs, r.completed, r.cancelled, r.gmv.amount, r.revenue.amount, r.avgFare.amount]);
+    const header = [
+      'key',
+      'jobs',
+      'completed',
+      'cancelled',
+      `gmv_${result.currency}`,
+      `revenue_${result.currency}`,
+      `avg_fare_${result.currency}`,
+    ];
+    const body = result.rows.map((r) => [
+      r.key,
+      r.jobs,
+      r.completed,
+      r.cancelled,
+      r.gmv.amount,
+      r.revenue.amount,
+      r.avgFare.amount,
+    ]);
 
     if (query.format === 'csv') {
       const lines = [header.join(','), ...body.map((cells) => cells.map(csvCell).join(','))];
       // Leading BOM so Excel opens Arabic zone / partner labels in UTF-8.
-      return { filename: `tamam-report-${query.groupBy}-${stamp}.csv`, contentType: 'text/csv; charset=utf-8', body: `\uFEFF${lines.join('\r\n')}\r\n` };
+      return {
+        filename: `tamam-report-${query.groupBy}-${stamp}.csv`,
+        contentType: 'text/csv; charset=utf-8',
+        body: `\uFEFF${lines.join('\r\n')}\r\n`,
+      };
     }
 
     const workbook = new Workbook();

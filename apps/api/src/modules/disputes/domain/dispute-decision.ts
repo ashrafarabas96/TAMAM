@@ -1,4 +1,10 @@
-import { DisputeStatus, ErrorCode, JobStatus, LedgerAccountType, LedgerEntryDirection } from '@tamam/shared-types';
+import {
+  DisputeStatus,
+  ErrorCode,
+  JobStatus,
+  LedgerAccountType,
+  LedgerEntryDirection,
+} from '@tamam/shared-types';
 
 import { AppException } from '../../../common/errors/app.exception';
 import { type LedgerLine, platformAccountCode } from '../../ledger/domain/ledger.rules';
@@ -9,7 +15,10 @@ import { type LedgerLine, platformAccountCode } from '../../ledger/domain/ledger
  */
 
 /** A dispute in one of these states is still live — only one may exist per job. */
-export const LIVE_DISPUTE_STATUSES: readonly DisputeStatus[] = [DisputeStatus.OPEN, DisputeStatus.UNDER_REVIEW];
+export const LIVE_DISPUTE_STATUSES: readonly DisputeStatus[] = [
+  DisputeStatus.OPEN,
+  DisputeStatus.UNDER_REVIEW,
+];
 
 /** Decisions that close a dispute. */
 export const DECIDED_DISPUTE_STATUSES: readonly DisputeStatus[] = [
@@ -20,13 +29,22 @@ export const DECIDED_DISPUTE_STATUSES: readonly DisputeStatus[] = [
 ];
 
 /** Customers may dispute work that is finished but not yet paid for; partners only a closed job. */
-export const CUSTOMER_DISPUTABLE_JOB_STATUSES: readonly JobStatus[] = [JobStatus.COMPLETED, JobStatus.WORK_COMPLETED];
+export const CUSTOMER_DISPUTABLE_JOB_STATUSES: readonly JobStatus[] = [
+  JobStatus.COMPLETED,
+  JobStatus.WORK_COMPLETED,
+];
 export const PARTNER_DISPUTABLE_JOB_STATUSES: readonly JobStatus[] = [JobStatus.COMPLETED];
 
 export function assertJobDisputable(status: JobStatus, openedByCustomer: boolean): void {
-  const allowed = openedByCustomer ? CUSTOMER_DISPUTABLE_JOB_STATUSES : PARTNER_DISPUTABLE_JOB_STATUSES;
+  const allowed = openedByCustomer
+    ? CUSTOMER_DISPUTABLE_JOB_STATUSES
+    : PARTNER_DISPUTABLE_JOB_STATUSES;
   if (!allowed.includes(status)) {
-    throw AppException.badRequest(ErrorCode.INVALID_STATE_TRANSITION, `A job in ${status} cannot be disputed`, { status, allowed: [...allowed] });
+    throw AppException.badRequest(
+      ErrorCode.INVALID_STATE_TRANSITION,
+      `A job in ${status} cannot be disputed`,
+      { status, allowed: [...allowed] },
+    );
   }
 }
 
@@ -44,7 +62,11 @@ export function assertDecidable(status: DisputeStatus): void {
  *  - a **positive** adjustment compensates the partner: the wallet is credited and the platform
  *    refund expense debited.
  */
-export function partnerAdjustmentEntries(params: { adjustmentMinor: bigint; currency: string; partnerWalletId: string }): LedgerLine[] {
+export function partnerAdjustmentEntries(params: {
+  adjustmentMinor: bigint;
+  currency: string;
+  partnerWalletId: string;
+}): LedgerLine[] {
   const { adjustmentMinor, currency, partnerWalletId } = params;
   if (adjustmentMinor === 0n) return [];
   const amountMinor = adjustmentMinor < 0n ? -adjustmentMinor : adjustmentMinor;

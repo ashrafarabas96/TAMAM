@@ -38,8 +38,23 @@ export async function openSession(token: string, secret: string): Promise<Sessio
     const key = await deriveKey(secret);
     const { payload } = await jwtDecrypt(token, key, { issuer: ISSUER });
     const p = payload as Partial<SessionPayload>;
-    if (!p.userId || !p.deviceId || !p.accessToken || !p.refreshToken || !p.accessExpiresAt || !p.refreshExpiresAt) return null;
-    return { userId: p.userId, deviceId: p.deviceId, accessToken: p.accessToken, refreshToken: p.refreshToken, accessExpiresAt: p.accessExpiresAt, refreshExpiresAt: p.refreshExpiresAt };
+    if (
+      !p.userId ||
+      !p.deviceId ||
+      !p.accessToken ||
+      !p.refreshToken ||
+      !p.accessExpiresAt ||
+      !p.refreshExpiresAt
+    )
+      return null;
+    return {
+      userId: p.userId,
+      deviceId: p.deviceId,
+      accessToken: p.accessToken,
+      refreshToken: p.refreshToken,
+      accessExpiresAt: p.accessExpiresAt,
+      refreshExpiresAt: p.refreshExpiresAt,
+    };
   } catch {
     return null;
   }

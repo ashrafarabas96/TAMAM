@@ -44,7 +44,11 @@ export const DEFAULT_PROBLEM_THRESHOLDS: ProblemThresholds = {
   heartbeatStaleSeconds: 120,
 };
 
-const UNASSIGNED_STATUSES: readonly JobStatus[] = [JobStatus.REQUESTED, JobStatus.SEARCHING, JobStatus.NO_PARTNER_AVAILABLE];
+const UNASSIGNED_STATUSES: readonly JobStatus[] = [
+  JobStatus.REQUESTED,
+  JobStatus.SEARCHING,
+  JobStatus.NO_PARTNER_AVAILABLE,
+];
 
 export function isUnassignedStatus(status: JobStatus): boolean {
   return UNASSIGNED_STATUSES.includes(status);
@@ -54,29 +58,39 @@ export function isUnassignedStatus(status: JobStatus): boolean {
  * Pure classifier: returns every problem that applies to a job right now. An empty array
  * means the job is progressing normally and should not be highlighted in the console.
  */
-export function classifyProblems(input: ProblemInput, thresholds: ProblemThresholds = DEFAULT_PROBLEM_THRESHOLDS, now: Date = new Date()): DispatchProblem[] {
+export function classifyProblems(
+  input: ProblemInput,
+  thresholds: ProblemThresholds = DEFAULT_PROBLEM_THRESHOLDS,
+  now: Date = new Date(),
+): DispatchProblem[] {
   const problems: DispatchProblem[] = [];
-  const seconds = (from: Date | null): number | null => (from ? (now.getTime() - from.getTime()) / 1000 : null);
+  const seconds = (from: Date | null): number | null =>
+    from ? (now.getTime() - from.getTime()) / 1000 : null;
 
-  if (input.status === JobStatus.NO_PARTNER_AVAILABLE) problems.push(DispatchProblem.NO_PARTNER_AVAILABLE);
-  else if (isUnassignedStatus(input.status) && !input.partnerId) problems.push(DispatchProblem.UNASSIGNED);
+  if (input.status === JobStatus.NO_PARTNER_AVAILABLE)
+    problems.push(DispatchProblem.NO_PARTNER_AVAILABLE);
+  else if (isUnassignedStatus(input.status) && !input.partnerId)
+    problems.push(DispatchProblem.UNASSIGNED);
 
   if (input.status === JobStatus.ASSIGNED) {
     const waited = seconds(input.assignedAt);
-    if (waited !== null && waited > thresholds.assignedGraceSeconds) problems.push(DispatchProblem.ASSIGNED_NOT_MOVING);
+    if (waited !== null && waited > thresholds.assignedGraceSeconds)
+      problems.push(DispatchProblem.ASSIGNED_NOT_MOVING);
   }
 
   if (input.status === JobStatus.PARTNER_EN_ROUTE) {
     const eta = input.etaToPickupSeconds;
     const elapsed = seconds(input.enRouteAt ?? input.assignedAt);
-    if (eta !== null && eta > 0 && elapsed !== null && elapsed > eta * thresholds.etaOverdueFactor) problems.push(DispatchProblem.ETA_EXCEEDED);
+    if (eta !== null && eta > 0 && elapsed !== null && elapsed > eta * thresholds.etaOverdueFactor)
+      problems.push(DispatchProblem.ETA_EXCEEDED);
   }
 
   if (input.status === JobStatus.WAITING_CUSTOMER) problems.push(DispatchProblem.WAITING_CUSTOMER);
 
   if (input.partnerId) {
     const since = seconds(input.partnerLastHeartbeatAt);
-    if (since === null || since > thresholds.heartbeatStaleSeconds) problems.push(DispatchProblem.PARTNER_HEARTBEAT_STALE);
+    if (since === null || since > thresholds.heartbeatStaleSeconds)
+      problems.push(DispatchProblem.PARTNER_HEARTBEAT_STALE);
   }
 
   return problems;

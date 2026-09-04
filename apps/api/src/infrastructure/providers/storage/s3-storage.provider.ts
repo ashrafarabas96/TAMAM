@@ -1,4 +1,11 @@
-import { DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadBucketCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
 
@@ -22,27 +29,55 @@ export class S3StorageProvider implements StorageProvider {
     });
   }
 
-  async createUploadIntent(bucket: string, key: string, contentType: string, sizeBytes: number): Promise<UploadIntent> {
+  async createUploadIntent(
+    bucket: string,
+    key: string,
+    contentType: string,
+    sizeBytes: number,
+  ): Promise<UploadIntent> {
     const expiresInSeconds = 600;
-    const cmd = new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: contentType, ContentLength: sizeBytes });
+    const cmd = new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ContentType: contentType,
+      ContentLength: sizeBytes,
+    });
     const uploadUrl = await getSignedUrl(this.client, cmd, { expiresIn: expiresInSeconds });
     return { uploadUrl, headers: { 'Content-Type': contentType }, expiresInSeconds };
   }
 
-  async getSignedReadUrl(bucket: string, key: string, expiresInSeconds: number, downloadName?: string): Promise<string> {
-    const cmd = new GetObjectCommand({ Bucket: bucket, Key: key, ...(downloadName ? { ResponseContentDisposition: `attachment; filename="${encodeURIComponent(downloadName)}"` } : {}) });
+  async getSignedReadUrl(
+    bucket: string,
+    key: string,
+    expiresInSeconds: number,
+    downloadName?: string,
+  ): Promise<string> {
+    const cmd = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ...(downloadName
+        ? {
+            ResponseContentDisposition: `attachment; filename="${encodeURIComponent(downloadName)}"`,
+          }
+        : {}),
+    });
     return getSignedUrl(this.client, cmd, { expiresIn: expiresInSeconds });
   }
 
   publicUrl(bucket: string, key: string): string {
-    if (bucket === this.config.env.S3_BUCKET_PUBLIC) return `${this.config.env.S3_PUBLIC_BASE_URL}/${key}`;
+    if (bucket === this.config.env.S3_BUCKET_PUBLIC)
+      return `${this.config.env.S3_PUBLIC_BASE_URL}/${key}`;
     return `${this.config.env.S3_ENDPOINT}/${bucket}/${key}`;
   }
 
   async head(bucket: string, key: string): Promise<StorageObjectInfo> {
     try {
       const res = await this.client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
-      return { exists: true, sizeBytes: Number(res.ContentLength ?? 0), contentType: res.ContentType ?? null };
+      return {
+        exists: true,
+        sizeBytes: Number(res.ContentLength ?? 0),
+        contentType: res.ContentType ?? null,
+      };
     } catch {
       return { exists: false, sizeBytes: 0, contentType: null };
     }
@@ -55,7 +90,9 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   async putObject(bucket: string, key: string, body: Buffer, contentType: string): Promise<void> {
-    await this.client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }));
+    await this.client.send(
+      new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }),
+    );
   }
 
   async deleteObject(bucket: string, key: string): Promise<void> {

@@ -26,7 +26,20 @@ export interface ConfirmDialogProps {
 }
 
 /** Every sensitive mutation goes through this: explicit confirm, optional reason, no double submit. */
-export function ConfirmDialog({ open, onOpenChange, title, description, requireReason = false, reasonMinLength = 5, reasonLabel, confirmLabel, tone = 'primary', loading = false, onConfirm, children }: ConfirmDialogProps) {
+export function ConfirmDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  requireReason = false,
+  reasonMinLength = 5,
+  reasonLabel,
+  confirmLabel,
+  tone = 'primary',
+  loading = false,
+  onConfirm,
+  children,
+}: ConfirmDialogProps) {
   const t = useT();
   const [reason, setReason] = useState('');
   useEffect(() => {
@@ -46,7 +59,12 @@ export function ConfirmDialog({ open, onOpenChange, title, description, requireR
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={loading}>
             {t('common.cancel')}
           </Button>
-          <Button variant={tone === 'danger' ? 'danger' : 'primary'} loading={loading} disabled={!reasonValid} onClick={() => void onConfirm(reason.trim())}>
+          <Button
+            variant={tone === 'danger' ? 'danger' : 'primary'}
+            loading={loading}
+            disabled={!reasonValid}
+            onClick={() => void onConfirm(reason.trim())}
+          >
             {confirmLabel ?? t('common.confirm')}
           </Button>
         </>
@@ -58,8 +76,17 @@ export function ConfirmDialog({ open, onOpenChange, title, description, requireR
           <Label htmlFor="confirm-reason" required>
             {reasonLabel ?? t('common.reason')}
           </Label>
-          <Textarea id="confirm-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t('common.reasonPlaceholder')} maxLength={500} autoFocus />
-          <p className="mt-1 text-xs text-text-tertiary">{t('common.reasonHint', { min: reasonMinLength })}</p>
+          <Textarea
+            id="confirm-reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder={t('common.reasonPlaceholder')}
+            maxLength={500}
+            autoFocus
+          />
+          <p className="mt-1 text-xs text-text-tertiary">
+            {t('common.reasonHint', { min: reasonMinLength })}
+          </p>
         </div>
       ) : null}
     </Dialog>

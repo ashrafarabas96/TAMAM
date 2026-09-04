@@ -33,11 +33,25 @@ function RiskScreen() {
   const [activeOnly, setActiveOnly] = useState(true);
   const [creating, setCreating] = useState(false);
   const signals = useEnumOptions('riskSignal', RiskSignal, t('common.all'));
-  const targetTypes = useEnumOptions('restrictionTargetType', RestrictionTargetType, t('common.all'));
+  const targetTypes = useEnumOptions(
+    'restrictionTargetType',
+    RestrictionTargetType,
+    t('common.all'),
+  );
 
   return (
     <div>
-      <PageHeader title={t('risk.title')} description={t('risk.subtitle')} actions={<Can anyOf={[Permission.RISK_MANAGE]}><Button size="sm" onClick={() => setCreating(true)}>{t('risk.newRestriction')}</Button></Can>} />
+      <PageHeader
+        title={t('risk.title')}
+        description={t('risk.subtitle')}
+        actions={
+          <Can anyOf={[Permission.RISK_MANAGE]}>
+            <Button size="sm" onClick={() => setCreating(true)}>
+              {t('risk.newRestriction')}
+            </Button>
+          </Can>
+        }
+      />
       <Tabs
         items={[
           {
@@ -46,10 +60,22 @@ function RiskScreen() {
             content: (
               <div>
                 <FilterBar>
-                  <Select value={signal} onValueChange={setSignal} options={signals} placeholder={t('risk.signal')} aria-label={t('risk.signal')} />
-                  <Checkbox checked={unreviewed} onCheckedChange={setUnreviewed} label={t('risk.onlyUnreviewed')} />
+                  <Select
+                    value={signal}
+                    onValueChange={setSignal}
+                    options={signals}
+                    placeholder={t('risk.signal')}
+                    aria-label={t('risk.signal')}
+                  />
+                  <Checkbox
+                    checked={unreviewed}
+                    onCheckedChange={setUnreviewed}
+                    label={t('risk.onlyUnreviewed')}
+                  />
                 </FilterBar>
-                <RiskSignalsTable filters={{ signal: signal || undefined, unreviewed: unreviewed || undefined }} />
+                <RiskSignalsTable
+                  filters={{ signal: signal || undefined, unreviewed: unreviewed || undefined }}
+                />
               </div>
             ),
           },
@@ -59,10 +85,25 @@ function RiskScreen() {
             content: (
               <div>
                 <FilterBar>
-                  <Select value={targetType} onValueChange={setTargetType} options={targetTypes} placeholder={t('risk.target')} aria-label={t('risk.target')} />
-                  <Checkbox checked={activeOnly} onCheckedChange={setActiveOnly} label={t('risk.onlyActive')} />
+                  <Select
+                    value={targetType}
+                    onValueChange={setTargetType}
+                    options={targetTypes}
+                    placeholder={t('risk.target')}
+                    aria-label={t('risk.target')}
+                  />
+                  <Checkbox
+                    checked={activeOnly}
+                    onCheckedChange={setActiveOnly}
+                    label={t('risk.onlyActive')}
+                  />
                 </FilterBar>
-                <RestrictionsTable filters={{ targetType: targetType || undefined, activeOnly: activeOnly || undefined }} />
+                <RestrictionsTable
+                  filters={{
+                    targetType: targetType || undefined,
+                    activeOnly: activeOnly || undefined,
+                  }}
+                />
               </div>
             ),
           },

@@ -79,25 +79,29 @@ function jobFixture(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function buildHarness(options: { payment?: PaymentState; job?: Record<string, unknown>; webhookExists?: boolean } = {}) {
+function buildHarness(
+  options: { payment?: PaymentState; job?: Record<string, unknown>; webhookExists?: boolean } = {},
+) {
   const payment = options.payment ?? paymentState();
   const job = options.job ?? jobFixture();
   const receipts: Array<Record<string, unknown>> = [];
 
   /* ------------------------------------------------------------- prisma */
-  const txPaymentUpdateMany = jest.fn(async ({ where, data }: { where: { version?: number }; data: Record<string, unknown> }) => {
-    if (payment.status === PaymentStatus.CAPTURED) return { count: 0 };
-    if (where.version !== undefined && where.version !== payment.version) return { count: 0 };
-    Object.assign(payment, {
-      status: data.status as PaymentStatus,
-      amountMinor: (data.amountMinor as bigint | undefined) ?? payment.amountMinor,
-      capturedMinor: (data.capturedMinor as bigint | undefined) ?? payment.capturedMinor,
-      capturedAt: (data.capturedAt as Date | undefined) ?? payment.capturedAt,
-      providerRef: (data.providerRef as string | null | undefined) ?? payment.providerRef,
-      version: payment.version + 1,
-    });
-    return { count: 1 };
-  });
+  const txPaymentUpdateMany = jest.fn(
+    async ({ where, data }: { where: { version?: number }; data: Record<string, unknown> }) => {
+      if (payment.status === PaymentStatus.CAPTURED) return { count: 0 };
+      if (where.version !== undefined && where.version !== payment.version) return { count: 0 };
+      Object.assign(payment, {
+        status: data.status as PaymentStatus,
+        amountMinor: (data.amountMinor as bigint | undefined) ?? payment.amountMinor,
+        capturedMinor: (data.capturedMinor as bigint | undefined) ?? payment.capturedMinor,
+        capturedAt: (data.capturedAt as Date | undefined) ?? payment.capturedAt,
+        providerRef: (data.providerRef as string | null | undefined) ?? payment.providerRef,
+        version: payment.version + 1,
+      });
+      return { count: 1 };
+    },
+  );
   const receiptCreate = jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
     receipts.push(data);
     return data;
@@ -117,9 +121,16 @@ function buildHarness(options: { payment?: PaymentState; job?: Record<string, un
     });
     return { count: 1 };
   });
-  const paymentUpdate = jest.fn(async ({ data }: { data: Record<string, unknown> }) => Object.assign(payment, data));
-  const webhookFindUnique = jest.fn(async () => (options.webhookExists ? { id: 'wh-existing' } : null));
-  const webhookCreate = jest.fn(async ({ data }: { data: Record<string, unknown> }) => ({ id: 'wh-1', ...data }));
+  const paymentUpdate = jest.fn(async ({ data }: { data: Record<string, unknown> }) =>
+    Object.assign(payment, data),
+  );
+  const webhookFindUnique = jest.fn(async () =>
+    options.webhookExists ? { id: 'wh-existing' } : null,
+  );
+  const webhookCreate = jest.fn(async ({ data }: { data: Record<string, unknown> }) => ({
+    id: 'wh-1',
+    ...data,
+  }));
 
   const prisma = {
     job: { findUnique: jest.fn(async () => job) },
@@ -131,7 +142,11 @@ function buildHarness(options: { payment?: PaymentState; job?: Record<string, un
       create: jest.fn(async () => payment),
     },
     paymentAttempt: { count: jest.fn(async () => 0), create: jest.fn(async () => ({})) },
-    webhookEvent: { findUnique: webhookFindUnique, create: webhookCreate, update: jest.fn(async () => ({})) },
+    webhookEvent: {
+      findUnique: webhookFindUnique,
+      create: webhookCreate,
+      update: jest.fn(async () => ({})),
+    },
     nextCounter: jest.fn(async () => 42n),
     withLedgerWrite: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
     $transaction: jest.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
@@ -140,31 +155,76 @@ function buildHarness(options: { payment?: PaymentState; job?: Record<string, un
   /* --------------------------------------------------------- collaborators */
   const settleJob = jest.fn(async () => ({ id: 'tx-1' }));
   const walletBalance = jest.fn(async () => 100_000n);
-  const ledger = { settleJob, walletBalance, post: jest.fn(async () => ({ id: 'tx-1' })) } as unknown as LedgerService;
-  const wallets = { getOrCreate: jest.fn(async () => ({ id: 'w-1', currency: 'ILS' })) } as unknown as WalletService;
+  const ledger = {
+    settleJob,
+    walletBalance,
+    post: jest.fn(async () => ({ id: 'tx-1' })),
+  } as unknown as LedgerService;
+  const wallets = {
+    getOrCreate: jest.fn(async () => ({ id: 'w-1', currency: 'ILS' })),
+  } as unknown as WalletService;
   const notify = jest.fn(async () => undefined);
   const notifications = { notify } as unknown as NotificationsService;
   const audit = { record: jest.fn(async () => undefined) } as unknown as AuditService;
   const paymentFailuresInc = jest.fn();
   const metrics = { paymentFailures: { inc: paymentFailuresInc } } as unknown as MetricsService;
   const events = new EventEmitter2();
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as unknown as PinoLogger;
+  const logger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  } as unknown as PinoLogger;
 
   const authorize = jest.fn(async () => ({ status: 'CAPTURED', providerRef: 'mock_ref' }));
   const capture = jest.fn(async () => ({ status: 'CAPTURED', providerRef: 'mock_ref' }));
-  const parseWebhook = jest.fn(() => ({ eventId: 'evt_1', type: 'payment.captured', providerRef: 'mock_ref', raw: { id: 'evt_1' } }));
-  const gateway = { name: 'mock', authorize, capture, refund: jest.fn(), parseWebhook } as unknown as PaymentGatewayProvider;
+  const parseWebhook = jest.fn(() => ({
+    eventId: 'evt_1',
+    type: 'payment.captured',
+    providerRef: 'mock_ref',
+    raw: { id: 'evt_1' },
+  }));
+  const gateway = {
+    name: 'mock',
+    authorize,
+    capture,
+    refund: jest.fn(),
+    parseWebhook,
+  } as unknown as PaymentGatewayProvider;
   const queueAdd = jest.fn(async () => ({ id: 'q-1' }));
   const queue = { add: queueAdd } as unknown as Queue;
 
-  const service = new PaymentsService(prisma, ledger, wallets, notifications, audit, metrics, events, logger, gateway, queue);
+  const service = new PaymentsService(
+    prisma,
+    ledger,
+    wallets,
+    notifications,
+    audit,
+    metrics,
+    events,
+    logger,
+    gateway,
+    queue,
+  );
 
   return {
     service,
     events,
     payment,
     receipts,
-    mocks: { txPaymentUpdateMany, receiptCreate, paymentUpdateMany, settleJob, walletBalance, notify, paymentFailuresInc, authorize, capture, webhookCreate, queueAdd },
+    mocks: {
+      txPaymentUpdateMany,
+      receiptCreate,
+      paymentUpdateMany,
+      settleJob,
+      walletBalance,
+      notify,
+      paymentFailuresInc,
+      authorize,
+      capture,
+      webhookCreate,
+      queueAdd,
+    },
   };
 }
 
@@ -179,7 +239,9 @@ describe('PaymentsService.captureForJob', () => {
     expect(mocks.settleJob).toHaveBeenCalledTimes(1);
     expect(mocks.receiptCreate).toHaveBeenCalledTimes(1);
     expect(String(receipts[0]?.number)).toMatch(/^RC-\d{4}-000042$/);
-    expect(mocks.notify).toHaveBeenCalledWith(expect.objectContaining({ event: NotificationEvent.PAYMENT_SUCCESS }));
+    expect(mocks.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ event: NotificationEvent.PAYMENT_SUCCESS }),
+    );
 
     const second = await service.captureForJob(JOB_ID);
 
@@ -197,7 +259,9 @@ describe('PaymentsService.captureForJob', () => {
 
     await service.captureForJob(JOB_ID);
 
-    expect(captured).toHaveBeenCalledWith(expect.objectContaining({ jobId: JOB_ID, amountMinor: 10_000n, method: PaymentMethod.CASH }));
+    expect(captured).toHaveBeenCalledWith(
+      expect.objectContaining({ jobId: JOB_ID, amountMinor: 10_000n, method: PaymentMethod.CASH }),
+    );
   });
 
   it('fails a wallet payment when the balance is too low and never settles', async () => {
@@ -209,13 +273,20 @@ describe('PaymentsService.captureForJob', () => {
     const failed = jest.fn();
     events.on('payment.failed', failed);
 
-    await expect(service.captureForJob(JOB_ID)).rejects.toMatchObject({ code: ErrorCode.INSUFFICIENT_WALLET_BALANCE });
+    await expect(service.captureForJob(JOB_ID)).rejects.toMatchObject({
+      code: ErrorCode.INSUFFICIENT_WALLET_BALANCE,
+    });
 
     expect(payment.status).toBe(PaymentStatus.FAILED);
     expect(mocks.settleJob).not.toHaveBeenCalled();
     expect(mocks.paymentUpdateMany).toHaveBeenCalledTimes(1);
-    expect(mocks.notify).toHaveBeenCalledWith(expect.objectContaining({ event: NotificationEvent.PAYMENT_FAILED }));
-    expect(mocks.paymentFailuresInc).toHaveBeenCalledWith({ method: PaymentMethod.WALLET, code: 'insufficient_balance' });
+    expect(mocks.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ event: NotificationEvent.PAYMENT_FAILED }),
+    );
+    expect(mocks.paymentFailuresInc).toHaveBeenCalledWith({
+      method: PaymentMethod.WALLET,
+      code: 'insufficient_balance',
+    });
     expect(failed).toHaveBeenCalledTimes(1);
   });
 
@@ -236,7 +307,11 @@ describe('PaymentsService.captureForJob', () => {
       payment: paymentState({ method: PaymentMethod.CARD, provider: 'mock' }),
       job: jobFixture({ paymentMethod: PaymentMethod.CARD }),
     });
-    mocks.authorize.mockResolvedValue({ status: 'REQUIRES_ACTION', providerRef: 'mock_ref', actionUrl: 'https://3ds.example/challenge' } as never);
+    mocks.authorize.mockResolvedValue({
+      status: 'REQUIRES_ACTION',
+      providerRef: 'mock_ref',
+      actionUrl: 'https://3ds.example/challenge',
+    } as never);
 
     const result = await service.captureForJob(JOB_ID);
 
@@ -249,13 +324,23 @@ describe('PaymentsService.captureForJob', () => {
       payment: paymentState({ method: PaymentMethod.CARD, provider: 'mock' }),
       job: jobFixture({ paymentMethod: PaymentMethod.CARD }),
     });
-    mocks.authorize.mockResolvedValue({ status: 'FAILED', providerRef: 'mock_ref', failureCode: 'card_declined', failureMessage: 'Card declined' } as never);
+    mocks.authorize.mockResolvedValue({
+      status: 'FAILED',
+      providerRef: 'mock_ref',
+      failureCode: 'card_declined',
+      failureMessage: 'Card declined',
+    } as never);
 
-    await expect(service.captureForJob(JOB_ID)).rejects.toMatchObject({ code: ErrorCode.PAYMENT_FAILED });
+    await expect(service.captureForJob(JOB_ID)).rejects.toMatchObject({
+      code: ErrorCode.PAYMENT_FAILED,
+    });
 
     expect(payment.status).toBe(PaymentStatus.FAILED);
     expect(mocks.settleJob).not.toHaveBeenCalled();
-    expect(mocks.paymentFailuresInc).toHaveBeenCalledWith({ method: PaymentMethod.CARD, code: 'card_declined' });
+    expect(mocks.paymentFailuresInc).toHaveBeenCalledWith({
+      method: PaymentMethod.CARD,
+      code: 'card_declined',
+    });
   });
 });
 
@@ -265,7 +350,10 @@ describe('PaymentsService.handleWebhook', () => {
   it('stores a new event and queues it for processing', async () => {
     const { service, mocks } = buildHarness();
 
-    await expect(service.handleWebhook('mock', body, {})).resolves.toEqual({ received: true, duplicate: false });
+    await expect(service.handleWebhook('mock', body, {})).resolves.toEqual({
+      received: true,
+      duplicate: false,
+    });
 
     expect(mocks.webhookCreate).toHaveBeenCalledTimes(1);
     expect(mocks.queueAdd).toHaveBeenCalledTimes(1);
@@ -274,7 +362,10 @@ describe('PaymentsService.handleWebhook', () => {
   it('ignores a duplicate event without processing it again', async () => {
     const { service, mocks } = buildHarness({ webhookExists: true });
 
-    await expect(service.handleWebhook('mock', body, {})).resolves.toEqual({ received: true, duplicate: true });
+    await expect(service.handleWebhook('mock', body, {})).resolves.toEqual({
+      received: true,
+      duplicate: true,
+    });
 
     expect(mocks.webhookCreate).not.toHaveBeenCalled();
     expect(mocks.queueAdd).not.toHaveBeenCalled();
@@ -283,12 +374,16 @@ describe('PaymentsService.handleWebhook', () => {
   it('rejects a webhook for an unknown provider', async () => {
     const { service } = buildHarness();
 
-    await expect(service.handleWebhook('stripe', body, {})).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+    await expect(service.handleWebhook('stripe', body, {})).rejects.toMatchObject({
+      code: ErrorCode.NOT_FOUND,
+    });
   });
 
   it('rejects an empty body', async () => {
     const { service } = buildHarness();
 
-    await expect(service.handleWebhook('mock', Buffer.alloc(0), {})).rejects.toMatchObject({ code: ErrorCode.VALIDATION_FAILED });
+    await expect(service.handleWebhook('mock', Buffer.alloc(0), {})).rejects.toMatchObject({
+      code: ErrorCode.VALIDATION_FAILED,
+    });
   });
 });

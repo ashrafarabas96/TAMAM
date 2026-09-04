@@ -5,7 +5,11 @@ import { useMemo } from 'react';
 import { type EnumGroup, useI18n } from '@/i18n';
 
 /** Select options for an enum object (`{ KEY: 'KEY' }`) with translated labels. */
-export function useEnumOptions(group: EnumGroup, values: readonly string[] | Record<string, string>, allLabel?: string) {
+export function useEnumOptions(
+  group: EnumGroup,
+  values: readonly string[] | Record<string, string>,
+  allLabel?: string,
+) {
   const { enumLabel } = useI18n();
   return useMemo(() => {
     const list = Array.isArray(values) ? values : Object.values(values);

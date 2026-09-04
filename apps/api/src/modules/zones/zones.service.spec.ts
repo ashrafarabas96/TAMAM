@@ -7,7 +7,13 @@ import { ZonesService } from './zones.service';
 const zones = new ZonesService(undefined as never, undefined as never, undefined as never);
 
 type Row = { dayOfWeek: number; opensAt: string; closesAt: string; isClosed: boolean };
-const row = (over: Partial<Row> = {}): Row => ({ dayOfWeek: 0, opensAt: '06:00', closesAt: '00:00', isClosed: false, ...over });
+const row = (over: Partial<Row> = {}): Row => ({
+  dayOfWeek: 0,
+  opensAt: '06:00',
+  closesAt: '00:00',
+  isClosed: false,
+  ...over,
+});
 
 /** Sunday, Asia/Jerusalem, at the given local time. */
 const sundayAt = (hhmm: string): Date => new Date(`2026-09-06T${hhmm}:00+03:00`);
@@ -29,10 +35,14 @@ describe('ZonesService.isOpen', () => {
 
   // The reason the seed writes '00:00' rather than '23:59': an exclusive '23:59' would
   // close the zone for the last minute of every day.
-  it("keeps a 00:00 close open through 23:59 and shut after midnight", () => {
+  it('keeps a 00:00 close open through 23:59 and shut after midnight', () => {
     expect(zones.isOpen([row()], sundayAt('23:59'), TZ)).toBe(true);
-    expect(zones.isOpen([row({ dayOfWeek: 1 })], new Date('2026-09-07T00:00:00+03:00'), TZ)).toBe(false);
-    expect(zones.isOpen([row({ dayOfWeek: 1 })], new Date('2026-09-07T03:00:00+03:00'), TZ)).toBe(false);
+    expect(zones.isOpen([row({ dayOfWeek: 1 })], new Date('2026-09-07T00:00:00+03:00'), TZ)).toBe(
+      false,
+    );
+    expect(zones.isOpen([row({ dayOfWeek: 1 })], new Date('2026-09-07T03:00:00+03:00'), TZ)).toBe(
+      false,
+    );
   });
 
   it('closes a minute early when 23:59 is used instead', () => {
@@ -42,7 +52,10 @@ describe('ZonesService.isOpen', () => {
   });
 
   it('spans midnight for a genuine overnight window', () => {
-    const overnight = [row({ opensAt: '20:00', closesAt: '02:00' }), row({ dayOfWeek: 1, opensAt: '20:00', closesAt: '02:00' })];
+    const overnight = [
+      row({ opensAt: '20:00', closesAt: '02:00' }),
+      row({ dayOfWeek: 1, opensAt: '20:00', closesAt: '02:00' }),
+    ];
     expect(zones.isOpen(overnight, sundayAt('21:00'), TZ)).toBe(true);
     expect(zones.isOpen(overnight, new Date('2026-09-07T01:00:00+03:00'), TZ)).toBe(true);
     expect(zones.isOpen(overnight, new Date('2026-09-07T03:00:00+03:00'), TZ)).toBe(false);

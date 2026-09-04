@@ -19,7 +19,11 @@ function NewCampaign() {
   const { t } = useI18n();
   return (
     <div>
-      <PageHeader crumbs={[{ label: t('nav.campaigns'), href: '/campaigns' }, { label: t('campaigns.new') }]} title={t('campaigns.new')} description={t('campaigns.newHint')} />
+      <PageHeader
+        crumbs={[{ label: t('nav.campaigns'), href: '/campaigns' }, { label: t('campaigns.new') }]}
+        title={t('campaigns.new')}
+        description={t('campaigns.newHint')}
+      />
       <CampaignForm campaign={null} />
     </div>
   );

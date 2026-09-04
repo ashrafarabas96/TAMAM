@@ -1,4 +1,12 @@
-import { type JobActorType, type JobStatus, type JobTransition, type JobType, TERMINAL_JOB_STATUSES, allowedTargets, findTransition } from '@tamam/shared-types';
+import {
+  type JobActorType,
+  type JobStatus,
+  type JobTransition,
+  type JobType,
+  TERMINAL_JOB_STATUSES,
+  allowedTargets,
+  findTransition,
+} from '@tamam/shared-types';
 
 import { AppException } from '../../../common/errors/app.exception';
 
@@ -7,7 +15,11 @@ import { AppException } from '../../../common/errors/app.exception';
  * table; JobsService.transition() calls `assert` inside a row-locked transaction.
  */
 export const JobStateMachine = {
-  assert(job: { type: JobType; status: JobStatus }, to: JobStatus, actor: JobActorType): JobTransition {
+  assert(
+    job: { type: JobType; status: JobStatus },
+    to: JobStatus,
+    actor: JobActorType,
+  ): JobTransition {
     const t = findTransition(job.status, to, job.type, actor);
     if (!t) throw AppException.invalidTransition(job.status, to);
     return t;

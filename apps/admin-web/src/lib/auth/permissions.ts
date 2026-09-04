@@ -1,16 +1,26 @@
-import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, type Permission, UserRole } from '@tamam/shared-types';
+import {
+  ALL_PERMISSIONS,
+  DEFAULT_ROLE_PERMISSIONS,
+  type Permission,
+  UserRole,
+} from '@tamam/shared-types';
 
 /**
  * The console is permission-driven, never role-driven. The API resolves effective permissions
  * for the JWT principal; until `GET /me` exposes that list, the client derives the same set from
  * the seeded role bundles (SUPER_ADMIN implicitly holds every permission — same rule as the guard).
  */
-export function permissionsForRoles(roles: readonly string[], explicit?: readonly string[] | null): ReadonlySet<Permission> {
+export function permissionsForRoles(
+  roles: readonly string[],
+  explicit?: readonly string[] | null,
+): ReadonlySet<Permission> {
   if (explicit && explicit.length > 0) return new Set(explicit as Permission[]);
   const set = new Set<Permission>();
   for (const role of roles) {
     if (role === UserRole.SUPER_ADMIN) return new Set(ALL_PERMISSIONS);
-    const bundle = (DEFAULT_ROLE_PERMISSIONS as Record<string, readonly Permission[] | undefined>)[role];
+    const bundle = (DEFAULT_ROLE_PERMISSIONS as Record<string, readonly Permission[] | undefined>)[
+      role
+    ];
     if (bundle) for (const p of bundle) set.add(p);
   }
   return set;

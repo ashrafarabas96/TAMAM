@@ -25,9 +25,23 @@ export interface SelectProps {
 }
 
 /** Radix-based select. Use `value=""` for "nothing selected" together with a `placeholder`. */
-export function Select({ value, onValueChange, options, placeholder, disabled, invalid, className, id, ...aria }: SelectProps) {
+export function Select({
+  value,
+  onValueChange,
+  options,
+  placeholder,
+  disabled,
+  invalid,
+  className,
+  id,
+  ...aria
+}: SelectProps) {
   return (
-    <SelectPrimitive.Root value={value || undefined} onValueChange={onValueChange} disabled={disabled}>
+    <SelectPrimitive.Root
+      value={value || undefined}
+      onValueChange={onValueChange}
+      disabled={disabled}
+    >
       <SelectPrimitive.Trigger
         id={id}
         aria-label={aria['aria-label']}
@@ -45,7 +59,11 @@ export function Select({ value, onValueChange, options, placeholder, disabled, i
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
-        <SelectPrimitive.Content position="popper" sideOffset={4} className="z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-border bg-surface shadow-raised animate-fade-in">
+        <SelectPrimitive.Content
+          position="popper"
+          sideOffset={4}
+          className="z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-border bg-surface shadow-raised animate-fade-in"
+        >
           <SelectPrimitive.Viewport className="p-1">
             {options.map((option) => (
               <SelectPrimitive.Item

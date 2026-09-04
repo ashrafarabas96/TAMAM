@@ -1,10 +1,21 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission, RiskSignal } from '@tamam/shared-types';
-import { type UpsertRestrictionInput, pageRequestSchema, upsertRestrictionSchema } from '@tamam/validation';
+import {
+  type UpsertRestrictionInput,
+  pageRequestSchema,
+  upsertRestrictionSchema,
+} from '@tamam/validation';
 import { z } from 'zod';
 
-import { Audited, CurrentUser, RequestId, RequirePermission, ZodBody, ZodQuery } from '../../common/decorators';
+import {
+  Audited,
+  CurrentUser,
+  RequestId,
+  RequirePermission,
+  ZodBody,
+  ZodQuery,
+} from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -19,7 +30,9 @@ const signalListSchema = pageRequestSchema.extend({
 const restrictionListSchema = pageRequestSchema.extend({
   targetType: z.enum(['USER', 'PARTNER', 'DEVICE']).optional(),
   targetId: z.string().trim().max(128).optional(),
-  kind: z.enum(['BLOCK_JOBS', 'BLOCK_PROMOS', 'BLOCK_WALLET', 'BLOCK_LOGIN', 'REQUIRE_REVIEW']).optional(),
+  kind: z
+    .enum(['BLOCK_JOBS', 'BLOCK_PROMOS', 'BLOCK_WALLET', 'BLOCK_LOGIN', 'REQUIRE_REVIEW'])
+    .optional(),
   activeOnly: z.coerce.boolean().optional(),
 });
 
@@ -67,7 +80,11 @@ export class RiskController {
   /** Audited inside the service (inside the same transaction as the write), not by the interceptor. */
   @Post('admin/risk/restrictions')
   @RequirePermission(Permission.RISK_MANAGE)
-  createRestriction(@ZodBody(upsertRestrictionSchema) input: UpsertRestrictionInput, @CurrentUser() user: RequestUser, @RequestId() requestId: string) {
+  createRestriction(
+    @ZodBody(upsertRestrictionSchema) input: UpsertRestrictionInput,
+    @CurrentUser() user: RequestUser,
+    @RequestId() requestId: string,
+  ) {
     return this.risk.create(input, user, requestId);
   }
 

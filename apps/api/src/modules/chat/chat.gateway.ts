@@ -87,7 +87,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
     if (principal.accountStatus === AccountStatus.SUSPENDED) {
-      this.fail(socket, AppException.forbidden('Your account is suspended. Contact support.', ErrorCode.ACCOUNT_SUSPENDED));
+      this.fail(
+        socket,
+        AppException.forbidden(
+          'Your account is suspended. Contact support.',
+          ErrorCode.ACCOUNT_SUSPENDED,
+        ),
+      );
       socket.disconnect(true);
       return;
     }
@@ -99,7 +105,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(socket: Socket): void {
-    if (this.principals.delete(socket.id)) this.metrics.wsConnections.dec({ namespace: WsNamespace.CHAT });
+    if (this.principals.delete(socket.id))
+      this.metrics.wsConnections.dec({ namespace: WsNamespace.CHAT });
   }
 
   /* ------------------------------------------------------------- handlers */
@@ -166,7 +173,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /* -------------------------------------------------------------- plumbing */
 
-  private async handle<T>(socket: Socket, event: string, run: (user: RequestUser) => Promise<T>): Promise<WsAck<T>> {
+  private async handle<T>(
+    socket: Socket,
+    event: string,
+    run: (user: RequestUser) => Promise<T>,
+  ): Promise<WsAck<T>> {
     const user = this.principals.get(socket.id);
     if (!user) {
       const error = this.fail(socket, AppException.unauthenticated());

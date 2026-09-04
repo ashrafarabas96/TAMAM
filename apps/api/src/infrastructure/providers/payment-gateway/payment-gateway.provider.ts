@@ -38,7 +38,10 @@ export interface PaymentGatewayProvider {
   capture(providerRef: string, amountMinor: bigint, idempotencyKey: string): Promise<GatewayResult>;
   refund(providerRef: string, amountMinor: bigint, idempotencyKey: string): Promise<GatewayResult>;
   /** Verifies signature and parses the payload; throws on invalid signature. */
-  parseWebhook(rawBody: Buffer, headers: Record<string, string | string[] | undefined>): GatewayWebhookEvent;
+  parseWebhook(
+    rawBody: Buffer,
+    headers: Record<string, string | string[] | undefined>,
+  ): GatewayWebhookEvent;
 }
 
 export const PAYMENT_GATEWAY = Symbol('PAYMENT_GATEWAY');

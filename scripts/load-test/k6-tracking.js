@@ -26,7 +26,10 @@ const DURATION = __ENV.DURATION || '2m';
 /** Location send interval while on an active job (tracking.interval.active_s default). */
 const SAMPLE_INTERVAL_MS = Number(__ENV.SAMPLE_INTERVAL_MS || 4000);
 const SAMPLES_PER_BATCH = Number(__ENV.SAMPLES_PER_BATCH || 1);
-const CENTER = { lat: Number(__ENV.CENTER_LAT || 31.9038), lng: Number(__ENV.CENTER_LNG || 35.2034) };
+const CENTER = {
+  lat: Number(__ENV.CENTER_LAT || 31.9038),
+  lng: Number(__ENV.CENTER_LNG || 35.2034),
+};
 
 const tokens = new SharedArray('partner tokens', () => {
   const file = __ENV.TOKENS_FILE;
@@ -66,7 +69,7 @@ const SIO = {
 /** Deterministic wander around the zone centre so PostGIS sees realistic movement. */
 function nextPoint(vu, tick) {
   const angle = (vu * 37 + tick * 11) % 360;
-  const radius = 0.002 + ((vu % 7) * 0.0004);
+  const radius = 0.002 + (vu % 7) * 0.0004;
   return {
     lat: CENTER.lat + radius * Math.cos((angle * Math.PI) / 180),
     lng: CENTER.lng + radius * Math.sin((angle * Math.PI) / 180),

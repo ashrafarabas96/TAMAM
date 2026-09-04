@@ -21,7 +21,14 @@ function prismaMock() {
   };
 }
 
-const loggerMock = (): PinoLogger => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn(), log: jest.fn() }) as unknown as PinoLogger;
+const loggerMock = (): PinoLogger =>
+  ({
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    log: jest.fn(),
+  }) as unknown as PinoLogger;
 
 describe('DocumentExpiryService', () => {
   let prisma: ReturnType<typeof prismaMock>;
@@ -31,12 +38,23 @@ describe('DocumentExpiryService', () => {
   beforeEach(() => {
     prisma = prismaMock();
     notifications = { notify: jest.fn().mockResolvedValue(undefined) };
-    service = new DocumentExpiryService(prisma as unknown as PrismaService, notifications as unknown as NotificationsService, loggerMock());
+    service = new DocumentExpiryService(
+      prisma as unknown as PrismaService,
+      notifications as unknown as NotificationsService,
+      loggerMock(),
+    );
   });
 
   it('warns once per document and records the claim before notifying', async () => {
     prisma.partnerDocument.findMany.mockResolvedValue([
-      { id: 'd1', partnerId: 'p1', type: 'PROFESSIONAL_CERTIFICATE', status: 'APPROVED', expiresAt: inDays(10), expiryNotifiedAt: null },
+      {
+        id: 'd1',
+        partnerId: 'p1',
+        type: 'PROFESSIONAL_CERTIFICATE',
+        status: 'APPROVED',
+        expiresAt: inDays(10),
+        expiryNotifiedAt: null,
+      },
     ]);
 
     const result = await service.run(NOW);
@@ -44,7 +62,10 @@ describe('DocumentExpiryService', () => {
     expect(result.warned).toBe(1);
     expect(result.expired).toBe(0);
     // The claim UPDATE is conditional on expiry_notified_at still being NULL.
-    expect(prisma.partnerDocument.updateMany).toHaveBeenCalledWith({ where: { id: 'd1', expiryNotifiedAt: null }, data: { expiryNotifiedAt: NOW } });
+    expect(prisma.partnerDocument.updateMany).toHaveBeenCalledWith({
+      where: { id: 'd1', expiryNotifiedAt: null },
+      data: { expiryNotifiedAt: NOW },
+    });
     expect(notifications.notify).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 'p1',
@@ -57,7 +78,14 @@ describe('DocumentExpiryService', () => {
 
   it('does not notify when another worker already claimed the document', async () => {
     prisma.partnerDocument.findMany.mockResolvedValue([
-      { id: 'd1', partnerId: 'p1', type: 'ID', status: 'APPROVED', expiresAt: inDays(2), expiryNotifiedAt: null },
+      {
+        id: 'd1',
+        partnerId: 'p1',
+        type: 'ID',
+        status: 'APPROVED',
+        expiresAt: inDays(2),
+        expiryNotifiedAt: null,
+      },
     ]);
     prisma.partnerDocument.updateMany.mockResolvedValue({ count: 0 });
 
@@ -69,18 +97,42 @@ describe('DocumentExpiryService', () => {
 
   it('releases the claim and rethrows when the notification cannot be queued', async () => {
     prisma.partnerDocument.findMany.mockResolvedValue([
-      { id: 'd1', partnerId: 'p1', type: 'ID', status: 'APPROVED', expiresAt: inDays(2), expiryNotifiedAt: null },
+      {
+        id: 'd1',
+        partnerId: 'p1',
+        type: 'ID',
+        status: 'APPROVED',
+        expiresAt: inDays(2),
+        expiryNotifiedAt: null,
+      },
     ]);
     notifications.notify.mockRejectedValue(new Error('redis down'));
 
     await expect(service.run(NOW)).rejects.toThrow('redis down');
-    expect(prisma.partnerDocument.updateMany).toHaveBeenLastCalledWith({ where: { id: 'd1' }, data: { expiryNotifiedAt: null } });
+    expect(prisma.partnerDocument.updateMany).toHaveBeenLastCalledWith({
+      where: { id: 'd1' },
+      data: { expiryNotifiedAt: null },
+    });
   });
 
   it('flags lapsed documents EXPIRED without touching rejected ones', async () => {
     prisma.partnerDocument.findMany.mockResolvedValue([
-      { id: 'd1', partnerId: 'p1', type: 'ID', status: 'APPROVED', expiresAt: inDays(-1), expiryNotifiedAt: inDays(-15) },
-      { id: 'd2', partnerId: 'p1', type: 'DRIVING_LICENSE', status: 'EXPIRED', expiresAt: inDays(-30), expiryNotifiedAt: inDays(-45) },
+      {
+        id: 'd1',
+        partnerId: 'p1',
+        type: 'ID',
+        status: 'APPROVED',
+        expiresAt: inDays(-1),
+        expiryNotifiedAt: inDays(-15),
+      },
+      {
+        id: 'd2',
+        partnerId: 'p1',
+        type: 'DRIVING_LICENSE',
+        status: 'EXPIRED',
+        expiresAt: inDays(-30),
+        expiryNotifiedAt: inDays(-45),
+      },
     ]);
     prisma.partnerDocument.updateMany.mockResolvedValue({ count: 1 });
 
@@ -95,7 +147,14 @@ describe('DocumentExpiryService', () => {
 
   it('forces a partner offline when a REQUIRED document lapsed', async () => {
     prisma.partnerDocument.findMany.mockResolvedValue([
-      { id: 'd1', partnerId: 'p1', type: 'PROFESSIONAL_CERTIFICATE', status: 'APPROVED', expiresAt: inDays(-1), expiryNotifiedAt: inDays(-20) },
+      {
+        id: 'd1',
+        partnerId: 'p1',
+        type: 'PROFESSIONAL_CERTIFICATE',
+        status: 'APPROVED',
+        expiresAt: inDays(-1),
+        expiryNotifiedAt: inDays(-20),
+      },
     ]);
     prisma.partnerProfile.findMany.mockResolvedValue([
       {
@@ -109,12 +168,22 @@ describe('DocumentExpiryService', () => {
     const result = await service.run(NOW);
 
     expect(result.partnersForcedOffline).toBe(1);
-    expect(prisma.partnerAvailability.update).toHaveBeenCalledWith({ where: { partnerId: 'p1' }, data: { status: 'OFFLINE', onlineSince: null } });
+    expect(prisma.partnerAvailability.update).toHaveBeenCalledWith({
+      where: { partnerId: 'p1' },
+      data: { status: 'OFFLINE', onlineSince: null },
+    });
   });
 
   it('leaves a partner online when the lapsed document is not required by their categories', async () => {
     prisma.partnerDocument.findMany.mockResolvedValue([
-      { id: 'd1', partnerId: 'p1', type: 'INSURANCE', status: 'APPROVED', expiresAt: inDays(-1), expiryNotifiedAt: inDays(-20) },
+      {
+        id: 'd1',
+        partnerId: 'p1',
+        type: 'INSURANCE',
+        status: 'APPROVED',
+        expiresAt: inDays(-1),
+        expiryNotifiedAt: inDays(-20),
+      },
     ]);
     prisma.partnerProfile.findMany.mockResolvedValue([
       {
@@ -133,7 +202,14 @@ describe('DocumentExpiryService', () => {
 
   it('does not touch a partner who is already offline', async () => {
     prisma.partnerDocument.findMany.mockResolvedValue([
-      { id: 'd1', partnerId: 'p1', type: 'ID', status: 'APPROVED', expiresAt: inDays(-1), expiryNotifiedAt: inDays(-20) },
+      {
+        id: 'd1',
+        partnerId: 'p1',
+        type: 'ID',
+        status: 'APPROVED',
+        expiresAt: inDays(-1),
+        expiryNotifiedAt: inDays(-20),
+      },
     ]);
     prisma.partnerProfile.findMany.mockResolvedValue([
       {

@@ -16,11 +16,18 @@ export class RateLimitGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const policy = this.reflector.getAllAndOverride<RateLimitPolicy | undefined>(RATE_LIMIT_KEY, [context.getHandler(), context.getClass()]);
+    const policy = this.reflector.getAllAndOverride<RateLimitPolicy | undefined>(RATE_LIMIT_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     if (!policy) return true;
     const req = context.switchToHttp().getRequest<Request & { user?: RequestUser }>();
     const key = this.resolveKey(policy, req);
-    const result = await this.limiter.hit(`${policy.name}:${key}`, policy.limit, policy.windowSeconds);
+    const result = await this.limiter.hit(
+      `${policy.name}:${key}`,
+      policy.limit,
+      policy.windowSeconds,
+    );
     const res = context.switchToHttp().getResponse<{ setHeader(k: string, v: string): void }>();
     res.setHeader('X-RateLimit-Limit', String(policy.limit));
     res.setHeader('X-RateLimit-Remaining', String(Math.max(0, result.remaining)));

@@ -31,7 +31,11 @@ import { ChatGateway } from './chat.gateway';
 /* ------------------------------------------------------------- contracts */
 
 /** `chat_members.role` is a VarChar — these are the only values the platform writes. */
-export const ChatMemberRole = { CUSTOMER: 'CUSTOMER', PARTNER: 'PARTNER', SUPPORT: 'SUPPORT' } as const;
+export const ChatMemberRole = {
+  CUSTOMER: 'CUSTOMER',
+  PARTNER: 'PARTNER',
+  SUPPORT: 'SUPPORT',
+} as const;
 export type ChatMemberRole = (typeof ChatMemberRole)[keyof typeof ChatMemberRole];
 
 export interface ChatSummary {
@@ -111,29 +115,51 @@ export class ChatService {
    */
   async ensureForJob(jobId: string, tx?: Tx): Promise<ChatSummary> {
     const client = tx ?? this.prisma;
-    const job = await client.job.findUnique({ where: { id: jobId }, select: { id: true, customerId: true, partnerId: true } });
+    const job = await client.job.findUnique({
+      where: { id: jobId },
+      select: { id: true, customerId: true, partnerId: true },
+    });
     if (!job) throw AppException.notFound('Job', jobId);
 
-    const chat = await client.chat.upsert({ where: { jobId: job.id }, update: {}, create: { jobId: job.id }, select: { id: true, jobId: true, closedAt: true } });
+    const chat = await client.chat.upsert({
+      where: { jobId: job.id },
+      update: {},
+      create: { jobId: job.id },
+      select: { id: true, jobId: true, closedAt: true },
+    });
     await this.joinMember(chat.id, job.customerId, ChatMemberRole.CUSTOMER, client);
-    if (job.partnerId) await this.joinMember(chat.id, job.partnerId, ChatMemberRole.PARTNER, client);
+    if (job.partnerId)
+      await this.joinMember(chat.id, job.partnerId, ChatMemberRole.PARTNER, client);
     return this.toChatSummary(chat);
   }
 
   /** Called on assignment (and re-assignment) so the newly assigned partner can talk to the customer. */
   async addPartner(jobId: string, partnerId: string, tx?: Tx): Promise<void> {
     const client = tx ?? this.prisma;
-    const chat = await client.chat.upsert({ where: { jobId }, update: {}, create: { jobId }, select: { id: true } });
+    const chat = await client.chat.upsert({
+      where: { jobId },
+      update: {},
+      create: { jobId },
+      select: { id: true },
+    });
     await this.joinMember(chat.id, partnerId, ChatMemberRole.PARTNER, client);
   }
 
   /** Closes the chat: history stays readable, new messages are refused. Idempotent. */
   async close(jobId: string, tx?: Tx): Promise<void> {
     const client = tx ?? this.prisma;
-    await client.chat.updateMany({ where: { jobId, closedAt: null }, data: { closedAt: new Date() } });
+    await client.chat.updateMany({
+      where: { jobId, closedAt: null },
+      data: { closedAt: new Date() },
+    });
   }
 
-  private async joinMember(chatId: string, userId: string, role: ChatMemberRole, client: PrismaService | Tx): Promise<void> {
+  private async joinMember(
+    chatId: string,
+    userId: string,
+    role: ChatMemberRole,
+    client: PrismaService | Tx,
+  ): Promise<void> {
     await client.chatMember.upsert({
       where: { chatId_userId: { chatId, userId } },
       update: { leftAt: null },
@@ -146,12 +172,22 @@ export class ChatService {
   @OnEvent('job.assigned')
   async onJobAssigned(event: JobAssignedEventLike): Promise<void> {
     try {
-      const partnerId = event.partnerId ?? (await this.prisma.job.findUnique({ where: { id: event.jobId }, select: { partnerId: true } }))?.partnerId;
+      const partnerId =
+        event.partnerId ??
+        (
+          await this.prisma.job.findUnique({
+            where: { id: event.jobId },
+            select: { partnerId: true },
+          })
+        )?.partnerId;
       if (!partnerId) return;
       await this.addPartner(event.jobId, partnerId);
     } catch (err) {
       // A listener must never break the job pipeline; the partner joins again on their first send.
-      this.logger.error({ err, jobId: event.jobId }, 'chat member could not be added on assignment');
+      this.logger.error(
+        { err, jobId: event.jobId },
+        'chat member could not be added on assignment',
+      );
     }
   }
 
@@ -167,7 +203,12 @@ export class ChatService {
 
   /* ------------------------------------------------------------------ read */
 
-  async listMessages(user: RequestUser, jobId: string, cursorRaw: string | undefined, limit: number): Promise<Page<ChatMessageDto>> {
+  async listMessages(
+    user: RequestUser,
+    jobId: string,
+    cursorRaw: string | undefined,
+    limit: number,
+  ): Promise<Page<ChatMessageDto>> {
     const job = await this.loadJob(jobId);
     await this.assertChatAllowed(user, job);
     const chat = await this.chatForJob(jobId);
@@ -203,7 +244,10 @@ export class ChatService {
     if (duplicate) return this.toDto(duplicate);
 
     if (input.type === MessageType.IMAGE) {
-      if (!input.mediaId) throw AppException.validation([{ field: 'mediaId', message: 'mediaId is required for IMAGE messages' }]);
+      if (!input.mediaId)
+        throw AppException.validation([
+          { field: 'mediaId', message: 'mediaId is required for IMAGE messages' },
+        ]);
       await this.media.assertOwnedReady(user.id, [input.mediaId], [MediaPurpose.CHAT]);
     }
 
@@ -218,7 +262,11 @@ export class ChatService {
     return dto;
   }
 
-  private async createMessage(chatId: string, senderId: string, input: SendMessageInput): Promise<MessageWithMedia> {
+  private async createMessage(
+    chatId: string,
+    senderId: string,
+    input: SendMessageInput,
+  ): Promise<MessageWithMedia> {
     try {
       return await this.prisma.message.create({
         data: {
@@ -242,7 +290,11 @@ export class ChatService {
     }
   }
 
-  private findByClientId(chatId: string, senderId: string, clientMessageId: string): Promise<MessageWithMedia | null> {
+  private findByClientId(
+    chatId: string,
+    senderId: string,
+    clientMessageId: string,
+  ): Promise<MessageWithMedia | null> {
     return this.prisma.message.findUnique({
       where: { chatId_senderId_clientMessageId: { chatId, senderId, clientMessageId } },
       include: messageInclude,
@@ -250,7 +302,12 @@ export class ChatService {
   }
 
   /** Push only reaches members who are not already watching this job's room on some device. */
-  private async notifyAbsentMembers(chatId: string, jobId: string, sender: RequestUser, message: MessageWithMedia): Promise<void> {
+  private async notifyAbsentMembers(
+    chatId: string,
+    jobId: string,
+    sender: RequestUser,
+    message: MessageWithMedia,
+  ): Promise<void> {
     const members = await this.prisma.chatMember.findMany({
       where: { chatId, userId: { not: sender.id }, leftAt: null },
       select: { userId: true },
@@ -274,35 +331,65 @@ export class ChatService {
   /* --------------------------------------------------------------- receipts */
 
   /** Marks every message from the other members up to (and including) `upToMessageId` as read. */
-  async markRead(user: RequestUser, jobId: string, upToMessageId: string): Promise<ChatReadReceipt> {
+  async markRead(
+    user: RequestUser,
+    jobId: string,
+    upToMessageId: string,
+  ): Promise<ChatReadReceipt> {
     const job = await this.loadJob(jobId);
     await this.assertChatAllowed(user, job);
     const chat = await this.chatForJob(jobId);
 
-    const upTo = await this.prisma.message.findFirst({ where: { id: upToMessageId, chatId: chat.id }, select: { id: true, createdAt: true } });
+    const upTo = await this.prisma.message.findFirst({
+      where: { id: upToMessageId, chatId: chat.id },
+      select: { id: true, createdAt: true },
+    });
     if (!upTo) throw AppException.notFound('Message', upToMessageId);
 
     const readAt = new Date();
     const count = await this.prisma.$transaction(async (tx) => {
       await tx.message.updateMany({
-        where: { chatId: chat.id, senderId: { not: user.id }, deliveredAt: null, createdAt: { lte: upTo.createdAt } },
+        where: {
+          chatId: chat.id,
+          senderId: { not: user.id },
+          deliveredAt: null,
+          createdAt: { lte: upTo.createdAt },
+        },
         data: { deliveredAt: readAt },
       });
       const read = await tx.message.updateMany({
-        where: { chatId: chat.id, senderId: { not: user.id }, readAt: null, createdAt: { lte: upTo.createdAt } },
+        where: {
+          chatId: chat.id,
+          senderId: { not: user.id },
+          readAt: null,
+          createdAt: { lte: upTo.createdAt },
+        },
         data: { readAt },
       });
-      await tx.chatMember.updateMany({ where: { chatId: chat.id, userId: user.id }, data: { lastReadAt: readAt } });
+      await tx.chatMember.updateMany({
+        where: { chatId: chat.id, userId: user.id },
+        data: { lastReadAt: readAt },
+      });
       return read.count;
     });
 
-    const receipt: ChatReadReceipt = { jobId, upToMessageId: upTo.id, readerId: user.id, readAt: readAt.toISOString(), count };
+    const receipt: ChatReadReceipt = {
+      jobId,
+      upToMessageId: upTo.id,
+      readerId: user.id,
+      readAt: readAt.toISOString(),
+      count,
+    };
     this.gateway.emitToJob(jobId, WsEvent.CHAT_DELIVERY, receipt);
     return receipt;
   }
 
   /** Acknowledges that the listed messages reached the recipient's device. */
-  async markDelivered(user: RequestUser, jobId: string, messageIds: string[]): Promise<ChatDeliveryReceipt> {
+  async markDelivered(
+    user: RequestUser,
+    jobId: string,
+    messageIds: string[],
+  ): Promise<ChatDeliveryReceipt> {
     const job = await this.loadJob(jobId);
     await this.assertChatAllowed(user, job);
     const chat = await this.chatForJob(jobId);
@@ -310,12 +397,23 @@ export class ChatService {
     const deliveredAt = new Date();
     const updated = messageIds.length
       ? await this.prisma.message.updateMany({
-          where: { chatId: chat.id, id: { in: messageIds }, senderId: { not: user.id }, deliveredAt: null },
+          where: {
+            chatId: chat.id,
+            id: { in: messageIds },
+            senderId: { not: user.id },
+            deliveredAt: null,
+          },
           data: { deliveredAt },
         })
       : { count: 0 };
 
-    const receipt: ChatDeliveryReceipt = { jobId, messageIds, deliveredBy: user.id, deliveredAt: deliveredAt.toISOString(), count: updated.count };
+    const receipt: ChatDeliveryReceipt = {
+      jobId,
+      messageIds,
+      deliveredBy: user.id,
+      deliveredAt: deliveredAt.toISOString(),
+      count: updated.count,
+    };
     if (updated.count > 0) this.gateway.emitToJob(jobId, WsEvent.CHAT_DELIVERY, receipt);
     return receipt;
   }
@@ -337,12 +435,20 @@ export class ChatService {
    * still read and answer a conversation while chat is being rolled out zone by zone.
    */
   async assertChatAllowed(user: RequestUser, job: JobLike): Promise<void> {
-    if (!JobPolicy.isStaff(user)) await this.systemConfig.assertEnabled(FEATURE_FLAGS.CHAT, { userId: user.id, zoneId: job.zoneId });
-    if (!JobPolicy.canChat(user, job)) throw AppException.forbidden('You cannot access the chat of this job');
+    if (!JobPolicy.isStaff(user))
+      await this.systemConfig.assertEnabled(FEATURE_FLAGS.CHAT, {
+        userId: user.id,
+        zoneId: job.zoneId,
+      });
+    if (!JobPolicy.canChat(user, job))
+      throw AppException.forbidden('You cannot access the chat of this job');
   }
 
   private async chatForJob(jobId: string): Promise<ChatSummary> {
-    const existing = await this.prisma.chat.findUnique({ where: { jobId }, select: { id: true, jobId: true, closedAt: true } });
+    const existing = await this.prisma.chat.findUnique({
+      where: { jobId },
+      select: { id: true, jobId: true, closedAt: true },
+    });
     if (existing) return this.toChatSummary(existing);
     return this.ensureForJob(jobId);
   }
@@ -350,7 +456,8 @@ export class ChatService {
   private memberRoleFor(user: RequestUser, job: JobLike): ChatMemberRole | null {
     if (JobPolicy.isCustomer(user, job)) return ChatMemberRole.CUSTOMER;
     if (JobPolicy.isAssignedPartner(user, job)) return ChatMemberRole.PARTNER;
-    if (user.isSuperAdmin || user.permissions.includes(Permission.SUPPORT_MANAGE)) return ChatMemberRole.SUPPORT;
+    if (user.isSuperAdmin || user.permissions.includes(Permission.SUPPORT_MANAGE))
+      return ChatMemberRole.SUPPORT;
     return null;
   }
 
@@ -360,7 +467,10 @@ export class ChatService {
   }
 
   private async displayName(userId: string): Promise<string> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { fullName: true, phone: true } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { fullName: true, phone: true },
+    });
     return user?.fullName ?? user?.phone ?? '';
   }
 
@@ -370,7 +480,11 @@ export class ChatService {
   }
 
   private toChatSummary(chat: { id: string; jobId: string; closedAt: Date | null }): ChatSummary {
-    return { id: chat.id, jobId: chat.jobId, closedAt: chat.closedAt ? chat.closedAt.toISOString() : null };
+    return {
+      id: chat.id,
+      jobId: chat.jobId,
+      closedAt: chat.closedAt ? chat.closedAt.toISOString() : null,
+    };
   }
 
   toDto(message: MessageWithMedia): ChatMessageDto {
@@ -381,7 +495,10 @@ export class ChatService {
       type: message.type,
       text: message.text,
       mediaUrl: message.media ? this.mediaUrls.urlFor(message.media, 'medium') : null,
-      location: message.lat !== null && message.lng !== null ? { lat: message.lat.toNumber(), lng: message.lng.toNumber() } : null,
+      location:
+        message.lat !== null && message.lng !== null
+          ? { lat: message.lat.toNumber(), lng: message.lng.toNumber() }
+          : null,
       deliveredAt: message.deliveredAt ? message.deliveredAt.toISOString() : null,
       readAt: message.readAt ? message.readAt.toISOString() : null,
       createdAt: message.createdAt.toISOString(),

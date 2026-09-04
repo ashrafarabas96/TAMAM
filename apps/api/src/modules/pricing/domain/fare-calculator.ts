@@ -1,5 +1,14 @@
-import { type FareBreakdownLine, JobType, type JobUrgency, type LocalizedText } from '@tamam/shared-types';
-import type { DeliveryPricingRule, HomeServicePricingRule, RidePricingRule } from '@tamam/validation';
+import {
+  type FareBreakdownLine,
+  JobType,
+  type JobUrgency,
+  type LocalizedText,
+} from '@tamam/shared-types';
+import type {
+  DeliveryPricingRule,
+  HomeServicePricingRule,
+  RidePricingRule,
+} from '@tamam/validation';
 
 import { max0, multiply, percentOf, roundDiv } from '../../../common/utils/money';
 
@@ -56,12 +65,25 @@ export interface RideInputs {
 export function computeRideFare(rule: RidePricingRule, input: RideInputs): FareResult {
   const lines: Array<{ code: string; amountMinor: bigint }> = [];
   const base = BigInt(rule.baseFare);
-  const distance = roundDiv(BigInt(rule.perKm) * BigInt(Math.max(0, Math.round(input.distanceMeters))), 1000n);
-  const time = roundDiv(BigInt(rule.perMinute) * BigInt(Math.max(0, Math.round(input.durationSeconds))), 60n);
-  lines.push({ code: 'BASE_FARE', amountMinor: base }, { code: 'DISTANCE', amountMinor: distance }, { code: 'TIME', amountMinor: time });
+  const distance = roundDiv(
+    BigInt(rule.perKm) * BigInt(Math.max(0, Math.round(input.distanceMeters))),
+    1000n,
+  );
+  const time = roundDiv(
+    BigInt(rule.perMinute) * BigInt(Math.max(0, Math.round(input.durationSeconds))),
+    60n,
+  );
+  lines.push(
+    { code: 'BASE_FARE', amountMinor: base },
+    { code: 'DISTANCE', amountMinor: distance },
+    { code: 'TIME', amountMinor: time },
+  );
   let metered = base + distance + time;
 
-  const waitingBillable = Math.max(0, Math.round((input.waitingSeconds ?? 0) / 60) - rule.freeWaitingMinutes);
+  const waitingBillable = Math.max(
+    0,
+    Math.round((input.waitingSeconds ?? 0) / 60) - rule.freeWaitingMinutes,
+  );
   if (waitingBillable > 0 && rule.waitingPerMinute > 0) {
     const waiting = BigInt(rule.waitingPerMinute) * BigInt(waitingBillable);
     lines.push({ code: 'WAITING', amountMinor: waiting });
@@ -82,9 +104,19 @@ export function computeRideFare(rule: RidePricingRule, input: RideInputs): FareR
   }
 
   let subtotal = metered;
-  if (rule.bookingFee > 0) { lines.push({ code: 'BOOKING_FEE', amountMinor: BigInt(rule.bookingFee) }); subtotal += BigInt(rule.bookingFee); }
-  if (rule.zoneFee > 0) { lines.push({ code: 'ZONE_FEE', amountMinor: BigInt(rule.zoneFee) }); subtotal += BigInt(rule.zoneFee); }
-  if (rule.serviceFeePercent > 0) { const fee = percentOf(metered, rule.serviceFeePercent); lines.push({ code: 'SERVICE_FEE', amountMinor: fee }); subtotal += fee; }
+  if (rule.bookingFee > 0) {
+    lines.push({ code: 'BOOKING_FEE', amountMinor: BigInt(rule.bookingFee) });
+    subtotal += BigInt(rule.bookingFee);
+  }
+  if (rule.zoneFee > 0) {
+    lines.push({ code: 'ZONE_FEE', amountMinor: BigInt(rule.zoneFee) });
+    subtotal += BigInt(rule.zoneFee);
+  }
+  if (rule.serviceFeePercent > 0) {
+    const fee = percentOf(metered, rule.serviceFeePercent);
+    lines.push({ code: 'SERVICE_FEE', amountMinor: fee });
+    subtotal += fee;
+  }
 
   return finish(lines, subtotal, rule.taxPercent, surge);
 }
@@ -101,7 +133,10 @@ export interface DeliveryInputs {
 export function computeDeliveryFare(rule: DeliveryPricingRule, input: DeliveryInputs): FareResult {
   const lines: Array<{ code: string; amountMinor: bigint }> = [];
   const base = BigInt(rule.base);
-  const distance = roundDiv(BigInt(rule.perKm) * BigInt(Math.max(0, Math.round(input.distanceMeters))), 1000n);
+  const distance = roundDiv(
+    BigInt(rule.perKm) * BigInt(Math.max(0, Math.round(input.distanceMeters))),
+    1000n,
+  );
   lines.push({ code: 'BASE_FARE', amountMinor: base }, { code: 'DISTANCE', amountMinor: distance });
   let core = base + distance;
 
@@ -111,7 +146,11 @@ export function computeDeliveryFare(rule: DeliveryPricingRule, input: DeliveryIn
     lines.push({ code: 'PACKAGE_SIZE', amountMinor: sized - core });
     core = sized;
   }
-  if (input.weightKg !== null && input.weightKg > rule.weightThresholdKg && rule.perKgOverThreshold > 0) {
+  if (
+    input.weightKg !== null &&
+    input.weightKg > rule.weightThresholdKg &&
+    rule.perKgOverThreshold > 0
+  ) {
     const extraKg = Math.ceil(input.weightKg - rule.weightThresholdKg);
     const weight = BigInt(rule.perKgOverThreshold) * BigInt(extraKg);
     lines.push({ code: 'WEIGHT', amountMinor: weight });
@@ -140,7 +179,10 @@ export function computeDeliveryFare(rule: DeliveryPricingRule, input: DeliveryIn
     core = minimum;
   }
   let subtotal = core;
-  if (rule.bookingFee > 0) { lines.push({ code: 'BOOKING_FEE', amountMinor: BigInt(rule.bookingFee) }); subtotal += BigInt(rule.bookingFee); }
+  if (rule.bookingFee > 0) {
+    lines.push({ code: 'BOOKING_FEE', amountMinor: BigInt(rule.bookingFee) });
+    subtotal += BigInt(rule.bookingFee);
+  }
   return finish(lines, subtotal, rule.taxPercent, surge);
 }
 
@@ -154,7 +196,12 @@ export interface HomeServiceInputs {
   inspectionFeeMinor: bigint | null; // category-level override, else rule.inspectionFee
   urgency: JobUrgency;
   /** Approved quote totals (null before quote). */
-  quote: { laborMinor: bigint; partsMinor: bigint; feesMinor: bigint; discountMinor: bigint } | null;
+  quote: {
+    laborMinor: bigint;
+    partsMinor: bigint;
+    feesMinor: bigint;
+    discountMinor: bigint;
+  } | null;
   quoteApproved: boolean;
 }
 
@@ -163,17 +210,33 @@ export interface HomeServiceInputs {
  * price); after an approved quote the total is labour + parts + fees − discount (+ add-ons, urgency, tax).
  * If the inspection fee is waived on approval (rule flag) it is not charged when a quote is approved.
  */
-export function computeHomeServiceFare(rule: HomeServicePricingRule, input: HomeServiceInputs): FareResult {
+export function computeHomeServiceFare(
+  rule: HomeServicePricingRule,
+  input: HomeServiceInputs,
+): FareResult {
   const lines: Array<{ code: string; amountMinor: bigint }> = [];
   let core = 0n;
   const inspectionFee = input.inspectionFeeMinor ?? BigInt(rule.inspectionFee);
 
   if (input.quote && input.quoteApproved) {
-    lines.push({ code: 'LABOR', amountMinor: input.quote.laborMinor }, { code: 'PARTS', amountMinor: input.quote.partsMinor });
-    if (input.quote.feesMinor > 0n) lines.push({ code: 'ADDITIONAL_FEES', amountMinor: input.quote.feesMinor });
-    if (input.quote.discountMinor > 0n) lines.push({ code: 'QUOTE_DISCOUNT', amountMinor: -input.quote.discountMinor });
-    core = max0(input.quote.laborMinor + input.quote.partsMinor + input.quote.feesMinor - input.quote.discountMinor);
-    if (!rule.inspectionFeeWaivedOnApproval && inspectionFee > 0n) { lines.push({ code: 'INSPECTION_FEE', amountMinor: inspectionFee }); core += inspectionFee; }
+    lines.push(
+      { code: 'LABOR', amountMinor: input.quote.laborMinor },
+      { code: 'PARTS', amountMinor: input.quote.partsMinor },
+    );
+    if (input.quote.feesMinor > 0n)
+      lines.push({ code: 'ADDITIONAL_FEES', amountMinor: input.quote.feesMinor });
+    if (input.quote.discountMinor > 0n)
+      lines.push({ code: 'QUOTE_DISCOUNT', amountMinor: -input.quote.discountMinor });
+    core = max0(
+      input.quote.laborMinor +
+        input.quote.partsMinor +
+        input.quote.feesMinor -
+        input.quote.discountMinor,
+    );
+    if (!rule.inspectionFeeWaivedOnApproval && inspectionFee > 0n) {
+      lines.push({ code: 'INSPECTION_FEE', amountMinor: inspectionFee });
+      core += inspectionFee;
+    }
   } else if (input.pricingMethod === 'FIXED' && input.fixedPriceMinor !== null) {
     lines.push({ code: 'FIXED_PRICE', amountMinor: input.fixedPriceMinor });
     core = input.fixedPriceMinor;
@@ -191,35 +254,74 @@ export function computeHomeServiceFare(rule: HomeServicePricingRule, input: Home
     core = inspectionFee;
   }
 
-  if (input.optionsMinor > 0n) { lines.push({ code: 'OPTIONS', amountMinor: input.optionsMinor }); core += input.optionsMinor; }
+  if (input.optionsMinor > 0n) {
+    lines.push({ code: 'OPTIONS', amountMinor: input.optionsMinor });
+    core += input.optionsMinor;
+  }
   const urgencyPercent = rule.urgencySurchargePercent[input.urgency] ?? 0;
-  if (urgencyPercent > 0 && core > 0n) { const u = percentOf(core, urgencyPercent); lines.push({ code: 'URGENCY', amountMinor: u }); core += u; }
+  if (urgencyPercent > 0 && core > 0n) {
+    const u = percentOf(core, urgencyPercent);
+    lines.push({ code: 'URGENCY', amountMinor: u });
+    core += u;
+  }
   let subtotal = core;
-  if (rule.bookingFee > 0) { lines.push({ code: 'BOOKING_FEE', amountMinor: BigInt(rule.bookingFee) }); subtotal += BigInt(rule.bookingFee); }
+  if (rule.bookingFee > 0) {
+    lines.push({ code: 'BOOKING_FEE', amountMinor: BigInt(rule.bookingFee) });
+    subtotal += BigInt(rule.bookingFee);
+  }
   return finish(lines, subtotal, rule.taxPercent, 1);
 }
 
 /** Applies promo then tax and returns the final result. Promo never pushes the total below zero. */
-export function applyPromoAndTax(result: FareResult, promoDiscountMinor: bigint, taxPercent: number): FareResult {
+export function applyPromoAndTax(
+  result: FareResult,
+  promoDiscountMinor: bigint,
+  taxPercent: number,
+): FareResult {
   const lines = result.lines.filter((l) => l.code !== 'TAX' && l.code !== 'PROMO');
-  const discount = promoDiscountMinor > result.subtotalMinor ? result.subtotalMinor : max0(promoDiscountMinor);
+  const discount =
+    promoDiscountMinor > result.subtotalMinor ? result.subtotalMinor : max0(promoDiscountMinor);
   if (discount > 0n) lines.push({ code: 'PROMO', amountMinor: -discount });
   const taxable = result.subtotalMinor - discount;
   const tax = taxPercent > 0 ? percentOf(taxable, taxPercent) : 0n;
   if (tax > 0n) lines.push({ code: 'TAX', amountMinor: tax });
-  return { totalMinor: taxable + tax, subtotalMinor: result.subtotalMinor, lines, surgeMultiplier: result.surgeMultiplier };
+  return {
+    totalMinor: taxable + tax,
+    subtotalMinor: result.subtotalMinor,
+    lines,
+    surgeMultiplier: result.surgeMultiplier,
+  };
 }
 
-function finish(lines: Array<{ code: string; amountMinor: bigint }>, subtotal: bigint, taxPercent: number, surge: number): FareResult {
+function finish(
+  lines: Array<{ code: string; amountMinor: bigint }>,
+  subtotal: bigint,
+  taxPercent: number,
+  surge: number,
+): FareResult {
   const tax = taxPercent > 0 ? percentOf(subtotal, taxPercent) : 0n;
   if (tax > 0n) lines.push({ code: 'TAX', amountMinor: tax });
   return { totalMinor: subtotal + tax, subtotalMinor: subtotal, lines, surgeMultiplier: surge };
 }
 
 export function toBreakdown(result: FareResult, currency: string): FareBreakdownLine[] {
-  return result.lines.map((l) => ({ code: l.code, label: LINE_LABELS[l.code] ?? { ar: l.code, en: l.code }, amount: { amount: Number(l.amountMinor), currency: currency as FareBreakdownLine['amount']['currency'] } }));
+  return result.lines.map((l) => ({
+    code: l.code,
+    label: LINE_LABELS[l.code] ?? { ar: l.code, en: l.code },
+    amount: {
+      amount: Number(l.amountMinor),
+      currency: currency as FareBreakdownLine['amount']['currency'],
+    },
+  }));
 }
 
-export function taxPercentOf(jobType: JobType, rule: RidePricingRule | DeliveryPricingRule | HomeServicePricingRule): number {
-  return jobType === JobType.RIDE ? (rule as RidePricingRule).taxPercent : jobType === JobType.DELIVERY ? (rule as DeliveryPricingRule).taxPercent : (rule as HomeServicePricingRule).taxPercent;
+export function taxPercentOf(
+  jobType: JobType,
+  rule: RidePricingRule | DeliveryPricingRule | HomeServicePricingRule,
+): number {
+  return jobType === JobType.RIDE
+    ? (rule as RidePricingRule).taxPercent
+    : jobType === JobType.DELIVERY
+      ? (rule as DeliveryPricingRule).taxPercent
+      : (rule as HomeServicePricingRule).taxPercent;
 }

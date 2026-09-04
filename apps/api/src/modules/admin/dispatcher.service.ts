@@ -1,5 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { AssignmentStatus, CONFIG_KEYS, type JobDto, JobStatus, type JobType, type Page } from '@tamam/shared-types';
+import {
+  AssignmentStatus,
+  CONFIG_KEYS,
+  type JobDto,
+  JobStatus,
+  type JobType,
+  type Page,
+} from '@tamam/shared-types';
 import type { DispatcherJobsFilterInput } from '@tamam/validation';
 
 import { AppException } from '../../common/errors/app.exception';
@@ -12,7 +19,12 @@ import { DispatchService } from '../dispatch/dispatch.service';
 import { JobMapper } from '../jobs/job.mapper';
 import { jobInclude } from '../jobs/jobs.types';
 
-import { DEFAULT_PROBLEM_THRESHOLDS, type DispatchProblem, classifyProblems, isUnassignedStatus } from './domain/dispatch-problems';
+import {
+  DEFAULT_PROBLEM_THRESHOLDS,
+  type DispatchProblem,
+  classifyProblems,
+  isUnassignedStatus,
+} from './domain/dispatch-problems';
 
 /** Statuses the console watches: everything that is either unassigned or possibly stuck. */
 const CONSOLE_STATUSES: readonly JobStatus[] = [
@@ -84,20 +96,35 @@ export class DispatcherService {
     private readonly mapper: JobMapper,
   ) {}
 
-  async console(filter: DispatcherJobsFilterInput, user: RequestUser): Promise<Page<DispatchConsoleRow>> {
+  async console(
+    filter: DispatcherJobsFilterInput,
+    user: RequestUser,
+  ): Promise<Page<DispatchConsoleRow>> {
     const cursor = decodeCursor(filter.cursor);
-    const heartbeatStaleSeconds = await this.config.getNumber(CONFIG_KEYS.HEARTBEAT_OFFLINE_AFTER_S);
+    const heartbeatStaleSeconds = await this.config.getNumber(
+      CONFIG_KEYS.HEARTBEAT_OFFLINE_AFTER_S,
+    );
     const thresholds = { ...DEFAULT_PROBLEM_THRESHOLDS, heartbeatStaleSeconds };
     const now = new Date();
 
     const statuses = filter.onlyUnassigned
       ? [JobStatus.REQUESTED, JobStatus.SEARCHING, JobStatus.NO_PARTNER_AVAILABLE]
       : filter.onlyProblem
-        ? [JobStatus.ASSIGNED, JobStatus.PARTNER_EN_ROUTE, JobStatus.WAITING_CUSTOMER, JobStatus.NO_PARTNER_AVAILABLE]
+        ? [
+            JobStatus.ASSIGNED,
+            JobStatus.PARTNER_EN_ROUTE,
+            JobStatus.WAITING_CUSTOMER,
+            JobStatus.NO_PARTNER_AVAILABLE,
+          ]
         : [...CONSOLE_STATUSES];
 
     const rows = await this.prisma.job.findMany({
-      where: { ...cursorWhere(cursor), status: { in: statuses }, zoneId: filter.zoneId, type: filter.jobType },
+      where: {
+        ...cursorWhere(cursor),
+        status: { in: statuses },
+        zoneId: filter.zoneId,
+        type: filter.jobType,
+      },
       include: jobInclude,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: filter.limit + 1,
@@ -106,8 +133,22 @@ export class DispatcherService {
 
     const jobIds = rows.map((r) => r.id);
     const [assignments, enRouteEvents] = await Promise.all([
-      this.prisma.jobAssignment.findMany({ where: { jobId: { in: jobIds } }, select: { jobId: true, partnerId: true, wave: true, status: true, etaSeconds: true, offeredAt: true } }),
-      this.prisma.jobEvent.findMany({ where: { jobId: { in: jobIds }, toStatus: JobStatus.PARTNER_EN_ROUTE }, select: { jobId: true, createdAt: true }, orderBy: { createdAt: 'desc' } }),
+      this.prisma.jobAssignment.findMany({
+        where: { jobId: { in: jobIds } },
+        select: {
+          jobId: true,
+          partnerId: true,
+          wave: true,
+          status: true,
+          etaSeconds: true,
+          offeredAt: true,
+        },
+      }),
+      this.prisma.jobEvent.findMany({
+        where: { jobId: { in: jobIds }, toStatus: JobStatus.PARTNER_EN_ROUTE },
+        select: { jobId: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+      }),
     ]);
 
     const enRouteAt = new Map<string, Date>();
@@ -147,8 +188,13 @@ export class DispatcherService {
               phone: job.partner.user.phone,
               availability: availability?.status ?? 'OFFLINE',
               lastHeartbeatAt: heartbeat?.toISOString() ?? null,
-              heartbeatAgeSeconds: heartbeat ? Math.round((now.getTime() - heartbeat.getTime()) / 1000) : null,
-              location: availability?.lat && availability.lng ? { lat: availability.lat.toNumber(), lng: availability.lng.toNumber() } : null,
+              heartbeatAgeSeconds: heartbeat
+                ? Math.round((now.getTime() - heartbeat.getTime()) / 1000)
+                : null,
+              location:
+                availability?.lat && availability.lng
+                  ? { lat: availability.lat.toNumber(), lng: availability.lng.toNumber() }
+                  : null,
             }
           : null,
       } satisfies DispatchConsoleRow;
@@ -156,10 +202,16 @@ export class DispatcherService {
 
     if (filter.onlyProblem) {
       // Keep the cursor semantics of the underlying page; only the visible rows are narrowed.
-      return { items: page.items.filter((r) => r.problems.length > 0), nextCursor: page.nextCursor };
+      return {
+        items: page.items.filter((r) => r.problems.length > 0),
+        nextCursor: page.nextCursor,
+      };
     }
     if (filter.onlyUnassigned) {
-      return { items: page.items.filter((r) => isUnassignedStatus(r.job.status) && !r.job.partnerId), nextCursor: page.nextCursor };
+      return {
+        items: page.items.filter((r) => isUnassignedStatus(r.job.status) && !r.job.partnerId),
+        nextCursor: page.nextCursor,
+      };
     }
     return page;
   }
@@ -173,7 +225,11 @@ export class DispatcherService {
   async partnerTimeline(partnerId: string, day: Date = new Date()): Promise<PartnerTimelineDto> {
     const partner = await this.prisma.partnerProfile.findUnique({
       where: { userId: partnerId },
-      select: { userId: true, user: { select: { fullName: true, phone: true } }, availability: { select: { status: true, lastHeartbeatAt: true, currentJobId: true } } },
+      select: {
+        userId: true,
+        user: { select: { fullName: true, phone: true } },
+        availability: { select: { status: true, lastHeartbeatAt: true, currentJobId: true } },
+      },
     });
     if (!partner) throw AppException.notFound('Partner', partnerId);
 
@@ -182,45 +238,67 @@ export class DispatcherService {
     const [events, assignments] = await Promise.all([
       this.prisma.jobEvent.findMany({
         where: { createdAt: { gte: from, lt: to }, job: { partnerId } },
-        select: { id: true, jobId: true, type: true, fromStatus: true, toStatus: true, data: true, createdAt: true, job: { select: { number: true, type: true } } },
+        select: {
+          id: true,
+          jobId: true,
+          type: true,
+          fromStatus: true,
+          toStatus: true,
+          data: true,
+          createdAt: true,
+          job: { select: { number: true, type: true } },
+        },
         orderBy: { createdAt: 'asc' },
         take: 500,
       }),
       this.prisma.jobAssignment.findMany({
         where: { partnerId, offeredAt: { gte: from, lt: to } },
-        select: { id: true, jobId: true, wave: true, status: true, score: true, etaSeconds: true, distanceMeters: true, offeredAt: true, respondedAt: true, job: { select: { number: true, type: true } } },
+        select: {
+          id: true,
+          jobId: true,
+          wave: true,
+          status: true,
+          score: true,
+          etaSeconds: true,
+          distanceMeters: true,
+          offeredAt: true,
+          respondedAt: true,
+          job: { select: { number: true, type: true } },
+        },
         orderBy: { offeredAt: 'asc' },
         take: 500,
       }),
     ]);
 
     const entries: PartnerTimelineEntry[] = [
-      ...events.map(
-        (e): PartnerTimelineEntry => ({
-          kind: 'JOB_EVENT',
-          at: e.createdAt.toISOString(),
-          jobId: e.jobId,
-          jobNumber: e.job.number,
-          jobType: e.job.type,
-          type: e.type,
-          fromStatus: e.fromStatus,
-          toStatus: e.toStatus,
-          data: (e.data as Record<string, unknown> | null) ?? null,
-        }),
-      ),
-      ...assignments.map(
-        (a): PartnerTimelineEntry => ({
-          kind: 'ASSIGNMENT',
-          at: a.offeredAt.toISOString(),
-          jobId: a.jobId,
-          jobNumber: a.job.number,
-          jobType: a.job.type,
-          type: `offer.${a.status.toLowerCase()}`,
-          fromStatus: null,
-          toStatus: null,
-          data: { wave: a.wave, score: a.score.toNumber(), etaSeconds: a.etaSeconds, distanceMeters: a.distanceMeters, respondedAt: a.respondedAt?.toISOString() ?? null },
-        }),
-      ),
+      ...events.map((e): PartnerTimelineEntry => ({
+        kind: 'JOB_EVENT',
+        at: e.createdAt.toISOString(),
+        jobId: e.jobId,
+        jobNumber: e.job.number,
+        jobType: e.job.type,
+        type: e.type,
+        fromStatus: e.fromStatus,
+        toStatus: e.toStatus,
+        data: (e.data as Record<string, unknown> | null) ?? null,
+      })),
+      ...assignments.map((a): PartnerTimelineEntry => ({
+        kind: 'ASSIGNMENT',
+        at: a.offeredAt.toISOString(),
+        jobId: a.jobId,
+        jobNumber: a.job.number,
+        jobType: a.job.type,
+        type: `offer.${a.status.toLowerCase()}`,
+        fromStatus: null,
+        toStatus: null,
+        data: {
+          wave: a.wave,
+          score: a.score.toNumber(),
+          etaSeconds: a.etaSeconds,
+          distanceMeters: a.distanceMeters,
+          respondedAt: a.respondedAt?.toISOString() ?? null,
+        },
+      })),
     ].sort((a, b) => a.at.localeCompare(b.at));
 
     return {

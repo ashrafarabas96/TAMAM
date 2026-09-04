@@ -17,9 +17,23 @@ export interface CheckboxProps {
   className?: string;
 }
 
-export function Checkbox({ checked, onCheckedChange, label, description, disabled, id, className }: CheckboxProps) {
+export function Checkbox({
+  checked,
+  onCheckedChange,
+  label,
+  description,
+  disabled,
+  id,
+  className,
+}: CheckboxProps) {
   return (
-    <label className={cn('flex cursor-pointer items-start gap-2.5 text-sm', disabled && 'cursor-not-allowed opacity-60', className)}>
+    <label
+      className={cn(
+        'flex cursor-pointer items-start gap-2.5 text-sm',
+        disabled && 'cursor-not-allowed opacity-60',
+        className,
+      )}
+    >
       <CheckboxPrimitive.Root
         id={id}
         checked={checked}
@@ -34,7 +48,9 @@ export function Checkbox({ checked, onCheckedChange, label, description, disable
       {label || description ? (
         <span className="leading-tight">
           {label ? <span className="font-medium text-text-primary">{label}</span> : null}
-          {description ? <span className="block text-xs text-text-secondary">{description}</span> : null}
+          {description ? (
+            <span className="block text-xs text-text-secondary">{description}</span>
+          ) : null}
         </span>
       ) : null}
     </label>
@@ -52,15 +68,35 @@ export interface SwitchProps {
   size?: 'sm' | 'md';
 }
 
-export function Switch({ checked, onCheckedChange, label, description, disabled, id, className, size = 'md' }: SwitchProps) {
+export function Switch({
+  checked,
+  onCheckedChange,
+  label,
+  description,
+  disabled,
+  id,
+  className,
+  size = 'md',
+}: SwitchProps) {
   const track = size === 'sm' ? 'h-5 w-9' : 'h-6 w-11';
-  const thumb = size === 'sm' ? 'h-4 w-4 data-[state=checked]:ltr:translate-x-4 data-[state=checked]:rtl:-translate-x-4' : 'h-5 w-5 data-[state=checked]:ltr:translate-x-5 data-[state=checked]:rtl:-translate-x-5';
+  const thumb =
+    size === 'sm'
+      ? 'h-4 w-4 data-[state=checked]:ltr:translate-x-4 data-[state=checked]:rtl:-translate-x-4'
+      : 'h-5 w-5 data-[state=checked]:ltr:translate-x-5 data-[state=checked]:rtl:-translate-x-5';
   return (
-    <label className={cn('flex cursor-pointer items-center justify-between gap-3 text-sm', disabled && 'cursor-not-allowed opacity-60', className)}>
+    <label
+      className={cn(
+        'flex cursor-pointer items-center justify-between gap-3 text-sm',
+        disabled && 'cursor-not-allowed opacity-60',
+        className,
+      )}
+    >
       {label || description ? (
         <span className="leading-tight">
           {label ? <span className="font-medium text-text-primary">{label}</span> : null}
-          {description ? <span className="block text-xs text-text-secondary">{description}</span> : null}
+          {description ? (
+            <span className="block text-xs text-text-secondary">{description}</span>
+          ) : null}
         </span>
       ) : null}
       <SwitchPrimitive.Root
@@ -68,9 +104,17 @@ export function Switch({ checked, onCheckedChange, label, description, disabled,
         checked={checked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
-        className={cn('relative shrink-0 rounded-pill border-2 border-transparent bg-neutral-300 transition-colors data-[state=checked]:bg-primary focus-visible:ring-2 focus-visible:ring-primary/30 dark:bg-neutral-700', track)}
+        className={cn(
+          'relative shrink-0 rounded-pill border-2 border-transparent bg-neutral-300 transition-colors data-[state=checked]:bg-primary focus-visible:ring-2 focus-visible:ring-primary/30 dark:bg-neutral-700',
+          track,
+        )}
       >
-        <SwitchPrimitive.Thumb className={cn('block rounded-pill bg-neutral-0 shadow-card transition-transform ltr:translate-x-0 rtl:translate-x-0', thumb)} />
+        <SwitchPrimitive.Thumb
+          className={cn(
+            'block rounded-pill bg-neutral-0 shadow-card transition-transform ltr:translate-x-0 rtl:translate-x-0',
+            thumb,
+          )}
+        />
       </SwitchPrimitive.Root>
     </label>
   );

@@ -21,7 +21,12 @@ export interface ChartTheme {
 }
 
 const light: ChartTheme = {
-  categorical: [tokens.color.brand.purple[500], tokens.color.brand.yellow[800], tokens.color.semantic.info.base, tokens.color.semantic.danger.base],
+  categorical: [
+    tokens.color.brand.purple[500],
+    tokens.color.brand.yellow[800],
+    tokens.color.semantic.info.base,
+    tokens.color.semantic.danger.base,
+  ],
   sequential: tokens.color.brand.purple[500],
   positive: tokens.color.semantic.success.base,
   negative: tokens.color.semantic.danger.base,
@@ -32,7 +37,12 @@ const light: ChartTheme = {
 };
 
 const dark: ChartTheme = {
-  categorical: [tokens.color.brand.purple[400], tokens.color.brand.yellow[800], tokens.color.semantic.info.base, tokens.color.semantic.danger.base],
+  categorical: [
+    tokens.color.brand.purple[400],
+    tokens.color.brand.yellow[800],
+    tokens.color.semantic.info.base,
+    tokens.color.semantic.danger.base,
+  ],
   sequential: tokens.color.brand.purple[400],
   positive: tokens.color.dark.mapPickup,
   negative: tokens.color.dark.mapDestination,

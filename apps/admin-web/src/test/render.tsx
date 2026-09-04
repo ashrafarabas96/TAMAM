@@ -8,7 +8,13 @@ function Wrapper({ children, locale = 'en' }: { children: ReactNode; locale?: Lo
 }
 
 /** Renders a component inside the i18n provider (English, so assertions read naturally). */
-export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'> & { locale?: Locale }) {
+export function renderWithProviders(
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'> & { locale?: Locale },
+) {
   const locale = options?.locale ?? 'en';
-  return render(ui, { wrapper: ({ children }) => <Wrapper locale={locale}>{children}</Wrapper>, ...options });
+  return render(ui, {
+    wrapper: ({ children }) => <Wrapper locale={locale}>{children}</Wrapper>,
+    ...options,
+  });
 }

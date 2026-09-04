@@ -107,9 +107,11 @@ export class AdminSearchService {
     const result: AdminSearchResult = { query: q };
 
     if (this.can(user, Permission.JOBS_READ_ALL)) result.jobs = await this.jobs(q, upper, isUuid);
-    if (this.can(user, Permission.CUSTOMERS_READ)) result.customers = await this.customers(q, isUuid);
+    if (this.can(user, Permission.CUSTOMERS_READ))
+      result.customers = await this.customers(q, isUuid);
     if (this.can(user, Permission.PARTNERS_READ)) result.partners = await this.partners(q, isUuid);
-    if (this.can(user, Permission.PARTNERS_READ)) result.vehicles = await this.vehicles(plate, isUuid ? q : null);
+    if (this.can(user, Permission.PARTNERS_READ))
+      result.vehicles = await this.vehicles(plate, isUuid ? q : null);
     if (this.can(user, Permission.PAYMENTS_READ)) result.payments = await this.payments(q, isUuid);
     if (this.can(user, Permission.SUPPORT_READ)) result.tickets = await this.tickets(upper);
     if (this.can(user, Permission.DISPUTES_READ)) result.disputes = await this.disputes(upper);
@@ -130,7 +132,16 @@ export class AdminSearchService {
           { partner: { user: { phone: { contains: q } } } },
         ],
       },
-      select: { id: true, number: true, type: true, status: true, customerId: true, partnerId: true, zoneId: true, createdAt: true },
+      select: {
+        id: true,
+        number: true,
+        type: true,
+        status: true,
+        customerId: true,
+        partnerId: true,
+        zoneId: true,
+        createdAt: true,
+      },
       orderBy: [{ createdAt: 'desc' }],
       take: GROUP_LIMIT,
     });
@@ -142,7 +153,12 @@ export class AdminSearchService {
       where: {
         deletedAt: null,
         customer: { isNot: null },
-        OR: [...(isUuid ? [{ id: q }] : []), { phone: { contains: q } }, { fullName: { contains: q, mode: 'insensitive' } }, { email: { contains: q, mode: 'insensitive' } }],
+        OR: [
+          ...(isUuid ? [{ id: q }] : []),
+          { phone: { contains: q } },
+          { fullName: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+        ],
       },
       select: { id: true, fullName: true, phone: true, accountStatus: true, createdAt: true },
       orderBy: [{ createdAt: 'desc' }],
@@ -156,9 +172,23 @@ export class AdminSearchService {
       where: {
         deletedAt: null,
         partner: { isNot: null },
-        OR: [...(isUuid ? [{ id: q }] : []), { phone: { contains: q } }, { fullName: { contains: q, mode: 'insensitive' } }, { email: { contains: q, mode: 'insensitive' } }],
+        OR: [
+          ...(isUuid ? [{ id: q }] : []),
+          { phone: { contains: q } },
+          { fullName: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+        ],
       },
-      select: { id: true, fullName: true, phone: true, accountStatus: true, createdAt: true, partner: { select: { verificationStatus: true, availability: { select: { status: true } } } } },
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        accountStatus: true,
+        createdAt: true,
+        partner: {
+          select: { verificationStatus: true, availability: { select: { status: true } } },
+        },
+      },
       orderBy: [{ createdAt: 'desc' }],
       take: GROUP_LIMIT,
     });
@@ -176,7 +206,14 @@ export class AdminSearchService {
   private async vehicles(plate: string, id: string | null): Promise<AdminSearchVehicleHit[]> {
     const rows = await this.prisma.vehicle.findMany({
       where: { OR: [...(id ? [{ id }] : []), { plateNormalized: { contains: plate } }] },
-      select: { id: true, partnerId: true, plate: true, brand: true, model: true, verificationStatus: true },
+      select: {
+        id: true,
+        partnerId: true,
+        plate: true,
+        brand: true,
+        model: true,
+        verificationStatus: true,
+      },
       orderBy: [{ createdAt: 'desc' }],
       take: GROUP_LIMIT,
     });
@@ -186,17 +223,43 @@ export class AdminSearchService {
   private async payments(q: string, isUuid: boolean): Promise<AdminSearchPaymentHit[]> {
     const rows = await this.prisma.payment.findMany({
       where: { OR: [...(isUuid ? [{ id: q }] : []), { providerRef: { contains: q } }] },
-      select: { id: true, jobId: true, status: true, method: true, provider: true, providerRef: true, amountMinor: true, currency: true, createdAt: true },
+      select: {
+        id: true,
+        jobId: true,
+        status: true,
+        method: true,
+        provider: true,
+        providerRef: true,
+        amountMinor: true,
+        currency: true,
+        createdAt: true,
+      },
       orderBy: [{ createdAt: 'desc' }],
       take: GROUP_LIMIT,
     });
-    return rows.map((r) => ({ ...r, amountMinor: Number(r.amountMinor), createdAt: r.createdAt.toISOString() }));
+    return rows.map((r) => ({
+      ...r,
+      amountMinor: Number(r.amountMinor),
+      createdAt: r.createdAt.toISOString(),
+    }));
   }
 
   private async tickets(upper: string): Promise<AdminSearchTicketHit[]> {
     const rows = await this.prisma.supportTicket.findMany({
-      where: { OR: [{ number: { contains: upper } }, { subject: { contains: upper, mode: 'insensitive' } }] },
-      select: { id: true, number: true, subject: true, status: true, priority: true, createdAt: true },
+      where: {
+        OR: [
+          { number: { contains: upper } },
+          { subject: { contains: upper, mode: 'insensitive' } },
+        ],
+      },
+      select: {
+        id: true,
+        number: true,
+        subject: true,
+        status: true,
+        priority: true,
+        createdAt: true,
+      },
       orderBy: [{ createdAt: 'desc' }],
       take: GROUP_LIMIT,
     });

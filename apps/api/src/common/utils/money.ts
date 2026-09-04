@@ -4,7 +4,8 @@ import { CURRENCY_MINOR_UNITS, type CurrencyCode, type Money } from '@tamam/shar
  * Integer money helpers (spec §50). Every function takes and returns integer minor
  * units as `bigint`; percentages are applied with banker's-safe integer rounding.
  */
-export const asMinor = (value: number | bigint): bigint => (typeof value === 'bigint' ? value : BigInt(Math.trunc(value)));
+export const asMinor = (value: number | bigint): bigint =>
+  typeof value === 'bigint' ? value : BigInt(Math.trunc(value));
 
 /** value * percent / 100, rounded half-up. percent may be fractional (e.g. 12.5). */
 export function percentOf(value: bigint, percent: number): bigint {

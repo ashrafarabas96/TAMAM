@@ -14,16 +14,34 @@ export const updateConfigSchema = z
   .superRefine((v, ctx) => {
     const def = CONFIG_DEFINITIONS.find((d) => d.key === v.key);
     if (!def) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Unknown config key ${v.key}`, path: ['key'] });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Unknown config key ${v.key}`,
+        path: ['key'],
+      });
       return;
     }
     if (typeof v.value !== def.type) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Expected ${def.type}`, path: ['value'] });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Expected ${def.type}`,
+        path: ['value'],
+      });
       return;
     }
     if (def.type === 'number' && typeof v.value === 'number') {
-      if (def.min !== undefined && v.value < def.min) ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Minimum is ${def.min}`, path: ['value'] });
-      if (def.max !== undefined && v.value > def.max) ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Maximum is ${def.max}`, path: ['value'] });
+      if (def.min !== undefined && v.value < def.min)
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Minimum is ${def.min}`,
+          path: ['value'],
+        });
+      if (def.max !== undefined && v.value > def.max)
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Maximum is ${def.max}`,
+          path: ['value'],
+        });
     }
   });
 
@@ -57,7 +75,11 @@ export const accountStatusActionSchema = z.object({
 export const createAdminUserSchema = z.object({
   email: z.string().trim().email().max(200),
   fullName: z.string().trim().min(2).max(80),
-  phone: z.string().trim().regex(/^\+[1-9]\d{6,14}$/).optional(),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{6,14}$/)
+    .optional(),
   roles: z.array(z.nativeEnum(UserRole)).min(1),
   temporaryPassword: z.string().min(12).max(200),
 });
@@ -92,7 +114,9 @@ export const reportQuerySchema = z.object({
   jobType: z.enum(['RIDE', 'DELIVERY', 'HOME_SERVICE']).optional(),
   partnerId: uuidSchema.optional(),
   paymentMethod: z.enum(['CASH', 'WALLET', 'CARD', 'BANK', 'EXTERNAL_GATEWAY']).optional(),
-  groupBy: z.enum(['day', 'week', 'month', 'zone', 'jobType', 'partner', 'paymentMethod']).default('day'),
+  groupBy: z
+    .enum(['day', 'week', 'month', 'zone', 'jobType', 'partner', 'paymentMethod'])
+    .default('day'),
   format: z.enum(['json', 'csv', 'xlsx']).default('json'),
 });
 
@@ -121,7 +145,10 @@ export const liveMapQuerySchema = z.object({
   zoneId: uuidSchema.optional(),
   bbox: z
     .string()
-    .regex(/^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$/, 'bbox must be minLng,minLat,maxLng,maxLat')
+    .regex(
+      /^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$/,
+      'bbox must be minLng,minLat,maxLng,maxLat',
+    )
     .optional(),
   includePartners: z.coerce.boolean().default(true),
   includeJobs: z.coerce.boolean().default(true),

@@ -1,8 +1,22 @@
 import { z } from 'zod';
 
-import { JobActorType, JobStatus, JobType, JobUrgency, PaymentMethod, SchedulingMode } from '@tamam/shared-types';
+import {
+  JobActorType,
+  JobStatus,
+  JobType,
+  JobUrgency,
+  PaymentMethod,
+  SchedulingMode,
+} from '@tamam/shared-types';
 
-import { addressSchema, geoPointSchema, isoDateTimeSchema, locationSampleSchema, phoneSchema, uuidSchema } from './common';
+import {
+  addressSchema,
+  geoPointSchema,
+  isoDateTimeSchema,
+  locationSampleSchema,
+  phoneSchema,
+  uuidSchema,
+} from './common';
 
 const jobTypeSchema = z.nativeEnum(JobType);
 const urgencySchema = z.nativeEnum(JobUrgency);
@@ -78,7 +92,10 @@ export const createServiceJobSchema = baseCreateJob.extend({
   description: z.string().trim().min(5).max(2000),
   mediaIds: z.array(uuidSchema).max(10).default([]),
   urgency: urgencySchema.default('STANDARD'),
-  preferredDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  preferredDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   preferredTimeSlot: z.enum(['MORNING', 'AFTERNOON', 'EVENING']).optional(),
   additionalInstructions: z.string().trim().max(1000).optional(),
   /** Category-specific dynamic fields; validated server-side against the category definition. */
@@ -111,8 +128,14 @@ export const cancelJobSchema = z.object({
 });
 
 export const startJobSchema = z.object({
-  tripPin: z.string().regex(/^\d{4}$/).optional(),
-  pickupOtp: z.string().regex(/^\d{4,6}$/).optional(),
+  tripPin: z
+    .string()
+    .regex(/^\d{4}$/)
+    .optional(),
+  pickupOtp: z
+    .string()
+    .regex(/^\d{4,6}$/)
+    .optional(),
   location: locationSampleSchema.optional(),
   version: z.number().int().min(0),
 });
@@ -128,7 +151,10 @@ export const completeJobSchema = z.object({
   /** Delivery proof — required for DELIVERY jobs. */
   proofOfDelivery: z
     .object({
-      deliveryOtp: z.string().regex(/^\d{4,6}$/).optional(),
+      deliveryOtp: z
+        .string()
+        .regex(/^\d{4,6}$/)
+        .optional(),
       receiverName: z.string().trim().max(80).optional(),
       photoMediaId: uuidSchema.optional(),
       signatureMediaId: uuidSchema.optional(),
@@ -172,7 +198,12 @@ export const jobListFilterSchema = z.object({
 });
 
 export const shareTripSchema = z.object({
-  expiresInMinutes: z.number().int().min(15).max(24 * 60).default(180),
+  expiresInMinutes: z
+    .number()
+    .int()
+    .min(15)
+    .max(24 * 60)
+    .default(180),
 });
 
 export const sosSchema = z.object({

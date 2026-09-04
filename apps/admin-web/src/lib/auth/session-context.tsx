@@ -2,7 +2,15 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import type { Permission, UserDto } from '@tamam/shared-types';
 
@@ -10,7 +18,12 @@ import { authApi } from '@/lib/api/endpoints/auth';
 import { fetchSessionToken, setAccessToken } from '@/lib/auth/token-store';
 import { queryKeys } from '@/lib/query-keys';
 
-import { createPermissionChecker, NO_PERMISSIONS, type PermissionChecker, permissionsForRoles } from './permissions';
+import {
+  createPermissionChecker,
+  NO_PERMISSIONS,
+  type PermissionChecker,
+  permissionsForRoles,
+} from './permissions';
 
 export interface SessionState {
   status: 'loading' | 'authenticated' | 'unauthenticated';
@@ -70,9 +83,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<SessionState>(() => {
     const user = meQuery.data ?? null;
-    const permissions = user ? createPermissionChecker(permissionsForRoles(user.roles, meQuery.data?.permissions)) : NO_PERMISSIONS;
-    const status: SessionState['status'] = tokenState === 'missing' || meQuery.isError ? 'unauthenticated' : user ? 'authenticated' : 'loading';
-    return { status, user, permissions, can: permissions.can, canAny: permissions.canAny, logout, refreshUser };
+    const permissions = user
+      ? createPermissionChecker(permissionsForRoles(user.roles, meQuery.data?.permissions))
+      : NO_PERMISSIONS;
+    const status: SessionState['status'] =
+      tokenState === 'missing' || meQuery.isError
+        ? 'unauthenticated'
+        : user
+          ? 'authenticated'
+          : 'loading';
+    return {
+      status,
+      user,
+      permissions,
+      can: permissions.can,
+      canAny: permissions.canAny,
+      logout,
+      refreshUser,
+    };
   }, [meQuery.data, meQuery.isError, tokenState, logout, refreshUser]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

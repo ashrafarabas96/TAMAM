@@ -12,7 +12,12 @@ const FIVE_MINUTES = 5 * 60_000;
 
 /** Zones, categories and vehicle types are referenced by id everywhere — cached for filters/selects. */
 export function useZones(enabled = true) {
-  return useQuery({ queryKey: queryKeys.zones.list, queryFn: zonesApi.list, staleTime: FIVE_MINUTES, enabled });
+  return useQuery({
+    queryKey: queryKeys.zones.list,
+    queryFn: zonesApi.list,
+    staleTime: FIVE_MINUTES,
+    enabled,
+  });
 }
 
 export function useZoneOptions(enabled = true, includeAll?: string) {
@@ -30,13 +35,21 @@ export function useZoneOptions(enabled = true, includeAll?: string) {
 }
 
 export function useCategories(enabled = true) {
-  return useQuery({ queryKey: queryKeys.catalog.categories, queryFn: catalogApi.adminCategories, staleTime: FIVE_MINUTES, enabled });
+  return useQuery({
+    queryKey: queryKeys.catalog.categories,
+    queryFn: catalogApi.adminCategories,
+    staleTime: FIVE_MINUTES,
+    enabled,
+  });
 }
 
 export function useCategoryOptions(enabled = true) {
   const { localized } = useI18n();
   const query = useCategories(enabled);
-  const options = useMemo(() => (query.data ?? []).map((c) => ({ value: c.id, label: localized(c.name) })), [query.data, localized]);
+  const options = useMemo(
+    () => (query.data ?? []).map((c) => ({ value: c.id, label: localized(c.name) })),
+    [query.data, localized],
+  );
   const nameOf = useMemo(() => {
     const map = new Map((query.data ?? []).map((c) => [c.id, localized(c.name)] as const));
     return (id: string | null | undefined) => (id ? (map.get(id) ?? id) : '—');
@@ -45,13 +58,22 @@ export function useCategoryOptions(enabled = true) {
 }
 
 export function useVehicleTypes(enabled = true) {
-  return useQuery({ queryKey: queryKeys.catalog.vehicleTypes, queryFn: catalogApi.adminVehicleTypes, staleTime: FIVE_MINUTES, enabled });
+  return useQuery({
+    queryKey: queryKeys.catalog.vehicleTypes,
+    queryFn: catalogApi.adminVehicleTypes,
+    staleTime: FIVE_MINUTES,
+    enabled,
+  });
 }
 
 export function useVehicleTypeOptions(enabled = true) {
   const { localized } = useI18n();
   const query = useVehicleTypes(enabled);
-  const options = useMemo(() => (query.data ?? []).map((v) => ({ value: v.id, label: `${localized(v.name)} (${v.code})` })), [query.data, localized]);
+  const options = useMemo(
+    () =>
+      (query.data ?? []).map((v) => ({ value: v.id, label: `${localized(v.name)} (${v.code})` })),
+    [query.data, localized],
+  );
   const nameOf = useMemo(() => {
     const map = new Map((query.data ?? []).map((v) => [v.id, localized(v.name)] as const));
     return (id: string | null | undefined) => (id ? (map.get(id) ?? id) : '—');
@@ -60,5 +82,9 @@ export function useVehicleTypeOptions(enabled = true) {
 }
 
 export function useServiceTypes() {
-  return useQuery({ queryKey: queryKeys.catalog.serviceTypes, queryFn: catalogApi.serviceTypes, staleTime: FIVE_MINUTES });
+  return useQuery({
+    queryKey: queryKeys.catalog.serviceTypes,
+    queryFn: catalogApi.serviceTypes,
+    staleTime: FIVE_MINUTES,
+  });
 }

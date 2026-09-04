@@ -214,7 +214,13 @@ export interface ServiceCategoryDto {
   requiredPartnerRole: PartnerRoleType;
   requiredDocumentTypes: DocumentType[];
   requiredFields: DynamicFieldDto[];
-  requiredMedia: { images: boolean; video: boolean; audio: boolean; minImages: number; maxImages: number };
+  requiredMedia: {
+    images: boolean;
+    video: boolean;
+    audio: boolean;
+    minImages: number;
+    maxImages: number;
+  };
   allowsInstant: boolean;
   allowsScheduled: boolean;
   urgencyLevels: JobUrgency[];
@@ -222,7 +228,12 @@ export interface ServiceCategoryDto {
   startingFrom: Money | null;
   hourlyRate: Money | null;
   fixedPrice: Money | null;
-  workflowConfig: { skipInspection: boolean; requiresQuote: boolean; requiresCustomerConfirmation: boolean; autoConfirmHours: number };
+  workflowConfig: {
+    skipInspection: boolean;
+    requiresQuote: boolean;
+    requiresCustomerConfirmation: boolean;
+    autoConfirmHours: number;
+  };
   zoneIds: string[]; // empty = all zones
   isFeatured: boolean;
   sortOrder: number;
@@ -400,7 +411,13 @@ export interface JobPartnerCardDto {
   rating: number;
   ratingCount: number;
   maskedPhone: string | null;
-  vehicle: { brand: string; model: string; color: string; plate: string; typeName: LocalizedText } | null;
+  vehicle: {
+    brand: string;
+    model: string;
+    color: string;
+    plate: string;
+    typeName: LocalizedText;
+  } | null;
   location: GeoPoint | null;
 }
 
@@ -649,7 +666,12 @@ export interface CampaignStatsDto {
   dismissals: number;
   ctr: number; // clicks / impressions
   conversions: number; // jobs created within attribution window after click
-  byPlacement: Array<{ placement: BannerPlacement; impressions: number; clicks: number; ctr: number }>;
+  byPlacement: Array<{
+    placement: BannerPlacement;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+  }>;
   byDay: Array<{ date: string; impressions: number; clicks: number }>;
 }
 

@@ -1,6 +1,19 @@
-import { ErrorCode, LedgerAccountType, LedgerEntryDirection, LedgerTransactionType, PaymentMethod } from '@tamam/shared-types';
+import {
+  ErrorCode,
+  LedgerAccountType,
+  LedgerEntryDirection,
+  LedgerTransactionType,
+  PaymentMethod,
+} from '@tamam/shared-types';
 
-import { type LedgerLine, assertBalanced, platformAccountCode, refundEntries, settlementEntries, walletAccountCode } from './ledger.rules';
+import {
+  type LedgerLine,
+  assertBalanced,
+  platformAccountCode,
+  refundEntries,
+  settlementEntries,
+  walletAccountCode,
+} from './ledger.rules';
 
 const CURRENCY = 'ILS';
 const PARTNER_WALLET = walletAccountCode('11111111-1111-4111-8111-111111111111');
@@ -20,7 +33,10 @@ function net(entries: readonly LedgerLine[], accountCode: string): bigint {
 
 function totals(entries: readonly LedgerLine[]): { debits: bigint; credits: bigint } {
   return entries.reduce(
-    (acc, e) => (e.direction === LedgerEntryDirection.DEBIT ? { ...acc, debits: acc.debits + e.amountMinor } : { ...acc, credits: acc.credits + e.amountMinor }),
+    (acc, e) =>
+      e.direction === LedgerEntryDirection.DEBIT
+        ? { ...acc, debits: acc.debits + e.amountMinor }
+        : { ...acc, credits: acc.credits + e.amountMinor },
     { debits: 0n, credits: 0n },
   );
 }
@@ -62,15 +78,22 @@ describe('assertBalanced', () => {
   });
 
   it('rejects a single-sided transaction', () => {
-    expect(() => assertBalanced([{ accountCode: REVENUE, direction: LedgerEntryDirection.CREDIT, amountMinor: 100n }])).toThrow(
-      expect.objectContaining({ code: ErrorCode.VALIDATION_FAILED }),
-    );
+    expect(() =>
+      assertBalanced([
+        { accountCode: REVENUE, direction: LedgerEntryDirection.CREDIT, amountMinor: 100n },
+      ]),
+    ).toThrow(expect.objectContaining({ code: ErrorCode.VALIDATION_FAILED }));
   });
 
   it('rejects an entry addressing both an account code and a wallet', () => {
     expect(() =>
       assertBalanced([
-        { accountCode: REVENUE, walletId: 'w1', direction: LedgerEntryDirection.CREDIT, amountMinor: 100n },
+        {
+          accountCode: REVENUE,
+          walletId: 'w1',
+          direction: LedgerEntryDirection.CREDIT,
+          amountMinor: 100n,
+        },
         { accountCode: CASH_CLEARING, direction: LedgerEntryDirection.DEBIT, amountMinor: 100n },
       ]),
     ).toThrow(expect.objectContaining({ code: ErrorCode.VALIDATION_FAILED }));
@@ -79,7 +102,12 @@ describe('assertBalanced', () => {
 
 describe('settlementEntries — cash', () => {
   it('nets the partner wallet at minus the commission (docs/DATABASE.md §2.7)', () => {
-    const plan = settlementEntries({ ...base, jobTotalMinor: 10_000n, commissionMinor: 1_500n, paymentMethod: PaymentMethod.CASH });
+    const plan = settlementEntries({
+      ...base,
+      jobTotalMinor: 10_000n,
+      commissionMinor: 1_500n,
+      paymentMethod: PaymentMethod.CASH,
+    });
 
     const { debits, credits } = totals(plan.entries);
     expect(debits).toBe(credits);
@@ -127,7 +155,12 @@ describe('settlementEntries — cash', () => {
 
 describe('settlementEntries — wallet', () => {
   it('debits the customer wallet and credits the partner net of commission', () => {
-    const plan = settlementEntries({ ...base, jobTotalMinor: 10_000n, commissionMinor: 1_500n, paymentMethod: PaymentMethod.WALLET });
+    const plan = settlementEntries({
+      ...base,
+      jobTotalMinor: 10_000n,
+      commissionMinor: 1_500n,
+      paymentMethod: PaymentMethod.WALLET,
+    });
 
     const { debits, credits } = totals(plan.entries);
     expect(debits).toBe(credits);
@@ -169,7 +202,12 @@ describe('settlementEntries — wallet', () => {
 
 describe('settlementEntries — gateway', () => {
   it('debits gateway clearing for card payments', () => {
-    const plan = settlementEntries({ ...base, jobTotalMinor: 10_000n, commissionMinor: 2_000n, paymentMethod: PaymentMethod.CARD });
+    const plan = settlementEntries({
+      ...base,
+      jobTotalMinor: 10_000n,
+      commissionMinor: 2_000n,
+      paymentMethod: PaymentMethod.CARD,
+    });
 
     const { debits, credits } = totals(plan.entries);
     expect(debits).toBe(credits);
@@ -180,7 +218,12 @@ describe('settlementEntries — gateway', () => {
 
   it('treats EXTERNAL_GATEWAY and BANK like card', () => {
     for (const method of [PaymentMethod.EXTERNAL_GATEWAY, PaymentMethod.BANK]) {
-      const plan = settlementEntries({ ...base, jobTotalMinor: 5_000n, commissionMinor: 750n, paymentMethod: method });
+      const plan = settlementEntries({
+        ...base,
+        jobTotalMinor: 5_000n,
+        commissionMinor: 750n,
+        paymentMethod: method,
+      });
       const { debits, credits } = totals(plan.entries);
       expect(debits).toBe(credits);
       expect(net(plan.entries, GATEWAY_CLEARING)).toBe(-5_000n);
@@ -189,7 +232,12 @@ describe('settlementEntries — gateway', () => {
   });
 
   it('clamps a commission larger than the fare', () => {
-    const plan = settlementEntries({ ...base, jobTotalMinor: 1_000n, commissionMinor: 5_000n, paymentMethod: PaymentMethod.CARD });
+    const plan = settlementEntries({
+      ...base,
+      jobTotalMinor: 1_000n,
+      commissionMinor: 5_000n,
+      paymentMethod: PaymentMethod.CARD,
+    });
 
     const { debits, credits } = totals(plan.entries);
     expect(debits).toBe(credits);
@@ -251,23 +299,39 @@ describe('settlementEntries — cancellation fee', () => {
   });
 
   it('produces no entries when there is nothing to settle', () => {
-    const plan = settlementEntries({ ...base, jobTotalMinor: 0n, commissionMinor: 0n, paymentMethod: PaymentMethod.CASH });
+    const plan = settlementEntries({
+      ...base,
+      jobTotalMinor: 0n,
+      commissionMinor: 0n,
+      paymentMethod: PaymentMethod.CASH,
+    });
     expect(plan.entries).toHaveLength(0);
   });
 
   it('rejects negative inputs', () => {
-    expect(() => settlementEntries({ ...base, jobTotalMinor: -1n, commissionMinor: 0n, paymentMethod: PaymentMethod.CASH })).toThrow(
-      expect.objectContaining({ code: ErrorCode.VALIDATION_FAILED }),
-    );
+    expect(() =>
+      settlementEntries({
+        ...base,
+        jobTotalMinor: -1n,
+        commissionMinor: 0n,
+        paymentMethod: PaymentMethod.CASH,
+      }),
+    ).toThrow(expect.objectContaining({ code: ErrorCode.VALIDATION_FAILED }));
   });
 });
 
 describe('refundEntries', () => {
   it('funds the customer wallet from the refund expense account', () => {
-    const entries = refundEntries({ amountMinor: 2_500n, currency: CURRENCY, customerWalletAccountCode: CUSTOMER_WALLET });
+    const entries = refundEntries({
+      amountMinor: 2_500n,
+      currency: CURRENCY,
+      customerWalletAccountCode: CUSTOMER_WALLET,
+    });
     const { debits, credits } = totals(entries);
     expect(debits).toBe(credits);
     expect(net(entries, CUSTOMER_WALLET)).toBe(2_500n);
-    expect(net(entries, platformAccountCode(LedgerAccountType.PLATFORM_REFUND_EXPENSE, CURRENCY))).toBe(-2_500n);
+    expect(
+      net(entries, platformAccountCode(LedgerAccountType.PLATFORM_REFUND_EXPENSE, CURRENCY)),
+    ).toBe(-2_500n);
   });
 });
