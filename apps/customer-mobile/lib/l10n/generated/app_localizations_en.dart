@@ -1622,4 +1622,174 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorCannotOpenLink => 'The link could not be opened.';
+
+  @override
+  String get serviceChalet => 'Chalet';
+
+  @override
+  String get serviceChaletCaption => 'Book by the hour';
+
+  @override
+  String get chaletTitle => 'TAMAM Chalet';
+
+  @override
+  String get chaletSearchHint => 'Find a chalet';
+
+  @override
+  String chaletGuests(int count) {
+    return '$count guests';
+  }
+
+  @override
+  String get chaletGuestsFilter => 'Guests';
+
+  @override
+  String chaletUpToGuests(int count) {
+    return 'Up to $count guests';
+  }
+
+  @override
+  String get chaletPerHour => '/ hour';
+
+  @override
+  String get chaletNoResults => 'No chalets match';
+
+  @override
+  String get chaletNoResultsBody => 'Try a different day or a smaller party.';
+
+  @override
+  String get chaletInstantBooking => 'Instant booking';
+
+  @override
+  String get chaletPickDay => 'Pick a day';
+
+  @override
+  String get chaletPickDuration => 'How long';
+
+  @override
+  String get chaletPickTime => 'Start time';
+
+  @override
+  String chaletDurationHours(String hours) {
+    return '$hours hours';
+  }
+
+  @override
+  String chaletDurationHoursAndHalf(String hours) {
+    return '$hours½ hours';
+  }
+
+  @override
+  String get chaletNoTimesToday => 'Nothing free on this day';
+
+  @override
+  String get chaletNoTimesBody => 'Try another day, or a shorter stay.';
+
+  @override
+  String chaletCleaningNote(int minutes) {
+    return '$minutes minutes after every booking are for cleaning and cannot be booked.';
+  }
+
+  @override
+  String get chaletGapBadge => 'Between two bookings';
+
+  @override
+  String get chaletSlotTaken =>
+      'That time overlaps another booking or its cleaning window';
+
+  @override
+  String get chaletSlotBlocked => 'The owner has blocked that time';
+
+  @override
+  String get chaletSlotOutsideHours => 'That time is outside opening hours';
+
+  @override
+  String get chaletSlotTooShort => 'That booking length is not allowed here';
+
+  @override
+  String get chaletSlotOffGrid =>
+      'Bookings start on the owner\'s own time intervals';
+
+  @override
+  String get chaletAlternatives => 'Nearby times that work';
+
+  @override
+  String get chaletPriceTitle => 'Price breakdown';
+
+  @override
+  String get chaletPriceHourly => 'Hourly rate';
+
+  @override
+  String get chaletPriceSubtotal => 'Subtotal';
+
+  @override
+  String get chaletPriceDeposit => 'Deposit';
+
+  @override
+  String get chaletPriceTotal => 'Total';
+
+  @override
+  String get chaletPriceFloorNote => 'This is the owner\'s own minimum rate.';
+
+  @override
+  String get chaletHoldTitle => 'Time held for you';
+
+  @override
+  String get chaletHoldBody =>
+      'The slot is yours while you pay. Finish before the timer runs out.';
+
+  @override
+  String chaletHoldRemaining(String time) {
+    return '$time left';
+  }
+
+  @override
+  String get chaletHoldExpired => 'The hold ran out and the time is free again';
+
+  @override
+  String get chaletConfirm => 'Confirm booking';
+
+  @override
+  String get chaletConfirmed => 'Your booking is confirmed';
+
+  @override
+  String chaletConfirmedBody(String number) {
+    return 'Booking $number';
+  }
+
+  @override
+  String chaletBookingFrom(String time) {
+    return 'From $time';
+  }
+
+  @override
+  String chaletBookingTo(String time) {
+    return 'To $time';
+  }
+
+  @override
+  String get chaletCancelBooking => 'Cancel booking';
+
+  @override
+  String get chaletCancelReason => 'Reason for cancelling';
+
+  @override
+  String get chaletAmenities => 'Amenities';
+
+  @override
+  String get chaletAbout => 'About';
+
+  @override
+  String get chaletOpeningHours => 'Opening hours';
+
+  @override
+  String chaletFrom(String open, String close) {
+    return '$open to $close';
+  }
+
+  @override
+  String get chaletBookNow => 'Book now';
+
+  @override
+  String get chaletSelectTimeFirst => 'Pick a time to continue';
 }

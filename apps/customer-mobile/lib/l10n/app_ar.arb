@@ -702,5 +702,127 @@
   "errorFeatureDisabled": "هذه الميزة غير مفعّلة حاليًا.",
   "errorDuplicateRequest": "تم إرسال هذا الطلب مسبقًا.",
   "errorQuoteNotApproved": "يجب الموافقة على عرض السعر أولًا.",
-  "errorCannotOpenLink": "تعذّر فتح الرابط."
+  "errorCannotOpenLink": "تعذّر فتح الرابط.",
+  "serviceChalet": "شاليه",
+  "serviceChaletCaption": "احجز بالساعة",
+  "chaletTitle": "تمام شاليه",
+  "chaletSearchHint": "ابحث عن شاليه",
+  "chaletGuests": "{count} ضيوف",
+  "@chaletGuests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletGuestsFilter": "عدد الضيوف",
+  "chaletUpToGuests": "حتى {count} ضيفًا",
+  "@chaletUpToGuests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletPerHour": "/ ساعة",
+  "chaletNoResults": "لا توجد شاليهات مطابقة",
+  "chaletNoResultsBody": "جرّب تغيير التاريخ أو عدد الضيوف.",
+  "chaletInstantBooking": "حجز فوري",
+  "chaletPickDay": "اختر اليوم",
+  "chaletPickDuration": "مدة الحجز",
+  "chaletPickTime": "وقت البداية",
+  "chaletDurationHours": "{hours} ساعات",
+  "@chaletDurationHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletDurationHoursAndHalf": "{hours} ساعات ونصف",
+  "@chaletDurationHoursAndHalf": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletNoTimesToday": "لا توجد أوقات متاحة في هذا اليوم",
+  "chaletNoTimesBody": "جرّب يومًا آخر أو مدة أقصر.",
+  "chaletCleaningNote": "بعد كل حجز {minutes} دقيقة للتنظيف، ولا يمكن حجزها.",
+  "@chaletCleaningNote": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletGapBadge": "فرصة بين حجزين",
+  "chaletSlotTaken": "هذا الوقت يتداخل مع حجز آخر أو مع وقت التنظيف",
+  "chaletSlotBlocked": "المالك حجب هذا الوقت",
+  "chaletSlotOutsideHours": "هذا الوقت خارج ساعات العمل",
+  "chaletSlotTooShort": "مدة الحجز غير مسموحة لهذا الشاليه",
+  "chaletSlotOffGrid": "تبدأ الحجوزات على فترات محددة من المالك",
+  "chaletAlternatives": "أوقات قريبة متاحة",
+  "chaletPriceTitle": "تفاصيل السعر",
+  "chaletPriceHourly": "سعر الساعة",
+  "chaletPriceSubtotal": "المجموع الفرعي",
+  "chaletPriceDeposit": "العربون",
+  "chaletPriceTotal": "الإجمالي",
+  "chaletPriceFloorNote": "هذا هو الحد الأدنى الذي حدده المالك.",
+  "chaletHoldTitle": "تم حجز الوقت مؤقتًا",
+  "chaletHoldBody": "الوقت محجوز لك. أكمل الدفع قبل انتهاء المهلة.",
+  "chaletHoldRemaining": "متبقٍ {time}",
+  "@chaletHoldRemaining": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletHoldExpired": "انتهت المهلة وأصبح الوقت متاحًا للآخرين",
+  "chaletConfirm": "تأكيد الحجز",
+  "chaletConfirmed": "تم تأكيد حجزك",
+  "chaletConfirmedBody": "رقم الحجز {number}",
+  "@chaletConfirmedBody": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletBookingFrom": "من {time}",
+  "@chaletBookingFrom": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletBookingTo": "إلى {time}",
+  "@chaletBookingTo": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletCancelBooking": "إلغاء الحجز",
+  "chaletCancelReason": "سبب الإلغاء",
+  "chaletAmenities": "المرافق",
+  "chaletAbout": "عن الشاليه",
+  "chaletOpeningHours": "ساعات العمل",
+  "chaletFrom": "من {open} إلى {close}",
+  "@chaletFrom": {
+    "placeholders": {
+      "open": {
+        "type": "String"
+      },
+      "close": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletBookNow": "احجز الآن",
+  "chaletSelectTimeFirst": "اختر وقتًا للمتابعة"
 }

@@ -702,5 +702,127 @@
   "errorFeatureDisabled": "That feature is switched off right now.",
   "errorDuplicateRequest": "This request was already sent.",
   "errorQuoteNotApproved": "The quote must be approved first.",
-  "errorCannotOpenLink": "The link could not be opened."
+  "errorCannotOpenLink": "The link could not be opened.",
+  "serviceChalet": "Chalet",
+  "serviceChaletCaption": "Book by the hour",
+  "chaletTitle": "TAMAM Chalet",
+  "chaletSearchHint": "Find a chalet",
+  "chaletGuests": "{count} guests",
+  "@chaletGuests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletGuestsFilter": "Guests",
+  "chaletUpToGuests": "Up to {count} guests",
+  "@chaletUpToGuests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletPerHour": "/ hour",
+  "chaletNoResults": "No chalets match",
+  "chaletNoResultsBody": "Try a different day or a smaller party.",
+  "chaletInstantBooking": "Instant booking",
+  "chaletPickDay": "Pick a day",
+  "chaletPickDuration": "How long",
+  "chaletPickTime": "Start time",
+  "chaletDurationHours": "{hours} hours",
+  "@chaletDurationHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletDurationHoursAndHalf": "{hours}½ hours",
+  "@chaletDurationHoursAndHalf": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletNoTimesToday": "Nothing free on this day",
+  "chaletNoTimesBody": "Try another day, or a shorter stay.",
+  "chaletCleaningNote": "{minutes} minutes after every booking are for cleaning and cannot be booked.",
+  "@chaletCleaningNote": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "chaletGapBadge": "Between two bookings",
+  "chaletSlotTaken": "That time overlaps another booking or its cleaning window",
+  "chaletSlotBlocked": "The owner has blocked that time",
+  "chaletSlotOutsideHours": "That time is outside opening hours",
+  "chaletSlotTooShort": "That booking length is not allowed here",
+  "chaletSlotOffGrid": "Bookings start on the owner's own time intervals",
+  "chaletAlternatives": "Nearby times that work",
+  "chaletPriceTitle": "Price breakdown",
+  "chaletPriceHourly": "Hourly rate",
+  "chaletPriceSubtotal": "Subtotal",
+  "chaletPriceDeposit": "Deposit",
+  "chaletPriceTotal": "Total",
+  "chaletPriceFloorNote": "This is the owner's own minimum rate.",
+  "chaletHoldTitle": "Time held for you",
+  "chaletHoldBody": "The slot is yours while you pay. Finish before the timer runs out.",
+  "chaletHoldRemaining": "{time} left",
+  "@chaletHoldRemaining": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletHoldExpired": "The hold ran out and the time is free again",
+  "chaletConfirm": "Confirm booking",
+  "chaletConfirmed": "Your booking is confirmed",
+  "chaletConfirmedBody": "Booking {number}",
+  "@chaletConfirmedBody": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletBookingFrom": "From {time}",
+  "@chaletBookingFrom": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletBookingTo": "To {time}",
+  "@chaletBookingTo": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletCancelBooking": "Cancel booking",
+  "chaletCancelReason": "Reason for cancelling",
+  "chaletAmenities": "Amenities",
+  "chaletAbout": "About",
+  "chaletOpeningHours": "Opening hours",
+  "chaletFrom": "{open} to {close}",
+  "@chaletFrom": {
+    "placeholders": {
+      "open": {
+        "type": "String"
+      },
+      "close": {
+        "type": "String"
+      }
+    }
+  },
+  "chaletBookNow": "Book now",
+  "chaletSelectTimeFirst": "Pick a time to continue"
 }

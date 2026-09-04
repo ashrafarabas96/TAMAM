@@ -23,6 +23,10 @@ abstract final class Routes {
   static const String savedPlaces = '/places';
   static const String locationPicker = '/places/pick';
 
+  static const String chalets = '/chalets';
+  static String chalet(String id) => '/chalets/$id';
+  static String chaletBooking(String id) => '/chalets/booking/$id';
+
   static const String ride = '/ride';
   static const String delivery = '/delivery';
 

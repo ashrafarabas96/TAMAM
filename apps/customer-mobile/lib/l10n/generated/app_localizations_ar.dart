@@ -1599,4 +1599,171 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errorCannotOpenLink => 'تعذّر فتح الرابط.';
+
+  @override
+  String get serviceChalet => 'شاليه';
+
+  @override
+  String get serviceChaletCaption => 'احجز بالساعة';
+
+  @override
+  String get chaletTitle => 'تمام شاليه';
+
+  @override
+  String get chaletSearchHint => 'ابحث عن شاليه';
+
+  @override
+  String chaletGuests(int count) {
+    return '$count ضيوف';
+  }
+
+  @override
+  String get chaletGuestsFilter => 'عدد الضيوف';
+
+  @override
+  String chaletUpToGuests(int count) {
+    return 'حتى $count ضيفًا';
+  }
+
+  @override
+  String get chaletPerHour => '/ ساعة';
+
+  @override
+  String get chaletNoResults => 'لا توجد شاليهات مطابقة';
+
+  @override
+  String get chaletNoResultsBody => 'جرّب تغيير التاريخ أو عدد الضيوف.';
+
+  @override
+  String get chaletInstantBooking => 'حجز فوري';
+
+  @override
+  String get chaletPickDay => 'اختر اليوم';
+
+  @override
+  String get chaletPickDuration => 'مدة الحجز';
+
+  @override
+  String get chaletPickTime => 'وقت البداية';
+
+  @override
+  String chaletDurationHours(String hours) {
+    return '$hours ساعات';
+  }
+
+  @override
+  String chaletDurationHoursAndHalf(String hours) {
+    return '$hours ساعات ونصف';
+  }
+
+  @override
+  String get chaletNoTimesToday => 'لا توجد أوقات متاحة في هذا اليوم';
+
+  @override
+  String get chaletNoTimesBody => 'جرّب يومًا آخر أو مدة أقصر.';
+
+  @override
+  String chaletCleaningNote(int minutes) {
+    return 'بعد كل حجز $minutes دقيقة للتنظيف، ولا يمكن حجزها.';
+  }
+
+  @override
+  String get chaletGapBadge => 'فرصة بين حجزين';
+
+  @override
+  String get chaletSlotTaken => 'هذا الوقت يتداخل مع حجز آخر أو مع وقت التنظيف';
+
+  @override
+  String get chaletSlotBlocked => 'المالك حجب هذا الوقت';
+
+  @override
+  String get chaletSlotOutsideHours => 'هذا الوقت خارج ساعات العمل';
+
+  @override
+  String get chaletSlotTooShort => 'مدة الحجز غير مسموحة لهذا الشاليه';
+
+  @override
+  String get chaletSlotOffGrid => 'تبدأ الحجوزات على فترات محددة من المالك';
+
+  @override
+  String get chaletAlternatives => 'أوقات قريبة متاحة';
+
+  @override
+  String get chaletPriceTitle => 'تفاصيل السعر';
+
+  @override
+  String get chaletPriceHourly => 'سعر الساعة';
+
+  @override
+  String get chaletPriceSubtotal => 'المجموع الفرعي';
+
+  @override
+  String get chaletPriceDeposit => 'العربون';
+
+  @override
+  String get chaletPriceTotal => 'الإجمالي';
+
+  @override
+  String get chaletPriceFloorNote => 'هذا هو الحد الأدنى الذي حدده المالك.';
+
+  @override
+  String get chaletHoldTitle => 'تم حجز الوقت مؤقتًا';
+
+  @override
+  String get chaletHoldBody => 'الوقت محجوز لك. أكمل الدفع قبل انتهاء المهلة.';
+
+  @override
+  String chaletHoldRemaining(String time) {
+    return 'متبقٍ $time';
+  }
+
+  @override
+  String get chaletHoldExpired => 'انتهت المهلة وأصبح الوقت متاحًا للآخرين';
+
+  @override
+  String get chaletConfirm => 'تأكيد الحجز';
+
+  @override
+  String get chaletConfirmed => 'تم تأكيد حجزك';
+
+  @override
+  String chaletConfirmedBody(String number) {
+    return 'رقم الحجز $number';
+  }
+
+  @override
+  String chaletBookingFrom(String time) {
+    return 'من $time';
+  }
+
+  @override
+  String chaletBookingTo(String time) {
+    return 'إلى $time';
+  }
+
+  @override
+  String get chaletCancelBooking => 'إلغاء الحجز';
+
+  @override
+  String get chaletCancelReason => 'سبب الإلغاء';
+
+  @override
+  String get chaletAmenities => 'المرافق';
+
+  @override
+  String get chaletAbout => 'عن الشاليه';
+
+  @override
+  String get chaletOpeningHours => 'ساعات العمل';
+
+  @override
+  String chaletFrom(String open, String close) {
+    return 'من $open إلى $close';
+  }
+
+  @override
+  String get chaletBookNow => 'احجز الآن';
+
+  @override
+  String get chaletSelectTimeFirst => 'اختر وقتًا للمتابعة';
 }

@@ -35,6 +35,19 @@ abstract final class ApiPaths {
   static const String zones = '/zones';
   static const String resolveZone = '/zones/resolve';
 
+  // chalets
+  static const String chalets = '/chalets';
+  static String chalet(String id) => '/chalets/$id';
+  static String chaletAvailability(String id) => '/chalets/$id/availability';
+  static String chaletSlotCheck(String id) => '/chalets/$id/slot-check';
+  static String chaletOffers(String id) => '/chalets/$id/offers';
+  static const String chaletBookings = '/chalets/bookings';
+  static String chaletBookingConfirm(String id) => '/chalets/bookings/$id/confirm';
+  static String chaletBookingCancel(String id) => '/chalets/bookings/$id/cancel';
+  static String chaletBookingExtend(String id) => '/chalets/bookings/$id/extend';
+  static String chaletBookingCheckIn(String id) => '/chalets/bookings/$id/check-in';
+  static String chaletBookingCheckOut(String id) => '/chalets/bookings/$id/check-out';
+
   // estimates
   static const String rideEstimate = '/estimates/ride';
   static const String deliveryEstimate = '/estimates/delivery';

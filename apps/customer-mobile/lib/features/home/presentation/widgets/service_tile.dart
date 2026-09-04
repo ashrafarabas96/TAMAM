@@ -3,7 +3,7 @@ import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_customer/core/theme/tamam_theme.dart';
 import 'package:tamam_customer/core/widgets/tamam_card.dart';
 
-/// One of the four service entry points on the home grid.
+/// One service entry point on the home screen.
 ///
 /// White card, coloured icon circle, bold title and a short caption — the
 /// Getir-style tile the whole home screen is built around.

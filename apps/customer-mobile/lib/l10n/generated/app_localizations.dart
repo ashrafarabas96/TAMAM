@@ -3043,6 +3043,300 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّر فتح الرابط.'**
   String get errorCannotOpenLink;
+
+  /// No description provided for @serviceChalet.
+  ///
+  /// In ar, this message translates to:
+  /// **'شاليه'**
+  String get serviceChalet;
+
+  /// No description provided for @serviceChaletCaption.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز بالساعة'**
+  String get serviceChaletCaption;
+
+  /// No description provided for @chaletTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمام شاليه'**
+  String get chaletTitle;
+
+  /// No description provided for @chaletSearchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن شاليه'**
+  String get chaletSearchHint;
+
+  /// No description provided for @chaletGuests.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} ضيوف'**
+  String chaletGuests(int count);
+
+  /// No description provided for @chaletGuestsFilter.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد الضيوف'**
+  String get chaletGuestsFilter;
+
+  /// No description provided for @chaletUpToGuests.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى {count} ضيفًا'**
+  String chaletUpToGuests(int count);
+
+  /// No description provided for @chaletPerHour.
+  ///
+  /// In ar, this message translates to:
+  /// **'/ ساعة'**
+  String get chaletPerHour;
+
+  /// No description provided for @chaletNoResults.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد شاليهات مطابقة'**
+  String get chaletNoResults;
+
+  /// No description provided for @chaletNoResultsBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب تغيير التاريخ أو عدد الضيوف.'**
+  String get chaletNoResultsBody;
+
+  /// No description provided for @chaletInstantBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز فوري'**
+  String get chaletInstantBooking;
+
+  /// No description provided for @chaletPickDay.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر اليوم'**
+  String get chaletPickDay;
+
+  /// No description provided for @chaletPickDuration.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدة الحجز'**
+  String get chaletPickDuration;
+
+  /// No description provided for @chaletPickTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت البداية'**
+  String get chaletPickTime;
+
+  /// No description provided for @chaletDurationHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'{hours} ساعات'**
+  String chaletDurationHours(String hours);
+
+  /// No description provided for @chaletDurationHoursAndHalf.
+  ///
+  /// In ar, this message translates to:
+  /// **'{hours} ساعات ونصف'**
+  String chaletDurationHoursAndHalf(String hours);
+
+  /// No description provided for @chaletNoTimesToday.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد أوقات متاحة في هذا اليوم'**
+  String get chaletNoTimesToday;
+
+  /// No description provided for @chaletNoTimesBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب يومًا آخر أو مدة أقصر.'**
+  String get chaletNoTimesBody;
+
+  /// No description provided for @chaletCleaningNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعد كل حجز {minutes} دقيقة للتنظيف، ولا يمكن حجزها.'**
+  String chaletCleaningNote(int minutes);
+
+  /// No description provided for @chaletGapBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'فرصة بين حجزين'**
+  String get chaletGapBadge;
+
+  /// No description provided for @chaletSlotTaken.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الوقت يتداخل مع حجز آخر أو مع وقت التنظيف'**
+  String get chaletSlotTaken;
+
+  /// No description provided for @chaletSlotBlocked.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك حجب هذا الوقت'**
+  String get chaletSlotBlocked;
+
+  /// No description provided for @chaletSlotOutsideHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الوقت خارج ساعات العمل'**
+  String get chaletSlotOutsideHours;
+
+  /// No description provided for @chaletSlotTooShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدة الحجز غير مسموحة لهذا الشاليه'**
+  String get chaletSlotTooShort;
+
+  /// No description provided for @chaletSlotOffGrid.
+  ///
+  /// In ar, this message translates to:
+  /// **'تبدأ الحجوزات على فترات محددة من المالك'**
+  String get chaletSlotOffGrid;
+
+  /// No description provided for @chaletAlternatives.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقات قريبة متاحة'**
+  String get chaletAlternatives;
+
+  /// No description provided for @chaletPriceTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل السعر'**
+  String get chaletPriceTitle;
+
+  /// No description provided for @chaletPriceHourly.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر الساعة'**
+  String get chaletPriceHourly;
+
+  /// No description provided for @chaletPriceSubtotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموع الفرعي'**
+  String get chaletPriceSubtotal;
+
+  /// No description provided for @chaletPriceDeposit.
+  ///
+  /// In ar, this message translates to:
+  /// **'العربون'**
+  String get chaletPriceDeposit;
+
+  /// No description provided for @chaletPriceTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجمالي'**
+  String get chaletPriceTotal;
+
+  /// No description provided for @chaletPriceFloorNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا هو الحد الأدنى الذي حدده المالك.'**
+  String get chaletPriceFloorNote;
+
+  /// No description provided for @chaletHoldTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم حجز الوقت مؤقتًا'**
+  String get chaletHoldTitle;
+
+  /// No description provided for @chaletHoldBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوقت محجوز لك. أكمل الدفع قبل انتهاء المهلة.'**
+  String get chaletHoldBody;
+
+  /// No description provided for @chaletHoldRemaining.
+  ///
+  /// In ar, this message translates to:
+  /// **'متبقٍ {time}'**
+  String chaletHoldRemaining(String time);
+
+  /// No description provided for @chaletHoldExpired.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت المهلة وأصبح الوقت متاحًا للآخرين'**
+  String get chaletHoldExpired;
+
+  /// No description provided for @chaletConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الحجز'**
+  String get chaletConfirm;
+
+  /// No description provided for @chaletConfirmed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تأكيد حجزك'**
+  String get chaletConfirmed;
+
+  /// No description provided for @chaletConfirmedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الحجز {number}'**
+  String chaletConfirmedBody(String number);
+
+  /// No description provided for @chaletBookingFrom.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {time}'**
+  String chaletBookingFrom(String time);
+
+  /// No description provided for @chaletBookingTo.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلى {time}'**
+  String chaletBookingTo(String time);
+
+  /// No description provided for @chaletCancelBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الحجز'**
+  String get chaletCancelBooking;
+
+  /// No description provided for @chaletCancelReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الإلغاء'**
+  String get chaletCancelReason;
+
+  /// No description provided for @chaletAmenities.
+  ///
+  /// In ar, this message translates to:
+  /// **'المرافق'**
+  String get chaletAmenities;
+
+  /// No description provided for @chaletAbout.
+  ///
+  /// In ar, this message translates to:
+  /// **'عن الشاليه'**
+  String get chaletAbout;
+
+  /// No description provided for @chaletOpeningHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'ساعات العمل'**
+  String get chaletOpeningHours;
+
+  /// No description provided for @chaletFrom.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {open} إلى {close}'**
+  String chaletFrom(String open, String close);
+
+  /// No description provided for @chaletBookNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز الآن'**
+  String get chaletBookNow;
+
+  /// No description provided for @chaletSelectTimeFirst.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر وقتًا للمتابعة'**
+  String get chaletSelectTimeFirst;
 }
 
 class _AppLocalizationsDelegate

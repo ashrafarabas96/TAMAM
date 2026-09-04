@@ -105,35 +105,59 @@ class _ServicesGrid extends ConsumerWidget {
     final AppLocalizations l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: TamamSpacing.s4),
-      child: GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: TamamSpacing.s3,
-        crossAxisSpacing: TamamSpacing.s3,
-        childAspectRatio: 1.45,
+      child: Column(
         children: <Widget>[
-          ServiceTile(
-            title: l10n.serviceRide,
-            caption: l10n.serviceRideCaption,
-            icon: Icons.local_taxi_rounded,
-            color: TamamServiceColors.ride,
-            onTap: () => context.push(Routes.ride),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: ServiceTile(
+                  title: l10n.serviceRide,
+                  caption: l10n.serviceRideCaption,
+                  icon: Icons.local_taxi_rounded,
+                  color: TamamServiceColors.ride,
+                  onTap: () => context.push(Routes.ride),
+                ),
+              ),
+              const SizedBox(width: TamamSpacing.s3),
+              Expanded(
+                child: ServiceTile(
+                  title: l10n.serviceDelivery,
+                  caption: l10n.serviceDeliveryCaption,
+                  icon: Icons.inventory_2_rounded,
+                  color: TamamServiceColors.delivery,
+                  onTap: () => context.push(Routes.delivery),
+                ),
+              ),
+            ],
           ),
-          ServiceTile(
-            title: l10n.serviceDelivery,
-            caption: l10n.serviceDeliveryCaption,
-            icon: Icons.inventory_2_rounded,
-            color: TamamServiceColors.delivery,
-            onTap: () => context.push(Routes.delivery),
+          const SizedBox(height: TamamSpacing.s3),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: ServiceTile(
+                  title: l10n.serviceHome,
+                  caption: l10n.serviceHomeCaption,
+                  icon: Icons.handyman_rounded,
+                  color: TamamServiceColors.homeService,
+                  onTap: () => context.push(Routes.search),
+                ),
+              ),
+              const SizedBox(width: TamamSpacing.s3),
+              Expanded(
+                child: ServiceTile(
+                  title: l10n.serviceChalet,
+                  caption: l10n.serviceChaletCaption,
+                  icon: Icons.holiday_village_rounded,
+                  color: TamamServiceColors.chalet,
+                  onTap: () => context.push(Routes.chalets),
+                ),
+              ),
+            ],
           ),
-          ServiceTile(
-            title: l10n.serviceHome,
-            caption: l10n.serviceHomeCaption,
-            icon: Icons.handyman_rounded,
-            color: TamamServiceColors.homeService,
-            onTap: () => context.push(Routes.search),
-          ),
+          const SizedBox(height: TamamSpacing.s3),
+          // Urgent is a way of asking for a service rather than a service, so
+          // it sits on its own row. It is also what keeps the count even: five
+          // tiles in two columns would leave a hole in the last row.
           ServiceTile(
             title: l10n.serviceUrgent,
             caption: l10n.serviceUrgentCaption,

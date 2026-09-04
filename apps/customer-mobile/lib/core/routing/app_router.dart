@@ -31,6 +31,9 @@ import 'package:tamam_customer/features/jobs/presentation/receipt_screen.dart';
 import 'package:tamam_customer/features/jobs/presentation/tracking_screen.dart';
 import 'package:tamam_customer/features/notifications/presentation/notifications_screen.dart';
 import 'package:tamam_customer/features/places/presentation/location_picker_screen.dart';
+import 'package:tamam_customer/features/chalet/presentation/chalet_booking_screen.dart';
+import 'package:tamam_customer/features/chalet/presentation/chalet_detail_screen.dart';
+import 'package:tamam_customer/features/chalet/presentation/chalet_list_screen.dart';
 import 'package:tamam_customer/features/places/presentation/saved_places_screen.dart';
 import 'package:tamam_customer/features/ride/presentation/ride_flow_screen.dart';
 import 'package:tamam_customer/features/service/presentation/service_flow_screen.dart';
@@ -158,6 +161,28 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             parentNavigatorKey: _rootNavigatorKey,
             builder: (BuildContext _, GoRouterState state) =>
                 OpenDisputeScreen(jobId: state.pathParameters['id'] ?? ''),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: Routes.chalets,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const ChaletListScreen(),
+        routes: <RouteBase>[
+          GoRoute(
+            path: 'booking/:id',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (BuildContext _, GoRouterState state) =>
+                ChaletBookingScreen(bookingId: state.pathParameters['id'] ?? ''),
+          ),
+          // Declared after 'booking/:id' so the literal segment wins; a single
+          // ':id' in front would swallow it and the booking screen would be
+          // unreachable.
+          GoRoute(
+            path: ':id',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (BuildContext _, GoRouterState state) =>
+                ChaletDetailScreen(chaletId: state.pathParameters['id'] ?? ''),
           ),
         ],
       ),
