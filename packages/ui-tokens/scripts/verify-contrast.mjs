@@ -66,6 +66,16 @@ const PAIRS = [
   ['danger', 'background', 4.5],
   ['info', 'surface', 4.5],
   ['info', 'background', 4.5],
+  // The expressive layer: brand colour used as ink and as rules. It exists so
+  // coloured type stays readable instead of becoming decoration, so it is gated
+  // like any other text colour.
+  ['accentInk', 'surface', 4.5],
+  ['accentInk', 'background', 4.5],
+  ['primaryInk', 'surface', 4.5],
+  ['primaryInk', 'background', 4.5],
+  ['accentRule', 'surface', 3.0],
+  ['primaryRule', 'surface', 3.0],
+  ['textOnBrandMuted', 'surfaceBrand', 4.5],
   ['successStrong', 'successSoft', 4.5],
   ['warningStrong', 'warningSoft', 4.5],
   ['dangerStrong', 'dangerSoft', 4.5],

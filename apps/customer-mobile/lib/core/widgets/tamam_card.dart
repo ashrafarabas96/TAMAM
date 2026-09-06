@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_customer/core/theme/tamam_theme.dart';
+import 'package:tamam_customer/core/widgets/tamam_pressable.dart';
 
 /// The white, 16-radius, softly shadowed surface every block of content sits on.
 class TamamCard extends StatelessWidget {
@@ -41,14 +42,17 @@ class TamamCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         borderRadius: borderRadius,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: borderRadius,
-          child: Padding(padding: padding, child: child),
-        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
-    final Widget wrapped = margin == null ? content : Padding(padding: margin!, child: content);
+    // An ink ripple alone is a weak answer on a card this size: it reads as a
+    // stain rather than as the card responding. Wrapping the whole surface means
+    // the card itself dips under the finger and the phone answers on contact.
+    final Widget responsive = onTap == null
+        ? content
+        : TamamPressable(onTap: onTap, borderRadius: borderRadius, child: content);
+    final Widget wrapped =
+        margin == null ? responsive : Padding(padding: margin!, child: responsive);
     if (semanticLabel == null && onTap == null) return wrapped;
     // The label is merged with whatever the card's own text already announces, so it must
     // supply only what that text does not — a label repeating the visible copy is read

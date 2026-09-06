@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { type MediaUploadIntentInput, mediaUploadIntentSchema } from '@tamam/validation';
 import type { Response } from 'express';
 
-import { AllowRestricted, CurrentUser, RateLimit, ZodBody } from '../../common/decorators';
+import { AllowRestricted, CurrentUser, Public, RateLimit, ZodBody } from '../../common/decorators';
 import { UuidPipe } from '../../common/pipes/uuid.pipe';
 import type { RequestUser } from '../../common/types/request-user';
 
@@ -36,6 +36,22 @@ export class MediaController {
   @AllowRestricted()
   status(@CurrentUser() user: RequestUser, @Param('id', UuidPipe) id: string) {
     return this.media.getStatus(user, id);
+  }
+
+  /// Streams a public object over the API's own port.
+  ///
+  /// Public media used to be addressed straight at the object store
+  /// (`http://<host>:9000/...`). On one machine that is fine; from a phone it
+  /// means a second host and a second open port, and the banner images simply
+  /// never arrived. Serving them here keeps every request the app makes on one
+  /// origin, so one reachable address is enough.
+  @Get('public/*key')
+  @Public()
+  async publicObject(@Param('key') key: string, @Res() res: Response): Promise<void> {
+    const object = await this.media.readPublic(decodeURIComponent(key));
+    res.setHeader('Content-Type', object.contentType);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(object.body);
   }
 
   @Get(':key/view')

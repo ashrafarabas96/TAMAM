@@ -104,7 +104,7 @@ services:
       DATABASE_URL: postgresql://tamam:tamam@db:5432/tamam
       REDIS_URL: redis://redis:6379/0
       S3_ENDPOINT: http://minio:9000
-      S3_PUBLIC_BASE_URL: http://localhost:9000/tamam-public
+      S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL:-http://localhost:3000/api/v1/media/public}
       S3_ACCESS_KEY: tamam
       S3_SECRET_KEY: tamam-secret
       RUN_MIGRATIONS: 'true'

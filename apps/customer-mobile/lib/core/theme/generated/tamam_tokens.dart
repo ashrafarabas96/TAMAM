@@ -91,6 +91,12 @@ class TamamColorScheme {
     required this.mapRoute,
     required this.mapPickup,
     required this.mapDestination,
+    required this.textOnBrandMuted,
+    required this.textOnOverlay,
+    required this.accentInk,
+    required this.primaryInk,
+    required this.accentRule,
+    required this.primaryRule,
   });
 
   final Color background;
@@ -128,6 +134,12 @@ class TamamColorScheme {
   final Color mapRoute;
   final Color mapPickup;
   final Color mapDestination;
+  final Color textOnBrandMuted;
+  final Color textOnOverlay;
+  final Color accentInk;
+  final Color primaryInk;
+  final Color accentRule;
+  final Color primaryRule;
 
   static const TamamColorScheme light = TamamColorScheme(
     background: Color(0xFFF7F5FC),
@@ -165,6 +177,12 @@ class TamamColorScheme {
     mapRoute: Color(0xFF5D3EBC),
     mapPickup: Color(0xFF0E7A45),
     mapDestination: Color(0xFFB3123A),
+    textOnBrandMuted: Color(0xFFD9D0F5),
+    textOnOverlay: Color(0xFFFFFFFF),
+    accentInk: Color(0xFF8A5F00),
+    primaryInk: Color(0xFF5D3EBC),
+    accentRule: Color(0xFFBD8B00),
+    primaryRule: Color(0xFF8770CD),
   );
 
   static const TamamColorScheme dark = TamamColorScheme(
@@ -203,6 +221,12 @@ class TamamColorScheme {
     mapRoute: Color(0xFF8770CD),
     mapPickup: Color(0xFF3DD68C),
     mapDestination: Color(0xFFFF7A94),
+    textOnBrandMuted: Color(0xFFD9D0F5),
+    textOnOverlay: Color(0xFFFFFFFF),
+    accentInk: Color(0xFFFFD300),
+    primaryInk: Color(0xFFC3B2F0),
+    accentRule: Color(0xFFFFD300),
+    primaryRule: Color(0xFF8770CD),
   );
 }
 
@@ -249,11 +273,12 @@ abstract final class TamamSize {
   static const double avatarSm = 32.0;
   static const double avatarMd = 44.0;
   static const double avatarLg = 64.0;
-  static const double serviceCardHeight = 120.0;
+  static const double serviceCardHeight = 140.0;
   static const double bannerHeroHeight = 168.0;
   static const double bannerInlineHeight = 96.0;
   static const double bannerAspectHero = 2.25;
   static const double bannerAspectInline = 3.6;
+  static const double serviceIconTile = 52.0;
 }
 
 /// Elevation tokens as ready-to-use shadow lists (soft, brand-tinted).

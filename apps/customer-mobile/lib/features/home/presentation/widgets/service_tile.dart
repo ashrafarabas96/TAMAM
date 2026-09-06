@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_customer/core/theme/tamam_theme.dart';
 import 'package:tamam_customer/core/widgets/tamam_card.dart';
+import 'package:tamam_customer/core/widgets/tamam_icon_tile.dart';
 
 /// One service entry point on the home screen.
 ///
-/// White card, coloured icon circle, bold title and a short caption — the
-/// Getir-style tile the whole home screen is built around.
+/// Card, dimensional service icon, bold title and a short caption. The icon
+/// carries the service's colour and most of the tile's character, so it is a
+/// built surface rather than a tinted square with a glyph on it.
 class ServiceTile extends StatelessWidget {
   const ServiceTile({
     required this.title,
@@ -45,15 +47,7 @@ class ServiceTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(TamamRadius.md),
-                    ),
-                    child: Icon(icon, size: TamamSize.iconLg, color: color),
-                  ),
+                  TamamIconTile(icon: icon, color: color, size: TamamSize.serviceIconTile),
                   // Flexible, not a bare Column: title + caption at their natural line
                   // heights are a couple of pixels taller than the fixed card leaves them,
                   // and any user text scaling makes that worse. Both lines already

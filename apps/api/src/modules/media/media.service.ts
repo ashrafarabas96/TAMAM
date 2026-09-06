@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { InjectQueue } from '@nestjs/bullmq';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ErrorCode, MediaKind, MediaPurpose, type Permission } from '@tamam/shared-types';
 import type { MediaUploadIntentInput } from '@tamam/validation';
 import type { Queue } from 'bullmq';
@@ -331,5 +331,23 @@ export class MediaService {
       height: m.height,
       createdAt: m.createdAt.toISOString(),
     };
+  }  /**
+   * Reads an object from the public bucket for the API to stream itself.
+   *
+   * Only the public bucket is reachable here, and only for a MediaAsset row that
+   * is actually marked public -- the key alone is not authority to read.
+   */
+  async readPublic(key: string): Promise<{ body: Buffer; contentType: string }> {
+    const bucket = this.config.env.S3_BUCKET_PUBLIC;
+    const asset = await this.prisma.mediaAsset.findFirst({
+      where: { objectKey: key, bucket, isPublic: true },
+      select: { mimeType: true },
+    });
+    if (!asset) throw new NotFoundException('media not found');
+
+    const body = await this.storage.getObject(bucket, key);
+    return { body, contentType: asset.mimeType || 'application/octet-stream' };
   }
+
+
 }
