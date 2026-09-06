@@ -13,6 +13,7 @@ import { seedChalets } from './seed/chalets';
 import { type SeedContext, SeedSummary, log } from './seed/context';
 import { seedPlatform } from './seed/platform';
 import { writeSeedAssets } from './seed/png';
+import { uploadSeedAssets } from './seed/upload-assets';
 import { seedPricing } from './seed/pricing';
 import { seedUsers } from './seed/users';
 import { seedZones } from './seed/zones';
@@ -78,6 +79,9 @@ async function main(): Promise<void> {
     log('· placeholder creatives');
     const assets = writeSeedAssets(assetsDir);
     ctx.summary.set('placeholder images', assets.length);
+    // Writing them to disk is not enough — the app loads them over HTTP from the
+    // object store, so they have to actually be in it.
+    await uploadSeedAssets(ctx);
 
     log('· campaign & banners');
     await seedCampaign(ctx, catalog, zones, users.superAdminId);
@@ -86,7 +90,7 @@ async function main(): Promise<void> {
     log('Seed complete in ' + `${((Date.now() - started) / 1000).toFixed(1)}s`);
     log(ctx.summary.render());
     log('');
-    log(`  placeholder PNGs written to ${assetsDir}`);
+    log(`  placeholder PNGs written to ${assetsDir} and uploaded to the object store`);
   } finally {
     await prisma.$disconnect();
   }

@@ -97,8 +97,8 @@ const BANNERS: BannerSeed[] = [
  * One live campaign so the customer app has real banners to render on first run.
  *
  * The MediaAsset rows point at object keys in the **public** bucket; the bytes themselves are
- * generated into `infrastructure/docker/seed-assets/` and uploaded by `scripts/seed-assets.sh`.
- * Until that script runs, the rows are valid and the URLs simply 404.
+ * generated into `infrastructure/docker/seed-assets/` and uploaded to the object
+ * store by `uploadSeedAssets` in the same seed run, so the URLs resolve immediately.
  */
 export async function seedCampaign(
   ctx: SeedContext,
@@ -196,5 +196,4 @@ export async function seedCampaign(
     else await prisma.banner.create({ data: { campaignId: campaign.id, ...data } });
   }
   summary.set('banners', BANNERS.length);
-  summary.note('run `bash scripts/seed-assets.sh` to upload the placeholder creatives to MinIO/S3');
 }
