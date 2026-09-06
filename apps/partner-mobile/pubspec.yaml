@@ -1,7 +1,19 @@
 name: tamam_partner
 description: TAMAM — partner app for drivers, couriers and technicians in Palestine.
 publish_to: "none"
-version: 1.0.0+1
+# The number after '+' is the Android versionCode, and Android refuses to install
+# a lower one over a higher one -- it reads as a downgrade and fails with the
+# unhelpful "App not installed".
+#
+# `flutter build apk --split-per-abi` does NOT use this number directly: it
+# overrides it with `abiVersionCode * 1000 + buildNumber`, where arm64 is 2. A
+# split arm64 build of 1.0.0+1 therefore shipped as versionCode 2001, and a later
+# non-split build of the same pubspec shipped as 1 -- a downgrade that could not
+# be installed over it.
+#
+# Starting the build number above every code shipped so far keeps both build
+# shapes monotonic: plain builds are 3001+, split arm64 builds are 5001+.
+version: 1.1.0+3001
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
