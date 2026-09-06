@@ -136,7 +136,7 @@ class DocumentTile extends ConsumerWidget {
               decoration: BoxDecoration(color: colors.dangerSoft, borderRadius: BorderRadius.circular(TamamRadius.sm)),
               child: Text(
                 l10n.documentRejectionReason(doc.rejectionReason!),
-                style: TamamType.bodySm.toTextStyle(color: TamamSemantic.dangerStrong),
+                style: TamamType.bodySm.toTextStyle(color: context.colors.dangerStrong),
               ),
             ),
           if (needsAction)

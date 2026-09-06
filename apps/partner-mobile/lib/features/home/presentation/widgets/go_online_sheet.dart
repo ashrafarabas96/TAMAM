@@ -140,7 +140,7 @@ class _GoOnlineSheetState extends ConsumerState<GoOnlineSheet> {
                 else if (approved.isEmpty)
                   _Notice(
                     tone: colors.warningSoft,
-                    foreground: TamamSemantic.warningStrong,
+                    foreground: context.colors.warningStrong,
                     icon: Icons.directions_car_outlined,
                     text: l10n.goOnlineNoVehicle,
                     actionLabel: l10n.vehiclesAdd,
@@ -284,7 +284,7 @@ class _BlockerNotice extends ConsumerWidget {
     }
     return _Notice(
       tone: colors.dangerSoft,
-      foreground: TamamSemantic.dangerStrong,
+      foreground: context.colors.dangerStrong,
       icon: Icons.error_outline_rounded,
       text: text,
       actionLabel: actionLabel,

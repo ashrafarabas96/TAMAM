@@ -94,7 +94,7 @@ class _PromosScreenState extends ConsumerState<PromosScreen> {
                   Expanded(
                     child: Text(
                       l10n.promoPending(pending),
-                      style: TamamType.labelMd.toTextStyle(color: TamamSemantic.successStrong),
+                      style: TamamType.labelMd.toTextStyle(color: context.colors.successStrong),
                     ),
                   ),
                   IconButton(

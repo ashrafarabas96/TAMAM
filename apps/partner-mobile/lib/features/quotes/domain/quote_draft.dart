@@ -1,7 +1,6 @@
 import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_partner/core/models/json.dart';
 import 'package:tamam_partner/core/models/money.dart';
-import 'package:tamam_partner/features/quotes/domain/quote.dart';
 
 /// One line the partner is composing, held in minor units end-to-end.
 ///

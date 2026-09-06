@@ -62,10 +62,10 @@ class StatusPill extends StatelessWidget {
     final (Color background, Color foreground) = switch (tone) {
       PillTone.neutral => (colors.surfaceAlt, colors.textSecondary),
       PillTone.brand => (colors.surfaceBrandSoft, colors.primary),
-      PillTone.success => (colors.successSoft, TamamSemantic.successStrong),
-      PillTone.warning => (colors.warningSoft, TamamSemantic.warningStrong),
-      PillTone.danger => (colors.dangerSoft, TamamSemantic.dangerStrong),
-      PillTone.info => (colors.infoSoft, TamamSemantic.infoStrong),
+      PillTone.success => (colors.successSoft, context.colors.successStrong),
+      PillTone.warning => (colors.warningSoft, context.colors.warningStrong),
+      PillTone.danger => (colors.dangerSoft, context.colors.dangerStrong),
+      PillTone.info => (colors.infoSoft, context.colors.infoStrong),
     };
 
     return Container(

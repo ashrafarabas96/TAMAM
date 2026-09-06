@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_partner/core/format/unit_formatter.dart';
-import 'package:tamam_partner/core/network/failure_messages.dart';
 import 'package:tamam_partner/core/providers/core_providers.dart';
 import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_partner/core/theme/tamam_theme.dart';

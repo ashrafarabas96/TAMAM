@@ -90,12 +90,12 @@ class _CancelJobSheetState extends ConsumerState<CancelJobSheet> {
             ),
             child: Row(
               children: <Widget>[
-                Icon(Icons.info_outline_rounded, color: TamamSemantic.warningStrong),
+                Icon(Icons.info_outline_rounded, color: context.colors.warningStrong),
                 const SizedBox(width: TamamSpacing.s2),
                 Expanded(
                   child: Text(
                     l10n.cancelFeeWarning,
-                    style: TamamType.bodySm.toTextStyle(color: TamamSemantic.warningStrong),
+                    style: TamamType.bodySm.toTextStyle(color: context.colors.warningStrong),
                   ),
                 ),
               ],

@@ -380,12 +380,12 @@ class _ServiceEstimate extends ConsumerWidget {
               ),
               child: Row(
                 children: <Widget>[
-                  Icon(Icons.info_outline_rounded, color: TamamSemantic.infoStrong),
+                  Icon(Icons.info_outline_rounded, color: context.colors.infoStrong),
                   const SizedBox(width: TamamSpacing.s2),
                   Expanded(
                     child: Text(
                       l10n.pricingInspectionExplainer,
-                      style: TamamType.bodySm.toTextStyle(color: TamamSemantic.infoStrong),
+                      style: TamamType.bodySm.toTextStyle(color: context.colors.infoStrong),
                     ),
                   ),
                 ],

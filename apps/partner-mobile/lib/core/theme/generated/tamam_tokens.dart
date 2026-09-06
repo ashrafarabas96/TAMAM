@@ -6,66 +6,51 @@ import 'package:flutter/material.dart';
 
 import '../../contracts/generated/tamam_contracts.dart';
 
-/// Brand palette (purple + yellow) — Getir-inspired identity.
+/// Brand palette: purple #5D3EBC and yellow #FFD300, the two identity constants.
 abstract final class TamamBrand {
-  static const Color purple50 = Color(0xFFF2ECFF);
-  static const Color purple100 = Color(0xFFE4D9FE);
-  static const Color purple200 = Color(0xFFC9B4FD);
-  static const Color purple300 = Color(0xFFA98CFA);
-  static const Color purple400 = Color(0xFF8560F8);
-  static const Color purple500 = Color(0xFF5B32F6);
-  static const Color purple600 = Color(0xFF4C27EA);
-  static const Color purple700 = Color(0xFF3D1ECF);
-  static const Color purple800 = Color(0xFF2E169C);
-  static const Color purple900 = Color(0xFF1B0F5E);
-  static const Color yellow50 = Color(0xFFFFF8E1);
-  static const Color yellow100 = Color(0xFFFFECB3);
-  static const Color yellow200 = Color(0xFFFFE082);
-  static const Color yellow300 = Color(0xFFFFD54F);
-  static const Color yellow400 = Color(0xFFFFCA28);
-  static const Color yellow500 = Color(0xFFFFC107);
-  static const Color yellow600 = Color(0xFFFFB300);
-  static const Color yellow700 = Color(0xFFFFA000);
-  static const Color yellow800 = Color(0xFFFF8F00);
-  static const Color yellow900 = Color(0xFFFF6F00);
+  static const Color purple50 = Color(0xFFF5F3FB);
+  static const Color purple100 = Color(0xFFE8E4F6);
+  static const Color purple200 = Color(0xFFCEC5EB);
+  static const Color purple300 = Color(0xFFAE9EDE);
+  static const Color purple400 = Color(0xFF8770CD);
+  static const Color purple500 = Color(0xFF5D3EBC);
+  static const Color purple600 = Color(0xFF5538AC);
+  static const Color purple700 = Color(0xFF4B329A);
+  static const Color purple800 = Color(0xFF3F2A83);
+  static const Color purple900 = Color(0xFF32206A);
+  static const Color yellow50 = Color(0xFFFFFBEB);
+  static const Color yellow100 = Color(0xFFFFF7D1);
+  static const Color yellow200 = Color(0xFFFFEFA3);
+  static const Color yellow300 = Color(0xFFFFE56B);
+  static const Color yellow400 = Color(0xFFFFDC33);
+  static const Color yellow500 = Color(0xFFFFD300);
+  static const Color yellow600 = Color(0xFFEFC100);
+  static const Color yellow700 = Color(0xFFDCAC00);
+  static const Color yellow800 = Color(0xFFC49100);
+  static const Color yellow900 = Color(0xFFAD7700);
 }
 
 abstract final class TamamNeutral {
   static const Color n0 = Color(0xFFFFFFFF);
-  static const Color n50 = Color(0xFFF6F6FB);
-  static const Color n100 = Color(0xFFEFEFF7);
-  static const Color n200 = Color(0xFFE2E1F0);
-  static const Color n300 = Color(0xFFCDCBE2);
-  static const Color n400 = Color(0xFFA29FC0);
-  static const Color n500 = Color(0xFF77739B);
-  static const Color n600 = Color(0xFF585378);
-  static const Color n700 = Color(0xFF3F3A5C);
-  static const Color n800 = Color(0xFF2A2542);
-  static const Color n900 = Color(0xFF1B1240);
-  static const Color n1000 = Color(0xFF100A28);
-}
-
-abstract final class TamamSemantic {
-  static const Color successBase = Color(0xFF1FA463);
-  static const Color successSoft = Color(0xFFE3F6EC);
-  static const Color successStrong = Color(0xFF15794A);
-  static const Color warningBase = Color(0xFFF59E0B);
-  static const Color warningSoft = Color(0xFFFEF3DC);
-  static const Color warningStrong = Color(0xFFB45309);
-  static const Color dangerBase = Color(0xFFE11D48);
-  static const Color dangerSoft = Color(0xFFFDE7EC);
-  static const Color dangerStrong = Color(0xFF9F1239);
-  static const Color infoBase = Color(0xFF2563EB);
-  static const Color infoSoft = Color(0xFFE5EDFD);
-  static const Color infoStrong = Color(0xFF1E40AF);
+  static const Color n50 = Color(0xFFFAF9FE);
+  static const Color n100 = Color(0xFFF4F2FB);
+  static const Color n200 = Color(0xFFE5E0F1);
+  static const Color n300 = Color(0xFFCFC8E2);
+  static const Color n400 = Color(0xFFA9A0C4);
+  static const Color n500 = Color(0xFF8B83A6);
+  static const Color n600 = Color(0xFF6E6889);
+  static const Color n700 = Color(0xFF565073);
+  static const Color n800 = Color(0xFF3A3160);
+  static const Color n900 = Color(0xFF1B1140);
+  static const Color n1000 = Color(0xFF191922);
 }
 
 abstract final class TamamServiceColors {
-  static const Color ride = Color(0xFF5B32F6);
-  static const Color delivery = Color(0xFF3D1ECF);
-  static const Color homeService = Color(0xFFFFC107);
-  static const Color chalet = Color(0xFF8560F8);
-  static const Color urgent = Color(0xFFE11D48);
+  static const Color ride = Color(0xFF5D3EBC);
+  static const Color delivery = Color(0xFF4B329A);
+  static const Color homeService = Color(0xFFC49100);
+  static const Color chalet = Color(0xFF8770CD);
+  static const Color urgent = Color(0xFFB3123A);
 }
 
 /// Semantic colour scheme resolved per theme mode.
@@ -91,6 +76,18 @@ class TamamColorScheme {
     required this.accentPressed,
     required this.overlay,
     required this.skeleton,
+    required this.success,
+    required this.successSoft,
+    required this.successStrong,
+    required this.warning,
+    required this.warningSoft,
+    required this.warningStrong,
+    required this.danger,
+    required this.dangerSoft,
+    required this.dangerStrong,
+    required this.info,
+    required this.infoSoft,
+    required this.infoStrong,
     required this.mapRoute,
     required this.mapPickup,
     required this.mapDestination,
@@ -116,60 +113,96 @@ class TamamColorScheme {
   final Color accentPressed;
   final Color overlay;
   final Color skeleton;
+  final Color success;
+  final Color successSoft;
+  final Color successStrong;
+  final Color warning;
+  final Color warningSoft;
+  final Color warningStrong;
+  final Color danger;
+  final Color dangerSoft;
+  final Color dangerStrong;
+  final Color info;
+  final Color infoSoft;
+  final Color infoStrong;
   final Color mapRoute;
   final Color mapPickup;
   final Color mapDestination;
 
   static const TamamColorScheme light = TamamColorScheme(
-    background: Color(0xFFF6F6FB),
+    background: Color(0xFFF7F5FC),
     surface: Color(0xFFFFFFFF),
-    surfaceAlt: Color(0xFFF2ECFF),
-    surfaceBrand: Color(0xFF5B32F6),
-    surfaceBrandSoft: Color(0xFFF2ECFF),
-    border: Color(0xFFE2E1F0),
-    borderStrong: Color(0xFFCDCBE2),
-    textPrimary: Color(0xFF1B1240),
-    textSecondary: Color(0xFF585378),
-    textTertiary: Color(0xFFA29FC0),
+    surfaceAlt: Color(0xFFEFEAFB),
+    surfaceBrand: Color(0xFF5D3EBC),
+    surfaceBrandSoft: Color(0xFFEFE9FD),
+    border: Color(0xFFE5E0F1),
+    borderStrong: Color(0xFF8B83A6),
+    textPrimary: Color(0xFF1B1140),
+    textSecondary: Color(0xFF565073),
+    textTertiary: Color(0xFF6E6889),
     textOnBrand: Color(0xFFFFFFFF),
-    textOnAccent: Color(0xFF1B1240),
-    primary: Color(0xFF5B32F6),
-    primaryHover: Color(0xFF4C27EA),
-    primaryPressed: Color(0xFF3D1ECF),
-    accent: Color(0xFFFFC107),
-    accentHover: Color(0xFFFFB300),
-    accentPressed: Color(0xFFFFA000),
-    overlay: Color(0x991B1240),
-    skeleton: Color(0xFFEFEFF7),
-    mapRoute: Color(0xFF5B32F6),
-    mapPickup: Color(0xFF1FA463),
-    mapDestination: Color(0xFFE11D48),
+    textOnAccent: Color(0xFF21154A),
+    primary: Color(0xFF5D3EBC),
+    primaryHover: Color(0xFF5338A5),
+    primaryPressed: Color(0xFF49338E),
+    accent: Color(0xFFFFD300),
+    accentHover: Color(0xFFF0C600),
+    accentPressed: Color(0xFFD9B300),
+    overlay: Color(0xA621154A),
+    skeleton: Color(0xFFEFEAF8),
+    success: Color(0xFF0E7A45),
+    successSoft: Color(0xFFE4F5EC),
+    successStrong: Color(0xFF0A5C34),
+    warning: Color(0xFF8A5200),
+    warningSoft: Color(0xFFFDF1DC),
+    warningStrong: Color(0xFF6B3F00),
+    danger: Color(0xFFB3123A),
+    dangerSoft: Color(0xFFFCE8ED),
+    dangerStrong: Color(0xFF8C0E2D),
+    info: Color(0xFF1D4FBF),
+    infoSoft: Color(0xFFE6EDFC),
+    infoStrong: Color(0xFF163C92),
+    mapRoute: Color(0xFF5D3EBC),
+    mapPickup: Color(0xFF0E7A45),
+    mapDestination: Color(0xFFB3123A),
   );
 
   static const TamamColorScheme dark = TamamColorScheme(
-    background: Color(0xFF100A28),
-    surface: Color(0xFF1B1240),
-    surfaceAlt: Color(0xFF2A2542),
-    surfaceBrand: Color(0xFF5B32F6),
-    surfaceBrandSoft: Color(0xFF2E169C),
-    border: Color(0xFF2A2542),
-    borderStrong: Color(0xFF3F3A5C),
-    textPrimary: Color(0xFFF6F6FB),
-    textSecondary: Color(0xFFA29FC0),
-    textTertiary: Color(0xFF77739B),
+    background: Color(0xFF121017),
+    surface: Color(0xFF191922),
+    surfaceAlt: Color(0xFF232331),
+    surfaceBrand: Color(0xFF5D3EBC),
+    surfaceBrandSoft: Color(0xFF2B2350),
+    border: Color(0xFF2E2E3D),
+    borderStrong: Color(0xFF6E6B82),
+    textPrimary: Color(0xFFF6F4FD),
+    textSecondary: Color(0xFFB5AECF),
+    textTertiary: Color(0xFF948DAC),
     textOnBrand: Color(0xFFFFFFFF),
-    textOnAccent: Color(0xFF1B1240),
-    primary: Color(0xFFA98CFA),
-    primaryHover: Color(0xFFC9B4FD),
-    primaryPressed: Color(0xFF8560F8),
-    accent: Color(0xFFFFCA28),
-    accentHover: Color(0xFFFFD54F),
-    accentPressed: Color(0xFFFFC107),
-    overlay: Color(0xCC100A28),
-    skeleton: Color(0xFF2A2542),
-    mapRoute: Color(0xFFA98CFA),
-    mapPickup: Color(0xFF4ED08D),
-    mapDestination: Color(0xFFFB7185),
+    textOnAccent: Color(0xFF21154A),
+    primary: Color(0xFF7257C5),
+    primaryHover: Color(0xFF7D64C9),
+    primaryPressed: Color(0xFF6D51C3),
+    accent: Color(0xFFFFD300),
+    accentHover: Color(0xFFFFDE3D),
+    accentPressed: Color(0xFFE8C000),
+    overlay: Color(0xD90B0910),
+    skeleton: Color(0xFF232331),
+    success: Color(0xFF3DD68C),
+    successSoft: Color(0xFF12301F),
+    successStrong: Color(0xFF6FE7AC),
+    warning: Color(0xFFFFC24D),
+    warningSoft: Color(0xFF332405),
+    warningStrong: Color(0xFFFFD680),
+    danger: Color(0xFFFF7A94),
+    dangerSoft: Color(0xFF37131C),
+    dangerStrong: Color(0xFFFFA3B4),
+    info: Color(0xFF7FA8FF),
+    infoSoft: Color(0xFF141F38),
+    infoStrong: Color(0xFFA8C4FF),
+    mapRoute: Color(0xFF8770CD),
+    mapPickup: Color(0xFF3DD68C),
+    mapDestination: Color(0xFFFF7A94),
   );
 }
 
@@ -196,20 +229,20 @@ abstract final class TamamRadius {
   static const double xl = 20.0;
   static const double xxl = 28.0;
   static const double pill = 999.0;
-  static const double card = 16.0;
-  static const double button = 12.0;
-  static const double sheet = 24.0;
-  static const double banner = 16.0;
+  static const double card = 18.0;
+  static const double button = 14.0;
+  static const double sheet = 28.0;
+  static const double banner = 20.0;
 }
 
 abstract final class TamamSize {
   static const double touchTargetMin = 48.0;
-  static const double buttonHeightLg = 52.0;
-  static const double buttonHeightMd = 44.0;
-  static const double buttonHeightSm = 36.0;
-  static const double inputHeight = 52.0;
+  static const double buttonHeightLg = 54.0;
+  static const double buttonHeightMd = 46.0;
+  static const double buttonHeightSm = 38.0;
+  static const double inputHeight = 54.0;
   static const double appBarHeight = 56.0;
-  static const double bottomNavHeight = 64.0;
+  static const double bottomNavHeight = 66.0;
   static const double iconSm = 16.0;
   static const double iconMd = 22.0;
   static const double iconLg = 28.0;
@@ -217,7 +250,7 @@ abstract final class TamamSize {
   static const double avatarMd = 44.0;
   static const double avatarLg = 64.0;
   static const double serviceCardHeight = 120.0;
-  static const double bannerHeroHeight = 156.0;
+  static const double bannerHeroHeight = 168.0;
   static const double bannerInlineHeight = 96.0;
   static const double bannerAspectHero = 2.25;
   static const double bannerAspectInline = 3.6;
@@ -225,22 +258,22 @@ abstract final class TamamSize {
 
 /// Elevation tokens as ready-to-use shadow lists (soft, brand-tinted).
 abstract final class TamamElevation {
-  static const List<BoxShadow> card = <BoxShadow>[BoxShadow(color: Color(0x0F1E1050), offset: Offset(0.0, 2.0), blurRadius: 10.0, spreadRadius: 0.0)];
-  static const List<BoxShadow> raised = <BoxShadow>[BoxShadow(color: Color(0x191E1050), offset: Offset(0.0, 6.0), blurRadius: 20.0, spreadRadius: 0.0)];
-  static const List<BoxShadow> sheet = <BoxShadow>[BoxShadow(color: Color(0x261E1050), offset: Offset(0.0, -4.0), blurRadius: 24.0, spreadRadius: 0.0)];
-  static const List<BoxShadow> floating = <BoxShadow>[BoxShadow(color: Color(0x331E1050), offset: Offset(0.0, 8.0), blurRadius: 28.0, spreadRadius: 0.0)];
+  static const List<BoxShadow> card = <BoxShadow>[BoxShadow(color: Color(0x1221154A), offset: Offset(0.0, 2.0), blurRadius: 12.0, spreadRadius: 0.0)];
+  static const List<BoxShadow> raised = <BoxShadow>[BoxShadow(color: Color(0x1F21154A), offset: Offset(0.0, 8.0), blurRadius: 24.0, spreadRadius: -2.0)];
+  static const List<BoxShadow> sheet = <BoxShadow>[BoxShadow(color: Color(0x2E21154A), offset: Offset(0.0, -6.0), blurRadius: 32.0, spreadRadius: 0.0)];
+  static const List<BoxShadow> floating = <BoxShadow>[BoxShadow(color: Color(0x3821154A), offset: Offset(0.0, 12.0), blurRadius: 36.0, spreadRadius: -4.0)];
 }
 
 abstract final class TamamMotion {
   static const Duration durationFast = Duration(milliseconds: 120);
-  static const Duration durationBase = Duration(milliseconds: 200);
-  static const Duration durationSlow = Duration(milliseconds: 320);
-  static const Duration durationBannerAutoplay = Duration(milliseconds: 4500);
+  static const Duration durationBase = Duration(milliseconds: 220);
+  static const Duration durationSlow = Duration(milliseconds: 340);
+  static const Duration durationBannerAutoplay = Duration(milliseconds: 5000);
 }
 
 abstract final class TamamFonts {
-  static const String arabic = 'Cairo';
-  static const String latin = 'Inter';
+  static const String arabic = 'Tajawal';
+  static const String latin = 'Poppins';
   static const String mono = 'JetBrains Mono';
 }
 
@@ -285,7 +318,7 @@ class BannerPlacementSpec {
 
 abstract final class TamamBannerSpecs {
   static const Map<BannerPlacement, BannerPlacementSpec> byPlacement = {
-    BannerPlacement.homeHero: BannerPlacementSpec(aspectRatio: 2.25, maxItems: 6, autoplay: Duration(milliseconds: 4500), style: 'carousel'),
+    BannerPlacement.homeHero: BannerPlacementSpec(aspectRatio: 2.25, maxItems: 6, autoplay: Duration(milliseconds: 5000), style: 'carousel'),
     BannerPlacement.homeInline: BannerPlacementSpec(aspectRatio: 3.6, maxItems: 3, autoplay: Duration(milliseconds: 0), style: 'stack'),
     BannerPlacement.serviceCategoryTop: BannerPlacementSpec(aspectRatio: 3.0, maxItems: 3, autoplay: Duration(milliseconds: 5000), style: 'carousel'),
     BannerPlacement.checkoutPromo: BannerPlacementSpec(aspectRatio: 4.5, maxItems: 1, autoplay: Duration(milliseconds: 0), style: 'single'),
@@ -319,7 +352,7 @@ abstract final class TamamBannerThemes {
     'yellow': BannerThemeSpec(background: Color(0xFFFFD300), foreground: Color(0xFF21154A), accent: Color(0xFF5D3EBC)),
     'dark': BannerThemeSpec(background: Color(0xFF191922), foreground: Color(0xFFFFFFFF), accent: Color(0xFFFFD300)),
     'light': BannerThemeSpec(background: Color(0xFFFFFFFF), foreground: Color(0xFF191922), accent: Color(0xFF5D3EBC)),
-    'gradientPurple': BannerThemeSpec(background: Color(0xFF5D3EBC), foreground: Color(0xFFFFFFFF), accent: Color(0xFFFFD300), gradient: [Color(0xFF5D3EBC), Color(0xFF3E2887)]),
+    'gradientPurple': BannerThemeSpec(background: Color(0xFF6A48D6), foreground: Color(0xFFFFFFFF), accent: Color(0xFFFFD300), gradient: [Color(0xFF6A48D6), Color(0xFF3F2A83)]),
     'gradientSunset': BannerThemeSpec(background: Color(0xFFFFD300), foreground: Color(0xFF21154A), accent: Color(0xFF5D3EBC), gradient: [Color(0xFFFFD300), Color(0xFFF97316)]),
   };
 }

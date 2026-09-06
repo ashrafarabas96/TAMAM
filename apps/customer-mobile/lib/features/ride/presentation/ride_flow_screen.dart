@@ -196,7 +196,7 @@ class _RideSheet extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           localizedFailure(l10n, state.failure!),
-                          style: TamamType.bodySm.toTextStyle(color: TamamSemantic.dangerStrong),
+                          style: TamamType.bodySm.toTextStyle(color: context.colors.dangerStrong),
                         ),
                       ),
                       TextButton(onPressed: onRetryEstimate, child: Text(l10n.actionRetry)),

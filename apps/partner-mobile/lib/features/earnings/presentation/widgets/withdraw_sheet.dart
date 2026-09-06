@@ -10,7 +10,6 @@ import 'package:tamam_partner/core/network/failure_messages.dart';
 import 'package:tamam_partner/core/providers/core_providers.dart';
 import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_partner/core/theme/tamam_theme.dart';
-import 'package:tamam_partner/core/widgets/app_feedback.dart';
 import 'package:tamam_partner/core/widgets/sheet_scaffold.dart';
 import 'package:tamam_partner/core/widgets/tamam_button.dart';
 import 'package:tamam_partner/features/account/domain/partner_profile.dart';

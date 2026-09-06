@@ -127,7 +127,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               ),
               child: Text(
                 l10n.otpDevCode(challenge!.devCode!),
-                style: TamamType.labelMd.toTextStyle(color: TamamSemantic.infoStrong),
+                style: TamamType.labelMd.toTextStyle(color: context.colors.infoStrong),
               ),
             ),
           ],

@@ -93,7 +93,7 @@ class OnboardingStatusScreen extends ConsumerWidget {
                           elevated: false,
                           child: Text(
                             l10n.onboardingRejectedNoDocumentDetail,
-                            style: TamamType.bodyMd.toTextStyle(color: TamamSemantic.warningStrong),
+                            style: TamamType.bodyMd.toTextStyle(color: context.colors.warningStrong),
                           ),
                         )
                       else

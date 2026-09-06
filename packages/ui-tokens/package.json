@@ -2,7 +2,7 @@
   "name": "@tamam/ui-tokens",
   "version": "1.0.0",
   "private": true,
-  "description": "TAMAM design tokens — single source of truth for colours, type, spacing, radius and banner placements.",
+  "description": "TAMAM design tokens \u2014 single source of truth for colours, type, spacing, radius and banner placements.",
   "type": "module",
   "main": "./dist/tokens.ts",
   "types": "./dist/tokens.ts",
@@ -16,10 +16,11 @@
     "tokens.json"
   ],
   "scripts": {
-    "generate": "node scripts/generate.mjs",
-    "build": "node scripts/generate.mjs",
+    "generate": "node scripts/verify-contrast.mjs && node scripts/generate.mjs",
+    "build": "node scripts/verify-contrast.mjs && node scripts/generate.mjs",
     "lint": "echo \"no lint for tokens\"",
     "typecheck": "echo \"no typecheck for tokens\"",
-    "test": "node scripts/generate.mjs && node -e \"import('./dist/tokens.ts').catch(()=>{});\" && echo tokens-ok"
+    "test": "node scripts/verify-contrast.mjs && node scripts/generate.mjs && echo tokens-ok",
+    "verify:contrast": "node scripts/verify-contrast.mjs"
   }
 }

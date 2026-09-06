@@ -146,13 +146,13 @@ class _PromoFieldState extends State<_PromoField> {
             Expanded(
               child: Text(
                 l10n.checkoutPromoApplied(selection.promoPreview!.code),
-                style: TamamType.labelMd.toTextStyle(color: TamamSemantic.successStrong),
+                style: TamamType.labelMd.toTextStyle(color: context.colors.successStrong),
               ),
             ),
             MoneyText(
               selection.promoPreview!.discount,
               emphasis: MoneyEmphasis.subtle,
-              color: TamamSemantic.successStrong,
+              color: context.colors.successStrong,
             ),
             IconButton(
               tooltip: l10n.actionRemove,

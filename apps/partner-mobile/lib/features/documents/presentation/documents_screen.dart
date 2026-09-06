@@ -9,7 +9,6 @@ import 'package:tamam_partner/core/theme/tamam_theme.dart';
 import 'package:tamam_partner/core/widgets/app_feedback.dart';
 import 'package:tamam_partner/core/widgets/async_view.dart';
 import 'package:tamam_partner/core/widgets/offline_banner.dart';
-import 'package:tamam_partner/features/account/data/partner_repository.dart';
 import 'package:tamam_partner/features/account/domain/partner_profile.dart';
 import 'package:tamam_partner/features/account/presentation/partner_providers.dart';
 import 'package:tamam_partner/features/catalog/domain/catalog.dart';
@@ -95,7 +94,7 @@ class DocumentsScreen extends ConsumerWidget {
                               Expanded(
                                 child: Text(
                                   l10n.documentsBlockingWarning,
-                                  style: TamamType.bodySm.toTextStyle(color: TamamSemantic.dangerStrong),
+                                  style: TamamType.bodySm.toTextStyle(color: context.colors.dangerStrong),
                                 ),
                               ),
                             ],

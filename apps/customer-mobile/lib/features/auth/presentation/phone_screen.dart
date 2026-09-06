@@ -109,12 +109,12 @@ class _Notice extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          Icon(Icons.info_outline_rounded, size: TamamSize.iconMd, color: TamamSemantic.warningStrong),
+          Icon(Icons.info_outline_rounded, size: TamamSize.iconMd, color: context.colors.warningStrong),
           const SizedBox(width: TamamSpacing.s2),
           Expanded(
             child: Text(
               message,
-              style: TamamType.bodySm.toTextStyle(color: TamamSemantic.warningStrong),
+              style: TamamType.bodySm.toTextStyle(color: context.colors.warningStrong),
             ),
           ),
         ],

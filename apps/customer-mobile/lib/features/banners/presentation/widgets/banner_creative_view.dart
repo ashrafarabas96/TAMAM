@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tamam_customer/core/network/media_url.dart';
 import 'package:tamam_customer/core/providers/core_providers.dart';
 import 'package:tamam_customer/core/theme/banner_style.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
@@ -38,7 +39,14 @@ class BannerCreativeView extends ConsumerWidget {
     final String language = ref.watch(localeControllerProvider).languageCode;
     final BannerPalette palette = BannerPalette.forTheme(banner.creative.theme);
     final BorderRadius borderRadius = BorderRadius.circular(radius);
-    final String imageUrl = banner.creative.imageUrl.resolve(language);
+    // The API mints public media URLs from its own point of view, which on a
+    // local stack is a loopback host a phone cannot reach.
+    final String imageUrl =
+        resolveMediaUrl(banner.creative.imageUrl.resolve(language), ref.watch(appEnvProvider));
+
+    // In Arabic the page delta inverts relative to the finger, so an unsigned
+    // offset makes the artwork slide against the swipe.
+    final double direction = Directionality.of(context) == TextDirection.rtl ? -1 : 1;
 
     return DecoratedBox(
       decoration: palette.decoration(borderRadius),
@@ -49,9 +57,12 @@ class BannerCreativeView extends ConsumerWidget {
           children: <Widget>[
             if (imageUrl.isNotEmpty)
               Transform.translate(
-                offset: Offset(parallax * 18, 0),
+                offset: Offset(parallax * 18 * direction, 0),
                 child: Transform.scale(
-                  scale: parallax == 0 ? 1 : 1.06,
+                  // `parallax` is continuous but the scale used to be a step on
+                  // `== 0`, so the artwork snapped 6% smaller the instant a page
+                  // settled. Interpolating keeps the depth cue and drops the pop.
+                  scale: 1 + 0.06 * parallax.abs().clamp(0.0, 1.0),
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,

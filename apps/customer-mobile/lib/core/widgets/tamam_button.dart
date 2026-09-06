@@ -82,7 +82,7 @@ class TamamButton extends StatelessWidget {
           onPressed: enabled ? onPressed : null,
           style: FilledButton.styleFrom(
             backgroundColor: colors.dangerSoft,
-            foregroundColor: TamamSemantic.dangerStrong,
+            foregroundColor: colors.dangerStrong,
             minimumSize: const Size.fromHeight(TamamSize.buttonHeightLg),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TamamRadius.button)),
           ),
@@ -106,6 +106,6 @@ class TamamButton extends StatelessWidget {
         TamamButtonVariant.primary => colors.textOnAccent,
         TamamButtonVariant.secondary => colors.textOnBrand,
         TamamButtonVariant.outline || TamamButtonVariant.ghost => colors.primary,
-        TamamButtonVariant.danger => TamamSemantic.dangerStrong,
+        TamamButtonVariant.danger => colors.dangerStrong,
       };
 }

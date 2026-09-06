@@ -117,7 +117,7 @@ class _QuoteBuilderScreenState extends ConsumerState<QuoteBuilderScreen> {
                         ),
                         child: Text(
                           l10n.quoteRejectionNote(state.rejectedNote!),
-                          style: TamamType.bodySm.toTextStyle(color: TamamSemantic.dangerStrong),
+                          style: TamamType.bodySm.toTextStyle(color: context.colors.dangerStrong),
                         ),
                       ),
                     if (widget.changeOrder)

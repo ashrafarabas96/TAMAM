@@ -171,7 +171,7 @@ class WarningsCard extends ConsumerWidget {
         for (final PartnerDocument doc in blocking)
           _WarningTile(
             color: colors.dangerSoft,
-            foreground: TamamSemantic.dangerStrong,
+            foreground: context.colors.dangerStrong,
             icon: Icons.gpp_bad_rounded,
             text: doc.isRejected
                 ? l10n.warningDocumentRejected(JobLabels.documentType(l10n, doc.type))
@@ -181,7 +181,7 @@ class WarningsCard extends ConsumerWidget {
         for (final PartnerDocument doc in expiring)
           _WarningTile(
             color: colors.warningSoft,
-            foreground: TamamSemantic.warningStrong,
+            foreground: context.colors.warningStrong,
             icon: Icons.schedule_rounded,
             text: l10n.warningDocumentExpiring(JobLabels.documentType(l10n, doc.type), doc.daysUntilExpiry ?? 0),
             onTap: () => context.push(Routes.documents),
@@ -189,7 +189,7 @@ class WarningsCard extends ConsumerWidget {
         if (needsVehicle)
           _WarningTile(
             color: colors.warningSoft,
-            foreground: TamamSemantic.warningStrong,
+            foreground: context.colors.warningStrong,
             icon: Icons.directions_car_outlined,
             text: l10n.warningNoActiveVehicle,
             onTap: () => context.push(Routes.vehicles),
@@ -327,7 +327,7 @@ class InterruptionCard extends ConsumerWidget {
         children: <Widget>[
           Icon(Icons.location_off_rounded, color: colors.danger),
           const SizedBox(width: TamamSpacing.s2),
-          Expanded(child: Text(text, style: TamamType.bodySm.toTextStyle(color: TamamSemantic.dangerStrong))),
+          Expanded(child: Text(text, style: TamamType.bodySm.toTextStyle(color: context.colors.dangerStrong))),
           if (settings)
             TextButton(
               onPressed: () => unawaited(
@@ -363,8 +363,8 @@ class BackgroundLimitedBanner extends ConsumerWidget {
         children: <Widget>[
           Icon(Icons.visibility_rounded, color: colors.warning),
           const SizedBox(width: TamamSpacing.s2),
-          Expanded(child: Text(l10n.backgroundLimitedBanner, style: TamamType.bodySm.toTextStyle(color: TamamSemantic.warningStrong))),
-          Text(l10n.actionOpenSettings, style: TamamType.labelSm.toTextStyle(color: TamamSemantic.warningStrong)),
+          Expanded(child: Text(l10n.backgroundLimitedBanner, style: TamamType.bodySm.toTextStyle(color: context.colors.warningStrong))),
+          Text(l10n.actionOpenSettings, style: TamamType.labelSm.toTextStyle(color: context.colors.warningStrong)),
         ],
       ),
     );

@@ -1,4 +1,9 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  CreateBucketCommand,
+  HeadBucketCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 
 import type { SeedContext } from './context';
 import { SEED_ASSET_SPECS, solidPng } from './png';
@@ -28,8 +33,29 @@ export async function uploadSeedAssets(ctx: SeedContext): Promise<number> {
     credentials: { accessKeyId: e.S3_ACCESS_KEY, secretAccessKey: e.S3_SECRET_KEY },
   });
 
+  // `api` and `minio-init` both start the moment MinIO reports healthy, so this
+  // upload races the container that creates the buckets. Losing the race raises
+  // NoSuchBucket and would leave the banners blank again, so create them here
+  // rather than depending on who wins.
+  const ensureBucket = async (bucket: string): Promise<void> => {
+    try {
+      await client.send(new HeadBucketCommand({ Bucket: bucket }));
+    } catch {
+      try {
+        await client.send(new CreateBucketCommand({ Bucket: bucket }));
+      } catch (err: unknown) {
+        // Another process creating it first is the expected outcome, not a fault.
+        const name = err instanceof Error ? err.name : '';
+        if (name !== 'BucketAlreadyOwnedByYou' && name !== 'BucketAlreadyExists') throw err;
+      }
+    }
+  };
+
   let uploaded = 0;
   try {
+    await ensureBucket(e.S3_BUCKET_PUBLIC);
+    await ensureBucket(e.S3_BUCKET_PRIVATE);
+
     for (const spec of SEED_ASSET_SPECS) {
       const body = solidPng(spec.width, spec.height, spec.background, spec.accent);
       await client.send(

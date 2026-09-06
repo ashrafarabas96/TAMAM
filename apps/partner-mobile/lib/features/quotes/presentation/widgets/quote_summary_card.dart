@@ -152,7 +152,7 @@ class QuoteSummaryCard extends ConsumerWidget {
               ),
               child: Text(
                 l10n.quoteRejectionNote(quote.decisionNote!),
-                style: TamamType.bodySm.toTextStyle(color: TamamSemantic.dangerStrong),
+                style: TamamType.bodySm.toTextStyle(color: context.colors.dangerStrong),
               ),
             ),
         ],

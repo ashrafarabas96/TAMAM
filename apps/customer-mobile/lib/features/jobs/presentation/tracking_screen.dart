@@ -304,12 +304,12 @@ class _NoPartnerCardState extends ConsumerState<_NoPartnerCard> {
         children: <Widget>[
           Text(
             l10n.trackingNoPartnerTitle,
-            style: TamamType.headingSm.toTextStyle(color: TamamSemantic.warningStrong),
+            style: TamamType.headingSm.toTextStyle(color: context.colors.warningStrong),
           ),
           const SizedBox(height: TamamSpacing.s1),
           Text(
             l10n.trackingNoPartnerBody,
-            style: TamamType.bodySm.toTextStyle(color: TamamSemantic.warningStrong),
+            style: TamamType.bodySm.toTextStyle(color: context.colors.warningStrong),
           ),
           const SizedBox(height: TamamSpacing.s3),
           TamamButton(
@@ -404,12 +404,12 @@ class _ConfirmWorkCardState extends ConsumerState<_ConfirmWorkCard> {
         children: <Widget>[
           Text(
             l10n.workCompletedTitle,
-            style: TamamType.headingSm.toTextStyle(color: TamamSemantic.successStrong),
+            style: TamamType.headingSm.toTextStyle(color: context.colors.successStrong),
           ),
           const SizedBox(height: TamamSpacing.s1),
           Text(
             l10n.workCompletedBody,
-            style: TamamType.bodySm.toTextStyle(color: TamamSemantic.successStrong),
+            style: TamamType.bodySm.toTextStyle(color: context.colors.successStrong),
           ),
           const SizedBox(height: TamamSpacing.s3),
           TamamButton(

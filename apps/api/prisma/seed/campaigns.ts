@@ -153,10 +153,12 @@ export async function seedCampaign(
     ? await prisma.campaign.update({ where: { id: existing.id }, data: campaignData })
     : await prisma.campaign.create({ data: { name: CAMPAIGN_NAME, ...campaignData } });
 
+  // Deliberately left un-zoned. `bannerMatchesViewer` treats an empty zone list as
+  // "every zone", but a campaign WITH zones is hidden from any viewer whose zone is
+  // unknown (banner-targeting.ts). A fresh install has no saved address, so it sends
+  // no coordinates, so it resolves to no zone -- and a zone-locked launch campaign
+  // would be invisible on exactly the first run it exists to fill.
   await prisma.campaignZone.deleteMany({ where: { campaignId: campaign.id } });
-  await prisma.campaignZone.createMany({
-    data: [...zones.zoneIds.values()].map((zoneId) => ({ campaignId: campaign.id, zoneId })),
-  });
 
   for (const seed of BANNERS) {
     const imageArMediaId = mediaByKey.get(seed.imageArKey);

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tamam_partner/core/network/app_failure.dart';
-import 'package:tamam_partner/core/network/failure_messages.dart';
 import 'package:tamam_partner/core/routing/routes.dart';
 import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_partner/core/theme/tamam_theme.dart';

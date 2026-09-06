@@ -30,14 +30,22 @@ class TamamColors extends ThemeExtension<TamamColors> {
   Color get mapPickup => scheme.mapPickup;
   Color get mapDestination => scheme.mapDestination;
 
-  Color get success => TamamSemantic.successBase;
-  Color get successSoft => TamamSemantic.successSoft;
-  Color get warning => TamamSemantic.warningBase;
-  Color get warningSoft => TamamSemantic.warningSoft;
-  Color get danger => TamamSemantic.dangerBase;
-  Color get dangerSoft => TamamSemantic.dangerSoft;
-  Color get info => TamamSemantic.infoBase;
-  Color get infoSoft => TamamSemantic.infoSoft;
+  // Semantics are per-mode. No single value can clear AA on both a white and a
+  // near-black surface -- the luminance a colour needs to pass on white is below
+  // the luminance it needs to pass on #191922 -- so these resolve through the
+  // active scheme rather than being fixed constants.
+  Color get success => scheme.success;
+  Color get successSoft => scheme.successSoft;
+  Color get successStrong => scheme.successStrong;
+  Color get warning => scheme.warning;
+  Color get warningSoft => scheme.warningSoft;
+  Color get warningStrong => scheme.warningStrong;
+  Color get danger => scheme.danger;
+  Color get dangerSoft => scheme.dangerSoft;
+  Color get dangerStrong => scheme.dangerStrong;
+  Color get info => scheme.info;
+  Color get infoSoft => scheme.infoSoft;
+  Color get infoStrong => scheme.infoStrong;
 
   @override
   TamamColors copyWith({TamamColorScheme? scheme}) => TamamColors(scheme ?? this.scheme);
@@ -55,7 +63,7 @@ extension TamamThemeContext on BuildContext {
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;
 }
 
-/// Builds the Getir-inspired light and dark themes from the generated tokens.
+/// Builds the light and dark themes from the generated tokens.
 ///
 /// Rules encoded here (so screens never repeat them):
 ///  * primary CTA = yellow surface, dark-purple bold label, 52 high, radius 12;
@@ -89,10 +97,10 @@ abstract final class TamamTheme {
       onSurface: c.textPrimary,
       surfaceContainerHighest: c.surfaceAlt,
       onSurfaceVariant: c.textSecondary,
-      error: TamamSemantic.dangerBase,
+      error: c.danger,
       onError: TamamNeutral.n0,
-      errorContainer: TamamSemantic.dangerSoft,
-      onErrorContainer: TamamSemantic.dangerStrong,
+      errorContainer: c.dangerSoft,
+      onErrorContainer: c.dangerStrong,
       outline: c.border,
       outlineVariant: c.borderStrong,
       shadow: TamamNeutral.n1000,
@@ -119,7 +127,11 @@ abstract final class TamamTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         toolbarHeight: TamamSize.appBarHeight,
-        titleTextStyle: TamamType.headingMd.toTextStyle(color: c.textOnBrand).merge(text.titleMedium),
+        // `a.merge(b)` lets b's non-null fields win, so merging the text theme in
+        // last silently replaced textOnBrand with the body colour -- every AppBar
+        // title was dark ink on the purple bar. The brand style goes second.
+        titleTextStyle: (text.titleMedium ?? const TextStyle())
+            .merge(TamamType.headingMd.toTextStyle(color: c.textOnBrand)),
         iconTheme: IconThemeData(color: c.textOnBrand, size: TamamSize.iconMd),
       ),
       cardTheme: CardThemeData(
@@ -145,12 +157,12 @@ abstract final class TamamTheme {
         hintStyle: TamamType.bodyMd.toTextStyle(color: c.textTertiary),
         labelStyle: TamamType.labelMd.toTextStyle(color: c.textSecondary),
         floatingLabelStyle: TamamType.labelMd.toTextStyle(color: c.primary),
-        errorStyle: TamamType.bodySm.toTextStyle(color: TamamSemantic.dangerBase),
+        errorStyle: TamamType.bodySm.toTextStyle(color: c.danger),
         border: _inputBorder(c.border),
         enabledBorder: _inputBorder(c.border),
         focusedBorder: _inputBorder(c.primary, width: 1.6),
-        errorBorder: _inputBorder(TamamSemantic.dangerBase),
-        focusedErrorBorder: _inputBorder(TamamSemantic.dangerBase, width: 1.6),
+        errorBorder: _inputBorder(c.danger),
+        focusedErrorBorder: _inputBorder(c.danger, width: 1.6),
         disabledBorder: _inputBorder(c.border),
       ),
       chipTheme: ChipThemeData(

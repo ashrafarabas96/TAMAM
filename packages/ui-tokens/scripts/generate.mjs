@@ -37,7 +37,6 @@ export const lightTheme = tokens.color.light;
 export const darkTheme = tokens.color.dark;
 export const brand = tokens.color.brand;
 export const neutral = tokens.color.neutral;
-export const semantic = tokens.color.semantic;
 export const radius = tokens.radius;
 export const spacing = tokens.spacing;
 export const typography = tokens.typography;
@@ -112,7 +111,7 @@ function emitDart(targetDir) {
   // ambiguous_import error, so import that one instead of shipping a second enum.
   lines.push(`import '../../contracts/generated/tamam_contracts.dart';\n`);
 
-  lines.push(`/// Brand palette (purple + yellow) — Getir-inspired identity.`);
+  lines.push(`/// Brand palette: purple #5D3EBC and yellow #FFD300, the two identity constants.`);
   lines.push(`abstract final class TamamBrand {`);
   for (const [k, v] of Object.entries(c.brand.purple)) lines.push(`  static const Color purple${k} = ${hexToDart(v)};`);
   for (const [k, v] of Object.entries(c.brand.yellow)) lines.push(`  static const Color yellow${k} = ${hexToDart(v)};`);
@@ -120,12 +119,6 @@ function emitDart(targetDir) {
 
   lines.push(`abstract final class TamamNeutral {`);
   for (const [k, v] of Object.entries(c.neutral)) lines.push(`  static const Color n${k} = ${hexToDart(v)};`);
-  lines.push(`}\n`);
-
-  lines.push(`abstract final class TamamSemantic {`);
-  for (const [k, v] of Object.entries(c.semantic)) {
-    for (const [kk, vv] of Object.entries(v)) lines.push(`  static const Color ${k}${kk[0].toUpperCase()}${kk.slice(1)} = ${hexToDart(vv)};`);
-  }
   lines.push(`}\n`);
 
   lines.push(`abstract final class TamamServiceColors {`);

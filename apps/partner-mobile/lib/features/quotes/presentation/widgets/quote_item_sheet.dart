@@ -8,7 +8,6 @@ import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_partner/core/theme/tamam_theme.dart';
 import 'package:tamam_partner/core/widgets/sheet_scaffold.dart';
 import 'package:tamam_partner/core/widgets/tamam_button.dart';
-import 'package:tamam_partner/features/quotes/domain/quote.dart';
 import 'package:tamam_partner/features/quotes/domain/quote_draft.dart';
 import 'package:tamam_partner/l10n/l10n.dart';
 

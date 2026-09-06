@@ -93,12 +93,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: TamamSpacing.s4, vertical: TamamSpacing.s2),
                   child: Row(
                     children: <Widget>[
-                      Icon(Icons.error_outline_rounded, size: TamamSize.iconSm, color: TamamSemantic.dangerStrong),
+                      Icon(Icons.error_outline_rounded, size: TamamSize.iconSm, color: context.colors.dangerStrong),
                       const SizedBox(width: TamamSpacing.s2),
                       Expanded(
                         child: Text(
                           l10n.onboardingFixRejection,
-                          style: TamamType.labelMd.toTextStyle(color: TamamSemantic.dangerStrong),
+                          style: TamamType.labelMd.toTextStyle(color: context.colors.dangerStrong),
                         ),
                       ),
                       TextButton(

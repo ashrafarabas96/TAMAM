@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_partner/core/models/money.dart';
-import 'package:tamam_partner/features/quotes/domain/quote.dart';
 import 'package:tamam_partner/features/quotes/domain/quote_draft.dart';
 
 QuoteDraftItem _item(

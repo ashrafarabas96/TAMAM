@@ -77,7 +77,7 @@ class _CancelJobSheetState extends State<CancelJobSheet> {
               decoration: BoxDecoration(color: colors.warningSoft, borderRadius: BorderRadius.circular(TamamRadius.md)),
               child: Text(
                 widget.noShowBlockedMessage!,
-                style: TamamType.bodySm.toTextStyle(color: TamamSemantic.warningStrong),
+                style: TamamType.bodySm.toTextStyle(color: context.colors.warningStrong),
               ),
             )
           else if (!widget.arrived)

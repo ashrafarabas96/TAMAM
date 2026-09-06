@@ -220,7 +220,6 @@ class _ActiveJobScreenState extends ConsumerState<ActiveJobScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n = context.l10n;
     final TamamColors colors = context.colors;
     final AsyncValue<ActiveJobState> value = ref.watch(activeJobProvider(widget.jobId));
 
@@ -452,7 +451,7 @@ class _ActionPanelState extends ConsumerState<_ActionPanel> {
                           const SizedBox(width: TamamSpacing.s1),
                           Text(
                             l10n.jobWaitingSince(_elapsed(arrivedAt)),
-                            style: TamamType.labelMd.toTextStyle(color: TamamSemantic.warningStrong),
+                            style: TamamType.labelMd.toTextStyle(color: context.colors.warningStrong),
                           ),
                         ],
                       ),
@@ -668,7 +667,7 @@ class _FailureBox extends StatelessWidget {
         children: <Widget>[
           Icon(Icons.error_outline_rounded, color: colors.danger),
           const SizedBox(width: TamamSpacing.s2),
-          Expanded(child: Text(message, style: TamamType.bodySm.toTextStyle(color: TamamSemantic.dangerStrong))),
+          Expanded(child: Text(message, style: TamamType.bodySm.toTextStyle(color: context.colors.dangerStrong))),
           if (state.versionConflict && onRetry != null)
             TextButton(onPressed: onRetry, child: Text(l10n.actionRetry))
           else

@@ -32,12 +32,12 @@ class OfflineBanner extends ConsumerWidget {
                 ),
                 child: Row(
                   children: <Widget>[
-                    Icon(Icons.wifi_off_rounded, size: TamamSize.iconSm, color: TamamSemantic.warningStrong),
+                    Icon(Icons.wifi_off_rounded, size: TamamSize.iconSm, color: context.colors.warningStrong),
                     const SizedBox(width: TamamSpacing.s2),
                     Expanded(
                       child: Text(
                         context.l10n.offlineBanner,
-                        style: TamamType.labelMd.toTextStyle(color: TamamSemantic.warningStrong),
+                        style: TamamType.labelMd.toTextStyle(color: context.colors.warningStrong),
                       ),
                     ),
                   ],
