@@ -6,12 +6,13 @@ import tokens from '@tamam/ui-tokens/json';
 /**
  * Every colour comes from `@tamam/ui-tokens`. Theme-dependent colours point at the CSS custom
  * properties emitted by `@tamam/ui-tokens/css` (light on `:root`, dark on `[data-theme="dark"]`);
- * brand scales and semantic colours are theme-independent and are read from tokens.json.
+ * brand scales are theme-independent and are read from tokens.json. Semantic colours are NOT:
+ * no single value clears AA on both a white and a near-black surface, so they resolve through the
+ * same per-theme custom properties as everything else.
  */
 const purple = tokens.color.brand.purple;
 const yellow = tokens.color.brand.yellow;
 const neutral = tokens.color.neutral;
-const semantic = tokens.color.semantic;
 const service = tokens.color.service;
 
 const scale = (prefix: string, keys: string[]): Record<string, string> =>
@@ -59,24 +60,24 @@ const config: Config = {
         yellow: { ...scale('yellow', Object.keys(yellow)) },
         neutral: { ...scale('neutral', Object.keys(neutral)) },
         success: {
-          DEFAULT: semantic.success.base,
-          soft: semantic.success.soft,
-          strong: semantic.success.strong,
+          DEFAULT: 'var(--c-success)',
+          soft: 'var(--c-successSoft)',
+          strong: 'var(--c-successStrong)',
         },
         warning: {
-          DEFAULT: semantic.warning.base,
-          soft: semantic.warning.soft,
-          strong: semantic.warning.strong,
+          DEFAULT: 'var(--c-warning)',
+          soft: 'var(--c-warningSoft)',
+          strong: 'var(--c-warningStrong)',
         },
         danger: {
-          DEFAULT: semantic.danger.base,
-          soft: semantic.danger.soft,
-          strong: semantic.danger.strong,
+          DEFAULT: 'var(--c-danger)',
+          soft: 'var(--c-dangerSoft)',
+          strong: 'var(--c-dangerStrong)',
         },
         info: {
-          DEFAULT: semantic.info.base,
-          soft: semantic.info.soft,
-          strong: semantic.info.strong,
+          DEFAULT: 'var(--c-info)',
+          soft: 'var(--c-infoSoft)',
+          strong: 'var(--c-infoStrong)',
         },
         service: {
           ride: service.ride,

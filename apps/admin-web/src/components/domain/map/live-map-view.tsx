@@ -106,7 +106,7 @@ export function LiveMapView({
           'circle-color': [
             'case',
             ['get', 'sos'],
-            tokens.color.semantic.danger.base,
+            palette.danger,
             ['==', ['get', 'kind'], 'destination'],
             palette.mapDestination,
             palette.mapPickup,
@@ -132,7 +132,7 @@ export function LiveMapView({
             ['get', 'stale'],
             tokens.color.neutral[400],
             ['==', ['get', 'availability'], 'BUSY'],
-            tokens.color.semantic.warning.base,
+            palette.warning,
             ['==', ['get', 'availability'], 'ONLINE'],
             tokens.color.brand.purple[500],
             tokens.color.neutral[500],

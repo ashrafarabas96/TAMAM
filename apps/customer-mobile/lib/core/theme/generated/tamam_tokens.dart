@@ -275,7 +275,15 @@ abstract final class TamamFonts {
   static const String arabic = 'Tajawal';
   static const String latin = 'Poppins';
   static const String mono = 'JetBrains Mono';
+  /// Platform faces to fall back through when a glyph is missing.
+  static const List<String> fallbackArabic = <String>['Noto Sans Arabic', 'Tahoma', 'sans-serif'];
+  static const List<String> fallbackLatin = <String>['system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'];
 }
+
+/// Which script the UI is currently set in. Arabic is cursive, so the two
+/// typographic rules that differ from Latin are applied from here rather than
+/// being repeated at every call site.
+enum TamamScript { latin, arabic }
 
 class TamamTypeStyle {
   const TamamTypeStyle(this.size, this.lineHeight, this.weight, this.letterSpacing);
@@ -283,13 +291,28 @@ class TamamTypeStyle {
   final double lineHeight;
   final FontWeight weight;
   final double letterSpacing;
+
+  /// Set once from the active locale (see TamamTheme). The whole UI is in one
+  /// script at a time, so this is app state, not per-widget state.
+  static TamamScript script = TamamScript.latin;
+
+  static bool get _isArabic => script == TamamScript.arabic;
+
+  /// Letter-spacing pulls joined Arabic letterforms apart and must be 0.
+  double get effectiveLetterSpacing => _isArabic ? 0 : letterSpacing;
+
+  /// Arabic needs more leading than Latin at the same size.
+  double get effectiveHeight =>
+      (lineHeight * (_isArabic ? 1.15 : 1)) / size;
+
   TextStyle toTextStyle({Color? color, String? fontFamily}) => TextStyle(
         fontSize: size,
-        height: lineHeight / size,
+        height: effectiveHeight,
         fontWeight: weight,
-        letterSpacing: letterSpacing,
+        letterSpacing: effectiveLetterSpacing,
         color: color,
         fontFamily: fontFamily,
+        leadingDistribution: TextLeadingDistribution.even,
       );
 }
 

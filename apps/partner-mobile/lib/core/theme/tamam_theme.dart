@@ -77,11 +77,27 @@ abstract final class TamamTheme {
 
   static ThemeData dark(String languageCode) => _build(TamamColorScheme.dark, Brightness.dark, languageCode);
 
-  /// Cairo for Arabic, Inter for Latin — both with the platform stack as fallback.
-  static TextTheme fontsFor(String languageCode, TextTheme base) =>
-      languageCode.startsWith('ar') ? GoogleFonts.cairoTextTheme(base) : GoogleFonts.interTextTheme(base);
+  /// The identity faces, read from the tokens rather than named here: Tajawal
+  /// for Arabic, Poppins for Latin. Both get the other script as a fallback, so
+  /// an Arabic partner name inside an English screen — routine in this app —
+  /// still renders in a designed face instead of the platform Naskh.
+  static TextTheme fontsFor(String languageCode, TextTheme base) {
+    final bool arabic = languageCode.startsWith('ar');
+    final TextTheme themed = arabic
+        ? GoogleFonts.tajawalTextTheme(base)
+        : GoogleFonts.poppinsTextTheme(base);
+    return themed.apply(
+      fontFamilyFallback: arabic
+          ? <String>[TamamFonts.latin, ...TamamFonts.fallbackArabic]
+          : <String>[TamamFonts.arabic, ...TamamFonts.fallbackLatin],
+    );
+  }
 
   static ThemeData _build(TamamColorScheme c, Brightness brightness, String languageCode) {
+    // Arabic is cursive: zero letter-spacing and extra leading, applied once for
+    // every style rather than repeated at hundreds of call sites.
+    TamamTypeStyle.script =
+        languageCode.startsWith('ar') ? TamamScript.arabic : TamamScript.latin;
     final TextTheme text = fontsFor(languageCode, _textTheme(c));
     final ColorScheme material = ColorScheme(
       brightness: brightness,

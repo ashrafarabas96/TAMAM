@@ -171,7 +171,17 @@ function emitDart(targetDir) {
   lines.push(`  static const String arabic = '${tokens.typography.fontFamily.arabic}';`);
   lines.push(`  static const String latin = '${tokens.typography.fontFamily.latin}';`);
   lines.push(`  static const String mono = '${tokens.typography.fontFamily.mono}';`);
+  const arFallback = tokens.typography.fontFamily.fallbackArabic.split(',').map((f) => f.trim());
+  const laFallback = tokens.typography.fontFamily.fallbackLatin.split(',').map((f) => f.trim());
+  lines.push(`  /// Platform faces to fall back through when a glyph is missing.`);
+  lines.push(`  static const List<String> fallbackArabic = <String>[${arFallback.map((f) => `'${f}'`).join(', ')}];`);
+  lines.push(`  static const List<String> fallbackLatin = <String>[${laFallback.map((f) => `'${f}'`).join(', ')}];`);
   lines.push(`}\n`);
+
+  lines.push(`/// Which script the UI is currently set in. Arabic is cursive, so the two`);
+  lines.push(`/// typographic rules that differ from Latin are applied from here rather than`);
+  lines.push(`/// being repeated at every call site.`);
+  lines.push(`enum TamamScript { latin, arabic }\n`);
 
   lines.push(`class TamamTypeStyle {`);
   lines.push(`  const TamamTypeStyle(this.size, this.lineHeight, this.weight, this.letterSpacing);`);
@@ -179,13 +189,28 @@ function emitDart(targetDir) {
   lines.push(`  final double lineHeight;`);
   lines.push(`  final FontWeight weight;`);
   lines.push(`  final double letterSpacing;`);
+  lines.push(``);
+  lines.push(`  /// Set once from the active locale (see TamamTheme). The whole UI is in one`);
+  lines.push(`  /// script at a time, so this is app state, not per-widget state.`);
+  lines.push(`  static TamamScript script = TamamScript.latin;`);
+  lines.push(``);
+  lines.push(`  static bool get _isArabic => script == TamamScript.arabic;`);
+  lines.push(``);
+  lines.push(`  /// Letter-spacing pulls joined Arabic letterforms apart and must be 0.`);
+  lines.push(`  double get effectiveLetterSpacing => _isArabic ? 0 : letterSpacing;`);
+  lines.push(``);
+  lines.push(`  /// Arabic needs more leading than Latin at the same size.`);
+  lines.push(`  double get effectiveHeight =>`);
+  lines.push(`      (lineHeight * (_isArabic ? ${JSON.stringify(tokens.typography.arabicRules.lineHeightMultiplier)} : 1)) / size;`);
+  lines.push(``);
   lines.push(`  TextStyle toTextStyle({Color? color, String? fontFamily}) => TextStyle(`);
   lines.push(`        fontSize: size,`);
-  lines.push(`        height: lineHeight / size,`);
+  lines.push(`        height: effectiveHeight,`);
   lines.push(`        fontWeight: weight,`);
-  lines.push(`        letterSpacing: letterSpacing,`);
+  lines.push(`        letterSpacing: effectiveLetterSpacing,`);
   lines.push(`        color: color,`);
   lines.push(`        fontFamily: fontFamily,`);
+  lines.push(`        leadingDistribution: TextLeadingDistribution.even,`);
   lines.push(`      );`);
   lines.push(`}\n`);
 
