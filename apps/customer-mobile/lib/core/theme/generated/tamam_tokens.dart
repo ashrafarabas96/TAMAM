@@ -97,6 +97,8 @@ class TamamColorScheme {
     required this.primaryInk,
     required this.accentRule,
     required this.primaryRule,
+    required this.dangerSurface,
+    required this.textOnDanger,
   });
 
   final Color background;
@@ -140,6 +142,8 @@ class TamamColorScheme {
   final Color primaryInk;
   final Color accentRule;
   final Color primaryRule;
+  final Color dangerSurface;
+  final Color textOnDanger;
 
   static const TamamColorScheme light = TamamColorScheme(
     background: Color(0xFFF7F5FC),
@@ -183,6 +187,8 @@ class TamamColorScheme {
     primaryInk: Color(0xFF5D3EBC),
     accentRule: Color(0xFFBD8B00),
     primaryRule: Color(0xFF8770CD),
+    dangerSurface: Color(0xFFB3123A),
+    textOnDanger: Color(0xFFFFFFFF),
   );
 
   static const TamamColorScheme dark = TamamColorScheme(
@@ -227,6 +233,8 @@ class TamamColorScheme {
     primaryInk: Color(0xFFC3B2F0),
     accentRule: Color(0xFFFFD300),
     primaryRule: Color(0xFF8770CD),
+    dangerSurface: Color(0xFF8C0E2D),
+    textOnDanger: Color(0xFFFFFFFF),
   );
 }
 

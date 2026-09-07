@@ -19,8 +19,8 @@ const buttonVariants = cva(
           'bg-surface-brand-soft text-primary hover:bg-purple-100 dark:hover:bg-purple-800',
         outline: 'border border-border-strong bg-surface text-text-primary hover:bg-surface-alt',
         ghost: 'text-text-secondary hover:bg-surface-alt hover:text-text-primary',
-        danger: 'bg-danger text-neutral-0 hover:bg-danger-strong',
-        'danger-soft': 'bg-danger-soft text-danger-strong hover:bg-danger hover:text-neutral-0',
+        danger: 'bg-danger-surface text-text-on-danger hover:brightness-110',
+        'danger-soft': 'bg-danger-soft text-danger-strong hover:bg-danger-surface hover:text-text-on-danger',
         link: 'text-primary underline-offset-4 hover:underline px-0 h-auto',
       },
       size: {

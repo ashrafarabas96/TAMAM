@@ -76,6 +76,8 @@ const PAIRS = [
   ['accentRule', 'surface', 3.0],
   ['primaryRule', 'surface', 3.0],
   ['textOnBrandMuted', 'surfaceBrand', 4.5],
+  // A filled destructive button, which is a different job from danger-as-text.
+  ['textOnDanger', 'dangerSurface', 4.5],
   ['successStrong', 'successSoft', 4.5],
   ['warningStrong', 'warningSoft', 4.5],
   ['dangerStrong', 'dangerSoft', 4.5],

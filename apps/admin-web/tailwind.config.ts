@@ -38,6 +38,7 @@ const config: Config = {
           tertiary: 'var(--c-textTertiary)',
           'on-brand': 'var(--c-textOnBrand)',
           'on-accent': 'var(--c-textOnAccent)',
+          'on-danger': 'var(--c-textOnDanger)',
         },
         primary: {
           DEFAULT: 'var(--c-primary)',
@@ -73,6 +74,10 @@ const config: Config = {
           DEFAULT: 'var(--c-danger)',
           soft: 'var(--c-dangerSoft)',
           strong: 'var(--c-dangerStrong)',
+          // A filled destructive control. `danger` is tuned to be readable AS
+          // TEXT on the page, which in dark mode makes it a pale pink that
+          // cannot carry a white label; this is the fill for that job.
+          surface: 'var(--c-dangerSurface)',
         },
         info: {
           DEFAULT: 'var(--c-info)',
