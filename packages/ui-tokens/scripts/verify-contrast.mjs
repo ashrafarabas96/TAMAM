@@ -55,8 +55,12 @@ const PAIRS = [
   ['textOnAccent', 'accent', 4.5],
   ['textOnAccent', 'accentHover', 4.5],
   ['textOnAccent', 'accentPressed', 4.5],
-  ['primary', 'background', 3.0],
-  ['primary', 'surface', 3.0],
+  // `primary` is the FILL a white label sits on (gated above). The brand purple
+  // is too dark to also be a foreground on a dark page, so the foreground role
+  // has its own token and that is what gets gated here. Checking the fill as a
+  // foreground would force the brand hue to move, and the brand hue does not move.
+  ['primaryInk', 'background', 3.0],
+  ['primaryInk', 'surface', 3.0],
   ['borderStrong', 'surface', 3.0],
   ['success', 'surface', 4.5],
   ['success', 'background', 4.5],
