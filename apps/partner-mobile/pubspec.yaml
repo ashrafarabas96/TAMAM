@@ -74,6 +74,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    # The brand's own 3D service artwork and logo lockups, supplied by the owner.
+    # Flutter picks the @2x/@3x variants automatically by device density.
+    - assets/brand/services/
+    - assets/brand/logo/
+
   # Bundled rather than fetched. google_fonts downloads a face from
   # fonts.gstatic.com on first use, so until that request finishes -- and forever
   # if it fails -- an Arabic-first app renders its first screen in whatever the OS

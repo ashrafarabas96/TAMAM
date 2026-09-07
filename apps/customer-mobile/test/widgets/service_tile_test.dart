@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tamam_customer/core/widgets/tamam_icon_tile.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_customer/features/home/presentation/widgets/service_tile.dart';
 
@@ -31,8 +32,7 @@ void main() {
           child: ServiceTile(
             title: 'مشوار',
             caption: 'سيارة خلال دقائق',
-            icon: Icons.local_taxi_rounded,
-            color: TamamServiceColors.ride,
+            service: TamamService.rides,
             onTap: () {},
           ),
         ),
@@ -40,7 +40,8 @@ void main() {
 
       expect(find.text('مشوار'), findsOneWidget);
       expect(find.text('سيارة خلال دقائق'), findsOneWidget);
-      expect(find.byIcon(Icons.local_taxi_rounded), findsOneWidget);
+      // The service artwork is the brand's own illustration, not a font glyph.
+      expect(find.byType(Image), findsOneWidget);
     });
 
     testWidgets('calls onTap when enabled', (WidgetTester tester) async {
@@ -51,8 +52,7 @@ void main() {
           width: 180,
           child: ServiceTile(
             title: 'توصيل',
-            icon: Icons.inventory_2_rounded,
-            color: TamamServiceColors.delivery,
+            service: TamamService.delivery,
             onTap: () => taps++,
           ),
         ),
@@ -72,8 +72,8 @@ void main() {
           width: 180,
           child: ServiceTile(
             title: 'خدمة عاجلة',
-            icon: Icons.bolt_rounded,
-            color: TamamServiceColors.urgent,
+            glyph: Icons.bolt_rounded,
+            glyphTint: TamamServiceColors.urgent,
             enabled: false,
             onTap: () => taps++,
           ),
@@ -93,8 +93,7 @@ void main() {
           width: 180,
           child: ServiceTile(
             title: 'خدمات منزلية',
-            icon: Icons.handyman_rounded,
-            color: TamamServiceColors.homeService,
+            service: TamamService.homeServices,
             badge: 'جديد',
             onTap: () {},
           ),
@@ -116,8 +115,7 @@ void main() {
           child: ServiceTile(
             title: 'مشوار',
             caption: 'سيارة خلال دقائق',
-            icon: Icons.local_taxi_rounded,
-            color: TamamServiceColors.ride,
+            service: TamamService.rides,
             onTap: () {},
           ),
         ),

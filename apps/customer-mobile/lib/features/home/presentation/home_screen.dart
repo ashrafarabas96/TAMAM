@@ -8,6 +8,7 @@ import 'package:tamam_customer/core/providers/core_providers.dart';
 import 'package:tamam_customer/core/routing/routes.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_customer/core/theme/tamam_theme.dart';
+import 'package:tamam_customer/core/widgets/tamam_icon_tile.dart';
 import 'package:tamam_customer/core/widgets/offline_banner.dart';
 import 'package:tamam_customer/core/widgets/section_header.dart';
 import 'package:tamam_customer/core/widgets/skeleton_box.dart';
@@ -113,8 +114,7 @@ class _ServicesGrid extends ConsumerWidget {
                 child: ServiceTile(
                   title: l10n.serviceRide,
                   caption: l10n.serviceRideCaption,
-                  icon: Icons.local_taxi_rounded,
-                  color: TamamServiceColors.ride,
+                  service: TamamService.rides,
                   onTap: () => context.push(Routes.ride),
                 ),
               ),
@@ -123,8 +123,7 @@ class _ServicesGrid extends ConsumerWidget {
                 child: ServiceTile(
                   title: l10n.serviceDelivery,
                   caption: l10n.serviceDeliveryCaption,
-                  icon: Icons.inventory_2_rounded,
-                  color: TamamServiceColors.delivery,
+                  service: TamamService.delivery,
                   onTap: () => context.push(Routes.delivery),
                 ),
               ),
@@ -137,8 +136,7 @@ class _ServicesGrid extends ConsumerWidget {
                 child: ServiceTile(
                   title: l10n.serviceHome,
                   caption: l10n.serviceHomeCaption,
-                  icon: Icons.handyman_rounded,
-                  color: TamamServiceColors.homeService,
+                  service: TamamService.homeServices,
                   onTap: () => context.push(Routes.search),
                 ),
               ),
@@ -147,8 +145,7 @@ class _ServicesGrid extends ConsumerWidget {
                 child: ServiceTile(
                   title: l10n.serviceChalet,
                   caption: l10n.serviceChaletCaption,
-                  icon: Icons.holiday_village_rounded,
-                  color: TamamServiceColors.chalet,
+                  service: TamamService.chalet,
                   onTap: () => context.push(Routes.chalets),
                 ),
               ),
@@ -161,8 +158,8 @@ class _ServicesGrid extends ConsumerWidget {
           ServiceTile(
             title: l10n.serviceUrgent,
             caption: l10n.serviceUrgentCaption,
-            icon: Icons.bolt_rounded,
-            color: TamamServiceColors.urgent,
+            glyph: Icons.bolt_rounded,
+            glyphTint: TamamServiceColors.urgent,
             enabled: ref.watch(featureFlagsValueProvider).hasUrgentServices,
             onTap: () => context.push('${Routes.search}?urgent=1'),
           ),

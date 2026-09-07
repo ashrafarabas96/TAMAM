@@ -1,134 +1,142 @@
 import 'package:flutter/material.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
-import 'package:tamam_customer/core/theme/tamam_theme.dart';
 
-/// A service icon with weight to it.
+/// The four services, drawn as the brand's own artwork.
 ///
-/// A flat glyph on a flat square is the difference between an app that looks
-/// assembled and one that looks designed. Depth here is built from four cheap
-/// layers rather than a bitmap, so it stays crisp at any size and recolours with
-/// the theme:
+/// These are the illustrations from the identity sheet — a yellow taxi, a
+/// ribboned parcel, a toolbox, a chalet on its island — not icons approximating
+/// them. An earlier version of this widget built a gradient tile and set a
+/// Material glyph on top; it was a reasonable stand-in and it looked like one.
+enum TamamService { rides, delivery, homeServices, chalet }
+
+extension TamamServiceAsset on TamamService {
+  String get asset => switch (this) {
+        TamamService.rides => 'assets/brand/services/rides.png',
+        TamamService.delivery => 'assets/brand/services/delivery.png',
+        TamamService.homeServices => 'assets/brand/services/services.png',
+        TamamService.chalet => 'assets/brand/services/chalet.png',
+      };
+
+  /// The colour this service casts into the UI around it — its glow, its chips,
+  /// its progress. Taken from the artwork, so a screen tinted for a service
+  /// agrees with the picture at the top of it.
+  Color get tint => switch (this) {
+        TamamService.rides => TamamServiceColors.ride,
+        TamamService.delivery => TamamServiceColors.delivery,
+        TamamService.homeServices => TamamServiceColors.homeService,
+        TamamService.chalet => TamamServiceColors.chalet,
+      };
+}
+
+/// Presents one service illustration at a consistent optical size.
 ///
-///   1. a diagonal gradient on the tile, light source top-start;
-///   2. a soft inner highlight along that top edge, which is what reads as a
-///      raised surface rather than a printed one;
-///   3. a coloured drop shadow tinted by the tile itself, not a grey one — grey
-///      shadows under a coloured object are the classic tell of a flat design
-///      wearing depth as a costume;
-///   4. a hairline rim that keeps the shape defined against both canvases.
-///
-/// In dark mode the light source stays put but the shadow deepens and the
-/// highlight weakens, because a lit object on a dark ground shows more shadow
-/// and less bloom.
+/// The artwork carries its own modelling and its own contact shadow, so nothing
+/// is drawn behind it: a card or a tinted plate under a rendered object reads as
+/// a sticker on a surface rather than an object on it. What this adds is the
+/// ambient glow, which is the part a flat asset cannot do for itself — it is
+/// tinted by the service and it deepens in the dark theme, because a lit object
+/// throws more light onto a dark ground than a light one.
 class TamamIconTile extends StatelessWidget {
   const TamamIconTile({
-    required this.icon,
-    required this.color,
+    required this.service,
     super.key,
     this.size = 56,
-    this.iconSize,
     this.pressed = false,
-  });
+    this.glow = true,
+  })  : glyph = null,
+        glyphTint = null;
 
-  final IconData icon;
+  /// For an entry the identity sheet has no artwork for — Urgent is a way of
+  /// asking for a service rather than a service. It deliberately does not
+  /// imitate the rendered set: a flat mark in a brand plate reads as a different
+  /// kind of thing, which is what it is.
+  const TamamIconTile.glyph({
+    required IconData icon,
+    required Color tint,
+    super.key,
+    this.size = 56,
+    this.pressed = false,
+    this.glow = true,
+  })  : service = null,
+        glyph = icon,
+        glyphTint = tint;
 
-  /// The service colour this tile represents; every other layer derives from it.
-  final Color color;
+  final TamamService? service;
+  final IconData? glyph;
+  final Color? glyphTint;
   final double size;
-  final double? iconSize;
 
-  /// Lets a parent press animation flatten the tile, so the depth reacts too.
+  /// Lets a parent press animation settle the object toward its surface.
   final bool pressed;
+  final bool glow;
 
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final TamamColors colors = context.colors;
-
-    // The face runs from a lifted tint at the top-start to the colour itself at
-    // the bottom-end. Keeping the darker stop at full saturation stops the tile
-    // from washing out the brand hue.
-    final Color faceTop = Color.alphaBlend(
-      Colors.white.withValues(alpha: isDark ? 0.18 : 0.28),
-      color,
-    );
-    final Color faceBottom = Color.alphaBlend(
-      Colors.black.withValues(alpha: isDark ? 0.10 : 0.04),
-      color,
-    );
-
-    final double lift = pressed ? 0.35 : 1;
+    final double settle = pressed ? 0.45 : 1;
+    final Color tint = service?.tint ?? glyphTint!;
 
     return AnimatedContainer(
       duration: TamamMotion.durationFast,
       curve: Curves.easeOut,
       width: size,
       height: size,
+      decoration: !glow
+          ? null
+          : BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: tint.withValues(alpha: (isDark ? 0.34 : 0.20) * settle),
+                  blurRadius: size * (isDark ? 0.42 : 0.34) * settle,
+                  offset: Offset(0, size * 0.10 * settle),
+                  spreadRadius: -size * 0.10,
+                ),
+              ],
+            ),
+      child: glyph != null
+          ? _GlyphPlate(icon: glyph!, tint: tint, size: size, isDark: isDark)
+          : Image.asset(
+              service!.asset,
+              fit: BoxFit.contain,
+              // The artwork is authored at 3x; letting Flutter pick the density
+              // variant keeps it crisp without decoding the largest file
+              // everywhere.
+              filterQuality: FilterQuality.medium,
+            ),
+    );
+  }
+}
+
+class _GlyphPlate extends StatelessWidget {
+  const _GlyphPlate({
+    required this.icon,
+    required this.tint,
+    required this.size,
+    required this.isDark,
+  });
+
+  final IconData icon;
+  final Color tint;
+  final double size;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(size * 0.32),
+        borderRadius: BorderRadius.circular(size * 0.30),
         gradient: LinearGradient(
           begin: AlignmentDirectional.topStart,
           end: AlignmentDirectional.bottomEnd,
-          colors: <Color>[faceTop, faceBottom],
+          colors: <Color>[
+            Color.alphaBlend(Colors.white.withValues(alpha: isDark ? 0.16 : 0.24), tint),
+            tint,
+          ],
         ),
-        border: Border.all(
-          color: Color.alphaBlend(
-            Colors.white.withValues(alpha: isDark ? 0.14 : 0.35),
-            color,
-          ),
-          width: 0.8,
-        ),
-        boxShadow: <BoxShadow>[
-          // Tinted by the tile, so the object and its shadow belong together.
-          BoxShadow(
-            color: color.withValues(alpha: (isDark ? 0.45 : 0.28) * lift),
-            blurRadius: (isDark ? 18 : 14) * lift,
-            offset: Offset(0, (isDark ? 8 : 6) * lift),
-            spreadRadius: -2,
-          ),
-          // A second, tighter shadow gives the edge its bite.
-          BoxShadow(
-            color: colors.textPrimary.withValues(alpha: (isDark ? 0.30 : 0.08) * lift),
-            blurRadius: 4 * lift,
-            offset: Offset(0, 1.5 * lift),
-          ),
-        ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: <Widget>[
-          // The inner highlight: a short gradient hugging the top edge only.
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(size * 0.32),
-                gradient: LinearGradient(
-                  begin: AlignmentDirectional.topStart,
-                  end: AlignmentDirectional.center,
-                  colors: <Color>[
-                    Colors.white.withValues(alpha: isDark ? 0.16 : 0.34),
-                    Colors.white.withValues(alpha: 0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Icon(
-            icon,
-            size: iconSize ?? size * 0.46,
-            // White glyph on a saturated face reads at every service colour;
-            // the drop shadow lifts it off the gradient instead of letting it
-            // sit flat on the tile.
-            color: Colors.white,
-            shadows: <Shadow>[
-              Shadow(
-                color: Color.alphaBlend(Colors.black.withValues(alpha: 0.35), color),
-                blurRadius: 6,
-                offset: const Offset(0, 1.5),
-              ),
-            ],
-          ),
-        ],
+      child: Center(
+        child: Icon(icon, size: size * 0.48, color: Colors.white),
       ),
     );
   }

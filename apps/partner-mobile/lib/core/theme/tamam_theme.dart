@@ -21,6 +21,14 @@ class TamamColors extends ThemeExtension<TamamColors> {
   Color get textTertiary => scheme.textTertiary;
   Color get textOnBrand => scheme.textOnBrand;
   Color get textOnAccent => scheme.textOnAccent;
+  Color get textOnBrandMuted => scheme.textOnBrandMuted;
+  Color get textOnOverlay => scheme.textOnOverlay;
+  Color get primaryInk => scheme.primaryInk;
+  Color get accentInk => scheme.accentInk;
+  Color get primaryRule => scheme.primaryRule;
+  Color get accentRule => scheme.accentRule;
+  Color get dangerSurface => scheme.dangerSurface;
+  Color get textOnDanger => scheme.textOnDanger;
   Color get primary => scheme.primary;
   Color get accent => scheme.accent;
   Color get overlay => scheme.overlay;

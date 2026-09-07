@@ -12,9 +12,10 @@ import 'package:tamam_customer/core/widgets/tamam_icon_tile.dart';
 class ServiceTile extends StatelessWidget {
   const ServiceTile({
     required this.title,
-    required this.icon,
-    required this.color,
     required this.onTap,
+    this.service,
+    this.glyph,
+    this.glyphTint,
     super.key,
     this.caption,
     this.badge,
@@ -22,8 +23,11 @@ class ServiceTile extends StatelessWidget {
   });
 
   final String title;
-  final IconData icon;
-  final Color color;
+
+  /// One of the four illustrated services, or null when [glyph] is given.
+  final TamamService? service;
+  final IconData? glyph;
+  final Color? glyphTint;
   final VoidCallback onTap;
   final String? caption;
 
@@ -47,7 +51,13 @@ class ServiceTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  TamamIconTile(icon: icon, color: color, size: TamamSize.serviceIconTile),
+                  service != null
+                      ? TamamIconTile(service: service!, size: TamamSize.serviceIconTile)
+                      : TamamIconTile.glyph(
+                          icon: glyph!,
+                          tint: glyphTint!,
+                          size: TamamSize.serviceIconTile,
+                        ),
                   // Flexible, not a bare Column: title + caption at their natural line
                   // heights are a couple of pixels taller than the fixed card leaves them,
                   // and any user text scaling makes that worse. Both lines already
