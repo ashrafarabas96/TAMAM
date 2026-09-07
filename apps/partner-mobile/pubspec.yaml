@@ -59,7 +59,6 @@ dependencies:
   # presentation
   cached_network_image: ^3.4.1
   visibility_detector: ^0.4.0+2
-  google_fonts: ^6.2.1
   flutter_svg: ^2.0.10
 
   # utilities
@@ -75,5 +74,36 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Bundled rather than fetched. google_fonts downloads a face from
+  # fonts.gstatic.com on first use, so until that request finishes -- and forever
+  # if it fails -- an Arabic-first app renders its first screen in whatever the OS
+  # substitutes. Shipping the files makes the brand face the first frame, removes
+  # a cold-start network dependency, and lets a missing file fail the build
+  # instead of failing silently on a customer's phone.
+  #
+  # Tajawal has no 600 weight; Flutter resolves labelLg/labelMd/headingSm to the
+  # nearest shipped face, which is 500 or 700.
+  fonts:
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/Tajawal-400.ttf
+          weight: 400
+        - asset: assets/fonts/Tajawal-500.ttf
+          weight: 500
+        - asset: assets/fonts/Tajawal-700.ttf
+          weight: 700
+        - asset: assets/fonts/Tajawal-800.ttf
+          weight: 800
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-400.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-500.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-700.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins-800.ttf
+          weight: 800
+
   # `generate: true` runs `flutter gen-l10n` from l10n.yaml on every build.
   generate: true

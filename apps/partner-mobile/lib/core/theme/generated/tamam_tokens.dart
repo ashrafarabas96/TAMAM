@@ -321,6 +321,16 @@ class TamamTypeStyle {
   /// script at a time, so this is app state, not per-widget state.
   static TamamScript script = TamamScript.latin;
 
+  /// The face these styles render in when a call site does not name one.
+  ///
+  /// Most styles in the app are built by calling toTextStyle() directly rather
+  /// than by reading Theme.of(context).textTheme, so setting the family on the
+  /// TextTheme alone left those call sites with a null family and the platform
+  /// default -- the app rendered in two typefaces at once. Defaulting it here
+  /// covers every call site, themed or not.
+  static String get family =>
+      _isArabic ? TamamFonts.arabic : TamamFonts.latin;
+
   static bool get _isArabic => script == TamamScript.arabic;
 
   /// Letter-spacing pulls joined Arabic letterforms apart and must be 0.
@@ -336,7 +346,12 @@ class TamamTypeStyle {
         fontWeight: weight,
         letterSpacing: effectiveLetterSpacing,
         color: color,
-        fontFamily: fontFamily,
+        fontFamily: fontFamily ?? family,
+        fontFamilyFallback: fontFamily != null
+            ? null
+            : (_isArabic
+                ? <String>[TamamFonts.latin, ...TamamFonts.fallbackArabic]
+                : <String>[TamamFonts.arabic, ...TamamFonts.fallbackLatin]),
         leadingDistribution: TextLeadingDistribution.even,
       );
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart';
 
 /// Carries the generated semantic palette through `Theme.of(context)` so no
@@ -77,16 +76,15 @@ abstract final class TamamTheme {
 
   static ThemeData dark(String languageCode) => _build(TamamColorScheme.dark, Brightness.dark, languageCode);
 
-  /// The identity faces, read from the tokens rather than named here: Tajawal
-  /// for Arabic, Poppins for Latin. Both get the other script as a fallback, so
-  /// an Arabic partner name inside an English screen — routine in this app —
-  /// still renders in a designed face instead of the platform Naskh.
+  /// The identity faces, bundled with the app rather than fetched.
+  ///
+  /// Tajawal for Arabic, Poppins for Latin, each falling back through the other
+  /// script and then the platform stack, so an Arabic partner name inside an
+  /// English screen -- routine in this app -- still lands on a designed face.
   static TextTheme fontsFor(String languageCode, TextTheme base) {
     final bool arabic = languageCode.startsWith('ar');
-    final TextTheme themed = arabic
-        ? GoogleFonts.tajawalTextTheme(base)
-        : GoogleFonts.poppinsTextTheme(base);
-    return themed.apply(
+    return base.apply(
+      fontFamily: arabic ? TamamFonts.arabic : TamamFonts.latin,
       fontFamilyFallback: arabic
           ? <String>[TamamFonts.latin, ...TamamFonts.fallbackArabic]
           : <String>[TamamFonts.arabic, ...TamamFonts.fallbackLatin],
