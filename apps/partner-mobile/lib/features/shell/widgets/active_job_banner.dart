@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_partner/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tamam_partner/core/format/unit_formatter.dart';
@@ -31,7 +32,7 @@ class ActiveJobBanner extends ConsumerWidget {
       label: l10n.activeJobBannerSemantics(JobLabels.status(l10n, job.status)),
       child: Material(
         color: colors.surfaceBrand,
-        child: InkWell(
+        child: TamamInkWell(
           onTap: () => context.push(Routes.activeJob(job.id)),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: TamamSpacing.s4, vertical: TamamSpacing.s3),
@@ -57,7 +58,7 @@ class ActiveJobBanner extends ConsumerWidget {
                         job.currentTarget?.address.formatted ?? job.number,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TamamType.bodySm.toTextStyle(color: TamamBrand.purple100),
+                        style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted),
                       ),
                     ],
                   ),

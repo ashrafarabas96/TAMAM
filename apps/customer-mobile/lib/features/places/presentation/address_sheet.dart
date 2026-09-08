@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tamam_customer/core/contracts/generated/tamam_contracts.dart';
@@ -183,7 +184,7 @@ class _QuickAction extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
-      child: InkWell(
+      child: TamamInkWell(
         onTap: busy ? null : onTap,
         borderRadius: BorderRadius.circular(TamamRadius.md),
         child: Container(

@@ -45,6 +45,9 @@ Future<void> pumpAppWidget(
   List<Override> overrides = const <Override>[],
   Locale locale = const Locale('ar'),
   Size surfaceSize = const Size(390, 844),
+  // Defects hide at the defaults; let a test ask for large text or dark mode.
+  double textScale = 1.0,
+  Brightness brightness = Brightness.light,
 }) async {
   await tester.binding.setSurfaceSize(surfaceSize);
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -56,7 +59,13 @@ Future<void> pumpAppWidget(
         locale: locale,
         supportedLocales: supportedAppLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        theme: TamamTheme.light(locale.languageCode),
+        theme: brightness == Brightness.dark
+            ? TamamTheme.dark(locale.languageCode)
+            : TamamTheme.light(locale.languageCode),
+        builder: (BuildContext context, Widget? inner) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+          child: inner ?? const SizedBox.shrink(),
+        ),
         home: Scaffold(body: child),
       ),
     ),

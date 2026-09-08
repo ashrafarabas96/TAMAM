@@ -77,7 +77,7 @@ class AuthScaffold extends StatelessWidget {
                 const SizedBox(height: TamamSpacing.s2),
                 Text(
                   subtitle,
-                  style: TamamType.bodyMd.toTextStyle(color: TamamBrand.purple100),
+                  style: TamamType.bodyMd.toTextStyle(color: colors.textOnBrandMuted),
                 ),
               ],
             ),

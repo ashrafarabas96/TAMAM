@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_partner/core/widgets/tamam_ink_well.dart';
 import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_partner/core/theme/tamam_theme.dart';
 import 'package:tamam_partner/l10n/l10n.dart';
@@ -40,7 +41,7 @@ class AvailabilityToggle extends StatelessWidget {
       child: Material(
         color: background,
         borderRadius: BorderRadius.circular(TamamRadius.pill),
-        child: InkWell(
+        child: TamamInkWell(
           key: const Key('availability-toggle'),
           onTap: busy ? null : onTap,
           borderRadius: BorderRadius.circular(TamamRadius.pill),

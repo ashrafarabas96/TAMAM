@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_customer/core/theme/tamam_theme.dart';
@@ -112,7 +113,7 @@ class _TimeChip extends StatelessWidget {
       child: Material(
         color: selected ? colors.primary : colors.surfaceAlt,
         borderRadius: BorderRadius.circular(TamamRadius.pill),
-        child: InkWell(
+        child: TamamInkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(TamamRadius.pill),
           child: Padding(
@@ -165,7 +166,7 @@ class ChaletDurationPicker extends StatelessWidget {
             child: Material(
               color: selected ? colors.primary : colors.surfaceAlt,
               borderRadius: BorderRadius.circular(TamamRadius.pill),
-              child: InkWell(
+              child: TamamInkWell(
                 onTap: () => onSelect(minutes),
                 borderRadius: BorderRadius.circular(TamamRadius.pill),
                 child: Padding(

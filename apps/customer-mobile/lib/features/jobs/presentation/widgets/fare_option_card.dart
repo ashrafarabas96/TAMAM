@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_customer/core/format/unit_formatter.dart';
 import 'package:tamam_customer/core/providers/core_providers.dart';
@@ -35,7 +36,7 @@ class FareOptionCard extends ConsumerWidget {
     return Semantics(
       button: true,
       selected: selected,
-      child: InkWell(
+      child: TamamInkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(TamamRadius.card),
         child: AnimatedContainer(

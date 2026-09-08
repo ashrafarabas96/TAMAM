@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_partner/core/widgets/tamam_ink_well.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
@@ -130,7 +131,7 @@ class _PersonalStepState extends ConsumerState<PersonalStep> {
                 child: Material(
                   color: colors.primary,
                   shape: const CircleBorder(),
-                  child: InkWell(
+                  child: TamamInkWell(
                     customBorder: const CircleBorder(),
                     onTap: _uploading ? null : () => unawaited(_pickPhoto()),
                     child: SizedBox(
@@ -187,7 +188,7 @@ class _PersonalStepState extends ConsumerState<PersonalStep> {
           ),
         ),
         const SizedBox(height: TamamSpacing.s3),
-        InkWell(
+        TamamInkWell(
           onTap: () => unawaited(_pickDate()),
           borderRadius: BorderRadius.circular(TamamRadius.button),
           child: InputDecorator(

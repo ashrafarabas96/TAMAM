@@ -197,7 +197,7 @@ class _Header extends StatelessWidget {
                 padding: const EdgeInsets.only(right: TamamSpacing.s2, left: TamamSpacing.s2),
                 child: Text(
                   l10n.onboardingStepCounter(index + 1, count),
-                  style: TamamType.labelMd.toTextStyle(color: TamamBrand.purple200),
+                  style: TamamType.labelMd.toTextStyle(color: colors.textOnBrandMuted),
                 ),
               ),
             ],

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_partner/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_partner/core/network/failure_messages.dart';
@@ -208,7 +209,7 @@ class _DocumentUploadSheetState extends ConsumerState<DocumentUploadSheet> {
           ],
           if (_needsExpiry) ...<Widget>[
             const SizedBox(height: TamamSpacing.s3),
-            InkWell(
+            TamamInkWell(
               onTap: () => unawaited(_pickExpiry()),
               borderRadius: BorderRadius.circular(TamamRadius.button),
               child: InputDecorator(

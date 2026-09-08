@@ -111,7 +111,7 @@ class _PeriodTab extends ConsumerWidget {
               background: colors.surfaceBrand,
               child: Column(
                 children: <Widget>[
-                  Text(l10n.earningsNet, style: TamamType.labelMd.toTextStyle(color: TamamBrand.purple200)),
+                  Text(l10n.earningsNet, style: TamamType.labelMd.toTextStyle(color: colors.textOnBrandMuted)),
                   const SizedBox(height: TamamSpacing.s1),
                   MoneyText(
                     earnings.netEarnings,
@@ -121,7 +121,7 @@ class _PeriodTab extends ConsumerWidget {
                   const SizedBox(height: TamamSpacing.s2),
                   Text(
                     l10n.earningsCompletedJobs(units.number(earnings.completedJobs)),
-                    style: TamamType.bodySm.toTextStyle(color: TamamBrand.purple100),
+                    style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted),
                   ),
                 ],
               ),

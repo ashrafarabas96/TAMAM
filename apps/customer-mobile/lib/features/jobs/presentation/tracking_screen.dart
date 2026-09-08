@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -440,7 +441,7 @@ class _CodeCard extends StatelessWidget {
         children: <Widget>[
           Text(
             title,
-            style: TamamType.labelMd.toTextStyle(color: TamamBrand.purple100),
+            style: TamamType.labelMd.toTextStyle(color: colors.textOnBrandMuted),
           ),
           const SizedBox(height: TamamSpacing.s1),
           Text(
@@ -451,7 +452,7 @@ class _CodeCard extends StatelessWidget {
           Text(
             hint,
             textAlign: TextAlign.center,
-            style: TamamType.bodySm.toTextStyle(color: TamamBrand.purple100),
+            style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted),
           ),
         ],
       ),
@@ -668,7 +669,7 @@ class _ActionTile extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
-      child: InkWell(
+      child: TamamInkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(TamamRadius.md),
         child: Container(

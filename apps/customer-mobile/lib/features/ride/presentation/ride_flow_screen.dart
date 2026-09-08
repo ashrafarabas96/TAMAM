@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -333,7 +334,7 @@ class _AddressRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: '$label: $value',
-      child: InkWell(
+      child: TamamInkWell(
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: TamamSpacing.s3),

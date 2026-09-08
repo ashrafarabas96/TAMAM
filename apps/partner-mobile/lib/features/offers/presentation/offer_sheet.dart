@@ -101,7 +101,7 @@ class _OfferSheetState extends ConsumerState<OfferSheet> {
               const SizedBox(height: TamamSpacing.s4),
               Text(
                 l10n.offerTitle,
-                style: TamamType.headingMd.toTextStyle(color: TamamBrand.purple100),
+                style: TamamType.headingMd.toTextStyle(color: colors.textOnBrandMuted),
               ),
               if (queue.length > 1)
                 Padding(
@@ -205,7 +205,7 @@ class _OfferBody extends ConsumerWidget {
             children: <Widget>[
               Text(
                 l10n.offerEstimatedEarnings,
-                style: TamamType.labelMd.toTextStyle(color: TamamBrand.purple200),
+                style: TamamType.labelMd.toTextStyle(color: colors.textOnBrandMuted),
               ),
               const SizedBox(height: TamamSpacing.s1),
               MoneyText(
@@ -300,7 +300,7 @@ class _OfferBody extends ConsumerWidget {
             textAlign: TextAlign.center,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: TamamType.bodyMd.toTextStyle(color: TamamBrand.purple100),
+            style: TamamType.bodyMd.toTextStyle(color: colors.textOnBrandMuted),
           ),
         ],
       ],
@@ -334,7 +334,7 @@ class _Metric extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
-          style: TamamType.labelSm.toTextStyle(color: TamamBrand.purple200),
+          style: TamamType.labelSm.toTextStyle(color: colors.textOnBrandMuted),
         ),
       ],
     );
@@ -368,7 +368,7 @@ class _AddressRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(label, style: TamamType.labelSm.toTextStyle(color: TamamBrand.purple200)),
+              Text(label, style: TamamType.labelSm.toTextStyle(color: colors.textOnBrandMuted)),
               Text(
                 address,
                 maxLines: 2,
@@ -376,7 +376,7 @@ class _AddressRow extends StatelessWidget {
                 style: TamamType.bodyLg.toTextStyle(color: colors.textOnBrand),
               ),
               if (detail != null)
-                Text(detail!, style: TamamType.bodySm.toTextStyle(color: TamamBrand.purple100)),
+                Text(detail!, style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted)),
             ],
           ),
         ),

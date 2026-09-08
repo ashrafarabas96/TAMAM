@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tamam_customer/core/models/geo.dart';
@@ -41,7 +42,7 @@ class HomeHeader extends ConsumerWidget {
                 child: Semantics(
                   button: true,
                   label: l10n.homeChangeAddress,
-                  child: InkWell(
+                  child: TamamInkWell(
                     onTap: onPickAddress,
                     borderRadius: BorderRadius.circular(TamamRadius.md),
                     child: Padding(
@@ -57,7 +58,7 @@ class HomeHeader extends ConsumerWidget {
                               children: <Widget>[
                                 Text(
                                   l10n.homeDeliverTo,
-                                  style: TamamType.labelSm.toTextStyle(color: TamamBrand.purple200),
+                                  style: TamamType.labelSm.toTextStyle(color: colors.textOnBrandMuted),
                                 ),
                                 Text(
                                   address?.formatted ?? l10n.homeChooseAddress,
@@ -146,7 +147,7 @@ class _SearchBar extends StatelessWidget {
     return Semantics(
       button: true,
       label: hint,
-      child: InkWell(
+      child: TamamInkWell(
         onTap: () => context.push(Routes.search),
         borderRadius: BorderRadius.circular(TamamRadius.button),
         child: Container(

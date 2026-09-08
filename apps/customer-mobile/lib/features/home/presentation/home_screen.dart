@@ -226,19 +226,7 @@ class _PopularCategories extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: category.color.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(TamamRadius.sm),
-                          ),
-                          child: Icon(
-                            Icons.build_circle_outlined,
-                            size: TamamSize.iconMd,
-                            color: category.color,
-                          ),
-                        ),
+                        TamamIconTile.glyph(icon: Icons.build_circle_outlined, tint: category.color, size: 38),
                         Text(
                           category.name.resolve(language),
                           maxLines: 2,

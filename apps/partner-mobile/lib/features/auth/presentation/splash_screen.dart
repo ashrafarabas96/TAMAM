@@ -39,7 +39,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             const SizedBox(height: TamamSpacing.s3),
             Text(
               context.l10n.appTagline,
-              style: TamamType.bodyMd.toTextStyle(color: TamamBrand.purple100),
+              style: TamamType.bodyMd.toTextStyle(color: colors.textOnBrandMuted),
             ),
             const SizedBox(height: TamamSpacing.s8),
             SizedBox(

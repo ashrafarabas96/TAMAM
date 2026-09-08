@@ -44,7 +44,10 @@ class MoneyText extends ConsumerWidget {
             ? colors.danger
             : signed
                 ? colors.success
-                : colors.textPrimary);
+                // An amount is the one number a customer always reads; setting
+                // it in brand ink (verified 7.29:1 light, 7.13:1 dark) makes it
+                // read as TAMAM's figure rather than as body copy.
+                : colors.primaryInk);
 
     final TextStyle base = switch (emphasis) {
       MoneyEmphasis.strong => TamamType.price.toTextStyle(color: resolved),

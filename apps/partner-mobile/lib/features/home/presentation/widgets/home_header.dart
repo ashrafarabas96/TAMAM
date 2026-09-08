@@ -77,7 +77,7 @@ class HomeHeader extends ConsumerWidget {
                   children: <Widget>[
                     Text(
                       l10n.homeGreeting,
-                      style: TamamType.labelSm.toTextStyle(color: TamamBrand.purple200),
+                      style: TamamType.labelSm.toTextStyle(color: colors.textOnBrandMuted),
                     ),
                     Text(
                       user?.fullName ?? l10n.accountNoName,
@@ -97,7 +97,7 @@ class HomeHeader extends ConsumerWidget {
               Expanded(
                 child: Text(
                   availability.isOnline ? l10n.homeStatusOnline : l10n.homeStatusOffline,
-                  style: TamamType.bodyMd.toTextStyle(color: TamamBrand.purple100),
+                  style: TamamType.bodyMd.toTextStyle(color: colors.textOnBrandMuted),
                 ),
               ),
               AvailabilityToggle(

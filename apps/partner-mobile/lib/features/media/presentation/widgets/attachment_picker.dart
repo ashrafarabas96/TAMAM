@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_partner/core/widgets/tamam_ink_well.dart';
 import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_partner/core/theme/tamam_theme.dart';
 import 'package:tamam_partner/features/media/data/media_repository.dart';
@@ -175,7 +176,7 @@ class _AddTile extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
-      child: InkWell(
+      child: TamamInkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(TamamRadius.md),
         child: Container(

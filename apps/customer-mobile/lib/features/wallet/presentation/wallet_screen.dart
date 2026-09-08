@@ -89,7 +89,7 @@ class _BalanceCard extends ConsumerWidget {
           children: <Widget>[
             Text(
               l10n.walletBalance,
-              style: TamamType.labelMd.toTextStyle(color: TamamBrand.purple100),
+              style: TamamType.labelMd.toTextStyle(color: colors.textOnBrandMuted),
             ),
             const SizedBox(height: TamamSpacing.s1),
             MoneyText(wallet.balance, color: colors.textOnBrand),
@@ -99,13 +99,13 @@ class _BalanceCard extends ConsumerWidget {
                 children: <Widget>[
                   Text(
                     l10n.walletPending,
-                    style: TamamType.bodySm.toTextStyle(color: TamamBrand.purple100),
+                    style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted),
                   ),
                   const SizedBox(width: TamamSpacing.s1),
                   MoneyText(
                     wallet.pendingBalance,
                     emphasis: MoneyEmphasis.subtle,
-                    color: TamamBrand.purple100,
+                    color: colors.textOnBrandMuted,
                   ),
                 ],
               ),

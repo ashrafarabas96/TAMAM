@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_icon_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tamam_customer/core/contracts/generated/tamam_contracts.dart';
@@ -115,19 +116,9 @@ class _Results extends ConsumerWidget {
             onTap: () => context.push(Routes.category(hit.categoryId)),
             child: Row(
               children: <Widget>[
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: serviceColorFor(hit.jobType).withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(TamamRadius.sm),
-                  ),
-                  child: Icon(
-                    Icons.handyman_rounded,
-                    size: TamamSize.iconMd,
-                    color: serviceColorFor(hit.jobType),
-                  ),
-                ),
+                serviceFor(hit.jobType) != null
+                    ? TamamIconTile(service: serviceFor(hit.jobType)!, size: 40)
+                    : TamamIconTile.glyph(icon: Icons.handyman_rounded, tint: serviceColorFor(hit.jobType), size: 40),
                 const SizedBox(width: TamamSpacing.s3),
                 Expanded(
                   child: Column(
@@ -186,15 +177,7 @@ class _Directory extends ConsumerWidget {
               onTap: () => context.push(Routes.category(category.id)),
               child: Row(
                 children: <Widget>[
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: category.color.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(TamamRadius.sm),
-                    ),
-                    child: Icon(Icons.build_rounded, color: category.color),
-                  ),
+                  TamamIconTile.glyph(icon: Icons.build_rounded, tint: category.color, size: 44),
                   const SizedBox(width: TamamSpacing.s3),
                   Expanded(
                     child: Column(

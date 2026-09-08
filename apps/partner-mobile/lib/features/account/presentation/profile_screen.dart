@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_partner/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_partner/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_partner/core/network/app_failure.dart';
@@ -109,7 +110,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Material(
                     color: colors.primary,
                     shape: const CircleBorder(),
-                    child: InkWell(
+                    child: TamamInkWell(
                       customBorder: const CircleBorder(),
                       onTap: _uploadingPhoto ? null : () => unawaited(_changePhoto()),
                       child: SizedBox(

@@ -145,7 +145,7 @@ class ReferralCard extends ConsumerWidget {
                 children: <Widget>[
                   Text(
                     l10n.referralsRewardPrefix,
-                    style: TamamType.bodySm.toTextStyle(color: TamamBrand.purple100),
+                    style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted),
                   ),
                   const SizedBox(width: TamamSpacing.s1),
                   MoneyText(
@@ -188,7 +188,7 @@ class ReferralCard extends ConsumerWidget {
             const SizedBox(height: TamamSpacing.s3),
             Text(
               l10n.referralsStats(referral.invitedCount, referral.rewardedCount),
-              style: TamamType.bodySm.toTextStyle(color: TamamBrand.purple100),
+              style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted),
             ),
             const SizedBox(height: TamamSpacing.s4),
             TamamButton(

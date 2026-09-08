@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_icon_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_customer/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_customer/core/format/unit_formatter.dart';
@@ -40,15 +41,9 @@ class JobCard extends ConsumerWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: accent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(TamamRadius.sm),
-                ),
-                child: Icon(_iconFor(job.type), size: TamamSize.iconMd, color: accent),
-              ),
+              serviceFor(job.type) != null
+                  ? TamamIconTile(service: serviceFor(job.type)!, size: 40)
+                  : TamamIconTile.glyph(icon: _iconFor(job.type), tint: accent, size: 40),
               const SizedBox(width: TamamSpacing.s3),
               Expanded(
                 child: Column(
@@ -179,7 +174,7 @@ class ActiveJobBanner extends ConsumerWidget {
                   job.partner?.fullName ?? l10n.homeSearchingPartner,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TamamType.bodySm.toTextStyle(color: TamamBrand.purple100),
+                  style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted),
                 ),
               ],
             ),
@@ -194,7 +189,7 @@ class ActiveJobBanner extends ConsumerWidget {
                 ),
                 Text(
                   l10n.unitMinutes,
-                  style: TamamType.labelSm.toTextStyle(color: TamamBrand.purple100),
+                  style: TamamType.labelSm.toTextStyle(color: colors.textOnBrandMuted),
                 ),
               ],
             ),

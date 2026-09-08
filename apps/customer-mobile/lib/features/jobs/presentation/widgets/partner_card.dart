@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 import 'package:tamam_customer/core/theme/tamam_theme.dart';
 import 'package:tamam_customer/core/widgets/avatar.dart';
@@ -115,7 +116,7 @@ class _RoundAction extends StatelessWidget {
       child: Material(
         color: colors.surfaceBrandSoft,
         shape: const CircleBorder(),
-        child: InkWell(
+        child: TamamInkWell(
           onTap: onTap,
           customBorder: const CircleBorder(),
           child: SizedBox(

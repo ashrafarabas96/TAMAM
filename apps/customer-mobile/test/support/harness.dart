@@ -34,6 +34,12 @@ Future<void> pumpAppWidget(
   ProviderContainer? container,
   Locale locale = const Locale('ar'),
   Size surfaceSize = const Size(390, 844),
+  // Layout defects hide at the defaults: a 390-wide light-theme screen at 1.0x
+  // text is the one every developer looks at. Small phones, large accessibility
+  // text and the dark theme are where overflows and vanished text actually
+  // show up, so a test can ask for any of them.
+  double textScale = 1.0,
+  Brightness brightness = Brightness.light,
 }) async {
   await tester.binding.setSurfaceSize(surfaceSize);
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -42,7 +48,13 @@ Future<void> pumpAppWidget(
     locale: locale,
     supportedLocales: supportedAppLocales,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
-    theme: TamamTheme.light(locale.languageCode),
+    theme: brightness == Brightness.dark
+        ? TamamTheme.dark(locale.languageCode)
+        : TamamTheme.light(locale.languageCode),
+    builder: (BuildContext context, Widget? inner) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+      child: inner ?? const SizedBox.shrink(),
+    ),
     home: Scaffold(body: child),
   );
   await tester.pumpWidget(

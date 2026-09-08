@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 
 /// The four services, drawn as the brand's own artwork.
@@ -8,6 +9,15 @@ import 'package:tamam_customer/core/theme/generated/tamam_tokens.dart';
 /// them. An earlier version of this widget built a gradient tile and set a
 /// Material glyph on top; it was a reasonable stand-in and it looked like one.
 enum TamamService { rides, delivery, homeServices, chalet }
+
+/// The illustrated service a job belongs to, or null for the kinds the identity
+/// sheet has no artwork for (food, grocery, moving, ...); those keep a glyph.
+TamamService? serviceFor(JobType type) => switch (type) {
+      JobType.ride => TamamService.rides,
+      JobType.delivery => TamamService.delivery,
+      JobType.homeService => TamamService.homeServices,
+      _ => null,
+    };
 
 extension TamamServiceAsset on TamamService {
   String get asset => switch (this) {

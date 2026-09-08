@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_icon_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tamam_customer/core/providers/core_providers.dart';
@@ -44,15 +45,7 @@ class FavoritesScreen extends ConsumerWidget {
               onTap: () => context.push(Routes.category(category.id)),
               child: Row(
                 children: <Widget>[
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: category.color.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(TamamRadius.sm),
-                    ),
-                    child: Icon(Icons.build_rounded, color: category.color),
-                  ),
+                  TamamIconTile.glyph(icon: Icons.build_rounded, tint: category.color, size: 42),
                   const SizedBox(width: TamamSpacing.s3),
                   Expanded(
                     child: Text(

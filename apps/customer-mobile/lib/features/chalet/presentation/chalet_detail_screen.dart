@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tamam_customer/core/network/app_failure.dart';
@@ -235,7 +236,7 @@ class _DayStrip extends StatelessWidget {
             child: Material(
               color: active ? colors.primary : colors.surfaceAlt,
               borderRadius: BorderRadius.circular(TamamRadius.card),
-              child: InkWell(
+              child: TamamInkWell(
                 onTap: () => onSelect(day),
                 borderRadius: BorderRadius.circular(TamamRadius.card),
                 child: SizedBox(

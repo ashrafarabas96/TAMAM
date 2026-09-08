@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_partner/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_partner/core/theme/banner_style.dart';
 import 'package:tamam_partner/core/theme/generated/tamam_tokens.dart';
@@ -97,7 +98,7 @@ class _DismissButton extends StatelessWidget {
         child: Material(
           color: TamamNeutral.n1000.withOpacity(0.35),
           shape: const CircleBorder(),
-          child: InkWell(
+          child: TamamInkWell(
             onTap: onPressed,
             customBorder: const CircleBorder(),
             child: const SizedBox(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/tamam_ink_well.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tamam_customer/core/contracts/generated/tamam_contracts.dart';
 import 'package:tamam_customer/core/format/unit_formatter.dart';
@@ -278,7 +279,7 @@ class _PickerField extends StatelessWidget {
   final String? errorText;
 
   @override
-  Widget build(BuildContext context) => InkWell(
+  Widget build(BuildContext context) => TamamInkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(TamamRadius.button),
         child: InputDecorator(
