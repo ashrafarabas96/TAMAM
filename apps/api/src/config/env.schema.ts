@@ -77,17 +77,29 @@ export const envSchema = z
 
     METRICS_ENABLED: bool.default(true),
     ERROR_TRACKING_DSN: z.string().optional(),
+    // Consumed by the seed, not the server -- declared here only so the
+    // production guard below can see it: zod drops undeclared keys before
+    // superRefine runs, which is exactly how the default slipped past.
+    SEED_ADMIN_PASSWORD: z.string().optional(),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === 'production') {
-      const weak = (v: string) => /change-me|test-|example|localhost/i.test(v);
+      // The compose file ships working development defaults so a first run
+      // needs no setup. Every one of them must be caught here, or a production
+      // deploy that inherits the compose environment boots with public secrets.
+      const weak = (v: string) =>
+        /change-me|test-|example|localhost|not-for-real-use|local-development|TamamAdmin#2026/i.test(v) ||
+        v === 'dGFtYW0tbG9jYWwtZGV2LWtleS0zMi1ieXRlcy14eHg=';
       for (const key of [
         'JWT_ACCESS_SECRET',
         'JWT_REFRESH_SECRET',
         'OTP_PEPPER',
         'ENCRYPTION_KEY',
+        'SEED_ADMIN_PASSWORD',
       ] as const) {
-        if (weak(env[key]))
+        const value = env[key];
+        if (typeof value !== 'string') continue;
+        if (weak(value))
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: [key],

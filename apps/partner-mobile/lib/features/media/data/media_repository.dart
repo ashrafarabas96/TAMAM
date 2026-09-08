@@ -41,7 +41,7 @@ class Attachment {
 }
 
 /// Uploads attachments through the platform's three-step flow:
-/// intent → direct PUT to storage → confirm.
+/// intent → PUT bytes to the API → confirm.
 ///
 /// The API never proxies file bytes, so the app talks to the pre-signed URL
 /// directly and only tells the API when the object exists.
@@ -65,19 +65,18 @@ class MediaRepository {
     );
 
     final String mediaId = readStringOr(intent, 'mediaId', '');
-    final JsonMap upload = asJsonMap(intent['upload']) ?? const <String, Object?>{};
-    final Uri? uploadUrl = Uri.tryParse(readStringOr(upload, 'uploadUrl', ''));
-    if (mediaId.isEmpty || uploadUrl == null) {
+    if (mediaId.isEmpty) {
       throw const FormatException('Upload intent was incomplete');
     }
 
-    final Map<String, String> headers = <String, String>{'Content-Type': attachment.mimeType};
-    final JsonMap? extraHeaders = asJsonMap(upload['headers']);
-    extraHeaders?.forEach((String key, Object? value) {
-      if (value is String) headers[key] = value;
-    });
-
-    await _api.putBinary(uploadUrl, await attachment.file.readAsBytes(), headers: headers);
+    // The bytes go to the API, not to the presigned URL the intent still
+    // carries: that URL names the object store by a hostname only the server's
+    // network resolves, so from a phone it never connected.
+    await _api.putBytes(
+      ApiPaths.mediaUpload(mediaId),
+      await attachment.file.readAsBytes(),
+      contentType: attachment.mimeType,
+    );
     await _api.postObject(ApiPaths.mediaConfirm(mediaId));
     return attachment.copyWith(mediaId: mediaId, uploading: false, failed: false);
   }

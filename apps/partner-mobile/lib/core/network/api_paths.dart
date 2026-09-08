@@ -104,6 +104,7 @@ abstract final class ApiPaths {
 
   // media & config
   static const String mediaUploadIntents = '/media/upload-intents';
+  static String mediaUpload(String id) => '/media/$id/upload';
   static String mediaConfirm(String id) => '/media/$id/confirm';
   static const String featureFlags = '/config/feature-flags';
 }

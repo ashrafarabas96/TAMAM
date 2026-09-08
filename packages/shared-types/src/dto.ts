@@ -74,6 +74,12 @@ export interface AuthSession {
   tokens: AuthTokens;
   user: UserDto;
   isNewUser: boolean;
+  /**
+   * Staff only: the credential still carries the password it was issued with.
+   * Until it is changed, every route except change-password and logout answers
+   * PASSWORD_CHANGE_REQUIRED, so the console sends the person straight there.
+   */
+  mustChangePassword?: boolean;
 }
 
 export interface DeviceSessionDto {

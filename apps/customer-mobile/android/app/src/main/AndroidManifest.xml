@@ -26,7 +26,10 @@
         android:label="تمام"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="${cleartextTraffic}">
+        android:usesCleartextTraffic="${cleartextTraffic}"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
 
         <activity
             android:name=".MainActivity"

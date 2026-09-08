@@ -248,7 +248,14 @@ export class AuthService {
       ip,
       userAgent,
     });
-    return { tokens, user: await this.users.findById(cred.userId), isNewUser: false };
+    return {
+      tokens,
+      user: await this.users.findById(cred.userId),
+      isNewUser: false,
+      // Lets the console send the person straight to change-password instead of
+      // discovering the lock on the first request it makes.
+      mustChangePassword: cred.mustChangePassword,
+    };
   }
 
   async adminChangePassword(
@@ -270,6 +277,9 @@ export class AuthService {
       },
     });
     await this.sessions.revokeAll(userId, 'password_changed', sessionId);
+    // The surviving session's principal is cached with the old flag; drop it so
+    // the very next request sees the change rather than the cache TTL.
+    await this.tokens.invalidatePrincipalCache(userId);
     await this.audit.record({
       actorId: userId,
       action: 'auth.password_changed',

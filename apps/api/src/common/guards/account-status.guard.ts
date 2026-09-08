@@ -8,6 +8,10 @@ import { AppException } from '../errors/app.exception';
 import type { RequestUser } from '../types/request-user';
 
 /** SUSPENDED accounts are blocked everywhere; RESTRICTED accounts only reach @AllowRestricted endpoints and GETs. */
+/** Routes a must-change-password staff session may still reach. Matched on the path after the global prefix. */
+const PASSWORD_CHANGE_ALLOWLIST =
+  /(^|\/)(auth\/admin\/change-password|auth\/logout|auth\/refresh|me(\/sessions(\/[^/]+)?)?)\/?$/;
+
 @Injectable()
 export class AccountStatusGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -26,6 +30,16 @@ export class AccountStatusGuard implements CanActivate {
       throw AppException.forbidden(
         'Your account is suspended. Contact support.',
         ErrorCode.ACCOUNT_SUSPENDED,
+      );
+    }
+    // A staff credential still on its issued password may do exactly one thing:
+    // change it (and sign out, refresh, or look at itself on the way). The seed
+    // ships an admin with a known default password; without this, that account
+    // could run the whole console indefinitely without ever rotating it.
+    if (user.mustChangePassword && !PASSWORD_CHANGE_ALLOWLIST.test(req.path)) {
+      throw AppException.forbidden(
+        'Change your issued password before continuing.',
+        ErrorCode.PASSWORD_CHANGE_REQUIRED,
       );
     }
     if (user.accountStatus === AccountStatus.RESTRICTED) {

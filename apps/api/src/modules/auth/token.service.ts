@@ -90,6 +90,7 @@ export class TokenService {
         roles: true,
         customer: { select: { userId: true } },
         partner: { select: { userId: true } },
+        adminCredential: { select: { mustChangePassword: true } },
         sessions: {
           where: { id: claims.sid },
           select: { id: true, deviceId: true, revokedAt: true, expiresAt: true },
@@ -114,6 +115,8 @@ export class TokenService {
       partnerId: user.partner?.userId,
       customerId: user.customer?.userId,
       isSuperAdmin: roles.includes('SUPER_ADMIN' as UserRole),
+      // Only staff have a credential; for everyone else this stays undefined.
+      ...(user.adminCredential?.mustChangePassword ? { mustChangePassword: true } : {}),
     };
     await this.redis.setJson(`principal:${claims.sid}`, principal, PRINCIPAL_TTL);
     return principal;

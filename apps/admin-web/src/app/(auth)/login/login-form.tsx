@@ -60,9 +60,16 @@ export function LoginForm() {
       );
       return;
     }
-    const data = (await response.json()) as { accessToken: string; expiresAt: string };
+    const data = (await response.json()) as {
+      accessToken: string;
+      expiresAt: string;
+      mustChangePassword?: boolean;
+    };
     setAccessToken(data.accessToken, data.expiresAt);
-    router.replace(safeNext(params.get('next')));
+    // The API refuses everything but change-password for a credential still on
+    // its issued password, so go there directly rather than to a page that
+    // would only fail its first request.
+    router.replace(data.mustChangePassword ? '/account?tab=password' : safeNext(params.get('next')));
     router.refresh();
   });
 

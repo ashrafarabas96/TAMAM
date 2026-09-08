@@ -127,6 +127,49 @@ export class MediaService {
   }
 
   /** Client calls this after the PUT succeeds; we verify the object and enqueue processing. */
+  /**
+   * Accepts the upload body over the API's own origin.
+   *
+   * The intent used to hand back a presigned PUT against S3_ENDPOINT, which in
+   * the containerised stack is `http://minio:9000` — a hostname only Docker can
+   * resolve. Every upload from a phone failed before it began. Receiving the
+   * bytes here and writing them to the store server-side keeps the client on
+   * one origin, the same as reads; confirmUpload then runs unchanged.
+   */
+  async receiveUpload(
+    user: RequestUser,
+    mediaId: string,
+    body: Buffer,
+    contentType: string | undefined,
+  ): Promise<{ mediaId: string; sizeBytes: number }> {
+    const media = await this.prisma.mediaAsset.findUnique({ where: { id: mediaId } });
+    // Same shape as confirmUpload: someone else's id answers 404, not 403, so the
+    // existence of another user's upload is not disclosed.
+    if (!media || media.uploaderId !== user.id) throw AppException.notFound('Media', mediaId);
+    if (media.status !== 'PENDING_UPLOAD') {
+      throw AppException.conflict('Upload already received');
+    }
+    const declared = Number(media.sizeBytes);
+    const cap = ALLOWED[media.kind as MediaKind]?.maxBytes ?? 0;
+    // The intent already validated the declared size against the kind's cap;
+    // the body must honour what was declared, with the same slack confirm allows.
+    if (body.length === 0 || body.length > Math.min(cap, declared * 1.05 + 1024)) {
+      throw AppException.badRequest(
+        ErrorCode.UPLOAD_TOO_LARGE,
+        'Upload body does not match the declared size',
+      );
+    }
+    const sent = contentType?.split(';')[0]?.trim().toLowerCase();
+    if (sent && sent !== media.mimeType) {
+      throw AppException.badRequest(
+        ErrorCode.UPLOAD_INVALID,
+        'Upload content type does not match the intent',
+      );
+    }
+    await this.storage.putObject(media.bucket, media.objectKey, body, media.mimeType);
+    return { mediaId: media.id, sizeBytes: body.length };
+  }
+
   async confirmUpload(user: RequestUser, mediaId: string) {
     const media = await this.prisma.mediaAsset.findUnique({ where: { id: mediaId } });
     if (!media || media.uploaderId !== user.id) throw AppException.notFound('Media', mediaId);
@@ -144,7 +187,8 @@ export class MediaService {
       const bytes = await this.storage.getObject(media.bucket, media.objectKey);
       const sniffed = MAGIC.find((m) => m.bytes.every((b, i) => bytes[(m.offset ?? 0) + i] === b));
       const expected = media.mimeType === 'image/heic' ? undefined : media.mimeType;
-      if (expected && sniffed && sniffed.mime !== expected) {
+      const hasSignature = MAGIC.some((m) => m.mime === expected);
+      if (expected && ((sniffed && sniffed.mime !== expected) || (!sniffed && hasSignature))) {
         await this.storage.deleteObject(media.bucket, media.objectKey);
         await this.prisma.mediaAsset.update({
           where: { id: media.id },

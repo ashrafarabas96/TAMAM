@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { API_PREFIX } from '@tamam/shared-types';
+import { raw } from 'express';
 import helmet from 'helmet';
 import { Logger, PinoLogger } from 'nestjs-pino';
 
@@ -22,6 +23,16 @@ async function bootstrap(): Promise<void> {
   const config = app.get(AppConfigService);
 
   app.set('trust proxy', config.env.TRUST_PROXY ? 1 : false);
+
+  // Upload bodies are binary and arrive on this one path only. Nest's own
+  // parsers handle JSON and forms; without a raw parser here `req.body` for an
+  // image PUT is empty. The limit matches the largest kind the media rules allow
+  // (video, 120 MB) plus headroom; MediaService still enforces the per-kind cap
+  // and the size the intent declared.
+  app.use(
+    `/${API_PREFIX}/media/:id/upload`,
+    raw({ type: () => true, limit: '130mb' }),
+  );
   app.disable('x-powered-by');
   app.use(
     helmet({

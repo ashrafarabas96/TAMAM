@@ -61,6 +61,7 @@ export async function POST(request: Request): Promise<Response> {
     user: result.data.user,
     accessToken: session.accessToken,
     expiresAt: session.accessExpiresAt,
+    mustChangePassword: result.data.mustChangePassword === true,
   });
 }
 

@@ -44,6 +44,24 @@ class ApiClient {
   Future<JsonMap> putObject(String path, {Object? body}) async =>
       _object(() => _dio.put<Object?>(path, data: body));
 
+  /// Sends raw bytes to an API route, authenticated like every other call.
+  ///
+  /// Uploads used to go straight to the object store with a presigned URL. That
+  /// URL was signed against a hostname only the server's own network could
+  /// resolve, so from a phone every upload failed. Bytes now travel to the API
+  /// itself, on the one origin the app already reaches.
+  Future<JsonMap> putBytes(String path, List<int> bytes, {required String contentType}) async =>
+      _object(
+        () => _dio.put<Object?>(
+          path,
+          data: Stream<List<int>>.fromIterable(<List<int>>[bytes]),
+          options: Options(
+            contentType: contentType,
+            headers: <String, Object?>{'content-length': bytes.length},
+          ),
+        ),
+      );
+
   Future<JsonMap> patchObject(String path, {Object? body}) async =>
       _object(() => _dio.patch<Object?>(path, data: body));
 

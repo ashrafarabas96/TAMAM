@@ -15,6 +15,8 @@ export interface RequestUser {
   /** Present when the user has a customer profile. */
   customerId?: string;
   isSuperAdmin: boolean;
+  /** Staff whose credential still carries its issued password; see AccountStatusGuard. */
+  mustChangePassword?: boolean;
 }
 
 export interface AccessTokenClaims {

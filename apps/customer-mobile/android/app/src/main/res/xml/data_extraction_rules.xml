@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nothing in this app's private storage belongs in a cloud backup or a
+     device-to-device transfer: the session tokens live in Keystore-backed
+     encrypted preferences, and everything else is a cache the app rebuilds.
+     Excluding it all closes the path where an account rides along with a
+     restored backup onto a phone the owner never signed in on. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" />
+        <exclude domain="database" />
+        <exclude domain="file" />
+        <exclude domain="external" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" />
+        <exclude domain="database" />
+        <exclude domain="file" />
+        <exclude domain="external" />
+    </device-transfer>
+</data-extraction-rules>
