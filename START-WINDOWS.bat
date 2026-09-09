@@ -114,6 +114,16 @@ echo.
 echo     API           :  http://localhost:3000
 echo     File storage  :  http://localhost:9001  (tamam / tamam-secret)
 echo.
+echo     From a phone  :  double-click OPEN-FOR-PHONE.bat once - it opens
+echo                      the firewall and shows the address to type
+echo                      into the app.
+echo.
+netsh advfirewall firewall show rule name="TAMAM API (3000)" >nul 2>&1
+if errorlevel 1 (
+  echo   [!] Phones cannot reach TAMAM yet: Windows is still blocking port
+  echo       3000. Double-click OPEN-FOR-PHONE.bat once to fix that.
+  echo.
+)
 echo     To stop it later, double-click STOP-WINDOWS.bat
 echo.
 

@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tamam_partner/core/env/server_setup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tamam_partner/core/env/server_setup.dart';
 
 void main() {
+  _probeMessages();
   group('normaliseServerInput', () {
     test('turns a bare IP into a full API base URL on the dev port', () {
       expect(
@@ -69,6 +70,31 @@ void main() {
 
     test('says no on input that is not a usable URL', () async {
       expect(await probeServer('not a url'), isFalse);
+    });
+  });
+}
+
+void _probeMessages() {
+  group('describeProbeFailure', () {
+    test(
+        'names the firewall first when nothing answered, with a browser URL to try',
+        () {
+      final String text = describeProbeFailure(
+          ServerProbe.timeout, 'http://192.168.1.20:3000/health/live');
+      expect(text, contains('OPEN-FOR-PHONE.bat'));
+      expect(text, contains('http://192.168.1.20:3000/health/live'));
+    });
+
+    test(
+        'tells a refused connection apart: the computer is there, the stack is not',
+        () {
+      expect(describeProbeFailure(ServerProbe.refused, ''),
+          contains('START-WINDOWS.bat'));
+    });
+
+    test('builds the browser-openable health URL from the API base URL', () {
+      expect(healthUrlOf('http://192.168.1.20:3000/api/v1'),
+          'http://192.168.1.20:3000/health/live');
     });
   });
 }

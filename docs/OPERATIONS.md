@@ -221,3 +221,18 @@ Redis holds queues, rate limits, caches, session-revocation markers and the Sock
   with `POST /api/v1/admin/jobs/<id>/redispatch`.
 - `maxmemory-policy` **must** be `noeviction`. With an eviction policy Redis silently deletes queue
   keys under pressure, which loses work with no error anywhere.
+
+## Testing from a phone on the same Wi-Fi
+
+The mobile apps ask for the computer's address on first launch and check it
+against `GET /health/live` before saving it. When that check fails the screen
+says which of three things happened and what to do:
+
+| What the phone saw | Meaning | Fix |
+|---|---|---|
+| nothing within 5 s | Windows firewall, a different network, or the wrong adapter's IP | run `OPEN-FOR-PHONE.bat` once (opens TCP 3000/3001 on every profile and prints the Wi-Fi IPv4) |
+| connection refused | the computer is reachable, the stack is down | `START-WINDOWS.bat`, wait for "TAMAM is running" |
+| an answer that is not TAMAM | a router page or another service on that port | use the Wi-Fi IPv4 shown by `OPEN-FOR-PHONE.bat`, port 3000 |
+
+`START-WINDOWS.bat` warns when the firewall rule is missing. The quickest
+manual test is to open `http://<ip>:3000/health/live` in the phone's browser.

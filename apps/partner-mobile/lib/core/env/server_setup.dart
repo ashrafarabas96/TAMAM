@@ -38,23 +38,99 @@ String normaliseServerInput(String raw) {
   return '${uri.scheme}://$authority/api/v1';
 }
 
-/// True when `<origin>/health/live` answers 200 within a few seconds.
-Future<bool> probeServer(String apiBaseUrl) async {
+/// What the phone found at an address. Each outcome has a different fix, and
+/// "could not connect" told a person none of them.
+enum ServerProbe {
+  /// `/health/live` answered 200 with a JSON body.
+  ok,
+
+  /// The address is not something a phone can open at all.
+  badAddress,
+
+  /// Nothing answered within the timeout. On a test stack this is almost
+  /// always the Windows firewall, a different Wi-Fi, or the wrong adapter's IP.
+  timeout,
+
+  /// The computer answered but nothing listens on that port: the stack is down.
+  refused,
+
+  /// Something answered, but it is not TAMAM (a router page, another service).
+  notTamam,
+}
+
+/// Probes `<origin>/health/live` and says what was found there.
+Future<ServerProbe> probeServerDetailed(String apiBaseUrl) async {
   final Uri? uri = Uri.tryParse(apiBaseUrl);
-  if (uri == null) return false;
+  if (uri == null || uri.host.isEmpty) return ServerProbe.badAddress;
   final String origin = '${uri.scheme}://${uri.host}:${uri.port}';
   try {
     final Response<dynamic> response = await Dio(
       BaseOptions(
-        connectTimeout: const Duration(seconds: 4),
-        receiveTimeout: const Duration(seconds: 4),
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
         validateStatus: (int? _) => true,
       ),
     ).get<dynamic>('$origin/health/live');
-    return response.statusCode == 200;
+    final dynamic body = response.data;
+    final bool looksLikeTamam = body is Map && body['status'] != null ||
+        (body is String && body.contains('"status"'));
+    return response.statusCode == 200 && looksLikeTamam
+        ? ServerProbe.ok
+        : ServerProbe.notTamam;
+  } on DioException catch (error) {
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.sendTimeout:
+        return ServerProbe.timeout;
+      case DioExceptionType.connectionError:
+      case DioExceptionType.unknown:
+        final String reason = '${error.error ?? error.message}'.toLowerCase();
+        return reason.contains('refused')
+            ? ServerProbe.refused
+            : ServerProbe.timeout;
+      // ignore: no_default_cases
+      default:
+        return ServerProbe.notTamam;
+    }
   } on Object {
-    return false;
+    return ServerProbe.timeout;
   }
+}
+
+/// True when `<origin>/health/live` answers 200 within a few seconds.
+Future<bool> probeServer(String apiBaseUrl) async =>
+    await probeServerDetailed(apiBaseUrl) == ServerProbe.ok;
+
+/// The message shown for each failed probe: what happened, then what to do,
+/// most likely cause first. [testUrl] is the address to try in a browser.
+String describeProbeFailure(ServerProbe probe, String testUrl) {
+  switch (probe) {
+    case ServerProbe.ok:
+      return '';
+    case ServerProbe.badAddress:
+      return 'هذا ليس عنواناً صحيحاً. اكتب الأرقام كما تظهر في سطر IPv4 Address، مثل 192.168.1.20.';
+    case ServerProbe.timeout:
+      return 'الهاتف لم يجد الحاسوب على هذا العنوان.\n\n'
+          'الأسباب المعتادة بالترتيب:\n'
+          '١. جدار حماية ويندوز يمنع الاتصال: على الحاسوب شغّل الملف OPEN-FOR-PHONE.bat مرة واحدة.\n'
+          '٢. الهاتف على شبكة مختلفة: أغلق بيانات الجوال، ولا تستخدم شبكة الضيوف.\n'
+          '٣. العنوان ليس عنوان الواي فاي: في ipconfig اختر السطر تحت Wi-Fi، لا vEthernet أو WSL.\n\n'
+          'للتجربة افتح في متصفح الهاتف:\n$testUrl';
+    case ServerProbe.refused:
+      return 'وصلت إلى الحاسوب لكن النظام لا يعمل عليه الآن.\n'
+          'شغّل START-WINDOWS.bat وانتظر رسالة "TAMAM is running" ثم اضغط اتصال مرة أخرى.';
+    case ServerProbe.notTamam:
+      return 'هذا العنوان يجيب لكنه ليس نظام TAMAM. تأكد أنه عنوان الحاسوب الذي يعمل عليه النظام '
+          'وأن المنفذ 3000، ثم جرّب في متصفح الهاتف:\n$testUrl';
+  }
+}
+
+/// The browser-openable address behind an API base URL.
+String healthUrlOf(String apiBaseUrl) {
+  final Uri? uri = Uri.tryParse(apiBaseUrl);
+  if (uri == null || uri.host.isEmpty) return '';
+  return '${uri.scheme}://${uri.host}:${uri.port}/health/live';
 }
 
 /// The one screen shown before anything else when no server is known.
@@ -107,13 +183,12 @@ class _ServerSetupAppState extends State<ServerSetupApp> {
       _busy = true;
       _error = null;
     });
-    final bool reachable = await probeServer(url);
+    final ServerProbe probe = await probeServerDetailed(url);
     if (!mounted) return;
-    if (!reachable) {
+    if (probe != ServerProbe.ok) {
       setState(() {
         _busy = false;
-        _error = 'لم أصل إلى الخادم على هذا العنوان. تأكّد أن الهاتف والحاسوب '
-            'على نفس شبكة الواي فاي، وأن النظام يعمل على الحاسوب.';
+        _error = describeProbeFailure(probe, healthUrlOf(url));
       });
       return;
     }
@@ -128,7 +203,9 @@ class _ServerSetupAppState extends State<ServerSetupApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF0F766E),
+        // The brand primary. This screen runs before the app's own theme
+        // exists, so the value is spelled out here rather than imported.
+        colorSchemeSeed: const Color(0xFF5B32F6),
       ),
       home: Directionality(
         textDirection: TextDirection.rtl,
@@ -175,10 +252,12 @@ class _ServerSetupAppState extends State<ServerSetupApp> {
                       ),
                       if (_error != null) ...<Widget>[
                         const SizedBox(height: 16),
-                        Text(
+                        SelectableText(
                           _error!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
-                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              height: 1.5),
+                          textAlign: TextAlign.start,
                         ),
                       ],
                       const SizedBox(height: 24),
@@ -188,7 +267,8 @@ class _ServerSetupAppState extends State<ServerSetupApp> {
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('اتصال'),
                       ),
