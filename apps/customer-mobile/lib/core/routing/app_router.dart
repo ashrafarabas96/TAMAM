@@ -44,7 +44,8 @@ import 'package:tamam_customer/features/support/presentation/ticket_screen.dart'
 import 'package:tamam_customer/features/wallet/presentation/promos_screen.dart';
 import 'package:tamam_customer/features/wallet/presentation/wallet_screen.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final GlobalKey<NavigatorState> _rootNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'root');
 
 /// The app's single router.
 ///
@@ -65,11 +66,15 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
     navigatorKey: _rootNavigatorKey,
     initialLocation: Routes.splash,
     refreshListenable: authListenable,
-    redirect: (BuildContext context, GoRouterState state) => _redirect(ref, state),
-    errorBuilder: (BuildContext context, GoRouterState state) => _RouteNotFound(location: state.uri.toString()),
+    redirect: (BuildContext context, GoRouterState state) =>
+        _redirect(ref, state),
+    errorBuilder: (BuildContext context, GoRouterState state) =>
+        _RouteNotFound(location: state.uri.toString()),
     routes: <RouteBase>[
       GoRoute(path: Routes.splash, builder: (_, __) => const SplashScreen()),
-      GoRoute(path: Routes.onboarding, builder: (_, __) => const OnboardingScreen()),
+      GoRoute(
+          path: Routes.onboarding,
+          builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: Routes.phone, builder: (_, __) => const PhoneScreen()),
       GoRoute(
         path: Routes.otp,
@@ -77,7 +82,9 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             OtpScreen(referralCode: state.uri.queryParameters['ref']),
       ),
       GoRoute(path: Routes.name, builder: (_, __) => const NameScreen()),
-      GoRoute(path: Routes.locationPermission, builder: (_, __) => const LocationPermissionScreen()),
+      GoRoute(
+          path: Routes.locationPermission,
+          builder: (_, __) => const LocationPermissionScreen()),
       GoRoute(
         path: '/t/:token',
         builder: (BuildContext _, GoRouterState state) =>
@@ -85,20 +92,33 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
 
       StatefulShellRoute.indexedStack(
-        builder: (BuildContext _, GoRouterState __, StatefulNavigationShell shell) =>
-            AppShell(navigationShell: shell),
+        builder:
+            (BuildContext _, GoRouterState __, StatefulNavigationShell shell) =>
+                AppShell(navigationShell: shell),
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
-            routes: <RouteBase>[GoRoute(path: Routes.home, builder: (_, __) => const HomeScreen())],
+            routes: <RouteBase>[
+              GoRoute(path: Routes.home, builder: (_, __) => const HomeScreen())
+            ],
           ),
           StatefulShellBranch(
-            routes: <RouteBase>[GoRoute(path: Routes.orders, builder: (_, __) => const OrdersScreen())],
+            routes: <RouteBase>[
+              GoRoute(
+                  path: Routes.orders, builder: (_, __) => const OrdersScreen())
+            ],
           ),
           StatefulShellBranch(
-            routes: <RouteBase>[GoRoute(path: Routes.wallet, builder: (_, __) => const WalletScreen())],
+            routes: <RouteBase>[
+              GoRoute(
+                  path: Routes.wallet, builder: (_, __) => const WalletScreen())
+            ],
           ),
           StatefulShellBranch(
-            routes: <RouteBase>[GoRoute(path: Routes.account, builder: (_, __) => const AccountScreen())],
+            routes: <RouteBase>[
+              GoRoute(
+                  path: Routes.account,
+                  builder: (_, __) => const AccountScreen())
+            ],
           ),
         ],
       ),
@@ -107,8 +127,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       GoRoute(
         path: Routes.search,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (BuildContext _, GoRouterState state) =>
-            SearchScreen(urgentOnly: state.uri.queryParameters['urgent'] == '1'),
+        builder: (BuildContext _, GoRouterState __) => const SearchScreen(),
       ),
       GoRoute(
         path: '/category/:id',
@@ -119,8 +138,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       GoRoute(
         path: '/service/:categoryId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (BuildContext _, GoRouterState state) =>
-            ServiceFlowScreen(categoryId: state.pathParameters['categoryId'] ?? ''),
+        builder: (BuildContext _, GoRouterState state) => ServiceFlowScreen(
+            categoryId: state.pathParameters['categoryId'] ?? ''),
       ),
       GoRoute(
         path: Routes.ride,
@@ -173,7 +192,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             path: 'booking/:id',
             parentNavigatorKey: _rootNavigatorKey,
             builder: (BuildContext _, GoRouterState state) =>
-                ChaletBookingScreen(bookingId: state.pathParameters['id'] ?? ''),
+                ChaletBookingScreen(
+                    bookingId: state.pathParameters['id'] ?? ''),
           ),
           // Declared after 'booking/:id' so the literal segment wins; a single
           // ':id' in front would swallow it and the booking screen would be
@@ -195,7 +215,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             path: 'pick',
             parentNavigatorKey: _rootNavigatorKey,
             builder: (BuildContext _, GoRouterState state) =>
-                LocationPickerScreen(initial: state.extra is Address ? state.extra! as Address : null),
+                LocationPickerScreen(
+                    initial: state.extra is Address
+                        ? state.extra! as Address
+                        : null),
           ),
         ],
       ),
@@ -262,7 +285,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             path: ':id',
             parentNavigatorKey: _rootNavigatorKey,
             builder: (BuildContext _, GoRouterState state) =>
-                DisputeDetailScreen(disputeId: state.pathParameters['id'] ?? ''),
+                DisputeDetailScreen(
+                    disputeId: state.pathParameters['id'] ?? ''),
           ),
         ],
       ),
@@ -289,7 +313,9 @@ String? _redirect(Ref ref, GoRouterState state) {
 
   if (session.status == AuthStatus.signedOut) {
     if (Routes.isPublic(location) && !onSplash) return null;
-    return prefs.getBool(PrefsStore.keyOnboardingSeen) ? Routes.phone : Routes.onboarding;
+    return prefs.getBool(PrefsStore.keyOnboardingSeen)
+        ? Routes.phone
+        : Routes.onboarding;
   }
 
   if (session.status == AuthStatus.needsProfile) {
@@ -308,7 +334,9 @@ String? _redirect(Ref ref, GoRouterState state) {
     Routes.name,
   };
   if (authOnlyLocations.contains(location)) {
-    return prefs.getBool(PrefsStore.keyLocationPromptShown) ? Routes.home : Routes.locationPermission;
+    return prefs.getBool(PrefsStore.keyLocationPromptShown)
+        ? Routes.home
+        : Routes.locationPermission;
   }
   return null;
 }

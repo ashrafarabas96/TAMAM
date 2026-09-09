@@ -278,12 +278,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serviceHomeCaption => 'Verified technicians';
 
   @override
-  String get serviceUrgent => 'Urgent service';
-
-  @override
-  String get serviceUrgentCaption => 'Fast response';
-
-  @override
   String get serviceOther => 'Service';
 
   @override
@@ -539,13 +533,34 @@ class AppLocalizationsEn extends AppLocalizations {
       'An urgency surcharge is added to the final price.';
 
   @override
-  String get serviceWhenTitle => 'Visit time';
+  String get serviceWhenTitle => 'When do you want the service?';
 
   @override
-  String get serviceWhenNow => 'As soon as possible';
+  String get serviceWhenNow => 'Now';
 
   @override
-  String get serviceWhenScheduled => 'Pick a day';
+  String get serviceWhenNowCaption => 'Technicians are notified right away';
+
+  @override
+  String get serviceWhenScheduledCaption => 'Pick a day and a window';
+
+  @override
+  String get serviceWhenChangeDay => 'Change day';
+
+  @override
+  String get serviceInstantOnly => 'This service is requested for now only.';
+
+  @override
+  String get serviceScheduledOnly => 'This service is booked in advance.';
+
+  @override
+  String get serviceInstantBadge => 'Instant';
+
+  @override
+  String get serviceScheduledBadge => 'Scheduled';
+
+  @override
+  String get serviceWhenScheduled => 'Book a time';
 
   @override
   String get timeSlotMorning => 'Morning';

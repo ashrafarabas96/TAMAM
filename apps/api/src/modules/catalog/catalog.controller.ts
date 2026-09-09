@@ -8,7 +8,9 @@ import {
   type UpsertServiceOptionInput,
   type UpsertServiceSubcategoryInput,
   type UpsertVehicleTypeInput,
+  type UpdateServiceTypeInput,
   searchServicesSchema,
+  updateServiceTypeSchema,
   upsertPackageCategorySchema,
   upsertServiceCategorySchema,
   upsertServiceOptionSchema,
@@ -85,6 +87,25 @@ export class CatalogController {
   }
 
   /* ---------------------------------------------------------------- admin */
+  @ApiBearerAuth()
+  @Get('admin/catalog/service-types')
+  @RequirePermission(Permission.SERVICES_READ)
+  adminServiceTypes() {
+    return this.catalog.listServiceTypesAdmin();
+  }
+
+  @ApiBearerAuth()
+  @Put('admin/catalog/service-types/:id')
+  @RequirePermission(Permission.SERVICES_MANAGE)
+  updateServiceType(
+    @Param('id', UuidPipe) id: string,
+    @ZodBody(updateServiceTypeSchema) input: UpdateServiceTypeInput,
+    @CurrentUser() u: RequestUser,
+    @RequestId() rid: string,
+  ) {
+    return this.catalog.updateServiceType(id, input, u.id, rid);
+  }
+
   @ApiBearerAuth()
   @Get('admin/catalog/categories')
   @RequirePermission(Permission.SERVICES_READ)

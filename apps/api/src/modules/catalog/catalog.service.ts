@@ -13,6 +13,7 @@ import {
   type VehicleTypeDto,
 } from '@tamam/shared-types';
 import type {
+  UpdateServiceTypeInput,
   SearchServicesInput,
   UpsertPackageCategoryInput,
   UpsertServiceCategoryInput,
@@ -65,19 +66,81 @@ export class CatalogService {
         !(await this.flags.isEnabled(r.featureFlagKey as never, { userId, zoneId }))
       )
         continue;
-      out.push({
-        id: r.id,
-        code: r.code,
-        name: { ar: r.nameAr, en: r.nameEn },
-        description: r.descriptionAr ? { ar: r.descriptionAr, en: r.descriptionEn ?? '' } : null,
-        iconUrl: r.iconMedia ? this.mediaUrls.urlFor(r.iconMedia) : null,
-        colorHex: r.colorHex,
-        sortOrder: r.sortOrder,
-        isActive: r.isActive,
-        featureFlagKey: r.featureFlagKey,
-      });
+      out.push(this.toServiceTypeDto(r));
     }
     return out;
+  }
+
+  /** Every top-level service, switched off ones included: the console decides. */
+  async listServiceTypesAdmin(): Promise<ServiceTypeDto[]> {
+    const rows = await this.prisma.serviceType.findMany({
+      include: { iconMedia: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+    return rows.map((r) => this.toServiceTypeDto(r));
+  }
+
+  /**
+   * Renames, recolours, reorders or switches a top-level service on or off.
+   * Switching one off hides it from the apps at the next catalogue read; jobs
+   * already in flight are untouched.
+   */
+  async updateServiceType(
+    id: string,
+    input: UpdateServiceTypeInput,
+    actorId: string,
+    requestId: string | null,
+  ): Promise<ServiceTypeDto> {
+    const before = await this.prisma.serviceType.findUnique({ where: { id } });
+    if (!before) throw AppException.notFound('Service type', id);
+    const row = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.serviceType.update({
+        where: { id },
+        data: {
+          nameAr: input.name.ar,
+          nameEn: input.name.en,
+          descriptionAr: input.description?.ar ?? null,
+          descriptionEn: input.description?.en ?? null,
+          // Undefined means "not touched"; null means "remove the icon".
+          ...(input.iconMediaId !== undefined ? { iconMediaId: input.iconMediaId } : {}),
+          colorHex: input.colorHex,
+          sortOrder: input.sortOrder,
+          isActive: input.isActive,
+        },
+        include: { iconMedia: true },
+      });
+      await this.audit.record(
+        {
+          actorId,
+          action: 'service_type.update',
+          entity: 'service_type',
+          entityId: id,
+          oldValue: before,
+          newValue: input,
+          requestId,
+        },
+        tx,
+      );
+      return updated;
+    });
+    await this.invalidate();
+    return this.toServiceTypeDto(row);
+  }
+
+  private toServiceTypeDto(
+    r: Prisma.ServiceTypeGetPayload<{ include: { iconMedia: true } }>,
+  ): ServiceTypeDto {
+    return {
+      id: r.id,
+      code: r.code,
+      name: { ar: r.nameAr, en: r.nameEn },
+      description: r.descriptionAr ? { ar: r.descriptionAr, en: r.descriptionEn ?? '' } : null,
+      iconUrl: r.iconMedia ? this.mediaUrls.urlFor(r.iconMedia) : null,
+      colorHex: r.colorHex,
+      sortOrder: r.sortOrder,
+      isActive: r.isActive,
+      featureFlagKey: r.featureFlagKey,
+    };
   }
 
   async listCategories(

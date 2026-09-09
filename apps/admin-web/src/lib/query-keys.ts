@@ -49,6 +49,7 @@ export const queryKeys = {
   catalog: {
     all: ['catalog'] as const,
     serviceTypes: ['catalog', 'service-types'] as const,
+    serviceTypesAdmin: ['catalog', 'service-types', 'admin'] as const,
     categories: ['catalog', 'categories'] as const,
     vehicleTypes: ['catalog', 'vehicle-types'] as const,
     packageCategories: ['catalog', 'package-categories'] as const,

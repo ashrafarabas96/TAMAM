@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamam_customer/core/widgets/status_pill.dart';
 import 'package:tamam_customer/core/widgets/tamam_icon_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,10 +20,7 @@ import 'package:tamam_customer/l10n/l10n.dart';
 /// With an empty query the screen is a directory; once two characters are typed
 /// it switches to `GET /catalog/search` results.
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({super.key, this.urgentOnly = false});
-
-  /// Entered from the "خدمة عاجلة" tile: pre-filters to urgent-capable services.
-  final bool urgentOnly;
+  const SearchScreen({super.key});
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -47,9 +45,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        title: Text(widget.urgentOnly ? l10n.serviceUrgent : l10n.searchTitle),
+        title: Text(l10n.searchTitle),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(TamamSize.inputHeight + TamamSpacing.s4),
+          preferredSize:
+              const Size.fromHeight(TamamSize.inputHeight + TamamSpacing.s4),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
               TamamSpacing.s4,
@@ -80,7 +79,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
         ),
       ),
-      body: searching ? _Results(query: _query) : _Directory(urgentOnly: widget.urgentOnly),
+      body: searching ? _Results(query: _query) : const _Directory(),
     );
   }
 }
@@ -118,7 +117,10 @@ class _Results extends ConsumerWidget {
               children: <Widget>[
                 serviceFor(hit.jobType) != null
                     ? TamamIconTile(service: serviceFor(hit.jobType)!, size: 40)
-                    : TamamIconTile.glyph(icon: Icons.handyman_rounded, tint: serviceColorFor(hit.jobType), size: 40),
+                    : TamamIconTile.glyph(
+                        icon: Icons.handyman_rounded,
+                        tint: serviceColorFor(hit.jobType),
+                        size: 40),
                 const SizedBox(width: TamamSpacing.s3),
                 Expanded(
                   child: Column(
@@ -126,11 +128,13 @@ class _Results extends ConsumerWidget {
                     children: <Widget>[
                       Text(
                         hit.name.resolve(language),
-                        style: TamamType.headingSm.toTextStyle(color: context.colors.textPrimary),
+                        style: TamamType.headingSm
+                            .toTextStyle(color: context.colors.textPrimary),
                       ),
                       Text(
                         hit.categoryName.resolve(language),
-                        style: TamamType.bodySm.toTextStyle(color: context.colors.textTertiary),
+                        style: TamamType.bodySm
+                            .toTextStyle(color: context.colors.textTertiary),
                       ),
                     ],
                   ),
@@ -145,9 +149,7 @@ class _Results extends ConsumerWidget {
 }
 
 class _Directory extends ConsumerWidget {
-  const _Directory({required this.urgentOnly});
-
-  final bool urgentOnly;
+  const _Directory();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -161,12 +163,12 @@ class _Directory extends ConsumerWidget {
         padding: EdgeInsets.all(TamamSpacing.s4),
         child: SkeletonList(itemCount: 6, itemHeight: 72),
       ),
-      isEmpty: (List<ServiceCategory> all) => _filter(all).isEmpty,
+      isEmpty: (List<ServiceCategory> all) => all.isEmpty,
       emptyTitle: l10n.searchDirectoryEmptyTitle,
       emptyMessage: l10n.searchDirectoryEmptyBody,
       emptyIcon: Icons.handyman_outlined,
       builder: (List<ServiceCategory> all) {
-        final List<ServiceCategory> categories = _filter(all);
+        final List<ServiceCategory> categories = all;
         return ListView.builder(
           padding: const EdgeInsets.all(TamamSpacing.s4),
           itemCount: categories.length,
@@ -177,7 +179,10 @@ class _Directory extends ConsumerWidget {
               onTap: () => context.push(Routes.category(category.id)),
               child: Row(
                 children: <Widget>[
-                  TamamIconTile.glyph(icon: Icons.build_rounded, tint: category.color, size: 44),
+                  TamamIconTile.glyph(
+                      icon: Icons.build_rounded,
+                      tint: category.color,
+                      size: 44),
                   const SizedBox(width: TamamSpacing.s3),
                   Expanded(
                     child: Column(
@@ -185,17 +190,33 @@ class _Directory extends ConsumerWidget {
                       children: <Widget>[
                         Text(
                           category.name.resolve(language),
-                          style: TamamType.headingSm.toTextStyle(color: context.colors.textPrimary),
+                          style: TamamType.headingSm
+                              .toTextStyle(color: context.colors.textPrimary),
                         ),
                         if (category.description != null)
                           Text(
                             category.description!.resolve(language),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TamamType.bodySm.toTextStyle(color: context.colors.textSecondary),
+                            style: TamamType.bodySm.toTextStyle(
+                                color: context.colors.textSecondary),
                           ),
                       ],
                     ),
+                  ),
+                  const SizedBox(width: TamamSpacing.s2),
+                  // How this one is asked for, at a glance: the operator's
+                  // setting, shown before the customer opens it.
+                  StatusPill(
+                    label: category.allowsInstant
+                        ? l10n.serviceInstantBadge
+                        : l10n.serviceScheduledBadge,
+                    tone:
+                        category.allowsInstant ? PillTone.brand : PillTone.info,
+                    icon: category.allowsInstant
+                        ? Icons.bolt_rounded
+                        : Icons.event_rounded,
+                    dense: true,
                   ),
                 ],
               ),
@@ -205,13 +226,4 @@ class _Directory extends ConsumerWidget {
       },
     );
   }
-
-  List<ServiceCategory> _filter(List<ServiceCategory> all) => urgentOnly
-      ? all
-          .where(
-            (ServiceCategory c) =>
-                c.urgencyLevels.contains(JobUrgency.urgent) || c.urgencyLevels.contains(JobUrgency.emergency),
-          )
-          .toList(growable: false)
-      : all;
 }

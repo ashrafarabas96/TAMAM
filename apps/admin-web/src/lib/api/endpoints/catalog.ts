@@ -6,6 +6,7 @@ import type {
   VehicleTypeDto,
 } from '@tamam/shared-types';
 import type {
+  UpdateServiceTypeInput,
   UpsertPackageCategoryInput,
   UpsertServiceCategoryInput,
   UpsertServiceOptionInput,
@@ -30,6 +31,9 @@ export interface PackageCategoryDto {
 
 export const catalogApi = {
   serviceTypes: () => api.get<ServiceTypeDto[]>('/catalog/service-types'),
+  adminServiceTypes: () => api.get<ServiceTypeDto[]>('/admin/catalog/service-types'),
+  updateServiceType: (id: string, input: UpdateServiceTypeInput) =>
+    api.put<ServiceTypeDto>(`/admin/catalog/service-types/${id}`, input),
   adminCategories: () => api.get<ServiceCategoryDto[]>('/admin/catalog/categories'),
   createCategory: (input: UpsertServiceCategoryInput) =>
     api.post<ServiceCategoryDto>('/admin/catalog/categories', input),

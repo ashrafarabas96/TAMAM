@@ -275,12 +275,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get serviceHomeCaption => 'فنيّون معتمدون';
 
   @override
-  String get serviceUrgent => 'خدمة عاجلة';
-
-  @override
-  String get serviceUrgentCaption => 'استجابة فورية';
-
-  @override
   String get serviceOther => 'خدمة';
 
   @override
@@ -532,13 +526,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get serviceUrgencySurcharge => 'تُضاف رسوم استعجال إلى السعر النهائي.';
 
   @override
-  String get serviceWhenTitle => 'موعد الزيارة';
+  String get serviceWhenTitle => 'متى تريد الخدمة؟';
 
   @override
-  String get serviceWhenNow => 'في أقرب وقت';
+  String get serviceWhenNow => 'فوري — الآن';
 
   @override
-  String get serviceWhenScheduled => 'اختر يومًا';
+  String get serviceWhenNowCaption => 'يصل الطلب للفنيين فوراً';
+
+  @override
+  String get serviceWhenScheduledCaption => 'اختر اليوم والفترة';
+
+  @override
+  String get serviceWhenChangeDay => 'تغيير اليوم';
+
+  @override
+  String get serviceInstantOnly => 'هذه الخدمة تُطلب فوراً فقط.';
+
+  @override
+  String get serviceScheduledOnly => 'هذه الخدمة تُحجز بموعد مسبق.';
+
+  @override
+  String get serviceInstantBadge => 'فوري';
+
+  @override
+  String get serviceScheduledBadge => 'بموعد';
+
+  @override
+  String get serviceWhenScheduled => 'حجز موعد';
 
   @override
   String get timeSlotMorning => 'صباحًا';

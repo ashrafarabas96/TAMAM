@@ -15,6 +15,7 @@ import 'package:tamam_customer/features/jobs/presentation/job_providers.dart';
 import 'package:tamam_customer/features/media/data/media_repository.dart';
 import 'package:tamam_customer/features/media/presentation/media_providers.dart';
 import 'package:tamam_customer/features/places/presentation/place_providers.dart';
+import 'package:tamam_customer/features/service/presentation/widgets/service_timing_picker.dart';
 import 'package:uuid/uuid.dart';
 
 /// The home-service draft for one category.
@@ -76,11 +77,13 @@ class ServiceFlowState {
     return null;
   }
 
-  List<ServiceOption> get availableOptions => subcategory?.options ?? const <ServiceOption>[];
+  List<ServiceOption> get availableOptions =>
+      subcategory?.options ?? const <ServiceOption>[];
 
   int get minImages => category?.requiredMedia.minImages ?? 0;
 
-  bool get hasEnoughMedia => attachments.where((Attachment a) => a.isReady).length >= minImages;
+  bool get hasEnoughMedia =>
+      attachments.where((Attachment a) => a.isReady).length >= minImages;
 
   bool get canEstimate => location != null && !loadingCategory;
 
@@ -95,11 +98,14 @@ class ServiceFlowState {
       !submitting &&
       !estimating;
 
-  FareOption? get option =>
-      estimate == null || estimate!.options.isEmpty ? null : estimate!.options.first;
+  FareOption? get option => estimate == null || estimate!.options.isEmpty
+      ? null
+      : estimate!.options.first;
 
-  List<String> get readyMediaIds =>
-      attachments.where((Attachment a) => a.isReady).map((Attachment a) => a.mediaId!).toList(growable: false);
+  List<String> get readyMediaIds => attachments
+      .where((Attachment a) => a.isReady)
+      .map((Attachment a) => a.mediaId!)
+      .toList(growable: false);
 
   ServiceFlowState copyWith({
     ServiceCategory? category,
@@ -130,16 +136,21 @@ class ServiceFlowState {
         categoryId: categoryId,
         category: category ?? this.category,
         location: location ?? this.location,
-        subcategoryId: clearSubcategory ? null : (subcategoryId ?? this.subcategoryId),
+        subcategoryId:
+            clearSubcategory ? null : (subcategoryId ?? this.subcategoryId),
         optionIds: optionIds ?? this.optionIds,
         description: description ?? this.description,
-        additionalInstructions: additionalInstructions ?? this.additionalInstructions,
+        additionalInstructions:
+            additionalInstructions ?? this.additionalInstructions,
         dynamicValues: dynamicValues ?? this.dynamicValues,
         fieldErrors: fieldErrors ?? this.fieldErrors,
         attachments: attachments ?? this.attachments,
         urgency: urgency ?? this.urgency,
-        preferredDate: clearSchedule ? null : (preferredDate ?? this.preferredDate),
-        preferredTimeSlot: clearSchedule ? null : (preferredTimeSlot ?? this.preferredTimeSlot),
+        preferredDate:
+            clearSchedule ? null : (preferredDate ?? this.preferredDate),
+        preferredTimeSlot: clearSchedule
+            ? null
+            : (preferredTimeSlot ?? this.preferredTimeSlot),
         estimate: clearEstimate ? null : (estimate ?? this.estimate),
         checkout: checkout ?? this.checkout,
         loadingCategory: loadingCategory ?? this.loadingCategory,
@@ -150,7 +161,8 @@ class ServiceFlowState {
 }
 
 /// Drives the home-service flow, including the category's dynamic questions.
-class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, String> {
+class ServiceFlowController
+    extends AutoDisposeFamilyNotifier<ServiceFlowState, String> {
   /// Stable for the life of this draft, so a manual retry after a timeout can
   /// never create a second job.
   final String _idempotencyKey = const Uuid().v4();
@@ -160,8 +172,18 @@ class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, 
     // The full category (subcategories, options, dynamic questions) arrives
     // asynchronously. `build` re-runs once when it lands, which is before the
     // form is interactive — the screen shows a skeleton until then.
-    final AsyncValue<ServiceCategory> category = ref.watch(categoryProvider(arg));
+    final AsyncValue<ServiceCategory> category =
+        ref.watch(categoryProvider(arg));
     final ServiceCategory? loaded = category.valueOrNull;
+
+    // A category the operator marked schedule-only starts out booked for
+    // tomorrow morning, so the first estimate the customer sees is already the
+    // one that applies; "now" is not on offer for it.
+    final bool scheduleOnly =
+        loaded != null && !loaded.allowsInstant && loaded.allowsScheduled;
+    final DateTime tomorrow = DateTime.now().add(const Duration(days: 1));
+    final String? defaultDate =
+        scheduleOnly ? tomorrow.toIso8601String().substring(0, 10) : null;
 
     return ServiceFlowState(
       idempotencyKey: _idempotencyKey,
@@ -169,13 +191,24 @@ class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, 
       category: loaded,
       loadingCategory: loaded == null,
       location: ref.read(currentAddressProvider),
-      subcategoryId: loaded == null || loaded.subcategories.isEmpty ? null : loaded.subcategories.first.id,
-      checkout: CheckoutSelection(promoCode: ref.read(pendingPromoProvider)),
+      subcategoryId: loaded == null || loaded.subcategories.isEmpty
+          ? null
+          : loaded.subcategories.first.id,
+      preferredDate: defaultDate,
+      preferredTimeSlot: scheduleOnly ? kServiceTimeSlots.first : null,
+      checkout: CheckoutSelection(
+        promoCode: ref.read(pendingPromoProvider),
+        scheduledFor: scheduleOnly
+            ? DateTime(tomorrow.year, tomorrow.month, tomorrow.day,
+                serviceSlotStartHour(kServiceTimeSlots.first))
+            : null,
+      ),
       failure: category.hasError ? asFailure(category.error!) : null,
     );
   }
 
-  void setLocation(Address address) => state = state.copyWith(location: address, clearEstimate: true);
+  void setLocation(Address address) =>
+      state = state.copyWith(location: address, clearEstimate: true);
 
   void selectSubcategory(String? id) => state = state.copyWith(
         subcategoryId: id,
@@ -190,37 +223,67 @@ class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, 
     state = state.copyWith(optionIds: next, clearEstimate: true);
   }
 
-  void setDescription(String value) => state = state.copyWith(description: value);
+  void setDescription(String value) =>
+      state = state.copyWith(description: value);
 
-  void setAdditionalInstructions(String value) => state = state.copyWith(additionalInstructions: value);
+  void setAdditionalInstructions(String value) =>
+      state = state.copyWith(additionalInstructions: value);
 
-  void setUrgency(JobUrgency urgency) => state = state.copyWith(urgency: urgency, clearEstimate: true);
+  void setUrgency(JobUrgency urgency) =>
+      state = state.copyWith(urgency: urgency, clearEstimate: true);
 
+  /// "Now", or a day and a visit window.
+  ///
+  /// A booked visit is a real schedule, not a note: the checkout carries the
+  /// moment the window opens so the platform prices it as scheduled and
+  /// dispatches ahead of it, rather than sending technicians out immediately
+  /// for a visit the customer asked for tomorrow.
   void setPreferredSlot({String? date, String? slot}) {
     if (date == null && slot == null) {
-      state = state.copyWith(clearSchedule: true);
+      state = state.copyWith(
+        clearSchedule: true,
+        clearEstimate: true,
+        checkout: state.checkout.copyWith(clearSchedule: true),
+      );
       return;
     }
-    state = state.copyWith(preferredDate: date, preferredTimeSlot: slot);
+    final String window = slot ?? kServiceTimeSlots.first;
+    final DateTime? day = date == null ? null : DateTime.tryParse(date);
+    state = state.copyWith(
+      preferredDate: date,
+      preferredTimeSlot: window,
+      clearEstimate: true,
+      checkout: day == null
+          ? state.checkout
+          : state.checkout.copyWith(
+              scheduledFor: DateTime(
+                  day.year, day.month, day.day, serviceSlotStartHour(window)),
+            ),
+    );
   }
 
   /// Stores one dynamic answer and re-validates just that field.
   void setDynamicValue(String key, Object? value) {
-    final Map<String, Object?> values = <String, Object?>{...state.dynamicValues, key: value};
-    final List<DynamicField> fields = state.category?.requiredFields ?? const <DynamicField>[];
+    final Map<String, Object?> values = <String, Object?>{
+      ...state.dynamicValues,
+      key: value
+    };
+    final List<DynamicField> fields =
+        state.category?.requiredFields ?? const <DynamicField>[];
     state = state.copyWith(
       dynamicValues: values,
       fieldErrors: DynamicFieldValidator.validateAll(fields, values),
     );
   }
 
-  void setPaymentMethod(PaymentMethod method) =>
-      state = state.copyWith(checkout: state.checkout.copyWith(paymentMethod: method));
+  void setPaymentMethod(PaymentMethod method) => state =
+      state.copyWith(checkout: state.checkout.copyWith(paymentMethod: method));
 
   Future<void> addPhotos({required bool fromCamera}) async {
     final MediaRepository media = ref.read(mediaRepositoryProvider);
     final int max = state.category?.requiredMedia.maxImages ?? 6;
-    final List<Attachment> picked = await media.pickImages(fromCamera: fromCamera, limit: max);
+    final List<Attachment> picked =
+        await media.pickImages(fromCamera: fromCamera, limit: max);
     if (picked.isEmpty) return;
 
     state = state.copyWith(
@@ -232,31 +295,36 @@ class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, 
 
     for (final Attachment attachment in picked) {
       try {
-        final Attachment uploaded = await media.upload(attachment, purpose: MediaPurpose.jobAttachment);
+        final Attachment uploaded =
+            await media.upload(attachment, purpose: MediaPurpose.jobAttachment);
         _replaceAttachment(attachment.localPath, uploaded);
       } on Object {
-        _replaceAttachment(attachment.localPath, attachment.copyWith(uploading: false, failed: true));
+        _replaceAttachment(attachment.localPath,
+            attachment.copyWith(uploading: false, failed: true));
       }
     }
   }
 
   void removeAttachment(String localPath) => state = state.copyWith(
-        attachments:
-            state.attachments.where((Attachment a) => a.localPath != localPath).toList(growable: false),
+        attachments: state.attachments
+            .where((Attachment a) => a.localPath != localPath)
+            .toList(growable: false),
       );
 
   Future<void> estimate() async {
     if (!state.canEstimate) return;
-    state = state.copyWith(estimating: true, clearFailure: true, clearEstimate: true);
+    state = state.copyWith(
+        estimating: true, clearFailure: true, clearEstimate: true);
     try {
-      final FareEstimate result = await ref.read(pricingRepositoryProvider).serviceEstimate(
-            location: state.location!,
-            categoryId: state.categoryId,
-            urgency: state.urgency,
-            subcategoryId: state.subcategoryId,
-            optionIds: state.optionIds.toList(growable: false),
-            scheduledFor: state.checkout.scheduledFor,
-          );
+      final FareEstimate result =
+          await ref.read(pricingRepositoryProvider).serviceEstimate(
+                location: state.location!,
+                categoryId: state.categoryId,
+                urgency: state.urgency,
+                subcategoryId: state.subcategoryId,
+                optionIds: state.optionIds.toList(growable: false),
+                scheduledFor: state.checkout.scheduledFor,
+              );
       state = state.copyWith(estimate: result, estimating: false);
       final String? pending = state.checkout.promoCode;
       if (pending != null && pending.isNotEmpty) await applyPromo(pending);
@@ -268,31 +336,38 @@ class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, 
   Future<void> applyPromo(String code) async {
     final FareEstimate? estimate = state.estimate;
     if (estimate == null || code.trim().isEmpty) return;
-    state = state.copyWith(checkout: state.checkout.copyWith(promoBusy: true, clearPromoFailure: true));
+    state = state.copyWith(
+        checkout:
+            state.checkout.copyWith(promoBusy: true, clearPromoFailure: true));
     try {
-      final PromoPreview preview = await ref.read(pricingRepositoryProvider).validatePromo(
-            code: code,
-            estimateId: estimate.estimateId,
-            paymentMethod: state.checkout.paymentMethod,
-          );
+      final PromoPreview preview =
+          await ref.read(pricingRepositoryProvider).validatePromo(
+                code: code,
+                estimateId: estimate.estimateId,
+                paymentMethod: state.checkout.paymentMethod,
+              );
       state = state.copyWith(
-        checkout: state.checkout.copyWith(promoBusy: false, promoCode: preview.code, promoPreview: preview),
+        checkout: state.checkout.copyWith(
+            promoBusy: false, promoCode: preview.code, promoPreview: preview),
       );
     } on Object catch (error) {
       state = state.copyWith(
-        checkout: state.checkout.copyWith(promoBusy: false, promoFailure: asFailure(error)),
+        checkout: state.checkout
+            .copyWith(promoBusy: false, promoFailure: asFailure(error)),
       );
     }
   }
 
-  void clearPromo() => state = state.copyWith(checkout: state.checkout.copyWith(clearPromo: true));
+  void clearPromo() => state =
+      state.copyWith(checkout: state.checkout.copyWith(clearPromo: true));
 
   Future<Job?> submit() async {
     final FareEstimate? estimate = state.estimate;
     if (estimate == null) return null;
 
     // Re-validate everything before sending; the server checks again anyway.
-    final Map<String, DynamicFieldError> errors = DynamicFieldValidator.validateAll(
+    final Map<String, DynamicFieldError> errors =
+        DynamicFieldValidator.validateAll(
       state.category?.requiredFields ?? const <DynamicField>[],
       state.dynamicValues,
     );
@@ -315,7 +390,8 @@ class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, 
         'urgency': state.urgency.value,
         'dynamicFields': state.dynamicValues,
         if (state.preferredDate != null) 'preferredDate': state.preferredDate,
-        if (state.preferredTimeSlot != null) 'preferredTimeSlot': state.preferredTimeSlot,
+        if (state.preferredTimeSlot != null)
+          'preferredTimeSlot': state.preferredTimeSlot,
         if (state.additionalInstructions.trim().isNotEmpty)
           'additionalInstructions': state.additionalInstructions.trim(),
         ...state.checkout.toRequestFields(),
@@ -324,7 +400,8 @@ class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, 
             body,
             idempotencyKey: state.idempotencyKey,
           );
-      if (state.checkout.hasPromo) await ref.read(pendingPromoProvider.notifier).clear();
+      if (state.checkout.hasPromo)
+        await ref.read(pendingPromoProvider.notifier).clear();
       ref.invalidate(activeJobsProvider);
       state = state.copyWith(submitting: false);
       return job;
@@ -336,14 +413,16 @@ class ServiceFlowController extends AutoDisposeFamilyNotifier<ServiceFlowState, 
 
   void _replaceAttachment(String localPath, Attachment next) {
     state = state.copyWith(
-      attachments:
-          state.attachments.map((Attachment a) => a.localPath == localPath ? next : a).toList(growable: false),
+      attachments: state.attachments
+          .map((Attachment a) => a.localPath == localPath ? next : a)
+          .toList(growable: false),
     );
   }
 }
 
-final AutoDisposeNotifierProviderFamily<ServiceFlowController, ServiceFlowState, String>
-    serviceFlowProvider =
-    NotifierProvider.autoDispose.family<ServiceFlowController, ServiceFlowState, String>(
+final AutoDisposeNotifierProviderFamily<ServiceFlowController, ServiceFlowState,
+        String> serviceFlowProvider =
+    NotifierProvider.autoDispose
+        .family<ServiceFlowController, ServiceFlowState, String>(
   ServiceFlowController.new,
 );

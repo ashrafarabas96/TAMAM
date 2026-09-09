@@ -77,6 +77,20 @@ export const upsertServiceCategorySchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+/**
+ * What an operator may change about a top-level service (rides, delivery,
+ * home services, chalets, ...). The code is the identity and stays; the flag
+ * key is wiring, not content, so it is not editable here either.
+ */
+export const updateServiceTypeSchema = z.object({
+  name: localizedTextSchema,
+  description: optionalLocalizedTextSchema,
+  iconMediaId: uuidSchema.nullable().optional(),
+  colorHex: hexColorSchema,
+  sortOrder: z.number().int().min(0).default(0),
+  isActive: z.boolean().default(true),
+});
+
 export const upsertServiceSubcategorySchema = z.object({
   categoryId: uuidSchema,
   slug: slugSchema,
@@ -178,6 +192,7 @@ export const zoneServiceRuleSchema = z.object({
   operatingHours: z.array(operatingHoursSchema).max(7).optional(),
 });
 
+export type UpdateServiceTypeInput = z.infer<typeof updateServiceTypeSchema>;
 export type UpsertServiceCategoryInput = z.infer<typeof upsertServiceCategorySchema>;
 export type UpsertServiceSubcategoryInput = z.infer<typeof upsertServiceSubcategorySchema>;
 export type UpsertServiceOptionInput = z.infer<typeof upsertServiceOptionSchema>;

@@ -12,6 +12,7 @@ import 'package:tamam_customer/features/chalet/domain/chalet.dart';
 import 'package:tamam_customer/features/chalet/domain/chalet_booking.dart';
 import 'package:tamam_customer/features/chalet/presentation/widgets/chalet_slot_picker.dart';
 import 'package:tamam_customer/features/home/presentation/widgets/service_tile.dart';
+import 'package:tamam_customer/features/service/presentation/widgets/service_timing_picker.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../support/harness.dart';
@@ -118,6 +119,20 @@ final Map<String, Widget Function()> _subjects = <String, Widget Function()>{
           TamamIconTile(service: TamamService.homeServices, size: 52),
           TamamIconTile(service: TamamService.chalet, size: 52),
         ],
+      ),
+  'ServiceTimingPicker (scheduled)': () => ServiceTimingPicker(
+        allowsInstant: true,
+        allowsScheduled: true,
+        preferredDate: '2026-10-01',
+        preferredTimeSlot: 'AFTERNOON',
+        onChanged: ({String? date, String? slot}) {},
+      ),
+  'ServiceTimingPicker (instant only)': () => ServiceTimingPicker(
+        allowsInstant: true,
+        allowsScheduled: false,
+        preferredDate: null,
+        preferredTimeSlot: null,
+        onChanged: ({String? date, String? slot}) {},
       ),
   'StatusPill wrap': () => const Wrap(
         spacing: 8,

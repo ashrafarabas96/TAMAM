@@ -266,6 +266,17 @@ export class JobsService {
         throw AppException.validation([
           { field: 'categoryId', message: 'does not match estimate' },
         ]);
+      // The category decides how it may be asked for. An app that offers "now"
+      // for a service the operator marked schedule-only is a stale client; the
+      // server, not the client, is where the rule holds.
+      if (input.scheduling === SchedulingMode.NOW && !category.allowsInstant)
+        throw AppException.validation([
+          { field: 'scheduling', message: 'this service must be scheduled for a later time' },
+        ]);
+      if (input.scheduling === SchedulingMode.SCHEDULED && !category.allowsScheduled)
+        throw AppException.validation([
+          { field: 'scheduling', message: 'this service is requested for now, not scheduled' },
+        ]);
       dynamicFields = this.catalog.validateDynamicFields(category, input.dynamicFields);
       const reqMedia = category.requiredMedia as { minImages: number; maxImages: number };
       const images = mediaIds.length;

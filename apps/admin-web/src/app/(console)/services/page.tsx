@@ -7,6 +7,7 @@ import { Permission, type ServiceCategoryDto } from '@tamam/shared-types';
 import {
   CategoriesPanel,
   PackageCategoriesPanel,
+  ServiceTypesPanel,
   VehicleTypesPanel,
 } from '@/components/domain/catalog/catalog-tabs';
 import { CategoryDialog } from '@/components/domain/catalog/category-dialog';
@@ -32,6 +33,11 @@ function ServicesScreen() {
       <PageHeader title={t('services.title')} description={t('services.subtitle')} />
       <Tabs
         items={[
+          {
+            value: 'service-types',
+            label: t('services.serviceTypes'),
+            content: <ServiceTypesPanel />,
+          },
           {
             value: 'categories',
             label: t('services.categories'),

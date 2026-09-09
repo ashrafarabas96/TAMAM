@@ -11,9 +11,12 @@ import {
   type ServiceCategoryDto,
   type ServiceOptionDto,
   type ServiceSubcategoryDto,
+  type ServiceTypeDto,
   type VehicleTypeDto,
 } from '@tamam/shared-types';
 import {
+  type UpdateServiceTypeInput,
+  updateServiceTypeSchema,
   type UpsertPackageCategoryInput,
   upsertPackageCategorySchema,
   type UpsertServiceOptionInput,
@@ -861,6 +864,22 @@ export function CategoriesPanel({
       cell: (c) => enumLabel('pricingMethod', c.pricingMethod),
     },
     {
+      key: 'ordering',
+      header: t('services.ordering'),
+      cell: (c) => (
+        <span className="flex flex-wrap gap-1">
+          {c.allowsInstant ? <Badge tone="success">{t('services.modeInstant')}</Badge> : null}
+          {c.allowsScheduled ? <Badge tone="info">{t('services.modeScheduled')}</Badge> : null}
+          {c.workflowConfig.requiresQuote ? (
+            <Badge tone="neutral">{t('services.modeQuote')}</Badge>
+          ) : null}
+          {c.urgencyLevels.length > 1 ? (
+            <Badge tone="warning">{t('services.modeUrgency')}</Badge>
+          ) : null}
+        </span>
+      ),
+    },
+    {
       key: 'role',
       header: t('services.requiredRole'),
       cell: (c) => enumLabel('partnerRole', c.requiredPartnerRole),
@@ -939,5 +958,188 @@ export function CategoriesPanel({
         {expanded ? <SubcategoriesPanel category={expanded} /> : null}
       </Dialog>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------ service types */
+/**
+ * The top-level services — what the customer sees on the first screen. There
+ * is no "new" here on purpose: a service type is a whole product (rides,
+ * delivery, home services, ...) with its own flows in the apps, so a new one is
+ * a release, not a row. What the operator owns is the name, the colour, the
+ * order and the switch.
+ */
+export function ServiceTypesPanel() {
+  const { t, localized } = useI18n();
+  const query = useQuery({
+    queryKey: queryKeys.catalog.serviceTypesAdmin,
+    queryFn: catalogApi.adminServiceTypes,
+  });
+  const [editing, setEditing] = useState<ServiceTypeDto | null>(null);
+  const columns: Column<ServiceTypeDto>[] = [
+    {
+      key: 'name',
+      header: t('common.name'),
+      cell: (s) => (
+        <span className="flex items-center gap-2">
+          <span
+            aria-hidden
+            className="inline-block h-6 w-6 shrink-0 rounded-sm"
+            style={{ backgroundColor: s.colorHex }}
+          />
+          <span>
+            <span className="block font-medium">{localized(s.name)}</span>
+            <span className="block font-mono text-[11px] text-text-tertiary" dir="ltr">
+              {s.code}
+            </span>
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: 'description',
+      header: t('common.description'),
+      cell: (s) => (s.description ? localized(s.description) : '—'),
+    },
+    {
+      key: 'flag',
+      header: t('services.flagKey'),
+      cell: (s) =>
+        s.featureFlagKey ? (
+          <span className="font-mono text-[11px]" dir="ltr">
+            {s.featureFlagKey}
+          </span>
+        ) : (
+          '—'
+        ),
+    },
+    { key: 'sort', header: t('common.sortOrder'), align: 'end', cell: (s) => s.sortOrder },
+    {
+      key: 'active',
+      header: t('common.active'),
+      cell: (s) => (
+        <Badge tone={s.isActive ? 'success' : 'neutral'}>
+          {s.isActive ? t('common.yes') : t('common.no')}
+        </Badge>
+      ),
+    },
+    {
+      key: 'actions',
+      header: t('common.actions'),
+      align: 'end',
+      cell: (s) => (
+        <Button size="sm" variant="outline" onClick={() => setEditing(s)}>
+          {t('common.edit')}
+        </Button>
+      ),
+    },
+  ];
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-text-secondary">{t('services.serviceTypesHint')}</p>
+      <DataTable
+        columns={columns}
+        rows={query.data ?? []}
+        rowKey={(s) => s.id}
+        isLoading={query.isPending}
+        error={query.error}
+        onRetry={() => void query.refetch()}
+        emptyTitle={t('services.noServiceTypes')}
+      />
+      <ServiceTypeDialog
+        serviceType={editing}
+        open={!!editing}
+        onOpenChange={(o) => !o && setEditing(null)}
+      />
+    </div>
+  );
+}
+
+function ServiceTypeDialog({
+  serviceType,
+  open,
+  onOpenChange,
+}: {
+  serviceType: ServiceTypeDto | null;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
+  const { t } = useI18n();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const toValues = (s: ServiceTypeDto | null): UpdateServiceTypeInput => ({
+    name: s?.name ?? { ar: '', en: '' },
+    description: s?.description ?? null,
+    colorHex: s?.colorHex ?? '#5B32F6',
+    sortOrder: s?.sortOrder ?? 0,
+    isActive: s?.isActive ?? true,
+  });
+  const form = useForm<UpdateServiceTypeInput>({
+    resolver: zodResolver(updateServiceTypeSchema),
+    defaultValues: toValues(serviceType),
+  });
+  useEffect(() => {
+    if (open) form.reset(toValues(serviceType));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, serviceType]);
+
+  const mutation = useMutation({
+    mutationFn: (input: UpdateServiceTypeInput) =>
+      catalogApi.updateServiceType(serviceType!.id, input),
+    onSuccess: async () => {
+      toast.success(t('services.serviceTypeUpdated'));
+      onOpenChange(false);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.catalog.all });
+    },
+    onError: (e) => {
+      if (!applyApiFieldErrors(form, e)) toast.fromError(e);
+    },
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      size="lg"
+      title={t('services.editServiceType')}
+      description={serviceType?.featureFlagKey ? t('services.flagKeyHint') : undefined}
+      footer={
+        <>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={form.handleSubmit((v) => mutation.mutate(v))}
+            loading={mutation.isPending}
+          >
+            {t('common.save')}
+          </Button>
+        </>
+      }
+    >
+      <form className="space-y-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
+        <LocalizedTextField control={form.control} name="name" label={t('common.name')} required />
+        <LocalizedTextField
+          control={form.control}
+          name="description"
+          label={t('common.description')}
+        />
+        <FormGrid cols={3}>
+          <TextField
+            control={form.control}
+            name="colorHex"
+            label={t('services.colorHex')}
+            type="color"
+          />
+          <NumberField
+            control={form.control}
+            name="sortOrder"
+            label={t('common.sortOrder')}
+            min={0}
+          />
+          <SwitchField control={form.control} name="isActive" label={t('common.active')} />
+        </FormGrid>
+      </form>
+    </Dialog>
   );
 }

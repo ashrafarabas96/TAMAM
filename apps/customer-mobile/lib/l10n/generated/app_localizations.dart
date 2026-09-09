@@ -596,18 +596,6 @@ abstract class AppLocalizations {
   /// **'فنيّون معتمدون'**
   String get serviceHomeCaption;
 
-  /// No description provided for @serviceUrgent.
-  ///
-  /// In ar, this message translates to:
-  /// **'خدمة عاجلة'**
-  String get serviceUrgent;
-
-  /// No description provided for @serviceUrgentCaption.
-  ///
-  /// In ar, this message translates to:
-  /// **'استجابة فورية'**
-  String get serviceUrgentCaption;
-
   /// No description provided for @serviceOther.
   ///
   /// In ar, this message translates to:
@@ -1061,19 +1049,61 @@ abstract class AppLocalizations {
   /// No description provided for @serviceWhenTitle.
   ///
   /// In ar, this message translates to:
-  /// **'موعد الزيارة'**
+  /// **'متى تريد الخدمة؟'**
   String get serviceWhenTitle;
 
   /// No description provided for @serviceWhenNow.
   ///
   /// In ar, this message translates to:
-  /// **'في أقرب وقت'**
+  /// **'فوري — الآن'**
   String get serviceWhenNow;
+
+  /// No description provided for @serviceWhenNowCaption.
+  ///
+  /// In ar, this message translates to:
+  /// **'يصل الطلب للفنيين فوراً'**
+  String get serviceWhenNowCaption;
+
+  /// No description provided for @serviceWhenScheduledCaption.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر اليوم والفترة'**
+  String get serviceWhenScheduledCaption;
+
+  /// No description provided for @serviceWhenChangeDay.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير اليوم'**
+  String get serviceWhenChangeDay;
+
+  /// No description provided for @serviceInstantOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذه الخدمة تُطلب فوراً فقط.'**
+  String get serviceInstantOnly;
+
+  /// No description provided for @serviceScheduledOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذه الخدمة تُحجز بموعد مسبق.'**
+  String get serviceScheduledOnly;
+
+  /// No description provided for @serviceInstantBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'فوري'**
+  String get serviceInstantBadge;
+
+  /// No description provided for @serviceScheduledBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'بموعد'**
+  String get serviceScheduledBadge;
 
   /// No description provided for @serviceWhenScheduled.
   ///
   /// In ar, this message translates to:
-  /// **'اختر يومًا'**
+  /// **'حجز موعد'**
   String get serviceWhenScheduled;
 
   /// No description provided for @timeSlotMorning.

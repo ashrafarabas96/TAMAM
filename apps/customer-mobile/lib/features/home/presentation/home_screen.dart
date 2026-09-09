@@ -42,7 +42,8 @@ class HomeScreen extends ConsumerWidget {
     final AppLocalizations l10n = context.l10n;
     final TamamColors colors = context.colors;
     final int unread = ref.watch(unreadNotificationsProvider).valueOrNull ?? 0;
-    final List<Job> activeJobs = ref.watch(activeJobsProvider).valueOrNull ?? const <Job>[];
+    final List<Job> activeJobs =
+        ref.watch(activeJobsProvider).valueOrNull ?? const <Job>[];
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -63,7 +64,8 @@ class HomeScreen extends ConsumerWidget {
                   if (activeJobs.isNotEmpty)
                     ActiveJobBanner(
                       job: activeJobs.first,
-                      onTap: () => context.push(Routes.job(activeJobs.first.id)),
+                      onTap: () =>
+                          context.push(Routes.job(activeJobs.first.id)),
                     ),
                   const SizedBox(height: TamamSpacing.s4),
                   const PlacementBanner(placement: BannerPlacement.homeHero),
@@ -92,18 +94,33 @@ class HomeScreen extends ConsumerWidget {
       ..invalidate(savedPlacesProvider)
       ..invalidate(unreadNotificationsProvider)
       ..invalidate(ordersProvider(JobStatusGroup.all));
-    await ref.read(bannerFeedProvider(BannerPlacement.homeHero).notifier).refresh();
-    await ref.read(bannerFeedProvider(BannerPlacement.homeInline).notifier).refresh();
+    await ref
+        .read(bannerFeedProvider(BannerPlacement.homeHero).notifier)
+        .refresh();
+    await ref
+        .read(bannerFeedProvider(BannerPlacement.homeInline).notifier)
+        .refresh();
   }
 }
 
-/// The 2×2 grid of the four services.
+/// The 2×2 grid of the four services. Instant service is asked for inside a
+/// service order, not from a tile of its own.
 class _ServicesGrid extends ConsumerWidget {
   const _ServicesGrid();
+
+  /// A service the console switched off disappears from the catalogue feed;
+  /// its tile stays in place but goes quiet, so the grid never reflows under
+  /// a returning customer's thumb. While the feed is still loading (or failed)
+  /// every tile stays live rather than flickering off and on.
+  static bool _offered(AsyncValue<List<ServiceType>> types, JobType code) {
+    final List<ServiceType>? list = types.valueOrNull;
+    return list == null || list.any((ServiceType t) => t.code == code);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
+    final AsyncValue<List<ServiceType>> types = ref.watch(serviceTypesProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: TamamSpacing.s4),
       child: Column(
@@ -111,14 +128,15 @@ class _ServicesGrid extends ConsumerWidget {
           // IntrinsicHeight + stretch: when one caption wraps under large text,
           // its neighbour grows to match instead of leaving a ragged row.
           IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
+              child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
               Expanded(
                 child: ServiceTile(
                   title: l10n.serviceRide,
                   caption: l10n.serviceRideCaption,
                   service: TamamService.rides,
+                  enabled: _offered(types, JobType.ride),
                   onTap: () => context.push(Routes.ride),
                 ),
               ),
@@ -128,24 +146,25 @@ class _ServicesGrid extends ConsumerWidget {
                   title: l10n.serviceDelivery,
                   caption: l10n.serviceDeliveryCaption,
                   service: TamamService.delivery,
+                  enabled: _offered(types, JobType.delivery),
                   onTap: () => context.push(Routes.delivery),
                 ),
               ),
             ],
-          )
-          ),
+          )),
           const SizedBox(height: TamamSpacing.s3),
           // IntrinsicHeight + stretch: when one caption wraps under large text,
           // its neighbour grows to match instead of leaving a ragged row.
           IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
+              child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
               Expanded(
                 child: ServiceTile(
                   title: l10n.serviceHome,
                   caption: l10n.serviceHomeCaption,
                   service: TamamService.homeServices,
+                  enabled: _offered(types, JobType.homeService),
                   onTap: () => context.push(Routes.search),
                 ),
               ),
@@ -159,20 +178,7 @@ class _ServicesGrid extends ConsumerWidget {
                 ),
               ),
             ],
-          )
-          ),
-          const SizedBox(height: TamamSpacing.s3),
-          // Urgent is a way of asking for a service rather than a service, so
-          // it sits on its own row. It is also what keeps the count even: five
-          // tiles in two columns would leave a hole in the last row.
-          ServiceTile(
-            title: l10n.serviceUrgent,
-            caption: l10n.serviceUrgentCaption,
-            glyph: Icons.bolt_rounded,
-            glyphTint: TamamServiceColors.urgent,
-            enabled: ref.watch(featureFlagsValueProvider).hasUrgentServices,
-            onTap: () => context.push('${Routes.search}?urgent=1'),
-          ),
+          )),
         ],
       ),
     );
@@ -236,12 +242,16 @@ class _PopularCategories extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        TamamIconTile.glyph(icon: Icons.build_circle_outlined, tint: category.color, size: 38),
+                        TamamIconTile.glyph(
+                            icon: Icons.build_circle_outlined,
+                            tint: category.color,
+                            size: 38),
                         Text(
                           category.name.resolve(language),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TamamType.labelMd.toTextStyle(color: context.colors.textPrimary),
+                          style: TamamType.labelMd
+                              .toTextStyle(color: context.colors.textPrimary),
                         ),
                       ],
                     ),
@@ -263,7 +273,8 @@ class _RecentOrders extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
-    final AsyncValue<OrdersPage> recent = ref.watch(ordersProvider(JobStatusGroup.all));
+    final AsyncValue<OrdersPage> recent =
+        ref.watch(ordersProvider(JobStatusGroup.all));
 
     return recent.when(
       skipLoadingOnRefresh: true,
@@ -271,7 +282,8 @@ class _RecentOrders extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: TamamSpacing.s4),
         child: Column(
           children: <Widget>[
-            SectionHeader(title: l10n.homeRecentOrders, padding: EdgeInsets.zero),
+            SectionHeader(
+                title: l10n.homeRecentOrders, padding: EdgeInsets.zero),
             const SkeletonList(itemCount: 2),
           ],
         ),
@@ -314,7 +326,8 @@ class _SavedPlacesStrip extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
-    final List<SavedPlace> places = ref.watch(savedPlacesProvider).valueOrNull ?? const <SavedPlace>[];
+    final List<SavedPlace> places =
+        ref.watch(savedPlacesProvider).valueOrNull ?? const <SavedPlace>[];
 
     return Column(
       children: <Widget>[
@@ -330,12 +343,14 @@ class _SavedPlacesStrip extends ConsumerWidget {
               onTap: () => context.push(Routes.savedPlaces),
               child: Row(
                 children: <Widget>[
-                  Icon(Icons.add_location_alt_outlined, color: context.colors.primary),
+                  Icon(Icons.add_location_alt_outlined,
+                      color: context.colors.primary),
                   const SizedBox(width: TamamSpacing.s3),
                   Expanded(
                     child: Text(
                       l10n.homeAddPlace,
-                      style: TamamType.bodyMd.toTextStyle(color: context.colors.textSecondary),
+                      style: TamamType.bodyMd
+                          .toTextStyle(color: context.colors.textSecondary),
                     ),
                   ),
                 ],
@@ -356,7 +371,9 @@ class _SavedPlacesStrip extends ConsumerWidget {
                 ),
                 label: Text(place.label),
                 onPressed: () => unawaited(
-                  ref.read(currentAddressProvider.notifier).select(place.address),
+                  ref
+                      .read(currentAddressProvider.notifier)
+                      .select(place.address),
                 ),
               );
             },
@@ -403,7 +420,8 @@ class _OffersTeaser extends StatelessWidget {
                     color: colors.accent,
                     borderRadius: BorderRadius.circular(TamamRadius.sm),
                   ),
-                  child: Icon(Icons.local_offer_rounded, color: colors.textOnAccent),
+                  child: Icon(Icons.local_offer_rounded,
+                      color: colors.textOnAccent),
                 ),
                 const SizedBox(width: TamamSpacing.s3),
                 Expanded(
@@ -412,11 +430,13 @@ class _OffersTeaser extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         l10n.homeOffersTitle,
-                        style: TamamType.headingSm.toTextStyle(color: colors.textPrimary),
+                        style: TamamType.headingSm
+                            .toTextStyle(color: colors.textPrimary),
                       ),
                       Text(
                         l10n.homeOffersBody,
-                        style: TamamType.bodySm.toTextStyle(color: colors.textSecondary),
+                        style: TamamType.bodySm
+                            .toTextStyle(color: colors.textSecondary),
                       ),
                     ],
                   ),

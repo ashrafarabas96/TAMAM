@@ -24,6 +24,7 @@ import 'package:tamam_customer/features/jobs/presentation/widgets/fare_option_ca
 import 'package:tamam_customer/features/media/presentation/widgets/attachment_picker.dart';
 import 'package:tamam_customer/features/places/presentation/address_sheet.dart';
 import 'package:tamam_customer/features/service/presentation/service_flow_controller.dart';
+import 'package:tamam_customer/features/service/presentation/widgets/service_timing_picker.dart';
 import 'package:tamam_customer/l10n/l10n.dart';
 
 /// The home-service flow: location, subcategory, options, the problem
@@ -39,7 +40,8 @@ class ServiceFlowScreen extends ConsumerStatefulWidget {
 }
 
 class _ServiceFlowScreenState extends ConsumerState<ServiceFlowScreen> {
-  ServiceFlowController get _controller => ref.read(serviceFlowProvider(widget.categoryId).notifier);
+  ServiceFlowController get _controller =>
+      ref.read(serviceFlowProvider(widget.categoryId).notifier);
 
   Future<void> _pickLocation() async {
     final Address? address = await AddressSheet.show(
@@ -56,9 +58,11 @@ class _ServiceFlowScreenState extends ConsumerState<ServiceFlowScreen> {
   Future<void> _submit() async {
     final Job? job = await _controller.submit();
     if (!mounted) return;
-    final ServiceFlowState state = ref.read(serviceFlowProvider(widget.categoryId));
+    final ServiceFlowState state =
+        ref.read(serviceFlowProvider(widget.categoryId));
     if (job == null) {
-      if (state.failure != null) AppFeedback.showFailure(context, state.failure!);
+      if (state.failure != null)
+        AppFeedback.showFailure(context, state.failure!);
       return;
     }
     context.pushReplacement(Routes.job(job.id));
@@ -68,7 +72,8 @@ class _ServiceFlowScreenState extends ConsumerState<ServiceFlowScreen> {
   Widget build(BuildContext context) {
     final AppLocalizations l10n = context.l10n;
     final String language = ref.watch(localeControllerProvider).languageCode;
-    final ServiceFlowState state = ref.watch(serviceFlowProvider(widget.categoryId));
+    final ServiceFlowState state =
+        ref.watch(serviceFlowProvider(widget.categoryId));
     final ServiceCategory? category = state.category;
 
     return Scaffold(
@@ -93,7 +98,8 @@ class _ServiceFlowScreenState extends ConsumerState<ServiceFlowScreen> {
                   title: l10n.serviceLocationTitle,
                   child: ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.place_rounded, color: context.colors.primary),
+                    leading: Icon(Icons.place_rounded,
+                        color: context.colors.primary),
                     title: Text(
                       state.location?.formatted ?? l10n.serviceLocationEmpty,
                       maxLines: 2,
@@ -137,7 +143,8 @@ class _ServiceFlowScreenState extends ConsumerState<ServiceFlowScreen> {
                               controlAffinity: ListTileControlAffinity.leading,
                               value: state.optionIds.contains(option.id),
                               title: Text(option.name.resolve(language)),
-                              secondary: MoneyText(option.price, emphasis: MoneyEmphasis.subtle),
+                              secondary: MoneyText(option.price,
+                                  emphasis: MoneyEmphasis.subtle),
                               onChanged: (bool? _) {
                                 _controller.toggleOption(option.id);
                                 unawaited(_controller.estimate());
@@ -156,14 +163,16 @@ class _ServiceFlowScreenState extends ConsumerState<ServiceFlowScreen> {
                         maxLines: 4,
                         decoration: InputDecoration(
                           hintText: l10n.serviceProblemHint,
-                          errorText: state.description.isEmpty || state.descriptionValid
+                          errorText: state.description.isEmpty ||
+                                  state.descriptionValid
                               ? null
                               : l10n.serviceProblemTooShort,
                           alignLabelWithHint: true,
                         ),
                         onChanged: _controller.setDescription,
                       ),
-                      if (category != null && category.requiredFields.isNotEmpty) ...<Widget>[
+                      if (category != null &&
+                          category.requiredFields.isNotEmpty) ...<Widget>[
                         const SizedBox(height: TamamSpacing.s5),
                         DynamicFieldsForm(
                           fields: category.requiredFields,
@@ -179,20 +188,39 @@ class _ServiceFlowScreenState extends ConsumerState<ServiceFlowScreen> {
                         hint: state.minImages > 0
                             ? l10n.serviceMediaRequired(state.minImages)
                             : l10n.serviceMediaOptional,
-                        onAdd: ({required bool fromCamera}) =>
-                            unawaited(_controller.addPhotos(fromCamera: fromCamera)),
+                        onAdd: ({required bool fromCamera}) => unawaited(
+                            _controller.addPhotos(fromCamera: fromCamera)),
                         onRemove: _controller.removeAttachment,
                       ),
                       const SizedBox(height: TamamSpacing.s4),
                       TextField(
                         maxLines: 2,
-                        decoration: InputDecoration(labelText: l10n.serviceInstructions),
+                        decoration: InputDecoration(
+                            labelText: l10n.serviceInstructions),
                         onChanged: _controller.setAdditionalInstructions,
                       ),
                     ],
                   ),
                 ),
-                if (category != null && category.urgencyLevels.length > 1)
+                if (category != null)
+                  _Block(
+                    title: l10n.serviceWhenTitle,
+                    child: ServiceTimingPicker(
+                      allowsInstant: category.allowsInstant,
+                      allowsScheduled: category.allowsScheduled,
+                      preferredDate: state.preferredDate,
+                      preferredTimeSlot: state.preferredTimeSlot,
+                      onChanged: ({String? date, String? slot}) {
+                        _controller.setPreferredSlot(date: date, slot: slot);
+                        unawaited(_controller.estimate());
+                      },
+                    ),
+                  ),
+                // Urgency only means something for a visit happening now; a
+                // booked appointment has its time already.
+                if (category != null &&
+                    category.urgencyLevels.length > 1 &&
+                    state.preferredDate == null)
                   _Block(
                     title: l10n.serviceUrgencyTitle,
                     child: Column(
@@ -215,22 +243,15 @@ class _ServiceFlowScreenState extends ConsumerState<ServiceFlowScreen> {
                         ),
                         if (state.urgency != JobUrgency.standard)
                           Padding(
-                            padding: const EdgeInsets.only(top: TamamSpacing.s2),
+                            padding:
+                                const EdgeInsets.only(top: TamamSpacing.s2),
                             child: Text(
                               l10n.serviceUrgencySurcharge,
-                              style: TamamType.bodySm.toTextStyle(color: context.colors.warning),
+                              style: TamamType.bodySm
+                                  .toTextStyle(color: context.colors.warning),
                             ),
                           ),
                       ],
-                    ),
-                  ),
-                if (category?.allowsScheduled ?? false)
-                  _Block(
-                    title: l10n.serviceWhenTitle,
-                    child: _PreferredSlotPicker(
-                      state: state,
-                      onChanged: ({String? date, String? slot}) =>
-                          _controller.setPreferredSlot(date: date, slot: slot),
                     ),
                   ),
                 _ServiceEstimate(
@@ -261,7 +282,8 @@ class _Block extends StatelessWidget {
                 header: true,
                 child: Text(
                   title,
-                  style: TamamType.headingSm.toTextStyle(color: context.colors.textPrimary),
+                  style: TamamType.headingSm
+                      .toTextStyle(color: context.colors.textPrimary),
                 ),
               ),
             ),
@@ -269,67 +291,6 @@ class _Block extends StatelessWidget {
           ],
         ),
       );
-}
-
-class _PreferredSlotPicker extends ConsumerWidget {
-  const _PreferredSlotPicker({required this.state, required this.onChanged});
-
-  final ServiceFlowState state;
-  final void Function({String? date, String? slot}) onChanged;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final AppLocalizations l10n = context.l10n;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            ChoiceChip(
-              label: Text(l10n.serviceWhenNow),
-              selected: state.preferredDate == null,
-              onSelected: (bool _) => onChanged(),
-            ),
-            const SizedBox(width: TamamSpacing.s2),
-            ChoiceChip(
-              label: Text(
-                state.preferredDate == null ? l10n.serviceWhenScheduled : state.preferredDate!,
-              ),
-              selected: state.preferredDate != null,
-              onSelected: (bool _) => unawaited(_pickDate(context)),
-            ),
-          ],
-        ),
-        if (state.preferredDate != null) ...<Widget>[
-          const SizedBox(height: TamamSpacing.s3),
-          Wrap(
-            spacing: TamamSpacing.s2,
-            children: const <String>['MORNING', 'AFTERNOON', 'EVENING']
-                .map(
-                  (String slot) => ChoiceChip(
-                    label: Text(JobLabels.timeSlot(l10n, slot)),
-                    selected: state.preferredTimeSlot == slot,
-                    onSelected: (bool _) => onChanged(date: state.preferredDate, slot: slot),
-                  ),
-                )
-                .toList(growable: false),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Future<void> _pickDate(BuildContext context) async {
-    final DateTime now = DateTime.now();
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: now.add(const Duration(days: 1)),
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 60)),
-    );
-    if (picked == null) return;
-    onChanged(date: picked.toIso8601String().substring(0, 10), slot: state.preferredTimeSlot ?? 'MORNING');
-  }
 }
 
 class _ServiceEstimate extends ConsumerWidget {
@@ -343,7 +304,8 @@ class _ServiceEstimate extends ConsumerWidget {
     final AppLocalizations l10n = context.l10n;
     final TamamColors colors = context.colors;
     final ServiceFlowState state = ref.watch(serviceFlowProvider(categoryId));
-    final ServiceFlowController controller = ref.read(serviceFlowProvider(categoryId).notifier);
+    final ServiceFlowController controller =
+        ref.read(serviceFlowProvider(categoryId).notifier);
 
     if (state.estimating) {
       return const TamamCard(child: SkeletonList(itemCount: 2, itemHeight: 56));
@@ -361,7 +323,9 @@ class _ServiceEstimate extends ConsumerWidget {
             ),
           TamamButton(
             label: l10n.rideGetEstimate,
-            onPressed: state.canEstimate ? () => unawaited(controller.estimate()) : null,
+            onPressed: state.canEstimate
+                ? () => unawaited(controller.estimate())
+                : null,
           ),
         ],
       );
@@ -380,12 +344,14 @@ class _ServiceEstimate extends ConsumerWidget {
               ),
               child: Row(
                 children: <Widget>[
-                  Icon(Icons.info_outline_rounded, color: context.colors.infoStrong),
+                  Icon(Icons.info_outline_rounded,
+                      color: context.colors.infoStrong),
                   const SizedBox(width: TamamSpacing.s2),
                   Expanded(
                     child: Text(
                       l10n.pricingInspectionExplainer,
-                      style: TamamType.bodySm.toTextStyle(color: context.colors.infoStrong),
+                      style: TamamType.bodySm
+                          .toTextStyle(color: context.colors.infoStrong),
                     ),
                   ),
                 ],
@@ -397,7 +363,8 @@ class _ServiceEstimate extends ConsumerWidget {
             selection: state.checkout,
             allowScheduling: false,
             onPaymentChanged: controller.setPaymentMethod,
-            onApplyPromo: (String code) => unawaited(controller.applyPromo(code)),
+            onApplyPromo: (String code) =>
+                unawaited(controller.applyPromo(code)),
             onClearPromo: controller.clearPromo,
             onScheduleChanged: (DateTime? _) {},
           ),
@@ -412,11 +379,14 @@ class _ServiceEstimate extends ConsumerWidget {
                       state.category?.needsInspection ?? false
                           ? l10n.pricingDueNow
                           : l10n.checkoutTotal,
-                      style: TamamType.headingSm.toTextStyle(color: colors.textPrimary),
+                      style: TamamType.headingSm
+                          .toTextStyle(color: colors.textPrimary),
                     ),
                   ),
                   MoneyText(
-                    state.checkout.hasPromo ? state.checkout.promoPreview!.total : state.option!.total,
+                    state.checkout.hasPromo
+                        ? state.checkout.promoPreview!.total
+                        : state.option!.total,
                   ),
                 ],
               ),
