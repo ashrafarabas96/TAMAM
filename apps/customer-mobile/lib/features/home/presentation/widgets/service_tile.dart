@@ -43,13 +43,20 @@ class ServiceTile extends StatelessWidget {
       child: TamamCard(
         onTap: enabled ? onTap : null,
         padding: const EdgeInsets.all(TamamSpacing.s4),
-        child: SizedBox(
-          height: TamamSize.serviceCardHeight - TamamSpacing.s8,
+        // A minimum, not a fixed height. Large accessibility text and Arabic's
+        // extra leading made the title and caption taller than a fixed box could
+        // hold, and the QA matrix caught the 7px overflow that a 1.0x English
+        // screen never shows. The tile now grows with its text; the grid rows
+        // stretch so two tiles side by side still share a height.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: TamamSize.serviceCardHeight - TamamSpacing.s8,
+          ),
           child: Stack(
             children: <Widget>[
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   service != null
                       ? TamamIconTile(service: service!, size: TamamSize.serviceIconTile)
@@ -58,10 +65,9 @@ class ServiceTile extends StatelessWidget {
                           tint: glyphTint!,
                           size: TamamSize.serviceIconTile,
                         ),
-                  // Flexible, not a bare Column: title + caption at their natural line
-                  // heights are a couple of pixels taller than the fixed card leaves them,
-                  // and any user text scaling makes that worse. Both lines already
-                  // ellipsize, so shrinking degrades gracefully instead of overflowing.
+                  const SizedBox(height: TamamSpacing.s3),
+                  // Both lines ellipsize; the caption may take two lines when the
+                  // text is scaled, since the tile can now grow to hold it.
                   Flexible(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,7 +82,7 @@ class ServiceTile extends StatelessWidget {
                         if (caption != null)
                           Text(
                             caption!,
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TamamType.bodySm.toTextStyle(color: colors.textTertiary),
                           ),

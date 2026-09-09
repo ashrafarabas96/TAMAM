@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,14 +14,37 @@ import 'package:tamam_customer/l10n/l10n.dart';
 /// Builds the provider overrides every widget test needs: preferences backed by
 /// the in-memory mock, a fixed environment, and an API client that never talks
 /// to a real server.
-Future<List<Override>> testOverrides({Map<String, Object> prefs = const <String, Object>{}}) async {
+Future<List<Override>> testOverrides(
+    {Map<String, Object> prefs = const <String, Object>{}}) async {
   SharedPreferences.setMockInitialValues(prefs);
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   return <Override>[
     prefsStoreProvider.overrideWithValue(PrefsStore(preferences)),
     appEnvProvider.overrideWithValue(AppEnv.fromDefines()),
-    apiClientProvider.overrideWithValue(ApiClient(Dio(BaseOptions(baseUrl: 'http://localhost')))),
+    apiClientProvider.overrideWithValue(
+        ApiClient(Dio(BaseOptions(baseUrl: 'http://localhost')))),
   ];
+}
+
+/// Registers the bundled brand fonts with the test engine.
+///
+/// Without this every glyph renders in the test font, a square one em wide,
+/// which makes Arabic about twice as wide as Tajawal draws it. Layout tests
+/// would then fail on rows that fit a real phone and pass on rows that do not.
+///
+/// Loaded afresh in every test on purpose: a future memoised from one test's
+/// fake-async zone never completes when the next test awaits it.
+Future<void> loadBrandFonts() async {
+  for (final (String family, String prefix) in <(String, String)>[
+    ('Tajawal', 'assets/fonts/Tajawal'),
+    ('Poppins', 'assets/fonts/Poppins'),
+  ]) {
+    final FontLoader loader = FontLoader(family);
+    for (final int weight in <int>[400, 500, 700, 800]) {
+      loader.addFont(rootBundle.load('$prefix-$weight.ttf'));
+    }
+    await loader.load();
+  }
 }
 
 /// Pumps [child] inside the real theme, localisations and a Riverpod scope, so
@@ -41,6 +65,7 @@ Future<void> pumpAppWidget(
   double textScale = 1.0,
   Brightness brightness = Brightness.light,
 }) async {
+  await loadBrandFonts();
   await tester.binding.setSurfaceSize(surfaceSize);
   addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -52,7 +77,8 @@ Future<void> pumpAppWidget(
         ? TamamTheme.dark(locale.languageCode)
         : TamamTheme.light(locale.languageCode),
     builder: (BuildContext context, Widget? inner) => MediaQuery(
-      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(textScale)),
       child: inner ?? const SizedBox.shrink(),
     ),
     home: Scaffold(body: child),

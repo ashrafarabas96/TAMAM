@@ -17,7 +17,8 @@ class StatusPill extends StatelessWidget {
   });
 
   /// Chooses the tone that matches a job status so every list agrees.
-  factory StatusPill.forJobStatus({required JobStatus status, required String label, Key? key}) =>
+  factory StatusPill.forJobStatus(
+          {required JobStatus status, required String label, Key? key}) =>
       StatusPill(key: key, label: label, tone: toneForJobStatus(status));
 
   final String label;
@@ -73,7 +74,9 @@ class StatusPill extends StatelessWidget {
         horizontal: dense ? TamamSpacing.s2 : TamamSpacing.s3,
         vertical: dense ? 2 : TamamSpacing.s1,
       ),
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(TamamRadius.pill)),
+      decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(TamamRadius.pill)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -81,9 +84,17 @@ class StatusPill extends StatelessWidget {
             Icon(icon, size: TamamSize.iconSm, color: foreground),
             const SizedBox(width: TamamSpacing.s1),
           ],
-          Text(
-            label,
-            style: (dense ? TamamType.labelSm : TamamType.labelMd).toTextStyle(color: foreground),
+          // Loose, not tight: the pill stays as narrow as its label, but a long
+          // label in a narrow slot truncates instead of overflowing the row.
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              style: (dense ? TamamType.labelSm : TamamType.labelMd)
+                  .toTextStyle(color: foreground),
+            ),
           ),
         ],
       ),

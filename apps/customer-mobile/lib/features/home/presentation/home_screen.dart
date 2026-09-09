@@ -108,8 +108,12 @@ class _ServicesGrid extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: TamamSpacing.s4),
       child: Column(
         children: <Widget>[
-          Row(
-            children: <Widget>[
+          // IntrinsicHeight + stretch: when one caption wraps under large text,
+          // its neighbour grows to match instead of leaving a ragged row.
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
               Expanded(
                 child: ServiceTile(
                   title: l10n.serviceRide,
@@ -128,10 +132,15 @@ class _ServicesGrid extends ConsumerWidget {
                 ),
               ),
             ],
+          )
           ),
           const SizedBox(height: TamamSpacing.s3),
-          Row(
-            children: <Widget>[
+          // IntrinsicHeight + stretch: when one caption wraps under large text,
+          // its neighbour grows to match instead of leaving a ragged row.
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
               Expanded(
                 child: ServiceTile(
                   title: l10n.serviceHome,
@@ -150,6 +159,7 @@ class _ServicesGrid extends ConsumerWidget {
                 ),
               ),
             ],
+          )
           ),
           const SizedBox(height: TamamSpacing.s3),
           // Urgent is a way of asking for a service rather than a service, so

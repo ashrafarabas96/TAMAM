@@ -31,17 +31,22 @@ class OfferSheet extends ConsumerStatefulWidget {
   /// Route name used to avoid stacking two sheets.
   static const String routeName = 'offer-sheet';
 
-  static Future<void> show(BuildContext context) => Navigator.of(context, rootNavigator: true).push<void>(
+  static Future<void> show(BuildContext context) =>
+      Navigator.of(context, rootNavigator: true).push<void>(
         PageRouteBuilder<void>(
           settings: const RouteSettings(name: routeName),
           fullscreenDialog: true,
           opaque: true,
           transitionDuration: TamamMotion.durationSlow,
-          pageBuilder: (BuildContext _, Animation<double> __, Animation<double> ___) => const OfferSheet(),
-          transitionsBuilder: (BuildContext _, Animation<double> animation, Animation<double> __, Widget child) =>
+          pageBuilder:
+              (BuildContext _, Animation<double> __, Animation<double> ___) =>
+                  const OfferSheet(),
+          transitionsBuilder: (BuildContext _, Animation<double> animation,
+                  Animation<double> __, Widget child) =>
               SlideTransition(
             position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
-                .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                .animate(CurvedAnimation(
+                    parent: animation, curve: Curves.easeOutCubic)),
             child: child,
           ),
         ),
@@ -76,19 +81,23 @@ class _OfferSheetState extends ConsumerState<OfferSheet> {
     final OfferQueue queue = ref.watch(offersControllerProvider);
     final JobOffer? offer = queue.current;
 
-    ref.listen<OfferQueue>(offersControllerProvider, (OfferQueue? previous, OfferQueue next) {
+    ref.listen<OfferQueue>(offersControllerProvider,
+        (OfferQueue? previous, OfferQueue next) {
       if (next.failure != null && next.failure != previous?.failure) {
         AppFeedback.showFailure(context, next.failure!);
         ref.read(offersControllerProvider.notifier).clearFailure();
       }
-      if (next.current == null && Navigator.of(context).canPop()) Navigator.of(context).pop();
+      if (next.current == null && Navigator.of(context).canPop())
+        Navigator.of(context).pop();
     });
 
     if (offer == null) {
-      return Scaffold(backgroundColor: colors.surfaceBrand, body: const SizedBox.expand());
+      return Scaffold(
+          backgroundColor: colors.surfaceBrand, body: const SizedBox.expand());
     }
 
-    final OfferCountdown countdown = OfferCountdown(receivedAt: offer.receivedAt, expiresAt: offer.expiresAt);
+    final OfferCountdown countdown = OfferCountdown(
+        receivedAt: offer.receivedAt, expiresAt: offer.expiresAt);
     final int seconds = countdown.secondsLabel(_now);
 
     return PopScope(
@@ -101,7 +110,8 @@ class _OfferSheetState extends ConsumerState<OfferSheet> {
               const SizedBox(height: TamamSpacing.s4),
               Text(
                 l10n.offerTitle,
-                style: TamamType.headingMd.toTextStyle(color: colors.textOnBrandMuted),
+                style: TamamType.headingMd
+                    .toTextStyle(color: colors.textOnBrandMuted),
               ),
               if (queue.length > 1)
                 Padding(
@@ -122,12 +132,14 @@ class _OfferSheetState extends ConsumerState<OfferSheet> {
               const SizedBox(height: TamamSpacing.s5),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: TamamSpacing.s5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: TamamSpacing.s5),
                   child: _OfferBody(offer: offer),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(TamamSpacing.s5, TamamSpacing.s3, TamamSpacing.s5, TamamSpacing.s4),
+                padding: const EdgeInsets.fromLTRB(TamamSpacing.s5,
+                    TamamSpacing.s3, TamamSpacing.s5, TamamSpacing.s4),
                 child: Column(
                   children: <Widget>[
                     TamamButton(
@@ -135,17 +147,21 @@ class _OfferSheetState extends ConsumerState<OfferSheet> {
                       label: l10n.offerAccept,
                       icon: Icons.check_rounded,
                       busy: queue.responding,
-                      onPressed: () => unawaited(ref.read(offersControllerProvider.notifier).accept()),
+                      onPressed: () => unawaited(
+                          ref.read(offersControllerProvider.notifier).accept()),
                     ),
                     const SizedBox(height: TamamSpacing.s2),
                     TextButton(
                       key: const Key('offer-decline'),
                       onPressed: queue.responding
                           ? null
-                          : () => unawaited(ref.read(offersControllerProvider.notifier).decline()),
+                          : () => unawaited(ref
+                              .read(offersControllerProvider.notifier)
+                              .decline()),
                       style: TextButton.styleFrom(
                         foregroundColor: TamamBrand.purple100,
-                        minimumSize: const Size.fromHeight(TamamSize.buttonHeightLg),
+                        minimumSize:
+                            const Size.fromHeight(TamamSize.buttonHeightLg),
                       ),
                       child: Text(l10n.offerDecline),
                     ),
@@ -181,15 +197,24 @@ class _OfferBody extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(JobLabels.typeIcon(job.type), color: colors.accent, size: TamamSize.iconLg),
+            Icon(JobLabels.typeIcon(job.type),
+                color: colors.accent, size: TamamSize.iconLg),
             const SizedBox(width: TamamSpacing.s2),
-            Text(
-              JobLabels.type(l10n, job.type),
-              style: TamamType.headingLg.toTextStyle(color: colors.textOnBrand),
+            Flexible(
+              child: Text(
+                JobLabels.type(l10n, job.type),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style:
+                    TamamType.headingLg.toTextStyle(color: colors.textOnBrand),
+              ),
             ),
             if (job.urgency != JobUrgency.standard) ...<Widget>[
               const SizedBox(width: TamamSpacing.s2),
-              StatusPill(label: JobLabels.urgency(l10n, job.urgency), tone: PillTone.danger, dense: true),
+              StatusPill(
+                  label: JobLabels.urgency(l10n, job.urgency),
+                  tone: PillTone.danger,
+                  dense: true),
             ],
           ],
         ),
@@ -205,13 +230,15 @@ class _OfferBody extends ConsumerWidget {
             children: <Widget>[
               Text(
                 l10n.offerEstimatedEarnings,
-                style: TamamType.labelMd.toTextStyle(color: colors.textOnBrandMuted),
+                style: TamamType.labelMd
+                    .toTextStyle(color: colors.textOnBrandMuted),
               ),
               const SizedBox(height: TamamSpacing.s1),
               MoneyText(
                 offer.estimatedEarnings,
                 color: colors.accent,
-                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800),
+                style:
+                    const TextStyle(fontSize: 36, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: TamamSpacing.s3),
               // Each metric takes an equal share of the row. Three metrics separated by
@@ -222,15 +249,18 @@ class _OfferBody extends ConsumerWidget {
                     child: _Metric(
                       icon: Icons.near_me_rounded,
                       value: units.isKilometres(offer.distanceToPickupMeters)
-                          ? l10n.distanceKm(units.distanceValue(offer.distanceToPickupMeters))
-                          : l10n.distanceM(units.distanceValue(offer.distanceToPickupMeters)),
+                          ? l10n.distanceKm(
+                              units.distanceValue(offer.distanceToPickupMeters))
+                          : l10n.distanceM(units
+                              .distanceValue(offer.distanceToPickupMeters)),
                       label: l10n.offerToPickup,
                     ),
                   ),
                   Expanded(
                     child: _Metric(
                       icon: Icons.schedule_rounded,
-                      value: l10n.durationMin(units.minutesValue(offer.etaToPickupSeconds)),
+                      value: l10n.durationMin(
+                          units.minutesValue(offer.etaToPickupSeconds)),
                       label: l10n.offerEta,
                     ),
                   ),
@@ -239,8 +269,10 @@ class _OfferBody extends ConsumerWidget {
                       child: _Metric(
                         icon: Icons.route_rounded,
                         value: units.isKilometres(job.distanceMeters!)
-                            ? l10n.distanceKm(units.distanceValue(job.distanceMeters!))
-                            : l10n.distanceM(units.distanceValue(job.distanceMeters!)),
+                            ? l10n.distanceKm(
+                                units.distanceValue(job.distanceMeters!))
+                            : l10n.distanceM(
+                                units.distanceValue(job.distanceMeters!)),
                         label: l10n.offerTripDistance,
                       ),
                     ),
@@ -254,7 +286,9 @@ class _OfferBody extends ConsumerWidget {
           _AddressRow(
             icon: Icons.trip_origin_rounded,
             iconColor: colors.accent,
-            label: job.isHomeService ? l10n.offerServiceLocation : l10n.offerPickup,
+            label: job.isHomeService
+                ? l10n.offerServiceLocation
+                : l10n.offerPickup,
             address: pickup.address.formatted,
             detail: pickup.address.detailLine,
           ),
@@ -276,8 +310,12 @@ class _OfferBody extends ConsumerWidget {
           children: <Widget>[
             StatusPill(
               label: JobLabels.payment(l10n, job.paymentMethod),
-              tone: job.paymentMethod == PaymentMethod.cash ? PillTone.warning : PillTone.success,
-              icon: job.paymentMethod == PaymentMethod.cash ? Icons.payments_rounded : Icons.credit_card_rounded,
+              tone: job.paymentMethod == PaymentMethod.cash
+                  ? PillTone.warning
+                  : PillTone.success,
+              icon: job.paymentMethod == PaymentMethod.cash
+                  ? Icons.payments_rounded
+                  : Icons.credit_card_rounded,
             ),
             if (job.scheduledFor != null)
               StatusPill(
@@ -287,7 +325,8 @@ class _OfferBody extends ConsumerWidget {
               ),
             if (job.delivery != null)
               StatusPill(
-                label: job.delivery!.packageCategoryName.resolve(Localizations.localeOf(context).languageCode),
+                label: job.delivery!.packageCategoryName
+                    .resolve(Localizations.localeOf(context).languageCode),
                 tone: PillTone.neutral,
                 icon: Icons.inventory_2_outlined,
               ),
@@ -368,7 +407,9 @@ class _AddressRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(label, style: TamamType.labelSm.toTextStyle(color: colors.textOnBrandMuted)),
+              Text(label,
+                  style: TamamType.labelSm
+                      .toTextStyle(color: colors.textOnBrandMuted)),
               Text(
                 address,
                 maxLines: 2,
@@ -376,7 +417,9 @@ class _AddressRow extends StatelessWidget {
                 style: TamamType.bodyLg.toTextStyle(color: colors.textOnBrand),
               ),
               if (detail != null)
-                Text(detail!, style: TamamType.bodySm.toTextStyle(color: colors.textOnBrandMuted)),
+                Text(detail!,
+                    style: TamamType.bodySm
+                        .toTextStyle(color: colors.textOnBrandMuted)),
             ],
           ),
         ),
