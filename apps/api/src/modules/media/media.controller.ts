@@ -61,12 +61,14 @@ export class MediaController {
   /// means a second host and a second open port, and the banner images simply
   /// never arrived. Serving them here keeps every request the app makes on one
   /// origin, so one reachable address is enough.
-  @Get('public/*key')
+  // Express 4 spells a wildcard as a bare `*` and exposes it as `params[0]`;
+  // `*key` would have demanded a literal "key" at the end of every URL.
+  @Get('public/*')
   @Public()
   // Unauthenticated and serves bytes, so it is the one route that could be used
   // to pull bandwidth. Generous for an app screen full of images, tight for a script.
   @RateLimit({ name: 'media-public', limit: 300, windowSeconds: 600, keyBy: 'ip' })
-  async publicObject(@Param('key') key: string, @Res() res: Response): Promise<void> {
+  async publicObject(@Param('0') key: string, @Res() res: Response): Promise<void> {
     const object = await this.media.readPublic(decodeURIComponent(key));
     res.setHeader('Content-Type', object.contentType);
     // The stored type is trusted over the bytes: never let a browser sniff a

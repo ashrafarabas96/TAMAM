@@ -164,4 +164,57 @@ describe('Permissions and object-level access (§130)', () => {
       .set({ Authorization: 'Bearer not-a-real-token' })
       .expect(401);
   });
+  it('holds an admin with an issued password at the password gate', async () => {
+    await api.prisma.adminCredential.updateMany({
+      where: { email: SEED.adminEmail },
+      data: { mustChangePassword: true },
+    });
+    const deviceId = 'e2e-gated-admin';
+    const login = await api
+      .request()
+      .post(api.url('auth/admin/login'))
+      .send({
+        email: SEED.adminEmail,
+        password: SEED.adminPassword,
+        device: { deviceId, platform: 'web', appVersion: 'e2e' },
+      })
+      .expect(200);
+    const session = login.body as { mustChangePassword?: boolean; tokens: { accessToken: string } };
+    expect(session.mustChangePassword).toBe(true);
+    const headers = {
+      Authorization: `Bearer ${session.tokens.accessToken}`,
+      'X-Device-Id': deviceId,
+    };
+
+    // Every privileged route is closed until the issued password is replaced…
+    await api
+      .request()
+      .get(api.url('admin/jobs'))
+      .set(headers)
+      .expect(403)
+      .expect((res) =>
+        expect((res.body as { code: string }).code).toBe('PASSWORD_CHANGE_REQUIRED'),
+      );
+    // …while the way out stays open: the profile and the password route still answer.
+    await api.request().get(api.url('me')).set(headers).expect(200);
+
+    await api.prisma.adminCredential.updateMany({
+      where: { email: SEED.adminEmail },
+      data: { mustChangePassword: false },
+    });
+  });
+
+  it('serves public media through the API and never a private object', async () => {
+    // The seed uploads the banner creatives and records them as public assets.
+    const res = await api
+      .request()
+      .get(api.url('media/public/seed/banners/home-hero-ar.png'))
+      .expect(200);
+    expect(res.headers['content-type']).toMatch(/^image\/png/);
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
+    expect((res.body as Buffer).length).toBeGreaterThan(0);
+
+    // A key that exists only in the private bucket is not reachable by name.
+    await api.request().get(api.url('media/public/seed/documents/placeholder.png')).expect(404);
+  });
 });

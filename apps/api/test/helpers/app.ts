@@ -221,6 +221,13 @@ export class TestApp {
     if (cached) return cached;
 
     await this.resetRateLimits();
+    // The seed issues every staff password with the first-login gate raised, as
+    // production does. Suites model staff who have already been through it;
+    // the gate itself is proven in permissions.e2e-spec.ts.
+    await this.prisma.adminCredential.updateMany({
+      where: { email },
+      data: { mustChangePassword: false },
+    });
     const res = await this.request()
       .post(this.url('auth/admin/login'))
       .send({ email, password, device: { deviceId, platform: 'web', appVersion: 'e2e' } })
